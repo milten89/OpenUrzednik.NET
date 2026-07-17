@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OpenUrzednik.Core/OpenUrzednik.Core.csproj" />
+    <Project Path="src/OpenUrzednik.Gus/OpenUrzednik.Gus.csproj" />
+    <Project Path="src/OpenUrzednik.Krs/OpenUrzednik.Krs.csproj" />
+    <Project Path="src/OpenUrzednik.Mf/OpenUrzednik.Mf.csproj" />
+    <Project Path="src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OpenUrzednik.Core.Tests/OpenUrzednik.Core.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Gus.Tests/OpenUrzednik.Gus.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Krs.Tests/OpenUrzednik.Krs.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Mf.Tests/OpenUrzednik.Mf.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj" />
+  </Folder>
+</Solution>
