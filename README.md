@@ -24,10 +24,11 @@ Większość istniejących paczek NuGet dla polskich API (GUS, Biała Lista, NBP
 
 | Paczka NuGet | Status API | Opis | Podstawowy Target |
 | :--- | :--- | :--- | :--- |
-| **OpenUrzednik.Core** | ✅ Stabilny | Wspólny rdzeń, mechanizmy retry (Polly), modele błędów | `netstandard2.0`, `net8.0+` |
-| **OpenUrzednik.Nbp** | 🛠️ W rozwoju | Kursy walut i tabele NBP | `netstandard2.0`, `net8.0+` |
+| **OpenUrzednik.Core** | 📅 Planowane | Wspólny rdzeń, mechanizmy retry (Polly), modele błędów | `netstandard2.0`, `net8.0+` |
+| **OpenUrzednik.Nbp** | 📅 Planowane | Kursy walut i tabele NBP | `netstandard2.0`, `net8.0+` |
 | **OpenUrzednik.Gus** | 📅 Planowane | Rejestr REGON (GUS BIR 1.1) | `netstandard2.0`, `net8.0+` |
 | **OpenUrzednik.Krs** | 📅 Planowane | Krajowy Rejestr Sądowy (KRS) | `netstandard2.0`, `net8.0+` |
+| **OpenUrzednik.Mf** | 📅 Planowane | Ministerstwo finansów (Biała lista VAT) | `netstandard2.0`, `net8.0+` |
 
 ---
 
@@ -37,7 +38,7 @@ Biblioteka nie narzuca jednego stylu programowania. Oferuje pełną swobodę wyb
 
 ### Opcja A: Podejście wydajnościowe (Monadyczne `Result<T>`)
 
-Idealne do systemów o wysokiej wydajności. Przewidywalne sytuacje biznesowe (np. brak waluty) nie alokują zasobów na rzucanie wyjątków. Wyjątek poleci tylko wtedy, gdy padnie sieć.
+Idealne do systemów o wysokiej wydajności. Przewidywalne sytuacje biznesowe (np. brak waluty) nie alokują zasobów na rzucanie wyjątków. Wyjątek poleci tylko wtedy, gdy np. padnie sieć.
 
 ```csharp
 using OpenUrzednik.Nbp;
