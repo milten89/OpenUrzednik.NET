@@ -38,12 +38,16 @@ jobs:
 
     - name: Restore & Build & Pack
       run: |
-        dotnet restore Urzednik.sln
-        dotnet build Urzednik.sln --configuration Release --no-restore
-        dotnet pack Urzednik.sln --configuration Release --no-build --output ./artifacts -p:PackageVersion=${{ env.PACKAGE_VERSION }}
+        dotnet restore OpenUrzednik.slnx
+        dotnet build OpenUrzednik.slnx --configuration Release --no-restore
+        dotnet pack OpenUrzednik.slnx --configuration Release --no-build --output ./artifacts -p:PackageVersion=${{ env.PACKAGE_VERSION }}
 
-    - name: Push to NuGet.org via Trusted Publishing
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{ secrets.NUGET_USER }}
+
+    - name: Push to NuGet.org
       run: |
-        # Zamiast statycznego klucza API, podajemy specjalny token systemowy GitHuba
-        # NuGet.org rozpozna go automatycznie dzięki wcześniejszej konfiguracji
-        dotnet nuget push "./artifacts/*.nupkg" --api-key ${{ secrets.GITHUB_TOKEN }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        dotnet nuget push "./artifacts/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate

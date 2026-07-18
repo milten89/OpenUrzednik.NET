@@ -4,13 +4,27 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    
-    <Authors>milten98</Authors>
+
+    <Authors>milten89</Authors>
     <Company>OpenUrzednik Open Source</Company>
     <Description>Modern, high-performance .NET SDK for Polish government public APIs.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/milten98/OpenUrzednik.NET</RepositoryUrl>
+    <RepositoryUrl>https://github.com/milten89/OpenUrzednik.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>GUS;KRS;NBP;REGON;NIP;Biała-Lista;API;Poland;Gov</PackageTags>
+
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    <Deterministic>true</Deterministic>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 </Project>

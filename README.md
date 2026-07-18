@@ -1,7 +1,7 @@
 # OpenUrzednik.NET 💼🇵🇱
 
 [![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Core?style=flat-square)](https://www.nuget.org/)
-[![License](https://img.shields.io/github/license/milten98/OpenUrzednik.NET?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/github/license/milten89/OpenUrzednik.NET?style=flat-square)](LICENSE)
 
 **OpenUrzednik.NET** to nowoczesny, wydajny i w pełni otwartoźródłowy (Open Source) zestaw bibliotek dla platformy .NET, służący do integracji z polskimi bazami danych oraz API instytucji publicznych.
 
