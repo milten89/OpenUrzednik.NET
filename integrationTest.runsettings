@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED>true</OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

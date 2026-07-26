@@ -1,16 +1,18 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/OpenUrzednik.Core/OpenUrzednik.Core.csproj" />
-    <Project Path="src/OpenUrzednik.Gus/OpenUrzednik.Gus.csproj" />
-    <Project Path="src/OpenUrzednik.Krs/OpenUrzednik.Krs.csproj" />
-    <Project Path="src/OpenUrzednik.Mf/OpenUrzednik.Mf.csproj" />
-    <Project Path="src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/src/OpenUrzednik.Core/OpenUrzednik.Core.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/src/OpenUrzednik.Gus/OpenUrzednik.Gus.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/src/OpenUrzednik.Krs/OpenUrzednik.Krs.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/src/OpenUrzednik.Mf/OpenUrzednik.Mf.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/OpenUrzednik.Core.Tests/OpenUrzednik.Core.Tests.csproj" />
-    <Project Path="tests/OpenUrzednik.Gus.Tests/OpenUrzednik.Gus.Tests.csproj" />
-    <Project Path="tests/OpenUrzednik.Krs.Tests/OpenUrzednik.Krs.Tests.csproj" />
-    <Project Path="tests/OpenUrzednik.Mf.Tests/OpenUrzednik.Mf.Tests.csproj" />
-    <Project Path="tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/tests/OpenUrzednik.Core.Tests/OpenUrzednik.Core.Tests.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/tests/OpenUrzednik.Gus.Tests/OpenUrzednik.Gus.Tests.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/tests/OpenUrzednik.IntegrationTests/OpenUrzednik.IntegrationTests.csproj" Id="43a404a5-1ece-4e8a-ade7-d8f5fc3b7858" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/tests/OpenUrzednik.Krs.Tests/OpenUrzednik.Krs.Tests.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/tests/OpenUrzednik.Mf.Tests/OpenUrzednik.Mf.Tests.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj" />
+    <Project Path="../../../../../../../../.projects/OpenUrzednik.NET/tests/OpenUrzednik.TestCommon/OpenUrzednik.TestCommon.csproj" />
   </Folder>
 </Solution>

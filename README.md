@@ -3,89 +3,83 @@
 [![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Core?style=flat-square)](https://www.nuget.org/)
 [![License](https://img.shields.io/github/license/milten89/OpenUrzednik.NET?style=flat-square)](LICENSE)
 
-**OpenUrzednik.NET** to nowoczesny, wydajny i w pełni otwartoźródłowy (Open Source) zestaw bibliotek dla platformy .NET, służący do integracji z polskimi bazami danych oraz API instytucji publicznych.
+**OpenUrzednik.NET** to nowoczesny, otwartoźródłowy zestaw bibliotek dla platformy .NET, służący do integracji z polskimi API oraz danymi publicznymi. W aktualnej fazie rozwoju projekt skupia się przede wszystkim na wspólnych abstrakcjach w `OpenUrzednik.Core` oraz na pierwszych szkieletach pakietów provider-specific.
 
-> ⚠️ **Projekt nieoficjalny:** Ten zestaw bibliotek jest oddolną inicjatywą społecznościową i nie jest w żaden sposób powiązany, autoryzowany ani sponsorowany przez żadne z polskich ministerstw ani urzędów państwowych.
+> ⚠️ **Projekt nieoficjalny:** Ten zestaw bibliotek jest oddolną inicjatywą społecznościową i nie jest powiązany, autoryzowany ani sponsorowany przez żadne z polskich ministerstw ani urzędów państwowych.
 
 ---
 
 ## 🚀 Dlaczego powstał ten projekt?
 
-Większość istniejących paczek NuGet dla polskich API (GUS, Biała Lista, NBP) została porzucona lata temu. OpenUrzednik.NET powstał, aby dostarczyć rozwiązanie:
+Większość istniejących pakietów dla polskich API została porzucona lub nie utrzymuje się w nowoczesnym modelu .NET. OpenUrzednik.NET ma dostarczać:
 
-* **Zorientowane na wydajność:** Pełne wsparcie dla asynchroniczności, `IHttpClientFactory` oraz optymalnego parsowania JSON.
-* **Nowoczesne:** Wykorzystuje architekturę .NET 10/9/8 oraz mechanizmy C# 14/13.
-* **Wstecznie kompatybilne:** Dzięki kompilacji do `.NET Standard 2.0` biblioteki działają również w starszych systemach opartych na `.NET Framework 4.7.2+`.
-* **Elastyczne:** Sam wybierasz styl obsługi błędów – monadyczny (`Result<T>`) lub tradycyjny (wyjątki).
+- **Nowoczesne API:** wsparcie dla `net8.0`, `net9.0` i `net10.0`
+- **Spójne modele błędów:** `OpenUrzednikResult` / `OpenUrzednikResult<T>` zamiast rozproszonej logiki błędów
+- **Elastyczność:** zachowanie klasycznego stylu przez `.EnsureSuccess()` / `.EnsureSuccessAsync()`
+- **Przejrzysty rozwój:** kod podzielony na `Core` i pakiety provider-specific
 
 ---
 
-## 📦 Status Pakietów
+## 📦 Status pakietów
 
-| Paczka NuGet | Status API | Opis | Podstawowy Target |
+| Pakiet | Status | Opis | Celowy target |
 | :--- | :--- | :--- | :--- |
-| **OpenUrzednik.Core** | 📅 Planowane | Wspólny rdzeń, mechanizmy retry (Polly), modele błędów | `netstandard2.0`, `net8.0+` |
-| **OpenUrzednik.Nbp** | 📅 Planowane | Kursy walut i tabele NBP | `netstandard2.0`, `net8.0+` |
-| **OpenUrzednik.Gus** | 📅 Planowane | Rejestr REGON (GUS BIR 1.1) | `netstandard2.0`, `net8.0+` |
-| **OpenUrzednik.Krs** | 📅 Planowane | Krajowy Rejestr Sądowy (KRS) | `netstandard2.0`, `net8.0+` |
-| **OpenUrzednik.Mf** | 📅 Planowane | Ministerstwo finansów (Biała lista VAT) | `netstandard2.0`, `net8.0+` |
+| **OpenUrzednik.Core** | ✅ Dostępne podstawowe abstrakcje | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz metody rozszerzeń `EnsureSuccess` / `EnsureSuccessAsync` | `net8.0`, `net9.0`, `net10.0` |
+| **OpenUrzednik.Nbp** | 🚧 Szkielet | Pakiet przygotowany pod integrację z API NBP | `net8.0`, `net9.0`, `net10.0` |
+| **OpenUrzednik.Gus** | 🚧 Szkielet | Pakiet przygotowany pod integrację z GUS | `net8.0`, `net9.0`, `net10.0` |
+| **OpenUrzednik.Krs** | 🚧 Szkielet | Pakiet przygotowany pod integrację z KRS | `net8.0`, `net9.0`, `net10.0` |
+| **OpenUrzednik.Mf** | 🚧 Szkielet | Pakiet przygotowany pod integrację z Białą Listą VAT | `net8.0`, `net9.0`, `net10.0` |
 
 ---
 
-## 🛠️ Szybki Start (Przykład: NBP)
+## 🛠️ Szybki start
 
-Biblioteka nie narzuca jednego stylu programowania. Oferuje pełną swobodę wyboru.
+Aktualnie najłatwiej zacząć od `OpenUrzednik.Core`.
 
-### Opcja A: Podejście wydajnościowe (Monadyczne `Result<T>`)
-
-Idealne do systemów o wysokiej wydajności. Przewidywalne sytuacje biznesowe (np. brak waluty) nie alokują zasobów na rzucanie wyjątków. Wyjątek poleci tylko wtedy, gdy np. padnie sieć.
+### Przykład użycia `OpenUrzednikResult`
 
 ```csharp
-using OpenUrzednik.Nbp;
+using OpenUrzednik.Core;
+using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Core.Extensions;
 
-var client = new NbpClient(httpClient);
-
-// Zwraca strukturę Result zamiast rzucać błędem 404
-var result = await client.GetExchangeRateResultAsync("USD");
-
-if (result.IsSuccess)
-{
-    Console.WriteLine($"Kurs USD: {result.Value.Rate}");
-}
-else
-{
-    Console.WriteLine($"Błąd biznesowy: {result.Error}");
-}
+OpenUrzednikResult<int> result = OpenUrzednikResult.Success(42);
+int value = result.EnsureSuccess();
+Console.WriteLine(value);
 ```
 
-### Opcja B: Podejście tradycyjne (Wyjątki)
-
-Jeśli wolisz klasyczny styl .NET oparty na blokach `try-catch` lub globalnych filtrach wyjątków:
+Przykład błędu biznesowego:
 
 ```csharp
-using OpenUrzednik.Nbp;
+using OpenUrzednik.Core;
+using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Core.Extensions;
 
-var client = new NbpClient(httpClient);
+OpenUrzednikResult<int> failed = OpenUrzednikResult.Failure<int>(new ValidationError("NIP is invalid."));
 
 try
 {
-    // Rzuci OpenUrzednikDomainException w przypadku błędu 404/500
-    var data = await client.GetExchangeRateAsync("XYZ"); 
-    Console.WriteLine($"Kurs: {data.Rate}");
+    int value = failed.EnsureSuccess();
 }
-catch (OpenUrzednikDomainException ex)
+catch (ValidationException ex)
 {
-    Console.WriteLine($"Błąd domeny: {ex.Message}");
+    Console.WriteLine(ex.Message);
 }
 ```
 
+### Uwaga o DI i klientach
+
+Na tym etapie repozytorium nie ma jeszcze gotowych klientów HTTP ani rozszerzeń DI dla konkretnych providerów. Pakiety `OpenUrzednik.Nbp`, `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są obecnie szkieletem, który będzie rozwijany w kolejnych zmianach.
+
+### Testy
+
+Testy znajdują się w katalogu `tests/` i obejmują przede wszystkim podstawowe zachowania `OpenUrzednik.Core`.
+
+---
+
 ## 🤝 Współpraca (Contributing)
 
-Chcesz dodać obsługę kolejnego urzędu lub zgłosić błąd? Pociągnij repozytorium, utwórz nową gałąź i podeślij Pull Request! Projekt korzysta z Central Package Management (CPM), co ułatwia zarządzanie zależnościami.
-
-1. Sklonuj repozytorium.
-2. Uruchom `dotnet restore`.
-3. Dodaj swój kod i upewnij się, że testy w folderze `/tests` przechodzą pomyślnie (`dotnet test`).
+Chcesz dodać obsługę kolejnego źródła danych lub zgłosić błąd? Zobacz [CONTRIBUTING.md](CONTRIBUTING.md) — zawiera zasady pracy nad repozytorium, konwencje API oraz instrukcje dla pull requestów.
 
 ## 📄 Licencja
 

@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.Gus\OpenUrzednik.Gus.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Krs\OpenUrzednik.Krs.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Mf\OpenUrzednik.Mf.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Gus\" />
+    <Folder Include="Krs\" />
+    <Folder Include="Mf\" />
+  </ItemGroup>
+
+</Project>
