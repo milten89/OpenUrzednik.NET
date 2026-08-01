@@ -2,11 +2,11 @@
 
 namespace OpenUrzednik.Nbp.Dto;
 
-internal sealed record GoldPriceDto
+internal sealed class GoldPriceDto
 {
     [JsonPropertyName("data")]
-    public DateOnly Date { get; set; }
+    public required DateOnly Date { get; init; }
 
     [JsonPropertyName("cena")]
-    public decimal Price { get; set; }
+    public required decimal Price { get; init; }
 }

@@ -1,10 +1,8 @@
-﻿using OpenUrzednik.Core;
-
-namespace OpenUrzednik.Nbp.UrlBuilder;
+﻿namespace OpenUrzednik.Nbp.UrlBuilder;
 
 public interface INbpUrlBuilderFactory
 {
-    OpenUrzednikResult<INbpUrlBuilder> GetTableBuilder(NbpTable table);
-    OpenUrzednikResult<INbpUrlBuilder> GetCurrencyBuilder(NbpTable table, string currency);
-    OpenUrzednikResult<INbpUrlBuilder> GetGoldBuilder();
+    INbpUrlBuilder GetTableBuilder(NbpTable table);
+    INbpUrlBuilder GetCurrencyBuilder(NbpTable table, string currency);
+    INbpUrlBuilder GetGoldBuilder();
 }

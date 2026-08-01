@@ -64,4 +64,17 @@ public static class OpenUrzednikResultExtensions
 
         return (await resultTask.ConfigureAwait(false)).EnsureSuccess();
     }
+
+    /// <summary>
+    /// Combine two results. If both are success, then result is success, else return concatenated errors.
+    /// </summary>
+    /// <param name="first"></param>
+    /// <param name="second"></param>
+    /// <returns></returns>
+    public static OpenUrzednikResult And(this OpenUrzednikResult first, OpenUrzednikResult second)
+    {
+        return first.IsSuccess && second.IsSuccess
+            ? OpenUrzednikResult.Success()
+            : OpenUrzednikResult.Failure(first.Errors.Concat(second.Errors));
+    }
 }

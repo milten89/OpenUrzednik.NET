@@ -1,35 +1,26 @@
-﻿using System.Collections.ObjectModel;
-
-using OpenUrzednik.Core.Errors;
+﻿using OpenUrzednik.Core.Errors;
 
 namespace OpenUrzednik.Core.Validation;
 
-public sealed class ValueValidator<T> : IValidationErrorsContainer
+public abstract class ValueValidator<T>
 {
-    public string? Name { get; }
+    public abstract string Name { get; }
+    public string PropertyName { get; }
     public T Value { get; }
-    public bool IsValid => Errors.Count == 0;
 
-    public ValueValidator(string name, T value)
+    protected ValueValidator(string propertyName, T value)
     {
-        Name = name;
+        ArgumentNullException.ThrowIfNull(propertyName, nameof(propertyName));
+
+        PropertyName = propertyName;
         Value = value;
     }
 
-    public ValueValidator(T value)
-    {
-        Value = value;
-    }
+    public abstract OpenUrzednikResult Validate();
 
-    public IReadOnlyList<ValidationError> Errors => _errors?.AsReadOnly() ?? ReadOnlyCollection<ValidationError>.Empty;
-    private List<ValidationError>? _errors;
+    protected OpenUrzednikResult GetValidationErrorResult(string message, string? propertyName, object value)
+            => OpenUrzednikResult.Failure(new ValidationError(message, Name, propertyName, value));
 
-    public void AddValidationError(ValidationError error)
-        => (_errors ??= []).Add(error);
-
-    public void AddValidationError(string message, string? name, object value)
-            => AddValidationError(new ValidationError(message, name, value));
-
-    public void AddValidationError(string message)
-            => AddValidationError(new ValidationError(message, Name, Value!));
+    protected OpenUrzednikResult GetValidationErrorResult(string message)
+            => GetValidationErrorResult(message, PropertyName, Value!);
 }

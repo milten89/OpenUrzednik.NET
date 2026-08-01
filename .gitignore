@@ -58,3 +58,6 @@ nunit-*.xml
 
 # Visual Studio
 .vs/
+
+# JetBrains Rider
+.idea/

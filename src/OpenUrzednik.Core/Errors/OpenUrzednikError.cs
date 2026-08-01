@@ -26,6 +26,8 @@ public abstract record OpenUrzednikError
     /// <param name="message">The error message.</param>
     protected OpenUrzednikError(string message)
     {
+        ArgumentNullException.ThrowIfNull(message, nameof(message));
+
         Message = message;
     }
 

@@ -51,7 +51,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(MidTableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(MidTableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the latest table of buy and sell currency exchange rate.
@@ -92,5 +92,5 @@ public interface INbpExchangeRateTableClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<ExchangeRateTable>> GetBuySellAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
 }
