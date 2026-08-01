@@ -7,7 +7,7 @@ internal sealed class DateRangeValidator((DateOnly From, DateOnly To) value) : V
 {
     private const int MaxDateRange = 93;
 
-    public override string Name => "dateRanege";
+    public override string Name => "dateRange";
 
     public override OpenUrzednikResult Validate()
     {

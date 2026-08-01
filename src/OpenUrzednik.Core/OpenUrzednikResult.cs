@@ -51,10 +51,11 @@ public readonly struct OpenUrzednikResult
     public OpenUrzednikResult(IEnumerable<OpenUrzednikError> errors)
     {
         ArgumentNullException.ThrowIfNull(errors, nameof(errors));
-        if (!errors.Any())
+        var errorsArray = errors.ToArray();
+        if (errorsArray.Length == 0)
             throw new InvalidOperationException("Cannot create a failure result without any errors.");
 
-        _errors = [.. errors];
+        _errors = errorsArray;
     }
 
     /// <summary>

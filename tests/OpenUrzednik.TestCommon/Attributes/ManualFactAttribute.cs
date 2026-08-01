@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace OpenUrzednik.TestCommon;
+namespace OpenUrzednik.TestCommon.Attributes;
 
 public sealed class ManualFactAttribute : FactAttribute
 {

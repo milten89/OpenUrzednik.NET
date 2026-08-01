@@ -13,9 +13,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
     {
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.CurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToCurrencyExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
     
@@ -27,9 +27,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (topCountValidation.IsFailure)
             return topCountValidation;
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.CurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToCurrencyExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
@@ -37,9 +37,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
     {
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.CurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToCurrencyExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
     
@@ -51,9 +51,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (dateValidation.IsFailure)
             return dateValidation;
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.CurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToCurrencyExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
@@ -67,18 +67,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
             return validationResult;
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.CurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToCurrencyExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
-    }
-    
-    private static CurrencyExchangeRates MapToCurrencyExchangeRates(CurrencyExchangeRatesDto dto)
-    {
-        var rates = new ExchangeRate[dto.Rates.Length];
-        for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToCurrencyExchangeRateDto(dto.Rates[i]);
-
-        return new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(rates));
     }
 }

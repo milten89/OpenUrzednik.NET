@@ -13,9 +13,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
     {
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.C, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.BuySellCurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToBuySellExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
@@ -27,9 +27,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (topCountValidation.IsFailure)
             return topCountValidation;
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellCurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToBuySellExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
@@ -37,9 +37,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
     {
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.C, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.BuySellCurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToBuySellExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }   
 
@@ -51,9 +51,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (dateValidation.IsFailure)
             return dateValidation;
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.BuySellCurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToBuySellExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
@@ -67,21 +67,9 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
             return validationResult;
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellCurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
-            ? OpenUrzednikResult.Success(MapToBuySellExchangeRates(requestResult.Value))
+            ? OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
-    
-    private static BuySellExchangeRates MapToBuySellExchangeRates(BuySellCurrencyExchangeRatesDto dto)
-    {
-        var rates = new BuySellExchangeRate[dto.Rates.Length];
-        for (var i = 0; i < rates.Length; i++)
-            rates[i] = MapToBuySellExchangeRate(dto.Rates[i]);
-
-        return new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(rates));
-    }
-
-    private static BuySellExchangeRate MapToBuySellExchangeRate(BuySellCurrencyExchangeRateDto dto)
-        => new(dto.TableId, dto.PublicationDate, dto.Buy, dto.Sell);
 }

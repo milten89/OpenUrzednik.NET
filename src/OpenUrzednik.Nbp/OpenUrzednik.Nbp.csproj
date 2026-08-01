@@ -3,5 +3,9 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Nbp.Tests" />
+  </ItemGroup>
 
 </Project>

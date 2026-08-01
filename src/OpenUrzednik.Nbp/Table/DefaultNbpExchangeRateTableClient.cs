@@ -8,14 +8,20 @@ public partial class DefaultNbpExchangeRateTableClient : INbpExchangeRateTableCl
     private static readonly NbpJsonContext JsonContext = new();
 
     private readonly HttpClient _httpClient;
-    private readonly INbpUrlBuilderFactory _urlBuilderFactoy;
+    private readonly INbpUrlBuilderFactory _urlBuilderFactory;
+    private readonly TimeProvider _timeProvider;
 
     public DefaultNbpExchangeRateTableClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory)
+        : this(httpClient, urlBuilderFactory, TimeProvider.System) { }
+    
+    public DefaultNbpExchangeRateTableClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(httpClient, nameof(httpClient));
         ArgumentNullException.ThrowIfNull(urlBuilderFactory, nameof(urlBuilderFactory));
+        ArgumentNullException.ThrowIfNull(timeProvider, nameof(timeProvider));
 
         _httpClient = httpClient;
-        _urlBuilderFactoy = urlBuilderFactory;
+        _urlBuilderFactory = urlBuilderFactory;
+        _timeProvider = timeProvider;
     }
 }

@@ -2,7 +2,11 @@
 
 public class NbpOptions
 {
-    public string ApiUrl { get; set; } = "https://api.nbp.pl/api/";
+    public const string DefaultApiUrl = "https://api.nbp.pl/api/";
 
-    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(10);
+    public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
+
+    public string ApiUrl { get; set; } = DefaultApiUrl;
+
+    public TimeSpan Timeout { get; set; } = DefaultTimeout;
 }
