@@ -56,7 +56,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly date, CancellationToken cancellationToken = default)
     {
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        var dateValidation = new CurrencyDateValidatior(nameof(date), date).Validate();
+        var dateValidation = new CurrencyDateValidator(nameof(date), date).Validate();
         var validationResult = currencyValidation.And(dateValidation);
         if (validationResult.IsFailure)
             return validationResult;
@@ -72,7 +72,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        var toValidation = new CurrencyDateValidatior(nameof(to), to).Validate();
+        var toValidation = new CurrencyDateValidator(nameof(to), to).Validate();
         var dateRangeValidation = new DateRangeValidator((from, to)).Validate();
         var validationResult = currencyValidation.And(toValidation).And(dateRangeValidation);
         if (validationResult.IsFailure)

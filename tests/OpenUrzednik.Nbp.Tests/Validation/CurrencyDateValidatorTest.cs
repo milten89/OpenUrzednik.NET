@@ -15,7 +15,7 @@ public class CurrencyDateValidatorTest
     public void Constructor_NullPropertyName_ThrowsArgumentNullException()
     {
         // Act
-        var exception = Record.Exception(() => new CurrencyDateValidatior(null!, MinDate));
+        var exception = Record.Exception(() => new CurrencyDateValidator(null!, MinDate));
         exception.ShouldBeOfType<ArgumentNullException>()
             .ParamName.ShouldBe("propertyName");
     }
@@ -27,7 +27,7 @@ public class CurrencyDateValidatorTest
     public void Validate_DateOnOrAfterMinDate_ReturnsSuccess(int year, int month, int day)
     {
         // Arrange
-        var validator = new CurrencyDateValidatior(PropertyName, new DateOnly(year, month, day));
+        var validator = new CurrencyDateValidator(PropertyName, new DateOnly(year, month, day));
 
         // Act
         var result = validator.Validate();
@@ -44,7 +44,7 @@ public class CurrencyDateValidatorTest
     {
         // Arrange
         var date = new DateOnly(year, month, day);
-        var validator = new CurrencyDateValidatior(PropertyName, date);
+        var validator = new CurrencyDateValidator(PropertyName, date);
 
         // Act
         var result = validator.Validate();
@@ -62,7 +62,7 @@ public class CurrencyDateValidatorTest
     public void Name_Always_ReturnsCurrencyDate()
     {
         // Arrange
-        var validator = new CurrencyDateValidatior(PropertyName, MinDate);
+        var validator = new CurrencyDateValidator(PropertyName, MinDate);
 
         // Act
         var name = validator.Name;

@@ -47,7 +47,7 @@ public partial class DefaultNbpExchangeRateTableClient
     {
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
-        var dateValidation = new CurrencyDateValidatior(nameof(date), date).Validate();
+        var dateValidation = new CurrencyDateValidator(nameof(date), date).Validate();
         if (dateValidation.IsFailure)
             return dateValidation;
 
@@ -61,7 +61,7 @@ public partial class DefaultNbpExchangeRateTableClient
     {
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
-        var toValidation = new CurrencyDateValidatior(nameof(to), to).Validate();
+        var toValidation = new CurrencyDateValidator(nameof(to), to).Validate();
         var dateRangeValidation = new DateRangeValidator((from, to)).Validate();
         var validationResult = toValidation.And(dateRangeValidation);
         if (validationResult.IsFailure)

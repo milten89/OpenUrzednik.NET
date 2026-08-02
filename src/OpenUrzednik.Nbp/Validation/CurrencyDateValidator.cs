@@ -3,9 +3,9 @@ using OpenUrzednik.Core.Validation;
 
 namespace OpenUrzednik.Nbp.Validation;
 
-internal sealed class CurrencyDateValidatior(string propertyName, DateOnly value) : ValueValidator<DateOnly>(propertyName, value)
+internal sealed class CurrencyDateValidator(string propertyName, DateOnly value) : ValueValidator<DateOnly>(propertyName, value)
 {
-    private static readonly DateOnly MinDate = new(2002, 1, 2);
+    public static readonly DateOnly MinDate = new(2002, 1, 2);
 
     public override string Name => "currencyDate";
 

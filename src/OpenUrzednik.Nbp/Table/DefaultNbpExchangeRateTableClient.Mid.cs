@@ -54,7 +54,7 @@ public partial class DefaultNbpExchangeRateTableClient
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(MidTableType table, DateOnly date, CancellationToken cancellationToken = default)
     {
         var midTableValidation = new MidTableTypeValidator(nameof(table), table).Validate();
-        var dateValidation = new CurrencyDateValidatior(nameof(date), date).Validate();
+        var dateValidation = new CurrencyDateValidator(nameof(date), date).Validate();
         var validationResult = midTableValidation.And(dateValidation);
         if (validationResult.IsFailure)
             return validationResult;
@@ -70,7 +70,7 @@ public partial class DefaultNbpExchangeRateTableClient
     public async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(MidTableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         var midTableValidation = new MidTableTypeValidator(nameof(table), table).Validate();
-        var toValidation = new CurrencyDateValidatior(nameof(to), to).Validate();
+        var toValidation = new CurrencyDateValidator(nameof(to), to).Validate();
         var dateRangeValidation = new DateRangeValidator((from, to)).Validate();
         var validationResult = midTableValidation.And(toValidation).And(dateRangeValidation);
         if (validationResult.IsFailure)

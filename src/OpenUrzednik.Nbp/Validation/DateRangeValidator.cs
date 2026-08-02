@@ -5,7 +5,7 @@ namespace OpenUrzednik.Nbp.Validation;
 
 internal sealed class DateRangeValidator((DateOnly From, DateOnly To) value) : ValueValidator<(DateOnly From, DateOnly To)>("date range", value)
 {
-    private const int MaxDateRange = 93;
+    public const int MaxDateRange = 93;
 
     public override string Name => "dateRange";
 

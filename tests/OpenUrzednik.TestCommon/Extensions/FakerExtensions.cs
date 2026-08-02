@@ -7,8 +7,8 @@ namespace OpenUrzednik.TestCommon.Extensions;
 
 public static class FakerExtensions
 {
-    private static readonly DateTime BetweenStart = new DateTime(2000, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-    private static readonly DateTime BetweenEnd = new DateTime(2030, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+    public static readonly DateTime BetweenStart = new DateTime(2000, 01, 01, 0, 0, 0, DateTimeKind.Utc);
+    public static readonly DateTime BetweenEnd = new DateTime(2030, 12, 31, 23, 59, 59, DateTimeKind.Utc);
     
     public static Faker WithConstantSeed(this Faker faker, DateTime? refDate = null,
         [CallerFilePath] string sourceFilePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int sourceLineNumber = 0)

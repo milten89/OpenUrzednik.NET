@@ -9,6 +9,7 @@ using Bogus;
 using Microsoft.Extensions.Time.Testing;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Extensions;
+using OpenUrzednik.TestCommon;
 using OpenUrzednik.TestCommon.Extensions;
 
 using Shouldly;
@@ -298,16 +299,4 @@ public partial class HttpClientExtensionsTest
         => new(faker.Random.Word(), faker.Random.Int());
     
     private sealed record TestDto(string Name, int Value);
-
-    private sealed class StubHttpMessageHandler(HttpResponseMessage response) : HttpMessageHandler
-    {
-        public HttpRequestMessage? Request { get; private set; }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            Request = request;
-            return Task.FromResult(response);
-        }
-    }
 }
