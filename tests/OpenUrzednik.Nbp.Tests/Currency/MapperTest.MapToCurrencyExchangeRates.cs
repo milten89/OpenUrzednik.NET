@@ -72,7 +72,7 @@ public partial class MapperTest
         };
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToCurrencyExchangeRates(dto))
+        Should.Throw<ArgumentException>(() => Mapper.MapToCurrencyExchangeRates(dto))
             .ParamName.ShouldBe("dto");
     }
 }
