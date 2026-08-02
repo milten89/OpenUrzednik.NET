@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-using Bogus;
+
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Tests.Fakes;

@@ -1,4 +1,5 @@
 ﻿using OpenUrzednik.Core;
+using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Validation;
@@ -16,9 +17,11 @@ public partial class DefaultNbpExchangeRateTableClient
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.ExchangeRateTableDtoArray, _timeProvider, cancellationToken);
-        return requestResult.IsSuccess
+        if (requestResult.IsFailure)
+            return OpenUrzednikResult.Failure(requestResult.Errors);
+        return requestResult.Value.Length != 0
             ? OpenUrzednikResult.Success(Mapper.MapToExchangeRateTable(requestResult.Value[0]))
-            : OpenUrzednikResult.Failure(requestResult.Errors);
+            : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
     public async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(MidTableType table, int topCount, CancellationToken cancellationToken = default)
@@ -46,9 +49,11 @@ public partial class DefaultNbpExchangeRateTableClient
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.ExchangeRateTableDtoArray, _timeProvider, cancellationToken);
-        return requestResult.IsSuccess
+        if (requestResult.IsFailure)
+            return OpenUrzednikResult.Failure(requestResult.Errors);
+        return requestResult.Value.Length != 0
             ? OpenUrzednikResult.Success(Mapper.MapToExchangeRateTable(requestResult.Value[0]))
-            : OpenUrzednikResult.Failure(requestResult.Errors);
+            : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(MidTableType table, DateOnly date, CancellationToken cancellationToken = default)
@@ -62,9 +67,11 @@ public partial class DefaultNbpExchangeRateTableClient
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.ExchangeRateTableDtoArray, _timeProvider, cancellationToken);
-        return requestResult.IsSuccess
+        if (requestResult.IsFailure)
+            return OpenUrzednikResult.Failure(requestResult.Errors);
+        return requestResult.Value.Length != 0
             ? OpenUrzednikResult.Success(Mapper.MapToExchangeRateTable(requestResult.Value[0]))
-            : OpenUrzednikResult.Failure(requestResult.Errors);
+            : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
     public async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(MidTableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)

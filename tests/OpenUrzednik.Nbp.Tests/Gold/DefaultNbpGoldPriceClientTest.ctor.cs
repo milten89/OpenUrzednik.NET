@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-using Microsoft.Extensions.Time.Testing;
+﻿using Microsoft.Extensions.Time.Testing;
 
 using NSubstitute;
 

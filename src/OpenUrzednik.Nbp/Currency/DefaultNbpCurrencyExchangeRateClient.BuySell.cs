@@ -1,6 +1,5 @@
 ﻿using OpenUrzednik.Core;
 using OpenUrzednik.Core.Extensions;
-using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;

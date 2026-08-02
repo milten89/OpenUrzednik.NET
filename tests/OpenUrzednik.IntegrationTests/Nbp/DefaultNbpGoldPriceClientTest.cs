@@ -1,9 +1,6 @@
 ﻿using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.UrlBuilder;
-using OpenUrzednik.TestCommon;
 using OpenUrzednik.TestCommon.Attributes;
 
 using Shouldly;

@@ -1,4 +1,3 @@
-using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.TestCommon;
 

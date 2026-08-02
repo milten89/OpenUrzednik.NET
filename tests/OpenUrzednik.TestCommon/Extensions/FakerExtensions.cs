@@ -1,7 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
 using Bogus;
-using Bogus.DataSets;
 
 namespace OpenUrzednik.TestCommon.Extensions;
 

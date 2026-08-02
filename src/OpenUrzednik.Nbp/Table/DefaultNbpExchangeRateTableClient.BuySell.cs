@@ -1,6 +1,6 @@
 ﻿using OpenUrzednik.Core;
+using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
-using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
@@ -14,9 +14,11 @@ public partial class DefaultNbpExchangeRateTableClient
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.BuySellExchangeRateTableDtoArray, _timeProvider, cancellationToken);
-        return requestResult.IsSuccess
+        if (requestResult.IsFailure)
+            return OpenUrzednikResult.Failure(requestResult.Errors);
+        return requestResult.Value.Length != 0
             ? OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRateTable(requestResult.Value[0]))
-            : OpenUrzednikResult.Failure(requestResult.Errors);
+            : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
     public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellTopCountAsync(int topCount, CancellationToken cancellationToken = default)
@@ -38,9 +40,11 @@ public partial class DefaultNbpExchangeRateTableClient
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.BuySellExchangeRateTableDtoArray, _timeProvider, cancellationToken);
-        return requestResult.IsSuccess
+        if (requestResult.IsFailure)
+            return OpenUrzednikResult.Failure(requestResult.Errors);
+        return requestResult.Value.Length != 0
             ? OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRateTable(requestResult.Value[0]))
-            : OpenUrzednikResult.Failure(requestResult.Errors);
+            : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
     public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateOnly date, CancellationToken cancellationToken = default)
@@ -52,9 +56,11 @@ public partial class DefaultNbpExchangeRateTableClient
             return dateValidation;
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.BuySellExchangeRateTableDtoArray, _timeProvider, cancellationToken);
-        return requestResult.IsSuccess
+        if (requestResult.IsFailure)
+            return OpenUrzednikResult.Failure(requestResult.Errors);
+        return requestResult.Value.Length != 0
             ? OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRateTable(requestResult.Value[0]))
-            : OpenUrzednikResult.Failure(requestResult.Errors);
+            : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
     public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)

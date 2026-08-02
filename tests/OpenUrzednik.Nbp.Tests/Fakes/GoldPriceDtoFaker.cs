@@ -2,7 +2,6 @@
 
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Tests.Extensions;
-using OpenUrzednik.TestCommon.Extensions;
 
 namespace OpenUrzednik.Nbp.Tests.Fakes;
 

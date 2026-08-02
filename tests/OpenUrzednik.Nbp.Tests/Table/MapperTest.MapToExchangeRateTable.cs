@@ -1,9 +1,6 @@
-﻿using Bogus;
-
-using OpenUrzednik.Nbp.Dto;
+﻿using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
-using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
 
 using Shouldly;
