@@ -67,7 +67,7 @@ public partial class DefaultNbpGoldPriceClientTest
         // Act
         var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);
         
-        // Arrange
+        // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<NotFoundError>();

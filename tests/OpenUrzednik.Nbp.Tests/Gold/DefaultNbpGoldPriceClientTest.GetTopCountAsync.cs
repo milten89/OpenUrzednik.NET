@@ -78,7 +78,7 @@ public partial class DefaultNbpGoldPriceClientTest
     }
     
     [Fact]
-    public async Task GetTopCountAsync_EmptyArrayResponse_ReturnsSuccessEmptyArray()
+    public async Task GetTopCountAsync_EmptyArrayResponse_ReturnsSuccessWithEmptyArray()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -91,7 +91,7 @@ public partial class DefaultNbpGoldPriceClientTest
         // Act
         var result = await sut.GetTopCountAsync(count, TestContext.Current.CancellationToken);
         
-        // Arrange
+        // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBeEmpty();
     }

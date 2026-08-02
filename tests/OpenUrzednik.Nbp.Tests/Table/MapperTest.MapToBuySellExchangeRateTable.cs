@@ -32,7 +32,7 @@ public partial class MapperTest
         BuySellExchangeRateDto dto = null!;
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
+        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()
@@ -87,7 +87,7 @@ public partial class MapperTest
         BuySellExchangeRateTableDto dto = null!;
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
+        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()
@@ -110,7 +110,7 @@ public partial class MapperTest
         };
         
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
+        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()
@@ -151,7 +151,7 @@ public partial class MapperTest
         BuySellExchangeRateTableDto[] dtos = null!;
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dtos));
+        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dtos));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()
@@ -167,7 +167,7 @@ public partial class MapperTest
         var dtos = new[] { dto, null! };
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dtos));
+        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dtos));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()

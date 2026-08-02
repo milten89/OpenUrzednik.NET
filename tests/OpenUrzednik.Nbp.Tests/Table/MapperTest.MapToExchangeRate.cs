@@ -32,7 +32,7 @@ public partial class MapperTest
         ExchangeRateDto dto = null!;
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToExchangeRate(dto));
+        var exception = Record.Exception(() => Mapper.MapToExchangeRate(dto));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()

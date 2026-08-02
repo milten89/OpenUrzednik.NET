@@ -96,7 +96,7 @@ public partial class DefaultNbpGoldPriceClientTest
         var timeProvider = new FakeTimeProvider();
         
         // Act
-        var sut = new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, timeProvider);
+        new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, timeProvider);
         
         // Assert
         urlBuilderFactory.Received(1).GetGoldBuilder();

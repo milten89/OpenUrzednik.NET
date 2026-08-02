@@ -136,7 +136,7 @@ public partial class DefaultNbpGoldPriceClientTest
         // Act
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
         
-        // Arrange
+        // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBeEmpty();
     }

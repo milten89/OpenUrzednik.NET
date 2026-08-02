@@ -60,7 +60,7 @@ public partial class MapperTest
         ExchangeRateTableDto dto = null!;
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToExchangeRateTable(dto));
+        var exception = Record.Exception(() => Mapper.MapToExchangeRateTable(dto));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()
@@ -78,7 +78,7 @@ public partial class MapperTest
         };
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToExchangeRateTable(dto));
+        var exception = Record.Exception(() => Mapper.MapToExchangeRateTable(dto));
 
         // Assert
         exception.ShouldBeOfType<ArgumentException>()
@@ -119,7 +119,7 @@ public partial class MapperTest
         ExchangeRateTableDto[] dtos = null!;
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToExchangeRateTable(dtos));
+        var exception = Record.Exception(() => Mapper.MapToExchangeRateTable(dtos));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()
@@ -130,12 +130,11 @@ public partial class MapperTest
     public void MapToExchangeRateTable_ArrayContainingNullElement_ThrowsArgumentNullException()
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
         var dto = new ExchangeRateTableDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, null! };
 
         // Act
-        var exception =  Record.Exception(() => Mapper.MapToExchangeRateTable(dtos));
+        var exception = Record.Exception(() => Mapper.MapToExchangeRateTable(dtos));
 
         // Assert
         exception.ShouldBeOfType<ArgumentNullException>()
