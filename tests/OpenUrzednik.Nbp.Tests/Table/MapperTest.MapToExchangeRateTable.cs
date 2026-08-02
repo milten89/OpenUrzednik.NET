@@ -65,7 +65,7 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToExchangeRateTable_RatesArrayContainingNullElement_ThrowsArgumentNullException()
+    public void MapToExchangeRateTable_RatesArrayContainingNullElement_ThrowsArgumentException()
     {
         // Arrange
         var dtoBase = new ExchangeRateTableDtoFaker(0).WithConstantSeed().Generate();
@@ -75,7 +75,7 @@ public partial class MapperTest
         };
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRateTable(dto))
+        Should.Throw<ArgumentException>(() => Mapper.MapToExchangeRateTable(dto))
             .ParamName.ShouldBe("dto");
     }
 

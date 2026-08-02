@@ -5,13 +5,16 @@ on:
     branches: [ main ]
     tags: [ 'v*' ]
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
   deploy:
+    needs: build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
     - name: Checkout Source Code
@@ -20,10 +23,7 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          8.0.x
-          9.0.x
-          10.0.x
+        dotnet-version: '10.0.x'
 
     - name: Determine Package Version
       id: versioning
@@ -35,6 +35,14 @@ jobs:
           VERSION="${BASE_VERSION}-preview.${{ github.run_number }}"
         fi
         echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-pack-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-pack-
 
     - name: Restore & Build & Pack
       run: |

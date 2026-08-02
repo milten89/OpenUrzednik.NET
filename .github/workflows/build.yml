@@ -2,31 +2,47 @@ name: CI - Build & Test
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ develop ]
   pull_request:
     branches: [ main ]
+  workflow_call:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tfm: net8.0
+            sdk-version: '8.0.x'
+          - tfm: net9.0
+            sdk-version: '9.0.x'
+          - tfm: net10.0
+            sdk-version: '10.0.x'
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Setup .NET SDKs
+    - name: Setup .NET SDK for ${{ matrix.tfm }}
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          8.0.x
-          9.0.x
-          10.0.x
+        dotnet-version: ${{ matrix.sdk-version }}
+
+    - name: Cache NuGet packages (${{ matrix.tfm }})
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ matrix.tfm }}-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-${{ matrix.tfm }}-
 
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build Solution
-      run: dotnet build --configuration Release --no-restore
+    - name: Build (${{ matrix.tfm }})
+      run: dotnet build --configuration Release --no-restore --framework ${{ matrix.tfm }}
 
-    - name: Run Tests
-      run: dotnet test --configuration Release --no-build --verbosity normal
+    - name: Run Tests (${{ matrix.tfm }})
+      run: dotnet test --configuration Release --no-build --framework ${{ matrix.tfm }} --verbosity normal
