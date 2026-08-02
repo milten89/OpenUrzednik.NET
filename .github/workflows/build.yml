@@ -23,15 +23,15 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup .NET SDK for ${{ matrix.tfm }}
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: ${{ matrix.sdk-version }}
 
     - name: Cache NuGet packages (${{ matrix.tfm }})
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.nuget/packages
         key: nuget-${{ runner.os }}-${{ matrix.tfm }}-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
