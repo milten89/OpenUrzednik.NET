@@ -51,4 +51,22 @@ public partial class DefaultNbpGoldPriceClientTest
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<NotFoundError>();
     }
+    
+    [Fact]
+    public async Task GetLatestAsync_EmptyArrayResponse_ReturnsFailureWithNotFoundError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
+        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        
+        // Act
+        var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);
+        
+        // Arrange
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<NotFoundError>();
+    }
 }

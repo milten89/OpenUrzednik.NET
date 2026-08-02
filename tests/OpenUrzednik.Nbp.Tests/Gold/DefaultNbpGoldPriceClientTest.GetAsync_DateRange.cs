@@ -98,4 +98,40 @@ public partial class DefaultNbpGoldPriceClientTest
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(dtos.Select(x => new GoldPrice(x.Date, x.Price)));
     }
+    
+    [Fact]
+    public async Task GetAsync_DateRange_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
+    {
+        var faker = new Faker().WithConstantSeed();
+        var from = faker.Date.AfterGoldMinDate();
+        var to = from.AddDays(1);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
+        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
+
+        var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
+
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
+    }
+    
+    [Fact]
+    public async Task GetAsync_DateRange_EmptyArrayResponse_ReturnsFailureWithNotFoundError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var from = faker.Date.AfterGoldMinDate();
+        var to = from.AddDays(1);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
+        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        
+        // Act
+        var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
+        
+        // Arrange
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBeEmpty();
+    }
 }
