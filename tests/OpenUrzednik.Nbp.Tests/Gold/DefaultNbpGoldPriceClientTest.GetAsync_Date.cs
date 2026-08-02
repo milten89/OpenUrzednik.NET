@@ -25,7 +25,8 @@ public partial class DefaultNbpGoldPriceClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetAsync(new DateOnly(year, month, day), TestContext.Current.CancellationToken);
@@ -45,7 +46,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var dto = new GoldPriceDtoFaker().LinkRandomizerTo(faker).Generate();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDate(dto.Date).Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, [dto]), out _);
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, [dto]), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetAsync(dto.Date, TestContext.Current.CancellationToken);
@@ -63,7 +65,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var date = faker.Date.AfterGoldMinDate();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
         
         // Act
         var result = await sut.GetAsync(date, TestContext.Current.CancellationToken);
@@ -81,7 +84,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var date = faker.Date.AfterGoldMinDate();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         var result = await sut.GetAsync(date, TestContext.Current.CancellationToken);
 

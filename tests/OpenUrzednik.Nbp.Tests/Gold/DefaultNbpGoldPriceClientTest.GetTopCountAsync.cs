@@ -24,7 +24,8 @@ public partial class DefaultNbpGoldPriceClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        using var httpClient = CreateHttpClient(faker,  new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetTopCountAsync(topCount, TestContext.Current.CancellationToken);
@@ -45,7 +46,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
         var dtos = new GoldPriceDtoFaker().LinkRandomizerTo(faker).Generate(count).ToArray();
-        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
+        using var httpClient = CreateHttpClient(faker,  CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetTopCountAsync(count, TestContext.Current.CancellationToken);
@@ -63,7 +65,8 @@ public partial class DefaultNbpGoldPriceClientTest
         int count = faker.Random.Int(3, 10);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
+        using var httpClient = CreateHttpClient(faker,  new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetTopCountAsync(count, TestContext.Current.CancellationToken);
@@ -75,14 +78,15 @@ public partial class DefaultNbpGoldPriceClientTest
     }
     
     [Fact]
-    public async Task GetTopCountAsync_EmptyArrayResponse_ReturnsFailureWithNotFoundError()
+    public async Task GetTopCountAsync_EmptyArrayResponse_ReturnsSuccessEmptyArray()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         int count = faker.Random.Int(3, 10);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        using var httpClient = CreateHttpClient(faker,  CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
         
         // Act
         var result = await sut.GetTopCountAsync(count, TestContext.Current.CancellationToken);

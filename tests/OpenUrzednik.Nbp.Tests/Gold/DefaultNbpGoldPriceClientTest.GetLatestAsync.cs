@@ -24,7 +24,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         var dto = new GoldPriceDtoFaker().LinkRandomizerTo(faker).Generate();
-        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, [dto]), out _);
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, [dto]), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);
@@ -41,7 +42,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var faker = new Faker().WithConstantSeed();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);
@@ -59,7 +61,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var faker = new Faker().WithConstantSeed();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
         
         // Act
         var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);

@@ -8,7 +8,7 @@ using OpenUrzednik.Nbp.Validation;
 
 namespace OpenUrzednik.Nbp.Gold;
 
-public class DefaultNbpGoldPriceClient : INbpGoldPriceClient, IDisposable
+public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
 {
     private static readonly NbpJsonContext JsonContext = new();
 
@@ -88,17 +88,5 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient, IDisposable
         return requestResult.IsSuccess
             ? OpenUrzednikResult.Success<IReadOnlyList<GoldPrice>>(Array.AsReadOnly(Mapper.MapToGoldPrice(requestResult.Value)))
             : OpenUrzednikResult.Failure<IReadOnlyList<GoldPrice>>(requestResult.Errors);
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected void Dispose(bool disposing)
-    {
-        if (disposing)
-            _httpClient.Dispose();
     }
 }

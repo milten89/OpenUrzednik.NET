@@ -23,10 +23,11 @@ public partial class DefaultNbpGoldPriceClientTest
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var to = faker.Date.BeforeGoldMinDate();
         var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
@@ -43,10 +44,11 @@ public partial class DefaultNbpGoldPriceClientTest
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var from = faker.Date.AfterGoldMinDate();
         var to = from.AddDays(DateRangeValidator.MaxDateRange + 1);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
@@ -63,10 +65,11 @@ public partial class DefaultNbpGoldPriceClientTest
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var from = faker.Date.BeforeGoldMinDate();
         var to = from.AddDays(DateRangeValidator.MaxDateRange + 1);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
@@ -89,7 +92,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
         var dtos = new GoldPriceDtoFaker().LinkRandomizerTo(faker).Generate(count).ToArray();
-        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
@@ -107,7 +111,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var to = from.AddDays(1);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
 
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
 
@@ -117,7 +122,7 @@ public partial class DefaultNbpGoldPriceClientTest
     }
     
     [Fact]
-    public async Task GetAsync_DateRange_EmptyArrayResponse_ReturnsFailureWithNotFoundError()
+    public async Task GetAsync_DateRange_EmptyArrayResponse_ReturnsSuccessWithEmptyArray()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -125,7 +130,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var to = from.AddDays(1);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
-        using var sut = CreateClient(faker, urlBuilder, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
         
         // Act
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
