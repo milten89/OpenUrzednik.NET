@@ -1,7 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>OpenUrzednik.NET client for NBP (Narodowy Bank Polski) — currency exchange rates and gold price data from the National Bank of Poland API.</Description>
+    <PackageTags>NBP;Currency;ExchangeRates;Gold;API;Poland;Gov</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
   
   <ItemGroup>

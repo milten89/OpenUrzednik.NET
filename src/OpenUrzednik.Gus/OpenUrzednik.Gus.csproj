@@ -1,7 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>OpenUrzednik.NET client for GUS (Główny Urząd Statystyczny) — REGON/NIP company lookups against the Polish Central Statistical Office registry.</Description>
+    <PackageTags>GUS;REGON;NIP;API;Poland;Gov</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
 </Project>

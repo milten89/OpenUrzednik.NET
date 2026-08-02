@@ -1,7 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>OpenUrzednik.NET client for the Polish Ministry of Finance "Biała Lista" VAT whitelist — verify VAT payer status and bank account numbers.</Description>
+    <PackageTags>BialaLista;VAT;NIP;API;Poland;Gov</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
 </Project>

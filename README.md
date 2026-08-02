@@ -24,11 +24,11 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 
 | Pakiet | Status | Opis | Celowy target |
 | :--- | :--- | :--- | :--- |
-| **OpenUrzednik.Core** | ✅ Dostępne podstawowe abstrakcje | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz metody rozszerzeń `EnsureSuccess` / `EnsureSuccessAsync` | `net8.0`, `net9.0`, `net10.0` |
-| **OpenUrzednik.Nbp** | 🚧 Szkielet | Pakiet przygotowany pod integrację z API NBP | `net8.0`, `net9.0`, `net10.0` |
-| **OpenUrzednik.Gus** | 🚧 Szkielet | Pakiet przygotowany pod integrację z GUS | `net8.0`, `net9.0`, `net10.0` |
-| **OpenUrzednik.Krs** | 🚧 Szkielet | Pakiet przygotowany pod integrację z KRS | `net8.0`, `net9.0`, `net10.0` |
-| **OpenUrzednik.Mf** | 🚧 Szkielet | Pakiet przygotowany pod integrację z Białą Listą VAT | `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Dostępne podstawowe abstrakcje | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz metody rozszerzeń `EnsureSuccess` / `EnsureSuccessAsync` | `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z API NBP | `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z GUS | `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z KRS | `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z Białą Listą VAT | `net8.0`, `net9.0`, `net10.0` |
 
 ---
 

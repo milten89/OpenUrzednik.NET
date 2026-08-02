@@ -1,7 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <Description>OpenUrzednik.NET client for KRS (Krajowy Rejestr Sądowy) — Polish National Court Register lookups for companies and legal entities.</Description>
+    <PackageTags>KRS;REGON;NIP;API;Poland;Gov</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
 </Project>
