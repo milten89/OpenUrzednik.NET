@@ -14,9 +14,8 @@ public class NbpTableEnumValidatorTest
     [Fact]
     public void Constructor_NullPropertyName_ThrowsArgumentNullException()
     {
-        // Act
-        var exception = Record.Exception(() => new NbpTableEnumValidator(null!, NbpTable.A));
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new NbpTableEnumValidator(null!, NbpTable.A))
             .ParamName.ShouldBe("propertyName");
     }
     

@@ -20,12 +20,9 @@ public partial class DefaultNbpGoldPriceClientTest
         // Arrange
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         
-        // Act
-        var exception = Record.Exception(() => new DefaultNbpGoldPriceClient(null!, urlBuilderFactory));
-        
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
-            .ParamName.ShouldBe("httpClient");;
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(null!, urlBuilderFactory))
+            .ParamName.ShouldBe("httpClient");
     }
     
     [Fact]
@@ -34,11 +31,8 @@ public partial class DefaultNbpGoldPriceClientTest
         // Arrange
         using var httpClient = new HttpClient();
         
-        // Act
-        var exception = Record.Exception(() => new DefaultNbpGoldPriceClient(httpClient, null!));
-        
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(httpClient, null!))
             .ParamName.ShouldBe("urlBuilderFactory");;
     }
     
@@ -49,11 +43,8 @@ public partial class DefaultNbpGoldPriceClientTest
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         var timeProvider = new FakeTimeProvider();
         
-        // Act
-        var exception = Record.Exception(() => new DefaultNbpGoldPriceClient(null!, urlBuilderFactory, timeProvider));
-        
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(null!, urlBuilderFactory, timeProvider))
             .ParamName.ShouldBe("httpClient");;
     }
     
@@ -64,11 +55,8 @@ public partial class DefaultNbpGoldPriceClientTest
         using var httpClient = new HttpClient();
         var timeProvider = new FakeTimeProvider();
         
-        // Act
-        var exception = Record.Exception(() => new DefaultNbpGoldPriceClient(httpClient, null!, timeProvider));
-        
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(httpClient, null!, timeProvider))
             .ParamName.ShouldBe("urlBuilderFactory");;
     }
     
@@ -79,11 +67,8 @@ public partial class DefaultNbpGoldPriceClientTest
         using var httpClient = new HttpClient();
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         
-        // Act
-        var exception = Record.Exception(() => new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, null!));
-        
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, null!))
             .ParamName.ShouldBe("timeProvider");;
     }
     

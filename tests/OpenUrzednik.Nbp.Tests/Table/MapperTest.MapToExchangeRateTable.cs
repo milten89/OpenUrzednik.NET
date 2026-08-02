@@ -59,11 +59,8 @@ public partial class MapperTest
         // Arrange
         ExchangeRateTableDto dto = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToExchangeRateTable(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRateTable(dto))
             .ParamName.ShouldBe("dto");
     }
 
@@ -77,11 +74,8 @@ public partial class MapperTest
             TableId = dtoBase.TableId, PublicationDate = dtoBase.PublicationDate, Rates = null!
         };
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToExchangeRateTable(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRateTable(dto))
             .ParamName.ShouldBe("dto");
     }
 
@@ -118,11 +112,8 @@ public partial class MapperTest
         // Arrange
         ExchangeRateTableDto[] dtos = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToExchangeRateTable(dtos));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRateTable(dtos))
             .ParamName.ShouldBe("dto");
     }
 
@@ -133,11 +124,8 @@ public partial class MapperTest
         var dto = new ExchangeRateTableDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, null! };
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToExchangeRateTable(dtos));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRateTable(dtos))
             .ParamName.ShouldBe("dto");
     }
 }

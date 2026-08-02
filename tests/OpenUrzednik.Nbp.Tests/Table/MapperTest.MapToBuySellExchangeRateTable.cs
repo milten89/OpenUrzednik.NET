@@ -31,11 +31,8 @@ public partial class MapperTest
         // Arrange
         BuySellExchangeRateDto dto = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
             .ParamName.ShouldBe("dto");
     }
 
@@ -86,11 +83,8 @@ public partial class MapperTest
         // Arrange
         BuySellExchangeRateTableDto dto = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
             .ParamName.ShouldBe("dto");
     }
 
@@ -98,7 +92,6 @@ public partial class MapperTest
     public void MapToBuySellExchangeRateTable_RatesArrayContainingNullElement_ThrowsArgumentNullException()
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
         var rateDto = new BuySellExchangeRateDtoFaker().WithConstantSeed().Generate();
         var dtoBase = new BuySellExchangeRateTableDtoFaker(0).WithConstantSeed().Generate();
         var dto = new BuySellExchangeRateTableDto()
@@ -109,11 +102,8 @@ public partial class MapperTest
             Rates = [rateDto, null!]
         };
         
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
             .ParamName.ShouldBe("dto");
     }
 
@@ -150,11 +140,8 @@ public partial class MapperTest
         // Arrange
         BuySellExchangeRateTableDto[] dtos = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dtos));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dtos))
             .ParamName.ShouldBe("dto");
     }
 
@@ -162,15 +149,11 @@ public partial class MapperTest
     public void MapToBuySellExchangeRateTable_ArrayContainingNullElement_ThrowsArgumentNullException()
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
         var dto = new BuySellExchangeRateTableDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, null! };
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRateTable(dtos));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dtos))
             .ParamName.ShouldBe("dto");
     }
 }

@@ -32,11 +32,8 @@ public partial class HttpClientExtensionsTest
         // Arrange
         HttpClient httpClient = null!;
 
-        // Act
-        var exception = await Record.ExceptionAsync(() => httpClient.GetNbpAsync("", TypeInfo, _timeProvider, TestContext.Current.CancellationToken));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync("", TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("httpClient");
     }
     
@@ -46,11 +43,8 @@ public partial class HttpClientExtensionsTest
         // Arrange
         using var httpClient = CreateHttpClient(new Faker().WithConstantSeed(), new HttpResponseMessage(HttpStatusCode.OK));
 
-        // Act
-        var exception = await Record.ExceptionAsync(() => httpClient.GetNbpAsync(null!, TypeInfo, _timeProvider, TestContext.Current.CancellationToken));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync(null!, TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("relativePath");
     }
     
@@ -62,11 +56,8 @@ public partial class HttpClientExtensionsTest
         // Arrange
         using var httpClient = CreateHttpClient(new Faker().WithConstantSeed(), new HttpResponseMessage(HttpStatusCode.OK));
 
-        // Act
-        var exception = await Record.ExceptionAsync(() => httpClient.GetNbpAsync(relativePath, TypeInfo, _timeProvider, TestContext.Current.CancellationToken));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentException>()
+        // Act && Assert
+        (await Should.ThrowAsync<ArgumentException>(async () => await httpClient.GetNbpAsync(relativePath, TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("relativePath");
     }
     
@@ -77,11 +68,8 @@ public partial class HttpClientExtensionsTest
         var faker = new Faker().WithConstantSeed();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK));
 
-        // Act
-        var exception = await Record.ExceptionAsync(() => httpClient.GetNbpAsync<TestDto>(faker.Internet.UrlRootedPath(), null!, _timeProvider, TestContext.Current.CancellationToken));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync<TestDto>(faker.Internet.UrlRootedPath(), null!, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("typeInfo");
     }
 
@@ -94,11 +82,8 @@ public partial class HttpClientExtensionsTest
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        // Act
-        var exception = await Record.ExceptionAsync(() => httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, cts.Token));
-
-        // Assert
-        exception.ShouldBeOfType<OperationCanceledException>();
+        // Act && Assert
+        await Should.ThrowAsync<OperationCanceledException>(async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, cts.Token));
     }
     
     [Fact]
@@ -106,7 +91,7 @@ public partial class HttpClientExtensionsTest
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
-        var dto = CreateTestDto(faker);
+        var dto = new TestDto(faker.Random.Word(), faker.Random.Int());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto), out var handler);
 
         // Act
@@ -294,9 +279,6 @@ public partial class HttpClientExtensionsTest
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, TestDto dto)
         => new(statusCode) { Content = JsonContent.Create(dto, TypeInfo) };
-    
-    private static TestDto CreateTestDto(Faker faker)
-        => new(faker.Random.Word(), faker.Random.Int());
     
     private sealed record TestDto(string Name, int Value);
 }

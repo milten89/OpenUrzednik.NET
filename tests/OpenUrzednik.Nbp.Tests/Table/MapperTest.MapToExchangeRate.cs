@@ -31,11 +31,8 @@ public partial class MapperTest
         // Arrange
         ExchangeRateDto dto = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToExchangeRate(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRate(dto))
             .ParamName.ShouldBe("dto");
     }
 }

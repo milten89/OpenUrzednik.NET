@@ -16,9 +16,8 @@ public class TopCountValidatorTest
     [Fact]
     public void Constructor_NullPropertyName_ThrowsArgumentNullException()
     {
-        // Act
-        var exception = Record.Exception(() => new TopCountValidator(null!, 1));
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new TopCountValidator(null!, 1))
             .ParamName.ShouldBe("propertyName");
     }
     

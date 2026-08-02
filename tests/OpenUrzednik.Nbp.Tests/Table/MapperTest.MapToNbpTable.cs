@@ -24,11 +24,8 @@ public partial class MapperTest
     [InlineData((MidTableType)(-1))]
     public void MapToNbpTable_UndefinedValue_ThrowsArgumentException(MidTableType input)
     {
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToNbpTable(input));
-
-        // Act & Assert
-        exception.ShouldBeOfType<ArgumentException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToNbpTable(input))
             .ParamName.ShouldBe("table");
     }
 }

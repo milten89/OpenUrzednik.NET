@@ -16,9 +16,8 @@ public class Iso4217ValidatorTest
     [Fact]
     public void Constructor_NullPropertyName_ThrowsArgumentNullException()
     {
-        // Act
-        var exception = Record.Exception(() => new Iso4217Validator(null!, ""));
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new Iso4217Validator(null!, ""))
             .ParamName.ShouldBe("propertyName");
     }
     

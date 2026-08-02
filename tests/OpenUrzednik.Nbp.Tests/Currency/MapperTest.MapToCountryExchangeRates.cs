@@ -56,11 +56,8 @@ public partial class MapperTest
         // Arrange
         CountryExchangeRatesDto dto = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToCountryExchangeRates(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToCountryExchangeRates(dto))
             .ParamName.ShouldBe("dto");
     }
 
@@ -78,11 +75,8 @@ public partial class MapperTest
             Rates = null!
         };
         
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToCountryExchangeRates(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentException>()
+        // Act & Assert
+        Should.Throw<ArgumentException>(() => Mapper.MapToCountryExchangeRates(dto))
             .ParamName.ShouldBe("dto");
     }
 }

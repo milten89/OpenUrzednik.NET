@@ -14,9 +14,8 @@ public class MidTableTypeValidatorTest
     [Fact]
     public void Constructor_NullPropertyName_ThrowsArgumentNullException()
     {
-        // Act
-        var exception = Record.Exception(() => new MidTableTypeValidator(null!, MidTableType.A));
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new MidTableTypeValidator(null!, MidTableType.A))
             .ParamName.ShouldBe("propertyName");
     }
     

@@ -56,11 +56,8 @@ public partial class MapperTest
         // Arrange
         CurrencyExchangeRatesDto dto = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToCurrencyExchangeRates(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToCurrencyExchangeRates(dto))
             .ParamName.ShouldBe("dto");
     }
 
@@ -74,11 +71,8 @@ public partial class MapperTest
             CurrencyName = dtoBase.CurrencyName, CurrencyCode = dtoBase.CurrencyCode, Rates = null!
         };
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToCurrencyExchangeRates(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToCurrencyExchangeRates(dto))
             .ParamName.ShouldBe("dto");
     }
 }

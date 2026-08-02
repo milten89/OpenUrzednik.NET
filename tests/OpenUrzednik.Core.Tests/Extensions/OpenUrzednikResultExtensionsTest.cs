@@ -27,11 +27,8 @@ public class OpenUrzednikResultExtensionsTest
         // Arrange
         var result = OpenUrzednikResult.Failure(new TestError("Test error"));
 
-        // Act
-        var exception = Should.Throw<TestException>(() => result.EnsureSuccess());
-
-        // Assert
-        exception.ShouldNotBeNull();
+        // Act & Assert
+        Should.Throw<TestException>(() => result.EnsureSuccess());
     }
 
     [Fact]
@@ -40,12 +37,9 @@ public class OpenUrzednikResultExtensionsTest
         // Arrange
         var result = OpenUrzednikResult.Failure([new TestError("Test error"), new TestError("Another test error")]);
 
-        // Act
-        var exception = Should.Throw<AggregateException>(() => result.EnsureSuccess());
-
-        // Assert
-        exception.ShouldNotBeNull();
-        exception.InnerExceptions.Count.ShouldBe(2);
+        // Act && Assert
+        Should.Throw<AggregateException>(() => result.EnsureSuccess())
+            .InnerExceptions.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -56,9 +50,6 @@ public class OpenUrzednikResultExtensionsTest
 
         // Act
         await result.EnsureSuccessAsync();
-
-        // Assert
-        // No exception should be thrown
     }
 
     [Fact]
@@ -67,11 +58,8 @@ public class OpenUrzednikResultExtensionsTest
         // Arrange
         var result = Task.FromResult(OpenUrzednikResult.Failure(new TestError("Test error")));
 
-        // Act
-        var exception = Should.Throw<TestException>(async () => await result.EnsureSuccessAsync());
-
-        // Assert
-        exception.ShouldNotBeNull();
+        // Act && Assert
+        await Should.ThrowAsync<TestException>(async () => await result.EnsureSuccessAsync());
     }
 
     [Fact]
@@ -80,12 +68,9 @@ public class OpenUrzednikResultExtensionsTest
         // Arrange
         var result = Task.FromResult(OpenUrzednikResult.Failure([new TestError("Test error"), new TestError("Another test error")]));
 
-        // Act
-        var exception = Should.Throw<AggregateException>(async () => await result.EnsureSuccessAsync());
-
-        // Assert
-        exception.ShouldNotBeNull();
-        exception.InnerExceptions.Count.ShouldBe(2);
+        // Act && Assert
+        (await Should.ThrowAsync<AggregateException>(async () => await result.EnsureSuccessAsync()))
+            .InnerExceptions.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -108,11 +93,8 @@ public class OpenUrzednikResultExtensionsTest
         // Arrange
         var result = OpenUrzednikResult.Failure<int>(new TestError("Test error"));
 
-        // Act
-        var exception = Should.Throw<TestException>(() => result.EnsureSuccess());
-
-        // Assert
-        exception.ShouldNotBeNull();
+        // Act && Assert
+         Should.Throw<TestException>(() => result.EnsureSuccess());
     }
 
     [Fact]
@@ -121,12 +103,9 @@ public class OpenUrzednikResultExtensionsTest
         // Arrange
         var result = OpenUrzednikResult.Failure<int>([new TestError("Test error"), new TestError("Another test error")]);
 
-        // Act
-        var exception = Should.Throw<AggregateException>(() => result.EnsureSuccess());
-
-        // Assert
-        exception.ShouldNotBeNull();
-        exception.InnerExceptions.Count.ShouldBe(2);
+        // Act && Assert
+        Should.Throw<AggregateException>(() => result.EnsureSuccess())
+            .InnerExceptions.Count.ShouldBe(2);
     }
 
     [Fact]
@@ -149,11 +128,8 @@ public class OpenUrzednikResultExtensionsTest
         // Arrange
         var result = Task.FromResult(OpenUrzednikResult.Failure<int>(new TestError("Test error")));
 
-        // Act
-        var exception = Should.Throw<TestException>(async () => await result.EnsureSuccessAsync());
-
-        // Assert
-        exception.ShouldNotBeNull();
+        // Act && Assert
+        await Should.ThrowAsync<TestException>(async () => await result.EnsureSuccessAsync());
     }
 
     [Fact]
@@ -162,12 +138,9 @@ public class OpenUrzednikResultExtensionsTest
         // Arrange
         var result = Task.FromResult(OpenUrzednikResult.Failure<int>([new TestError("Test error"), new TestError("Another test error")]));
 
-        // Act
-        var exception = Should.Throw<AggregateException>(async () => await result.EnsureSuccessAsync());
-
-        // Assert
-        exception.ShouldNotBeNull();
-        exception.InnerExceptions.Count.ShouldBe(2);
+        // Act && Assert
+        (await Should.ThrowAsync<AggregateException>(async () => await result.EnsureSuccessAsync()))
+            .InnerExceptions.Count.ShouldBe(2);
     }
 
     

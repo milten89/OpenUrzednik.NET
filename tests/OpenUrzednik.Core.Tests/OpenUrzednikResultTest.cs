@@ -105,7 +105,7 @@ public class OpenUrzednikResultTest
         // Arrange
         OpenUrzednikError error = null!;
 
-        // Act
+        // Act && Assert
         Should.Throw<ArgumentNullException>(() => new OpenUrzednikResult(error));
     }
 
@@ -115,7 +115,7 @@ public class OpenUrzednikResultTest
         // Arrange
         IEnumerable<OpenUrzednikError> errors = [];
 
-        // Act
+        // Act && Assert
         Should.Throw<InvalidOperationException>(() => new OpenUrzednikResult(errors));
     }
 
@@ -125,7 +125,7 @@ public class OpenUrzednikResultTest
         // Arrange
         IEnumerable<OpenUrzednikError> errors = null!;
 
-        // Act
+        // Act && Assert
         Should.Throw<ArgumentNullException>(() => new OpenUrzednikResult(errors));
     }
 
@@ -135,7 +135,7 @@ public class OpenUrzednikResultTest
         // Arrange
         OpenUrzednikError error = null!;
 
-        // Act
+        // Act && Assert
         Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Failure(error));
     }
 
@@ -145,7 +145,7 @@ public class OpenUrzednikResultTest
         // Arrange
         IEnumerable<OpenUrzednikError> errors = [];
 
-        // Act
+        // Act && Assert
         Should.Throw<InvalidOperationException>(() => OpenUrzednikResult.Failure(errors));
     }
 
@@ -155,7 +155,7 @@ public class OpenUrzednikResultTest
         // Arrange
         IEnumerable<OpenUrzednikError> errors = null!;
 
-        // Act
+        // Act && Assert
         Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Failure(errors));
     }
 }

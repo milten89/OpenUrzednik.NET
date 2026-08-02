@@ -69,11 +69,8 @@ public partial class HttpClientExtensionsTest
             ApiUrl = apiUrl!
         };
         
-        // Act
-        var exception = Record.Exception(() => httpClient.ConfigureForNbpApi(options));
-        
-        // Assert
-        exception.ShouldBeOfType<ArgumentException>();
+        // Act & Assert
+        Should.Throw<ArgumentException>(() => httpClient.ConfigureForNbpApi(options));
     }
     
     [Theory]
@@ -127,10 +124,7 @@ public partial class HttpClientExtensionsTest
             Timeout = TimeSpan.FromSeconds(seconds)
         };
         
-        // Act
-        var exception = Record.Exception(() => httpClient.ConfigureForNbpApi(options));
-        
-        // Assert
-        exception.ShouldBeOfType<ArgumentException>();
+        // Act & Assert
+        Should.Throw<ArgumentException>(() => httpClient.ConfigureForNbpApi(options));
     }
 }

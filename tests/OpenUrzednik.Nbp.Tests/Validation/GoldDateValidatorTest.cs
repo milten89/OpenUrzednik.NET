@@ -14,9 +14,8 @@ public class GoldDateValidatorTest
     [Fact]
     public void Constructor_NullPropertyName_ThrowsArgumentNullException()
     {
-        // Act
-        var exception = Record.Exception(() => new GoldDateValidator(null!, MinDate));
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new GoldDateValidator(null!, MinDate))
             .ParamName.ShouldBe("propertyName");
     }
     

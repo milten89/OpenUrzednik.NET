@@ -28,11 +28,8 @@ public partial class MapperTest
         // Arrange
         CurrencyExchangeRateDto dto = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToCurrencyExchangeRate(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToCurrencyExchangeRate(dto))
             .ParamName.ShouldBe("dto");
     }
 }

@@ -14,9 +14,8 @@ public class CurrencyDateValidatorTest
     [Fact]
     public void Constructor_NullPropertyName_ThrowsArgumentNullException()
     {
-        // Act
-        var exception = Record.Exception(() => new CurrencyDateValidator(null!, MinDate));
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => new CurrencyDateValidator(null!, MinDate))
             .ParamName.ShouldBe("propertyName");
     }
     

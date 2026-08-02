@@ -106,7 +106,6 @@ public class MapperTest
     public void MapToGoldPrice_ArrayWithDuplicateEntries_MapsEachEntryIndependently()
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
         var dto = new GoldPriceDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, dto, dto };
 
@@ -124,11 +123,8 @@ public class MapperTest
         // Arrange
         GoldPriceDto[] dtos = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToGoldPrice(dtos));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dtos))
             .ParamName.ShouldBe("dto");;
     }
     
@@ -138,11 +134,8 @@ public class MapperTest
         // Arrange
         GoldPriceDto dto = null!;
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToGoldPrice(dto));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dto))
             .ParamName.ShouldBe("dto");;
     }
     
@@ -153,11 +146,8 @@ public class MapperTest
         var dto = new GoldPriceDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, null! };
 
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToGoldPrice(dtos));
-
-        // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dtos))
             .ParamName.ShouldBe("dto");;
     }
 }

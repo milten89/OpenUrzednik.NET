@@ -80,6 +80,7 @@ public partial class DefaultNbpGoldPriceClientTest
     [Fact]
     public async Task GetAsync_Date_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
+        // Arrange
         var faker = new Faker().WithConstantSeed();
         var date = faker.Date.AfterGoldMinDate();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
@@ -87,8 +88,10 @@ public partial class DefaultNbpGoldPriceClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
         var sut = CreateApiClient(httpClient, urlBuilder);
 
+        // Act
         var result = await sut.GetAsync(date, TestContext.Current.CancellationToken);
 
+        // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<NotFoundError>();

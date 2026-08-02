@@ -106,6 +106,7 @@ public partial class DefaultNbpGoldPriceClientTest
     [Fact]
     public async Task GetAsync_DateRange_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
+        // Arrange
         var faker = new Faker().WithConstantSeed();
         var from = faker.Date.AfterGoldMinDate();
         var to = from.AddDays(1);
@@ -114,8 +115,10 @@ public partial class DefaultNbpGoldPriceClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
         var sut = CreateApiClient(httpClient, urlBuilder);
 
+        // Act
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
 
+        // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>();

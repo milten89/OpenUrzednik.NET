@@ -78,6 +78,7 @@ public class DateRangeValidatorTest
     [Fact]
     public void Validate_FromGreaterThanToAndOutOfRange_ReturnsFromGreaterThanToErrorFirst()
     {
+        // Arrange
         var from = BaseDate;
         var to = BaseDate.AddDays(-(MaxDateRange + 10));
         var validator = new DateRangeValidator((from, to));
@@ -94,6 +95,7 @@ public class DateRangeValidatorTest
     [Fact]
     public void Validate_RangeAtMaxBoundaryAcrossLeapYearFebruary_ReturnsSuccess()
     {
+        // Arrange
         var from = new DateOnly(2024, 1, 1);
         var to = new DateOnly(2024, 4, 3);
         var validator = new DateRangeValidator((from, to));
@@ -108,6 +110,7 @@ public class DateRangeValidatorTest
     [Fact]
     public void Validate_RangeOneDayOverMaxBoundaryAcrossLeapYearFebruary_ReturnsValidationError()
     {
+        // Arrange
         var from = new DateOnly(2024, 1, 1);
         var to = new DateOnly(2024, 4, 4);
         var validator = new DateRangeValidator((from, to));
