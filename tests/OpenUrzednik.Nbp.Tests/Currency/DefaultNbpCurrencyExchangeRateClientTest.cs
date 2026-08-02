@@ -8,8 +8,8 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 
 using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
-using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon;
 
@@ -24,12 +24,12 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
     }
     
-    private static DefaultNbpGoldPriceClient CreateApiClient(HttpClient httpClient, INbpUrlBuilder urlBuilder)
+    private static DefaultNbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, NbpTable table, string currency, INbpUrlBuilder urlBuilder)
     {
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        urlBuilderFactory.GetGoldBuilder().Returns(urlBuilder);
+        urlBuilderFactory.GetCurrencyBuilder(table, currency).Returns(urlBuilder);
 
-        return new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, new FakeTimeProvider());
+        return new DefaultNbpCurrencyExchangeRateClient(httpClient, urlBuilderFactory, new FakeTimeProvider());
     }
     
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CurrencyExchangeRatesDto dtos)
