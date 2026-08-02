@@ -8,7 +8,7 @@ internal sealed class BuySellExchangeRateTableDto
     public required string TableId { get; init; }
 
     [JsonPropertyName("tradingDate")]
-    public required DateOnly TraidingDate { get; init; }
+    public required DateOnly TradingDate { get; init; }
 
     [JsonPropertyName("effectiveDate")]
     public required DateOnly PublicationDate { get; init; }

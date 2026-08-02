@@ -1,8 +1,15 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003ADate_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003FUsers_003FAndrzej_003FAppData_003FRoaming_003FJetBrains_003FRider2026_002E2_003Fresharper_002Dhost_003FSourcesCache_003F4638edcbefad73a43b3e75cd8555503e7383acb2d5cf46cb3a51b3ffc44962c5_003FDate_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AInternet_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003FUsers_003FAndrzej_003FAppData_003FRoaming_003FJetBrains_003FRider2026_002E2_003Fresharper_002Dhost_003FSourcesCache_003F68ceb2836697abcbaf9c481a94db75f4be9121b172cd8c7391f1561ca9f030e1_003FInternet_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003ARecord_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003FUsers_003FAndrzej_003FAppData_003FRoaming_003FJetBrains_003FRider2026_002E2_003Fresharper_002Dhost_003FSourcesCache_003F602e604723f6ef4671e574793f7904c32b47877d90b6357410b4cc12e9d0f4_003FRecord_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=857967e7_002Df9ad_002D4a38_002Db9f7_002D6a9023bc7cc7/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;net10.0&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TargetFrameworkId&gt;net10.0&lt;/TargetFrameworkId&gt;&#xD;
+  &lt;Or&gt;&#xD;
+    &lt;TargetFrameworkId&gt;net10.0&lt;/TargetFrameworkId&gt;&#xD;
+    &lt;TestAncestor&gt;&#xD;
+      &lt;TestId&gt;xUnit::3A1B76D3-CA2D-C6F6-F135-DFBD488C0F9C::net8.0::OpenUrzednik.Nbp.Tests.Currency.MapperTest&lt;/TestId&gt;&#xD;
+    &lt;/TestAncestor&gt;&#xD;
+    &lt;ProjectFile&gt;3A1B76D3-CA2D-C6F6-F135-DFBD488C0F9C/d:Currency/f:MapperTest.cs&lt;/ProjectFile&gt;&#xD;
+  &lt;/Or&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
 	

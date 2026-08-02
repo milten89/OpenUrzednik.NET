@@ -7,10 +7,12 @@ internal static class Mapper
     internal static CountryExchangeRates MapToCountryExchangeRates(CountryExchangeRatesDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
+        if (dto.Rates is null)
+            throw new ArgumentException($"{nameof(dto.Rates)} cannot be null.", nameof(dto));
         
         var rates = new ExchangeRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToCurrencyExchangeRateDto(dto.Rates[i]);
+            rates[i] = MapToCurrencyExchangeRate(dto.Rates[i]);
 
         return new(dto.Country, dto.CurrencyName, dto.CurrencySymbol, dto.CurrencyCode, Array.AsReadOnly(rates));
     }
@@ -18,15 +20,17 @@ internal static class Mapper
     internal static CurrencyExchangeRates MapToCurrencyExchangeRates(CurrencyExchangeRatesDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
+        if (dto.Rates is null)
+            throw new ArgumentException($"{nameof(dto.Rates)} cannot be null.", nameof(dto));
 
         var rates = new ExchangeRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToCurrencyExchangeRateDto(dto.Rates[i]);
+            rates[i] = MapToCurrencyExchangeRate(dto.Rates[i]);
 
         return new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(rates));
     }
     
-    internal static ExchangeRate MapToCurrencyExchangeRateDto(CurrencyExchangeRateDto dto)
+    internal static ExchangeRate MapToCurrencyExchangeRate(CurrencyExchangeRateDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
 
@@ -36,6 +40,8 @@ internal static class Mapper
     internal static BuySellExchangeRates MapToBuySellExchangeRates(BuySellCurrencyExchangeRatesDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
+        if (dto.Rates is null)
+            throw new ArgumentException($"{nameof(dto.Rates)} cannot be null.", nameof(dto));
 
         var rates = new BuySellExchangeRate[dto.Rates.Length];
         for (var i = 0; i < rates.Length; i++)

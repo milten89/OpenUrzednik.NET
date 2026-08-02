@@ -2,6 +2,7 @@
 using Bogus;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;
 using Shouldly;
 
@@ -13,8 +14,7 @@ public class MapperTest
     public void MapToGoldPrice_SingleDto_ReturnsGoldPriceWithMatchingDateAndPrice()
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var dto = CreateGoldPriceDto(faker, new DateOnly(2026, 1, 15), 250.75m);
+        var dto = new GoldPriceDtoFaker().WithConstantSeed().Generate();
 
         // Act
         var result = Mapper.MapToGoldPrice(dto);
@@ -22,20 +22,6 @@ public class MapperTest
         // Assert
         result.Date.ShouldBe(dto.Date);
         result.Price.ShouldBe(dto.Price);
-    }
-
-    [Fact]
-    public void MapToGoldPrice_RandomDto_MapsAllFieldsCorrectly()
-    {
-        // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var dto = CreateGoldPriceDto(faker);
-
-        // Act
-        var result = Mapper.MapToGoldPrice(dto);
-
-        // Assert
-        result.ShouldBe(new GoldPrice(dto.Date, dto.Price));
     }
 
     [Theory]
@@ -46,9 +32,9 @@ public class MapperTest
     public void MapToGoldPrice_VariousPriceValues_PreservesExactDecimalValue(string priceAsString)
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
         var price = decimal.Parse(priceAsString, CultureInfo.InvariantCulture);
-        var dto = CreateGoldPriceDto(faker, price: price);
+        var dtoBase = new GoldPriceDtoFaker().WithConstantSeed().Generate();
+        var dto = new GoldPriceDto() { Date = dtoBase.Date, Price = price };
 
         // Act
         var result = Mapper.MapToGoldPrice(dto);
@@ -63,9 +49,9 @@ public class MapperTest
     public void MapToGoldPrice_BoundaryDateValues_PreservesExactDate(int year, int month, int day)
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
         var date = new DateOnly(year, month, day);
-        var dto = CreateGoldPriceDto(faker, date: date);
+        var dtoBase = new GoldPriceDtoFaker().WithConstantSeed().Generate();
+        var dto = new GoldPriceDto() { Date = date, Price = dtoBase.Price };
 
         // Act
         var result = Mapper.MapToGoldPrice(dto);
@@ -91,29 +77,21 @@ public class MapperTest
     public void MapToGoldPrice_ArrayWithSingleElement_ReturnsArrayWithOneMappedElement()
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var dto = CreateGoldPriceDto(faker);
-        var dtos = new[] { dto };
+        var dtos = new GoldPriceDtoFaker().WithConstantSeed().Generate(1).ToArray();
 
         // Act
         var result = Mapper.MapToGoldPrice(dtos);
 
         // Assert
         result.Length.ShouldBe(1);
-        result[0].ShouldBe(new GoldPrice(dto.Date, dto.Price));
+        result[0].ShouldBe(new GoldPrice(dtos[0].Date, dtos[0].Price));
     }
 
     [Fact]
     public void MapToGoldPrice_ArrayWithMultipleElements_ReturnsAllElementsMappedInOriginalOrder()
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var dtos = new[]
-        {
-            CreateGoldPriceDto(faker, new DateOnly(2026, 1, 1), 100m),
-            CreateGoldPriceDto(faker, new DateOnly(2026, 1, 2), 200m),
-            CreateGoldPriceDto(faker, new DateOnly(2026, 1, 3), 300m),
-        };
+        var dtos = new GoldPriceDtoFaker().WithConstantSeed().Generate(3).ToArray();
 
         // Act
         var result = Mapper.MapToGoldPrice(dtos);
@@ -129,7 +107,7 @@ public class MapperTest
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
-        var dto = CreateGoldPriceDto(faker);
+        var dto = new GoldPriceDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, dto, dto };
 
         // Act
@@ -172,8 +150,8 @@ public class MapperTest
     public void MapToGoldPrice_ArrayContainingNullElement_ThrowsArgumentNullException()
     {
         // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var dtos = new GoldPriceDto[] { CreateGoldPriceDto(faker), null! };
+        var dto = new GoldPriceDtoFaker().WithConstantSeed().Generate();
+        var dtos = new[] { dto, null! };
 
         // Act
         var exception = Record.Exception(() => Mapper.MapToGoldPrice(dtos));
@@ -182,11 +160,4 @@ public class MapperTest
         exception.ShouldBeOfType<ArgumentNullException>()
             .ParamName.ShouldBe("dto");;
     }
-    
-    private static GoldPriceDto CreateGoldPriceDto(Faker faker, DateOnly? date = null, decimal? price = null)
-        => new()
-        {
-            Date = date ?? DateOnly.FromDateTime(faker.Date.Past()),
-            Price = price ?? faker.Finance.Amount(1, 500)
-        };
 }

@@ -6,7 +6,7 @@ internal static class Mapper
 {
     internal static GoldPrice[] MapToGoldPrice(GoldPriceDto[] dto)
     {
-        ArgumentNullException.ThrowIfNull(dto, nameof(dto));
+        ArgumentNullException.ThrowIfNull(dto);
         
         var goldPrices = new GoldPrice[dto.Length];
         for (int i = 0; i < goldPrices.Length; i++)
@@ -17,7 +17,7 @@ internal static class Mapper
 
     internal static GoldPrice MapToGoldPrice(GoldPriceDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto, nameof(dto));
+        ArgumentNullException.ThrowIfNull(dto);
         
         return new GoldPrice(dto.Date, dto.Price);
     }
