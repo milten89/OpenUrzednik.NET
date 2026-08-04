@@ -5,7 +5,11 @@ public class DefaultNbpUrlBuilder : INbpUrlBuilder
     private readonly string _baseUrl;
 
     public DefaultNbpUrlBuilder(string baseUrl)
-        => _baseUrl = baseUrl.EndsWith('/') ? baseUrl[..^1] : baseUrl;
+    {
+        ArgumentNullException.ThrowIfNull(baseUrl);
+
+        _baseUrl = baseUrl.EndsWith('/') ? baseUrl[..^1] : baseUrl;
+    }
 
     public string Latest()
         => _baseUrl;

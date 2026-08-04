@@ -11,7 +11,7 @@ namespace OpenUrzednik.Nbp.Tests.Extensions;
 public partial class HttpClientExtensionsTest
 {
     [Fact]
-    public void ConfigureForNbpApi_DefaultOptions_RetunsConfiguredHttpClient()
+    public void ConfigureForNbpApi_DefaultOptions_ReturnConfiguredHttpClient()
     {
         // Arrange
         using var httpClient = new HttpClient();
@@ -27,7 +27,7 @@ public partial class HttpClientExtensionsTest
     }
     
     [Fact]
-    public void ConfigureForNbpApi_ValidOptions_RetunsConfiguredHttpClient()
+    public void ConfigureForNbpApi_ValidOptions_ReturnConfiguredHttpClient()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -126,5 +126,65 @@ public partial class HttpClientExtensionsTest
         
         // Act & Assert
         Should.Throw<ArgumentException>(() => httpClient.ConfigureForNbpApi(options));
+    }
+    
+    [Fact]
+    public void ConfigureForNbpApi_NullHttpClient_ThrowsArgumentNullException()
+    {
+        // Arrange
+        HttpClient httpClient = null!;
+        var options = new NbpOptions();
+ 
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => httpClient.ConfigureForNbpApi(options))
+            .ParamName.ShouldBe("httpClient");
+    }
+ 
+    [Fact]
+    public void ConfigureForNbpApi_NullOptions_ThrowsArgumentNullException()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+ 
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => httpClient.ConfigureForNbpApi(null!))
+            .ParamName.ShouldBe("options");
+    }
+ 
+    [Fact]
+    public void ConfigureForNbpApi_DefaultOptions_RetunsConfiguredHttpClient()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var options = new NbpOptions();
+        
+        // Act
+        httpClient.ConfigureForNbpApi(options);
+        
+        // Assert
+        httpClient.BaseAddress.ShouldNotBeNull();
+        httpClient.BaseAddress.ToString().ShouldBe(NbpOptions.DefaultApiUrl);
+        httpClient.Timeout.ShouldBe(NbpOptions.DefaultTimeout);
+    }
+    
+    [Fact]
+    public void ConfigureForNbpApi_ValidOptions_RetunsConfiguredHttpClient()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = new HttpClient();
+        var options = new NbpOptions
+        {
+            ApiUrl = faker.Internet.UrlWithPath("https").TrimEnd('/') + '/',
+            Timeout = TimeSpan.FromMilliseconds(faker.Random.Int(1, 30000))
+        };
+        
+        // Act
+        httpClient.ConfigureForNbpApi(options);
+        
+        // Assert
+        httpClient.BaseAddress.ShouldNotBeNull();
+        httpClient.BaseAddress.ToString().ShouldBe(options.ApiUrl);
+        httpClient.Timeout.ShouldBe(options.Timeout);
     }
 }

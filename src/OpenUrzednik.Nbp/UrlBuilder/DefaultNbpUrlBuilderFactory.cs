@@ -22,7 +22,7 @@ public class DefaultNbpUrlBuilderFactory : INbpUrlBuilderFactory
             NbpTable.A => "a",
             NbpTable.B => "b",
             NbpTable.C => "c",
-            _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(NbpTable)}."),
+            _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(NbpTable)}.",  nameof(table)),
         };
     }
 
