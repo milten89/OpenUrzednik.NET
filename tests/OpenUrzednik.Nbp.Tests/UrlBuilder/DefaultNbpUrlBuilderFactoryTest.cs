@@ -35,7 +35,7 @@ public class DefaultNbpUrlBuilderFactoryTest
  
         // Act && Assert
         Should.Throw<ArgumentException>(() => sut.GetTableBuilder(table))
-            .Message.ShouldContain(nameof(NbpTable));
+            .ParamName.ShouldBe("table");
     }
  
     [Fact]
@@ -108,7 +108,7 @@ public class DefaultNbpUrlBuilderFactoryTest
  
         // Act && Assert
         Should.Throw<ArgumentException>(() => sut.GetCurrencyBuilder(table, "EUR"))
-            .Message.ShouldContain(nameof(NbpTable));
+            .ParamName.ShouldBe("table");
     }
  
     [Fact]

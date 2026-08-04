@@ -6,6 +6,14 @@ namespace OpenUrzednik.Nbp.Tests.UrlBuilder;
 
 public class DefaultNbpUrlBuilderTest
 {
+    [Fact]
+    public void Ctor_NullBaseUrl_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => new DefaultNbpUrlBuilder(null!))
+            .ParamName.ShouldBe("baseUrl");
+    }
+    
     [Theory]
     [InlineData("exchangerates/tables/a", "exchangerates/tables/a")]
     [InlineData("exchangerates/tables/a/", "exchangerates/tables/a")]
