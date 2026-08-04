@@ -90,7 +90,7 @@ public partial class DefaultNbpExchangeRateTableClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var to = faker.Date.BeforeCurrencyMinDate();
-        var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var from = to.AddDays(-DateRangeValidator.MaxDateRange - 1);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
