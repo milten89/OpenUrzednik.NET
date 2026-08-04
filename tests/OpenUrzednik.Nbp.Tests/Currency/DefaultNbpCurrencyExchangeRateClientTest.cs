@@ -23,15 +23,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         handler = new StubHttpMessageHandler(response);
         return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
     }
-    
-    private static DefaultNbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, NbpTable table, string currency, INbpUrlBuilder urlBuilder)
+
+    private static INbpUrlBuilderFactory CreateUrlBuilderFactory(NbpTable table, string currency, INbpUrlBuilder urlBuilder)
     {
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         urlBuilderFactory.GetCurrencyBuilder(table, currency).Returns(urlBuilder);
-
-        return new DefaultNbpCurrencyExchangeRateClient(httpClient, urlBuilderFactory, new FakeTimeProvider());
+        return urlBuilderFactory;
     }
     
+    private static DefaultNbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory) 
+        => new(httpClient, urlBuilderFactory, new FakeTimeProvider());
+
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CurrencyExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.CurrencyExchangeRatesDto) };
     

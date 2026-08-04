@@ -60,7 +60,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
             return validationResult;
         
-        var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.B, currency);
+        var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess
@@ -77,7 +77,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
             return validationResult;
         
-        var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.C, currency);
+        var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
         return requestResult.IsSuccess

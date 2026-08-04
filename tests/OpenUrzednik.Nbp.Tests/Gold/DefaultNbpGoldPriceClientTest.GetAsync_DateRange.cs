@@ -65,8 +65,8 @@ public partial class DefaultNbpGoldPriceClientTest
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
-        var from = faker.Date.BeforeGoldMinDate();
-        var to = from.AddDays(DateRangeValidator.MaxDateRange + 1);
+        var to = faker.Date.BeforeGoldMinDate();
+        var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxDateRange));
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, urlBuilder);
