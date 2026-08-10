@@ -74,7 +74,7 @@ public partial class MapperTest
             CurrencySymbol = dtoBase.CurrencySymbol,
             Rates = null!
         };
-        
+
         // Act & Assert
         Should.Throw<ArgumentException>(() => Mapper.MapToCountryExchangeRates(dto))
             .ParamName.ShouldBe("dto");

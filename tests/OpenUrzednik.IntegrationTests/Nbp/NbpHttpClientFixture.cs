@@ -7,9 +7,9 @@ public sealed class NbpHttpClientFixture : IDisposable
 {
     public HttpClient HttpClient { get; }
 
-    public NbpHttpClientFixture() 
+    public NbpHttpClientFixture()
         => HttpClient = new HttpClient().ConfigureForNbpApi(new NbpOptions());
 
-    public void Dispose() 
+    public void Dispose()
         => HttpClient.Dispose();
 }

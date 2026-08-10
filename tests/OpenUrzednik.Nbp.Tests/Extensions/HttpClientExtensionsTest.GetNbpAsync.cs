@@ -5,8 +5,11 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+
 using Bogus;
+
 using Microsoft.Extensions.Time.Testing;
+
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.TestCommon;
@@ -36,7 +39,7 @@ public partial class HttpClientExtensionsTest
         (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync("", TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("httpClient");
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_NullRelativePath_ThrowsArgumentNullException()
     {
@@ -47,7 +50,7 @@ public partial class HttpClientExtensionsTest
         (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync(null!, TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("relativePath");
     }
-    
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -60,7 +63,7 @@ public partial class HttpClientExtensionsTest
         (await Should.ThrowAsync<ArgumentException>(async () => await httpClient.GetNbpAsync(relativePath, TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("relativePath");
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_NullTypeInfo_ThrowsArgumentNullException()
     {
@@ -85,7 +88,7 @@ public partial class HttpClientExtensionsTest
         // Act && Assert
         await Should.ThrowAsync<OperationCanceledException>(async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, cts.Token));
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_ValidRequest_ReturnDto()
     {
@@ -104,7 +107,7 @@ public partial class HttpClientExtensionsTest
         result.Value.ShouldNotBeNull();
         result.Value.ShouldBeEquivalentTo(dto);
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_NotFoundStatusCode_ReturnFailureWithNotFoundError()
     {
@@ -140,7 +143,7 @@ public partial class HttpClientExtensionsTest
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>()
             .RetryAfter.ShouldBe(retryDelay);
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_TooManyRequestsWithRetryAfterDateWithResponseDate_ReturnsRateLimitErrorWithDate()
     {
@@ -163,7 +166,7 @@ public partial class HttpClientExtensionsTest
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>()
             .RetryAfter.ShouldBe(retryDelay);
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_TooManyRequestsWithRetryAfterDateWithoutResponseDate_ReturnsRateLimitErrorWithDate()
     {
@@ -186,7 +189,7 @@ public partial class HttpClientExtensionsTest
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>()
             .RetryAfter.ShouldBe(retryDelay);
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_TooManyRequestsWithoutRetryAfterDate_ReturnsRateLimitErrorWithoutDelay()
     {
@@ -225,7 +228,7 @@ public partial class HttpClientExtensionsTest
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<UnknownError>();
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_SuccessfulResponseWithNullJsonContent_ReturnsFailureWithUnknownError()
     {
@@ -246,7 +249,7 @@ public partial class HttpClientExtensionsTest
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<SerializationError>();
     }
-    
+
     [Fact]
     public async Task GetNbpAsync_SuccessfulResponseWithInvalidJson_ReturnsFailureWithSerializationError()
     {
@@ -266,7 +269,7 @@ public partial class HttpClientExtensionsTest
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<SerializationError>();
     }
-    
+
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
         => CreateHttpClient(faker, response, out _);
 
@@ -279,6 +282,6 @@ public partial class HttpClientExtensionsTest
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, TestDto dto)
         => new(statusCode) { Content = JsonContent.Create(dto, TypeInfo) };
-    
+
     private sealed record TestDto(string Name, int Value);
 }

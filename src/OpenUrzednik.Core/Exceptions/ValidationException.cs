@@ -12,7 +12,7 @@ public class ValidationException : OpenUrzednikException
     /// <param name="ruleName">Rule name</param>
     /// <param name="name"></param>
     /// <param name="value"></param>
-    public ValidationException(string message, string ruleName, string? name, object value) 
+    public ValidationException(string message, string ruleName, string? name, object value)
         : base(message)
     {
         Data.Add(nameof(ruleName), ruleName);

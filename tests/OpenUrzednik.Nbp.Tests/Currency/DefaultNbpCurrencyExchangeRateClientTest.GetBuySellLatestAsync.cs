@@ -27,17 +27,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetBuySellLatestAsync(currency!, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetBuySellLatestAsync_SuccessfulResponse_ReturnsMappedBuySellExchangeRates()
     {
@@ -50,17 +50,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetBuySellLatestAsync(currency, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToBuySellExchangeRates(dto));
         urlBuilderFactory.Received(1).GetCurrencyBuilder(NbpTable.C, currency);
         urlBuilder.Received(1).Latest();
     }
- 
+
     [Fact]
     public async Task GetBuySellLatestAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -72,10 +72,10 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetBuySellLatestAsync(currency, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

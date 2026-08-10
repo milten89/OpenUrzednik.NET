@@ -68,7 +68,9 @@ public partial class MapperTest
         var dtoBase = new ExchangeRateTableDtoFaker(0).WithConstantSeed().Generate();
         var dto = new ExchangeRateTableDto()
         {
-            TableId = dtoBase.TableId, PublicationDate = dtoBase.PublicationDate, Rates = null!
+            TableId = dtoBase.TableId,
+            PublicationDate = dtoBase.PublicationDate,
+            Rates = null!
         };
 
         // Act && Assert

@@ -1,0 +1,32 @@
+name: CI - Code Format
+
+on:
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v5
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-format-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-format-
+
+    - name: Restore dependencies
+      run: dotnet restore OpenUrzednik.slnx
+
+    - name: Check code format (dotnet format)
+      run: dotnet format OpenUrzednik.slnx --verify-no-changes --no-restore --verbosity diagnostic

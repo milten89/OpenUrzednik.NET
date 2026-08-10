@@ -18,7 +18,7 @@ public class GoldDateValidatorTest
         Should.Throw<ArgumentNullException>(() => new GoldDateValidator(null!, MinDate))
             .ParamName.ShouldBe("propertyName");
     }
-    
+
     [Theory]
     [InlineData(2013, 1, 2)]
     [InlineData(2013, 1, 3)]

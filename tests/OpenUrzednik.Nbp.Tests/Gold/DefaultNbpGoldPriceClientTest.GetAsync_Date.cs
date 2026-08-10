@@ -37,7 +37,7 @@ public partial class DefaultNbpGoldPriceClientTest
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
-    
+
     [Fact]
     public async Task GetAsync_Date_SuccessfulResponse_ReturnsMappedGoldPrice()
     {
@@ -56,7 +56,7 @@ public partial class DefaultNbpGoldPriceClientTest
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new GoldPrice(dto.Date, dto.Price));
     }
-    
+
     [Fact]
     public async Task GetAsync_Date_EmptyArrayResponse_ReturnsFailureWithNotFoundError()
     {
@@ -67,16 +67,16 @@ public partial class DefaultNbpGoldPriceClientTest
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, []), out _);
         var sut = CreateApiClient(httpClient, urlBuilder);
-        
+
         // Act
         var result = await sut.GetAsync(date, TestContext.Current.CancellationToken);
-        
+
         // Arrange
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<NotFoundError>();
     }
-    
+
     [Fact]
     public async Task GetAsync_Date_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {

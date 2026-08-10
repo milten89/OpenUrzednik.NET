@@ -13,7 +13,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient : INbpCurrencyExchange
 
     public DefaultNbpCurrencyExchangeRateClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory)
         : this(httpClient, urlBuilderFactory, TimeProvider.System) { }
-    
+
     public DefaultNbpCurrencyExchangeRateClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(httpClient, nameof(httpClient));

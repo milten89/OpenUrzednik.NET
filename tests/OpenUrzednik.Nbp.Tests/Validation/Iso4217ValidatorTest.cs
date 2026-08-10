@@ -20,7 +20,7 @@ public class Iso4217ValidatorTest
         Should.Throw<ArgumentNullException>(() => new Iso4217Validator(null!, ""))
             .ParamName.ShouldBe("propertyName");
     }
-    
+
     [Theory]
     [InlineData("USD")]
     [InlineData("eur")]

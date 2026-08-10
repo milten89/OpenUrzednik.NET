@@ -9,7 +9,7 @@ namespace OpenUrzednik.Nbp.Currency;
 /// <param name="CurrencyCode">ISO 4217 currency code</param>
 /// <param name="Rates">List of exchange rates</param>
 public sealed record CountryExchangeRates(string Country, string CurrencyName, string CurrencySymbol, string CurrencyCode, IReadOnlyList<ExchangeRate> Rates)
-{ 
+{
     public bool Equals(CountryExchangeRates? other)
         => other is not null &&
            Country == other.Country &&

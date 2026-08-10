@@ -8,7 +8,7 @@ public static class FakerExtensions
 {
     public static readonly DateTime BetweenStart = new DateTime(2000, 01, 01, 0, 0, 0, DateTimeKind.Utc);
     public static readonly DateTime BetweenEnd = new DateTime(2030, 12, 31, 23, 59, 59, DateTimeKind.Utc);
-    
+
     public static Faker WithConstantSeed(this Faker faker, DateTime? refDate = null,
         [CallerFilePath] string sourceFilePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int sourceLineNumber = 0)
     {
@@ -16,9 +16,9 @@ public static class FakerExtensions
         faker.DateTimeReference = refDate ?? faker.Date.Between(BetweenStart, BetweenEnd);
         return faker;
     }
-    
+
     public static Faker<T> WithConstantSeed<T>(this Faker<T> faker, DateTime? refDate = null,
-        [CallerFilePath] string sourceFilePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int sourceLineNumber = 0) 
+        [CallerFilePath] string sourceFilePath = "", [CallerMemberName] string memberName = "", [CallerLineNumber] int sourceLineNumber = 0)
         where T : class
     {
         return faker.UseSeed(GetSeed(sourceFilePath, memberName, sourceLineNumber))
@@ -27,7 +27,7 @@ public static class FakerExtensions
 
     private static int GetSeed(string sourceFilePath, string memberName, int sourceLineNumber)
         => StableHash($"{Path.GetFileName(sourceFilePath)}:{memberName}:{sourceLineNumber}");
-    
+
     private static int StableHash(string s)
     {
         unchecked
@@ -38,7 +38,7 @@ public static class FakerExtensions
             return hash;
         }
     }
-    
+
     public static Faker<T> LinkRandomizerTo<T>(this Faker<T> faker, Faker source) where T : class
     {
         var hub = ((IFakerTInternal)faker).FakerHub;
@@ -48,7 +48,7 @@ public static class FakerExtensions
             faker.UseDateTimeReference(source.DateTimeReference);
         return faker;
     }
-    
+
     public static Faker<T> LinkRandomizerTo<T, TSource>(this Faker<T> faker, Faker<TSource> source)
         where T : class
         where TSource : class

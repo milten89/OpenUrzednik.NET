@@ -16,16 +16,16 @@ public partial class HttpClientExtensionsTest
         // Arrange
         using var httpClient = new HttpClient();
         var options = new NbpOptions();
-        
+
         // Act
         httpClient.ConfigureForNbpApi(options);
-        
+
         // Assert
         httpClient.BaseAddress.ShouldNotBeNull();
         httpClient.BaseAddress.ToString().ShouldBe(NbpOptions.DefaultApiUrl);
         httpClient.Timeout.ShouldBe(NbpOptions.DefaultTimeout);
     }
-    
+
     [Fact]
     public void ConfigureForNbpApi_ValidOptions_ReturnConfiguredHttpClient()
     {
@@ -37,16 +37,16 @@ public partial class HttpClientExtensionsTest
             ApiUrl = faker.Internet.UrlWithPath("https").TrimEnd('/') + '/',
             Timeout = TimeSpan.FromMilliseconds(faker.Random.Int(1, 30000))
         };
-        
+
         // Act
         httpClient.ConfigureForNbpApi(options);
-        
+
         // Assert
         httpClient.BaseAddress.ShouldNotBeNull();
         httpClient.BaseAddress.ToString().ShouldBe(options.ApiUrl);
         httpClient.Timeout.ShouldBe(options.Timeout);
     }
-    
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -68,11 +68,11 @@ public partial class HttpClientExtensionsTest
         {
             ApiUrl = apiUrl!
         };
-        
+
         // Act & Assert
         Should.Throw<ArgumentException>(() => httpClient.ConfigureForNbpApi(options));
     }
-    
+
     [Theory]
     [InlineData("https://api.example.com", "https://api.example.com/")]
     [InlineData("https://api.example.com/", "https://api.example.com/")]
@@ -86,10 +86,10 @@ public partial class HttpClientExtensionsTest
         {
             ApiUrl = input!
         };
-        
+
         // Act
         httpClient.ConfigureForNbpApi(options);
-        
+
         // Assert
         httpClient.BaseAddress.ShouldNotBeNull();
         httpClient.BaseAddress.ToString().ShouldBe(expected);
@@ -104,14 +104,14 @@ public partial class HttpClientExtensionsTest
         {
             Timeout = Timeout.InfiniteTimeSpan
         };
-        
+
         // Act
         httpClient.ConfigureForNbpApi(options);
-        
+
         // Assert
         httpClient.Timeout.ShouldBe(Timeout.InfiniteTimeSpan);
     }
-    
+
     [Theory]
     [InlineData(0)]
     [InlineData(-5)]
@@ -123,29 +123,29 @@ public partial class HttpClientExtensionsTest
         {
             Timeout = TimeSpan.FromSeconds(seconds)
         };
-        
+
         // Act & Assert
         Should.Throw<ArgumentException>(() => httpClient.ConfigureForNbpApi(options));
     }
-    
+
     [Fact]
     public void ConfigureForNbpApi_NullHttpClient_ThrowsArgumentNullException()
     {
         // Arrange
         HttpClient httpClient = null!;
         var options = new NbpOptions();
- 
+
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => httpClient.ConfigureForNbpApi(options))
             .ParamName.ShouldBe("httpClient");
     }
- 
+
     [Fact]
     public void ConfigureForNbpApi_NullOptions_ThrowsArgumentNullException()
     {
         // Arrange
         using var httpClient = new HttpClient();
- 
+
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => httpClient.ConfigureForNbpApi(null!))
             .ParamName.ShouldBe("options");

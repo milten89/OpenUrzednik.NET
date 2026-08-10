@@ -12,8 +12,8 @@ public class DefaultNbpUrlBuilderFactory : INbpUrlBuilderFactory
     public INbpUrlBuilder GetCurrencyBuilder(NbpTable table, string currency)
         => GetOrAdd($"exchangerates/rates/{MapToUrl(table)}/{Uri.EscapeDataString(currency)}");
 
-    public INbpUrlBuilder GetGoldBuilder() 
-        => GetOrAdd("cenyzlota");    
+    public INbpUrlBuilder GetGoldBuilder()
+        => GetOrAdd("cenyzlota");
 
     private static string MapToUrl(NbpTable table)
     {
@@ -22,10 +22,10 @@ public class DefaultNbpUrlBuilderFactory : INbpUrlBuilderFactory
             NbpTable.A => "a",
             NbpTable.B => "b",
             NbpTable.C => "c",
-            _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(NbpTable)}.",  nameof(table)),
+            _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(NbpTable)}.", nameof(table)),
         };
     }
 
-    private static INbpUrlBuilder GetOrAdd(string relativeUrl) 
+    private static INbpUrlBuilder GetOrAdd(string relativeUrl)
         => Cache.GetOrAdd(relativeUrl, url => new DefaultNbpUrlBuilder(url));
 }
