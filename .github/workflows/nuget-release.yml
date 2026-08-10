@@ -1,4 +1,4 @@
-name: official-release
+name: NuGet - release
 
 on:
   push:

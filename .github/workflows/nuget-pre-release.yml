@@ -1,4 +1,4 @@
-name: preview-release
+name: NuGet - pre-release
 
 on:
   push:
