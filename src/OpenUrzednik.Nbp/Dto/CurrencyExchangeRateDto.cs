@@ -9,7 +9,7 @@ internal sealed class CurrencyExchangeRateDto
 
     [JsonPropertyName("effectiveDate")]
     public required DateOnly PublicationDate { get; init; }
-    
+
     [JsonPropertyName("mid")]
     public required decimal Price { get; init; }
 }

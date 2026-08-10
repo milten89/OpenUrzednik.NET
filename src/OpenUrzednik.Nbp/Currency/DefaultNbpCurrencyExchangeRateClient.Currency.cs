@@ -13,7 +13,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
         if (currencyValidation.IsFailure)
             return currencyValidation;
-        
+
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
@@ -21,7 +21,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
             ? OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
-    
+
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetTopCountAsync(string currency, int topCount, CancellationToken cancellationToken = default)
     {
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
@@ -29,7 +29,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         var validationResult = currencyValidation.And(topCountValidation);
         if (validationResult.IsFailure)
             return validationResult;
-        
+
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
@@ -43,7 +43,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
         if (currencyValidation.IsFailure)
             return currencyValidation;
-        
+
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
@@ -51,7 +51,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
             ? OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value))
             : OpenUrzednikResult.Failure(requestResult.Errors);
     }
-    
+
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly date, CancellationToken cancellationToken = default)
     {
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
@@ -59,7 +59,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         var validationResult = currencyValidation.And(dateValidation);
         if (validationResult.IsFailure)
             return validationResult;
-        
+
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);
@@ -76,7 +76,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         var validationResult = currencyValidation.And(toValidation).And(dateRangeValidation);
         if (validationResult.IsFailure)
             return validationResult;
-        
+
         var urlBuilder = _urlBuilderFactoy.GetCurrencyBuilder(NbpTable.A, currency);
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.CurrencyExchangeRatesDto, _timeProvider, cancellationToken);

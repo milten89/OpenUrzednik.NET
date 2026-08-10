@@ -13,6 +13,6 @@ public static class ObjectExtensions
                 $"Unknown field {fieldName} of type {typeof(T)} in {obj.GetType()}");
         if (field.FieldType != typeof(T))
             throw new InvalidOperationException($"Field {fieldName} of type {field.FieldType.Name} does not match expected type {typeof(T)}");
-        return  (T)field.GetValue(obj)!;
+        return (T)field.GetValue(obj)!;
     }
 }

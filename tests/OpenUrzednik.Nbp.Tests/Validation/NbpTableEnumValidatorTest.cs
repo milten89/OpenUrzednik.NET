@@ -18,7 +18,7 @@ public class NbpTableEnumValidatorTest
         Should.Throw<ArgumentNullException>(() => new NbpTableEnumValidator(null!, NbpTable.A))
             .ParamName.ShouldBe("propertyName");
     }
-    
+
     [Theory]
     [InlineData(NbpTable.A)]
     [InlineData(NbpTable.B)]

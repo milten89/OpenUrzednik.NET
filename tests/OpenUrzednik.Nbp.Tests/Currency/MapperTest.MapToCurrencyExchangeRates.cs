@@ -68,7 +68,9 @@ public partial class MapperTest
         var dtoBase = new CurrencyExchangeRatesDtoFaker(0).WithConstantSeed().Generate();
         var dto = new CurrencyExchangeRatesDto
         {
-            CurrencyName = dtoBase.CurrencyName, CurrencyCode = dtoBase.CurrencyCode, Rates = null!
+            CurrencyName = dtoBase.CurrencyName,
+            CurrencyCode = dtoBase.CurrencyCode,
+            Rates = null!
         };
 
         // Act && Assert

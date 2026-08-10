@@ -17,59 +17,59 @@ public partial class DefaultNbpGoldPriceClientTest
     {
         // Arrange
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        
+
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(null!, urlBuilderFactory))
             .ParamName.ShouldBe("httpClient");
     }
-    
+
     [Fact]
     public void Ctor_2Args_NullUrlBuilderFactory_ThrowArgumentNullException()
     {
         // Arrange
         using var httpClient = new HttpClient();
-        
+
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(httpClient, null!))
-            .ParamName.ShouldBe("urlBuilderFactory");;
+            .ParamName.ShouldBe("urlBuilderFactory");
     }
-    
+
     [Fact]
     public void Ctor_3Args_NullHttpClient_ThrowArgumentNullException()
     {
         // Arrange
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         var timeProvider = new FakeTimeProvider();
-        
+
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(null!, urlBuilderFactory, timeProvider))
-            .ParamName.ShouldBe("httpClient");;
+            .ParamName.ShouldBe("httpClient");
     }
-    
+
     [Fact]
     public void Ctor_3Args_NullUrlBuilderFactory_ThrowArgumentNullException()
     {
         // Arrange
         using var httpClient = new HttpClient();
         var timeProvider = new FakeTimeProvider();
-        
+
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(httpClient, null!, timeProvider))
-            .ParamName.ShouldBe("urlBuilderFactory");;
+            .ParamName.ShouldBe("urlBuilderFactory");
     }
-    
+
     [Fact]
     public void Ctor_3Args_NullTimeProvider_ThrowArgumentNullException()
     {
         // Arrange
         using var httpClient = new HttpClient();
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        
+
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, null!))
-            .ParamName.ShouldBe("timeProvider");;
+            .ParamName.ShouldBe("timeProvider");
     }
-    
+
     [Fact]
     public void Ctor_ValidParameters_GetSingleInstanceOfGoldBuilder()
     {
@@ -77,14 +77,14 @@ public partial class DefaultNbpGoldPriceClientTest
         using var httpClient = new HttpClient();
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         var timeProvider = new FakeTimeProvider();
-        
+
         // Act
         new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, timeProvider);
-        
+
         // Assert
         urlBuilderFactory.Received(1).GetGoldBuilder();
     }
-    
+
     [Fact]
     public void Ctor_2Args_UsesSystemTimeProvider()
     {

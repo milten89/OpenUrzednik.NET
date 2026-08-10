@@ -3,6 +3,6 @@
 public enum NbpTable
 {
     A,
-    B, 
+    B,
     C,
 }

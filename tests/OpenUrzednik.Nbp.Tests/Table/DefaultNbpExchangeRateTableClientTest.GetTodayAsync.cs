@@ -27,17 +27,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTodayAsync(table, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Theory]
     [InlineData(MidTableType.A)]
     [InlineData(MidTableType.B)]
@@ -51,15 +51,15 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var dto = new ExchangeRateTableDtoFaker().LinkRandomizerTo(faker).Generate();
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, [dto]), out _);
         var sut = CreateApiClient(httpClient, nbpTable, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTodayAsync(table, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToExchangeRateTable(dto));
     }
- 
+
     [Fact]
     public async Task GetTodayAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -69,16 +69,16 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.Today().Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTodayAsync(MidTableType.A, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<NotFoundError>();
     }
- 
+
     [Fact]
     public async Task GetTodayAsync_EmptyArrayResponse_ReturnFailureWithNotFoundError()
     {
@@ -88,10 +88,10 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.Today().Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, Array.Empty<ExchangeRateTableDto>()), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTodayAsync(MidTableType.A, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

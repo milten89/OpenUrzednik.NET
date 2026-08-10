@@ -28,17 +28,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTopCountAsync(table, count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
@@ -49,17 +49,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTopCountAsync(MidTableType.A, topCount, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetTopCountAsync_InvalidTableAndTopCount_ReturnsCombinedValidationErrorsWithoutSendingRequest()
     {
@@ -68,17 +68,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTopCountAsync((MidTableType)99, 0, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(2);
         result.Errors.ShouldAllBe(e => e is ValidationError);
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetTopCountAsync_SuccessfulResponse_ReturnsAllMappedExchangeRateTablesInOriginalOrder()
     {
@@ -90,15 +90,15 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var dtos = new ExchangeRateTableDtoFaker().LinkRandomizerTo(faker).Generate(count).ToArray();
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTopCountAsync(MidTableType.A, count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToExchangeRateTable(dtos));
     }
- 
+
     [Fact]
     public async Task GetTopCountAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -109,16 +109,16 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTopCountAsync(MidTableType.A, count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
     }
- 
+
     [Fact]
     public async Task GetTopCountAsync_EmptyArrayResponse_ReturnsSuccessWithEmptyArray()
     {
@@ -129,10 +129,10 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, Array.Empty<ExchangeRateTableDto>()), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetTopCountAsync(MidTableType.A, count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBeEmpty();

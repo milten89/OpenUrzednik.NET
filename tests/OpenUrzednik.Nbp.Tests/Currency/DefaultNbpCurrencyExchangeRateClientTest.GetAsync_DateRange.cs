@@ -30,17 +30,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetAsync(currency!, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_ToDateBeforeMinDate_ReturnsFailureWithoutSendingRequest()
     {
@@ -51,17 +51,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxDateRange));
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_ExceedsMaxDays_ReturnsFailureWithoutSendingRequest()
     {
@@ -72,17 +72,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         var to = from.AddDays(DateRangeValidator.MaxDateRange + 1);
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_ToDateBeforeMinDateAndRangeExceedsMaxDays_ReturnsCombinedValidationErrorsWithoutSendingRequest()
     {
@@ -93,17 +93,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         var from = to.AddDays(-DateRangeValidator.MaxDateRange - 1);
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(2);
         result.Errors.ShouldAllBe(e => e is ValidationError);
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_SuccessfulResponse_ReturnsMappedCurrencyExchangeRates()
     {
@@ -118,17 +118,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToCurrencyExchangeRates(dto));
         urlBuilderFactory.Received(1).GetCurrencyBuilder(NbpTable.A, currency);
         urlBuilder.Received(1).ForDateRange(from, to);
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -143,10 +143,10 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
 
- 
+
         // Act
         var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

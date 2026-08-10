@@ -26,17 +26,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         var faker = new Faker().WithConstantSeed();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetLatestAsync(currency!, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetLatestAsync_SuccessfulResponse_ReturnsMappedCurrencyExchangeRates()
     {
@@ -49,17 +49,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetLatestAsync(currency, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToCurrencyExchangeRates(dto));
         urlBuilderFactory.Received(1).GetCurrencyBuilder(NbpTable.A, currency);
         urlBuilder.Received(1).Latest();
     }
- 
+
     [Fact]
     public async Task GetLatestAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -71,10 +71,10 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetLatestAsync(currency, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

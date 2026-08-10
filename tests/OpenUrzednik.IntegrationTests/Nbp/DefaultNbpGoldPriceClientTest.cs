@@ -62,7 +62,7 @@ public class DefaultNbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     {
         // Arrange
         const int topCount = 5;
-        
+
         // Act
         var result = await _client.GetTopCountAsync(topCount, TestContext.Current.CancellationToken);
 
@@ -76,7 +76,7 @@ public class DefaultNbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     {
         // Arrange
         var today = DateOnly.FromDateTime(DateTime.Now);
-        
+
         // Act
         var result = await _client.GetAsync(today, TestContext.Current.CancellationToken);
 
@@ -93,7 +93,7 @@ public class DefaultNbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
         var daysBefore = 10;
         var today = DateOnly.FromDateTime(DateTime.Now);
         var before = today.AddDays(-daysBefore);
-        
+
         // Act
         var result = await _client.GetAsync(before, today, TestContext.Current.CancellationToken);
 

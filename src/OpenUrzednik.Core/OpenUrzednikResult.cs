@@ -27,7 +27,7 @@ public readonly struct OpenUrzednikResult
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenUrzednikResult"/> struct in a successful state.
     /// </summary>
-    public OpenUrzednikResult() 
+    public OpenUrzednikResult()
         => _errors = null;
 
     /// <summary>
@@ -179,6 +179,6 @@ public readonly struct OpenUrzednikResult<TValue>
     /// <param name="result">The result to convert.</param>
     /// <exception cref="InvalidOperationException">Thrown when the source result is successful.</exception>
     /// <returns>A failed <see cref="OpenUrzednikResult{TValue}"/> instance.</returns>
-    public static implicit operator OpenUrzednikResult<TValue>(OpenUrzednikResult result) 
+    public static implicit operator OpenUrzednikResult<TValue>(OpenUrzednikResult result)
         => result.IsFailure ? new(result.Errors) : throw new InvalidOperationException("Cannot convert a successful Result to Result<TValue>.");
 }

@@ -31,17 +31,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(table, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_ToDateBeforeMinDate_ReturnsFailureWithoutSendingRequest()
     {
@@ -52,17 +52,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_ExceedsMaxDays_ReturnsFailureWithoutSendingRequest()
     {
@@ -73,17 +73,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_ToDateBeforeMinDateAndRangeExceedsMaxDays_ReturnsCombinedValidationErrorsWithoutSendingRequest()
     {
@@ -94,17 +94,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(2);
         result.Errors.ShouldAllBe(e => e is ValidationError);
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_SuccessfulResponse_ReturnsAllMappedExchangeRateTablesInOriginalOrder()
     {
@@ -118,15 +118,15 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var dtos = new ExchangeRateTableDtoFaker().LinkRandomizerTo(faker).Generate(count).ToArray();
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToExchangeRateTable(dtos));
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -138,16 +138,16 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
     }
- 
+
     [Fact]
     public async Task GetAsync_DateRange_EmptyArrayResponse_ReturnsSuccessWithEmptyArray()
     {
@@ -159,10 +159,10 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, Array.Empty<ExchangeRateTableDto>()), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, from, to, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBeEmpty();

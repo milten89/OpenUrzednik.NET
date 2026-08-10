@@ -17,7 +17,7 @@ public class DefaultNbpUrlBuilder : INbpUrlBuilder
     public string ForTopCount(int topCount)
         => $"{_baseUrl}/last/{topCount}";
 
-    public string Today() 
+    public string Today()
         => $"{_baseUrl}/today";
 
     public string ForDate(DateOnly date)

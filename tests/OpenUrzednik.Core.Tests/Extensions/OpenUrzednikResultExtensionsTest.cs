@@ -93,7 +93,7 @@ public class OpenUrzednikResultExtensionsTest
         var result = OpenUrzednikResult.Failure<int>(new TestError("Test error"));
 
         // Act && Assert
-         Should.Throw<TestException>(() => result.EnsureSuccess());
+        Should.Throw<TestException>(() => result.EnsureSuccess());
     }
 
     [Fact]
@@ -142,5 +142,5 @@ public class OpenUrzednikResultExtensionsTest
             .InnerExceptions.Count.ShouldBe(2);
     }
 
-    
+
 }

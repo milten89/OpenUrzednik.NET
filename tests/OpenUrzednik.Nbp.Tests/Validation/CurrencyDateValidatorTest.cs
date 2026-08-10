@@ -18,7 +18,7 @@ public class CurrencyDateValidatorTest
         Should.Throw<ArgumentNullException>(() => new CurrencyDateValidator(null!, MinDate))
             .ParamName.ShouldBe("propertyName");
     }
-    
+
     [Theory]
     [InlineData(2002, 1, 2)]
     [InlineData(2002, 1, 3)]

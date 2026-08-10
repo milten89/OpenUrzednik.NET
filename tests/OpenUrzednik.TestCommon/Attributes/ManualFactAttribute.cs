@@ -4,7 +4,7 @@ namespace OpenUrzednik.TestCommon.Attributes;
 
 public sealed class ManualFactAttribute : FactAttribute
 {
-    public ManualFactAttribute([CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1) 
+    public ManualFactAttribute([CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
         : base(sourceFilePath, sourceLineNumber)
     {
         if (Environment.GetEnvironmentVariable(TestConst.IntegrationTestsEnabledEnvVar) is null)

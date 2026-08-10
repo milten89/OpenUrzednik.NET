@@ -24,7 +24,7 @@ public partial class DefaultNbpGoldPriceClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        using var httpClient = CreateHttpClient(faker,  new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
@@ -36,7 +36,7 @@ public partial class DefaultNbpGoldPriceClientTest
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
-    
+
     [Fact]
     public async Task GetTopCountAsync_SuccessfulResponse_ReturnsAllMappedGoldPricesInOriginalOrder()
     {
@@ -46,7 +46,7 @@ public partial class DefaultNbpGoldPriceClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
         var dtos = new GoldPriceDtoFaker().LinkRandomizerTo(faker).Generate(count).ToArray();
-        using var httpClient = CreateHttpClient(faker,  CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
         var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
@@ -56,7 +56,7 @@ public partial class DefaultNbpGoldPriceClientTest
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(dtos.Select(x => new GoldPrice(x.Date, x.Price)));
     }
-    
+
     [Fact]
     public async Task GetTopCountAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -65,7 +65,7 @@ public partial class DefaultNbpGoldPriceClientTest
         int count = faker.Random.Int(3, 10);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
-        using var httpClient = CreateHttpClient(faker,  new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
         var sut = CreateApiClient(httpClient, urlBuilder);
 
         // Act
@@ -76,7 +76,7 @@ public partial class DefaultNbpGoldPriceClientTest
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
     }
-    
+
     [Fact]
     public async Task GetTopCountAsync_EmptyArrayResponse_ReturnsSuccessWithEmptyArray()
     {
@@ -85,12 +85,12 @@ public partial class DefaultNbpGoldPriceClientTest
         int count = faker.Random.Int(3, 10);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
-        using var httpClient = CreateHttpClient(faker,  CreateJsonResponse(HttpStatusCode.OK, []), out _);
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, []), out _);
         var sut = CreateApiClient(httpClient, urlBuilder);
-        
+
         // Act
         var result = await sut.GetTopCountAsync(count, TestContext.Current.CancellationToken);
-        
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBeEmpty();

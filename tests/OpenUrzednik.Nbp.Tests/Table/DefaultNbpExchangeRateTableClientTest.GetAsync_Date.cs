@@ -29,17 +29,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(table, date, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Theory]
     [InlineData(2002, 1, 1)]
     [InlineData(2000, 1, 1)]
@@ -50,17 +50,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, new DateOnly(year, month, day), TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_Date_InvalidTableAndDateBeforeMinDate_ReturnsCombinedValidationErrorsWithoutSendingRequest()
     {
@@ -70,17 +70,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync((MidTableType)99, date, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(2);
         result.Errors.ShouldAllBe(e => e is ValidationError);
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetAsync_Date_SuccessfulResponse_ReturnsMappedExchangeRateTable()
     {
@@ -92,15 +92,15 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, [dto]), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, date, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToExchangeRateTable(dto));
     }
- 
+
     [Fact]
     public async Task GetAsync_Date_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -111,16 +111,16 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, date, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<NotFoundError>();
     }
- 
+
     [Fact]
     public async Task GetAsync_Date_EmptyArrayResponse_ReturnFailureWithNotFoundError()
     {
@@ -131,10 +131,10 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, Array.Empty<ExchangeRateTableDto>()), out _);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
- 
+
         // Act
         var result = await sut.GetAsync(MidTableType.A, date, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

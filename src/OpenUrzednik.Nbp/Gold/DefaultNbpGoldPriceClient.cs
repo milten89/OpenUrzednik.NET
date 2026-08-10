@@ -18,7 +18,7 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
 
     public DefaultNbpGoldPriceClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory)
         : this(httpClient, urlBuilderFactory, TimeProvider.System) { }
-    
+
     public DefaultNbpGoldPriceClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(httpClient, nameof(httpClient));
@@ -30,8 +30,8 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
         _urlBuilder = urlBuilderFactory.GetGoldBuilder();
     }
 
-    public async Task<OpenUrzednikResult<GoldPrice>> GetLatestAsync(CancellationToken cancellationToken )
-    {        
+    public async Task<OpenUrzednikResult<GoldPrice>> GetLatestAsync(CancellationToken cancellationToken)
+    {
         var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.Latest(), JsonContext.GoldPriceDtoArray, _timeProvider, cancellationToken);
         if (requestResult.IsFailure)
             return OpenUrzednikResult.Failure(requestResult.Errors);
@@ -40,7 +40,7 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
             : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
-    public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken )
+    public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken)
     {
         var topCountValidation = new TopCountValidator(nameof(topCount), topCount).Validate();
         if (topCountValidation.IsFailure)
@@ -52,7 +52,7 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
             : OpenUrzednikResult.Failure<IReadOnlyList<GoldPrice>>(requestResult.Errors);
     }
 
-    public async Task<OpenUrzednikResult<GoldPrice>> GetTodayAsync(CancellationToken cancellationToken )
+    public async Task<OpenUrzednikResult<GoldPrice>> GetTodayAsync(CancellationToken cancellationToken)
     {
         var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.Today(), JsonContext.GoldPriceDtoArray, _timeProvider, cancellationToken);
         if (requestResult.IsFailure)
@@ -62,7 +62,7 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
             : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
-    public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken )
+    public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken)
     {
         var dateValidation = new GoldDateValidator(nameof(date), date).Validate();
         if (dateValidation.IsFailure)
@@ -76,7 +76,7 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
             : OpenUrzednikResult.Failure(new NotFoundError("NPB API returned empty array."));
     }
 
-    public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken )
+    public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken)
     {
         var toValidation = new GoldDateValidator(nameof(to), to).Validate();
         var dateRangeValidation = new DateRangeValidator((from, to)).Validate();

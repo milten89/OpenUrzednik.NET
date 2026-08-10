@@ -9,13 +9,13 @@ namespace OpenUrzednik.Nbp.Table;
 /// <param name="Rates">List of exchange rates</param>
 public sealed record BuySellExchangeRateTable(string TableId, DateOnly TradingDate, DateOnly PublicationDate, IReadOnlyList<BuySellExchangeRate> Rates)
 {
-    public bool Equals(BuySellExchangeRateTable? other) 
-        => other is not null && 
-           TableId == other.TableId && 
-           TradingDate == other.TradingDate && 
-           PublicationDate == other.PublicationDate && 
+    public bool Equals(BuySellExchangeRateTable? other)
+        => other is not null &&
+           TableId == other.TableId &&
+           TradingDate == other.TradingDate &&
+           PublicationDate == other.PublicationDate &&
            Rates.SequenceEqual(other.Rates);
 
-    public override int GetHashCode() 
+    public override int GetHashCode()
         => HashCode.Combine(TableId, TradingDate, PublicationDate, Rates.Count);
 }

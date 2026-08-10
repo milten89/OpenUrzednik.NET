@@ -98,7 +98,7 @@ public partial class MapperTest
             TradingDate = dtoBase.TradingDate,
             Rates = [rateDto, null!]
         };
-        
+
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
             .ParamName.ShouldBe("dto");

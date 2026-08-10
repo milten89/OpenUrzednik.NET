@@ -91,7 +91,7 @@ public class DateRangeValidatorTest
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
         error.Message.ShouldContain("greater than end date");
     }
-    
+
     [Fact]
     public void Validate_RangeAtMaxBoundaryAcrossLeapYearFebruary_ReturnsSuccess()
     {

@@ -30,16 +30,16 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilderFactory.GetCurrencyBuilder(table, currency).Returns(urlBuilder);
         return urlBuilderFactory;
     }
-    
-    private static DefaultNbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory) 
+
+    private static DefaultNbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory)
         => new(httpClient, urlBuilderFactory, new FakeTimeProvider());
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CurrencyExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.CurrencyExchangeRatesDto) };
-    
+
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CountryExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.CountryExchangeRatesDto) };
-    
+
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, BuySellCurrencyExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.BuySellCurrencyExchangeRatesDto) };
 }

@@ -8,7 +8,7 @@ namespace OpenUrzednik.Nbp.Tests.Fakes;
 internal sealed class BuySellCurrencyExchangeRatesDtoFaker : Faker<BuySellCurrencyExchangeRatesDto>
 {
     private readonly BuySellCurrencyExchangeRateDtoFaker _ratesFaker = new();
-    
+
     public BuySellCurrencyExchangeRatesDtoFaker(int? ratesCount = null)
     {
         Bogus.DataSets.Currency currency = null!;

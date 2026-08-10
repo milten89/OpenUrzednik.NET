@@ -17,19 +17,19 @@ public static class HttpClientExtensions
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(options);
-        
+
         if (string.IsNullOrWhiteSpace(options.ApiUrl))
             throw new ArgumentException("API url must be provided", nameof(options));
-        
+
         var url = options.ApiUrl[^1] == '/' ? options.ApiUrl : $"{options.ApiUrl}/";
-        
+
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
             throw new ArgumentException($"Invalid API url: {url}", nameof(options));
 
         if (options.Timeout != Timeout.InfiniteTimeSpan &&
             options.Timeout <= TimeSpan.Zero)
             throw new ArgumentException($"Invalid timeout value: {options.Timeout}", nameof(options));
-        
+
         httpClient.BaseAddress = uri;
         httpClient.Timeout = options.Timeout;
 
@@ -41,9 +41,9 @@ public static class HttpClientExtensions
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         ArgumentNullException.ThrowIfNull(typeInfo);
-        
+
         cancellationToken.ThrowIfCancellationRequested();
-        
+
         var request = new HttpRequestMessage(HttpMethod.Get, relativePath);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
@@ -51,10 +51,10 @@ public static class HttpClientExtensions
                                        .ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
-            return OpenUrzednikResult.Failure(new NotFoundError($"Resurce at {response.RequestMessage?.RequestUri?.ToString() ?? relativePath} was not found."));
+            return OpenUrzednikResult.Failure(new NotFoundError($"Resource at {response.RequestMessage?.RequestUri?.ToString() ?? relativePath} was not found."));
 
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
-            return OpenUrzednikResult.Failure(new RateLimitExceededError("To many requests.", GetDelay(response, timeProvider)));
+            return OpenUrzednikResult.Failure(new RateLimitExceededError("Too many requests.", GetDelay(response, timeProvider)));
 
         if (!response.IsSuccessStatusCode)
             return OpenUrzednikResult.Failure(new UnknownError($"NBP API return unknown status: {(int)response.StatusCode}."));

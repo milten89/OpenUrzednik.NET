@@ -28,17 +28,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellAsync(new DateOnly(year, month, day), TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetBuySellAsync_Date_SuccessfulResponse_ReturnsMappedBuySellExchangeRateTable()
     {
@@ -50,15 +50,15 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, [dto]), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellAsync(date, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToBuySellExchangeRateTable(dto));
     }
- 
+
     [Fact]
     public async Task GetBuySellAsync_Date_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -69,16 +69,16 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellAsync(date, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<NotFoundError>();
     }
- 
+
     [Fact]
     public async Task GetBuySellAsync_Date_EmptyArrayResponse_ReturnFailureWithNotFoundError()
     {
@@ -89,10 +89,10 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, Array.Empty<BuySellExchangeRateTableDto>()), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellAsync(date, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

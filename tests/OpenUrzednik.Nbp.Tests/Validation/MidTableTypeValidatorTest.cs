@@ -18,7 +18,7 @@ public class MidTableTypeValidatorTest
         Should.Throw<ArgumentNullException>(() => new MidTableTypeValidator(null!, MidTableType.A))
             .ParamName.ShouldBe("propertyName");
     }
-    
+
     [Theory]
     [InlineData(MidTableType.A)]
     [InlineData(MidTableType.B)]
