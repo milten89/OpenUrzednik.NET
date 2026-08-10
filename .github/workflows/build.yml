@@ -4,12 +4,14 @@ on:
   push:
     branches: [ develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
   workflow_call:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -23,7 +25,9 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0   # NBGV needs full history to compute versions
 
     - name: Setup .NET SDK for ${{ matrix.tfm }}
       uses: actions/setup-dotnet@v6
