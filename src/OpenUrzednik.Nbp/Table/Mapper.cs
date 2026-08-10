@@ -14,11 +14,11 @@ internal static class Mapper
             _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(MidTableType)}.", nameof(table)),
         };
     }
-    
+
     internal static ExchangeRateTable[] MapToExchangeRateTable(ExchangeRateTableDto[] dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        
+
         var tables = new ExchangeRateTable[dto.Length];
         for (int i = 0; i < tables.Length; i++)
             tables[i] = MapToExchangeRateTable(dto[i]);
@@ -31,7 +31,7 @@ internal static class Mapper
         ArgumentNullException.ThrowIfNull(dto);
         if (dto.Rates is null)
             throw new ArgumentException($"'{nameof(dto.Rates)}' cannot be null.", nameof(dto));
-        
+
         var rates = new ExchangeRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
             rates[i] = MapToExchangeRate(dto.Rates[i]);
@@ -42,14 +42,14 @@ internal static class Mapper
     internal static ExchangeRate MapToExchangeRate(ExchangeRateDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        
+
         return new ExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Price);
     }
 
     internal static BuySellExchangeRateTable[] MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        
+
         var tables = new BuySellExchangeRateTable[dto.Length];
         for (int i = 0; i < tables.Length; i++)
             tables[i] = MapToBuySellExchangeRateTable(dto[i]);
@@ -62,7 +62,7 @@ internal static class Mapper
         ArgumentNullException.ThrowIfNull(dto);
         if (dto.Rates is null)
             throw new ArgumentException($"'{nameof(dto.Rates)}' cannot be null.", nameof(dto));
-        
+
         var rates = new BuySellExchangeRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
             rates[i] = MapToBuySellExchangeRateTable(dto.Rates[i]);
@@ -73,7 +73,7 @@ internal static class Mapper
     internal static BuySellExchangeRate MapToBuySellExchangeRateTable(BuySellExchangeRateDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        
+
         return new BuySellExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell);
     }
 }

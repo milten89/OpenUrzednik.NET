@@ -145,4 +145,3 @@ public interface INbpCurrencyExchangeRateClient
     /// <returns>Result containing the buy and sell exchange rates or an error</returns>
     Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
 }
-

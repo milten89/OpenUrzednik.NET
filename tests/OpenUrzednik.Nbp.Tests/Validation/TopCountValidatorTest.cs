@@ -20,7 +20,7 @@ public class TopCountValidatorTest
         Should.Throw<ArgumentNullException>(() => new TopCountValidator(null!, 1))
             .ParamName.ShouldBe("propertyName");
     }
-    
+
     [Theory]
     [InlineData(1)]
     [InlineData(5)]

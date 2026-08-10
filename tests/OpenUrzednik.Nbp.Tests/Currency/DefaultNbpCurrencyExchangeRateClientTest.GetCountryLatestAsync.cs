@@ -27,17 +27,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetCountryLatestAsync(currency!, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetCountryLatestAsync_SuccessfulResponse_ReturnsMappedCountryExchangeRates()
     {
@@ -45,23 +45,23 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var dto = new CountryExchangeRatesDtoFaker().LinkRandomizerTo(faker).Generate();
-        
+
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto), out _);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetCountryLatestAsync(currency, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToCountryExchangeRates(dto));
         urlBuilderFactory.Received(1).GetCurrencyBuilder(NbpTable.B, currency);
         urlBuilder.Received(1).Latest();
     }
- 
+
     [Fact]
     public async Task GetCountryLatestAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -73,10 +73,10 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetCountryLatestAsync(currency, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

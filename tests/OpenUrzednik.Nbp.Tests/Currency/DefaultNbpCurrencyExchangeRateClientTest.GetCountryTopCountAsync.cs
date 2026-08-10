@@ -28,17 +28,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetCountryTopCountAsync(currency!, count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
@@ -50,17 +50,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetCountryTopCountAsync(currency, topCount, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetCountryTopCountAsync_InvalidCurrencyAndTopCount_ReturnsCombinedValidationErrorsWithoutSendingRequest()
     {
@@ -69,17 +69,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
- 
+
         // Act
         var result = await sut.GetCountryTopCountAsync("US", 0, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(2);
         result.Errors.ShouldAllBe(e => e is ValidationError);
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetCountryTopCountAsync_SuccessfulResponse_ReturnsMappedCountryExchangeRates()
     {
@@ -93,17 +93,17 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetCountryTopCountAsync(currency, count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToCountryExchangeRates(dto));
         urlBuilderFactory.Received(1).GetCurrencyBuilder(NbpTable.B, currency);
         urlBuilder.Received(1).ForTopCount(count);
     }
- 
+
     [Fact]
     public async Task GetCountryTopCountAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -116,10 +116,10 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
- 
+
         // Act
         var result = await sut.GetCountryTopCountAsync(currency, count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

@@ -4,6 +4,7 @@ using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;
+
 using Shouldly;
 
 namespace OpenUrzednik.Nbp.Tests.Gold;
@@ -125,9 +126,9 @@ public class MapperTest
 
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dtos))
-            .ParamName.ShouldBe("dto");;
+            .ParamName.ShouldBe("dto");
     }
-    
+
     [Fact]
     public void MapToGoldPrice_NullDto_ThrowsArgumentNullException()
     {
@@ -136,9 +137,9 @@ public class MapperTest
 
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dto))
-            .ParamName.ShouldBe("dto");;
+            .ParamName.ShouldBe("dto");
     }
-    
+
     [Fact]
     public void MapToGoldPrice_ArrayContainingNullElement_ThrowsArgumentNullException()
     {
@@ -148,6 +149,6 @@ public class MapperTest
 
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dtos))
-            .ParamName.ShouldBe("dto");;
+            .ParamName.ShouldBe("dto");
     }
 }

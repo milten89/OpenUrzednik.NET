@@ -80,7 +80,7 @@ public partial class DefaultNbpGoldPriceClientTest
         result.Errors.ShouldAllBe(e => e is ValidationError);
         handler.Request.ShouldBeNull();
     }
-    
+
     [Fact]
     public async Task GetAsync_DateRange_SuccessfulResponse_ReturnsAllMappedGoldPricesInOriginalOrder()
     {
@@ -102,7 +102,7 @@ public partial class DefaultNbpGoldPriceClientTest
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(dtos.Select(x => new GoldPrice(x.Date, x.Price)));
     }
-    
+
     [Fact]
     public async Task GetAsync_DateRange_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -123,7 +123,7 @@ public partial class DefaultNbpGoldPriceClientTest
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
     }
-    
+
     [Fact]
     public async Task GetAsync_DateRange_EmptyArrayResponse_ReturnsSuccessWithEmptyArray()
     {
@@ -135,10 +135,10 @@ public partial class DefaultNbpGoldPriceClientTest
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, []), out _);
         var sut = CreateApiClient(httpClient, urlBuilder);
-        
+
         // Act
         var result = await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
-        
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBeEmpty();

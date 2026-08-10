@@ -9,7 +9,7 @@ internal sealed class BuySellCurrencyExchangeRatesDto
 
     [JsonPropertyName("code")]
     public required string CurrencyCode { get; init; }
-    
+
     [JsonPropertyName("rates")]
     public required BuySellCurrencyExchangeRateDto[] Rates { get; init; }
 }

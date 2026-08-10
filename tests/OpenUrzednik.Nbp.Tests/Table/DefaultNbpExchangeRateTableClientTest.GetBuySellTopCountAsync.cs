@@ -27,17 +27,17 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellTopCountAsync(topCount, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
     }
- 
+
     [Fact]
     public async Task GetBuySellTopCountAsync_SuccessfulResponse_ReturnsAllMappedBuySellExchangeRateTablesInOriginalOrder()
     {
@@ -49,15 +49,15 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var dtos = new BuySellExchangeRateTableDtoFaker().LinkRandomizerTo(faker).Generate(count).ToArray();
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellTopCountAsync(count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToBuySellExchangeRateTable(dtos));
     }
- 
+
     [Fact]
     public async Task GetBuySellTopCountAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -68,16 +68,16 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellTopCountAsync(count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
     }
- 
+
     [Fact]
     public async Task GetBuySellTopCountAsync_EmptyArrayResponse_ReturnsSuccessWithEmptyArray()
     {
@@ -88,10 +88,10 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, Array.Empty<BuySellExchangeRateTableDto>()), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellTopCountAsync(count, TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBeEmpty();

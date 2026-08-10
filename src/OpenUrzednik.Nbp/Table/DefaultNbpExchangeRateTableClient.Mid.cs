@@ -13,7 +13,7 @@ public partial class DefaultNbpExchangeRateTableClient
         var midTableValidation = new MidTableTypeValidator(nameof(table), table).Validate();
         if (midTableValidation.IsFailure)
             return midTableValidation;
-        
+
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.ExchangeRateTableDtoArray, _timeProvider, cancellationToken);
@@ -31,7 +31,7 @@ public partial class DefaultNbpExchangeRateTableClient
         var validationResult = midTableValidation.And(topCountValidation);
         if (validationResult.IsFailure)
             return validationResult;
-        
+
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.ExchangeRateTableDtoArray, _timeProvider, cancellationToken);
@@ -45,7 +45,7 @@ public partial class DefaultNbpExchangeRateTableClient
         var midTableValidation = new MidTableTypeValidator(nameof(table), table).Validate();
         if (midTableValidation.IsFailure)
             return midTableValidation;
-        
+
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.ExchangeRateTableDtoArray, _timeProvider, cancellationToken);
@@ -63,7 +63,7 @@ public partial class DefaultNbpExchangeRateTableClient
         var validationResult = midTableValidation.And(dateValidation);
         if (validationResult.IsFailure)
             return validationResult;
-        
+
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.ExchangeRateTableDtoArray, _timeProvider, cancellationToken);
@@ -82,7 +82,7 @@ public partial class DefaultNbpExchangeRateTableClient
         var validationResult = midTableValidation.And(toValidation).And(dateRangeValidation);
         if (validationResult.IsFailure)
             return validationResult;
-        
+
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
 
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.ExchangeRateTableDtoArray, _timeProvider, cancellationToken);

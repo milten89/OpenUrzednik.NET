@@ -11,7 +11,7 @@ internal sealed class BuySellCurrencyExchangeRateDtoFaker : Faker<BuySellCurrenc
     {
         RuleFor(x => x.TableId, f => f.Random.AlphaNumeric(10));
         RuleFor(x => x.PublicationDate, f => f.Date.AfterCurrencyMinDate());
-        RuleFor(x => x.Buy,  f => f.Finance.Amount(1, 10));
-        RuleFor(x => x.Sell,  f => f.Finance.Amount(1, 10));
+        RuleFor(x => x.Buy, f => f.Finance.Amount(1, 10));
+        RuleFor(x => x.Sell, f => f.Finance.Amount(1, 10));
     }
 }

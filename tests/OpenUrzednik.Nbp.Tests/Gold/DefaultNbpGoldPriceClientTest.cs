@@ -23,7 +23,7 @@ public partial class DefaultNbpGoldPriceClientTest
         handler = new StubHttpMessageHandler(response);
         return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
     }
-    
+
     private static DefaultNbpGoldPriceClient CreateApiClient(HttpClient httpClient, INbpUrlBuilder urlBuilder)
     {
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
@@ -31,7 +31,7 @@ public partial class DefaultNbpGoldPriceClientTest
 
         return new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, new FakeTimeProvider());
     }
-    
+
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, GoldPriceDto[] dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.GoldPriceDtoArray) };
 }

@@ -27,15 +27,15 @@ public partial class DefaultNbpExchangeRateTableClientTest
         var dto = new BuySellExchangeRateTableDtoFaker().LinkRandomizerTo(faker).Generate();
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, [dto]), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellLatestAsync(TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToBuySellExchangeRateTable(dto));
     }
- 
+
     [Fact]
     public async Task GetBuySellLatestAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
     {
@@ -45,16 +45,16 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellLatestAsync(TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<NotFoundError>();
     }
- 
+
     [Fact]
     public async Task GetBuySellLatestAsync_EmptyArrayResponse_ReturnFailureWithNotFoundError()
     {
@@ -64,10 +64,10 @@ public partial class DefaultNbpExchangeRateTableClientTest
         urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, Array.Empty<BuySellExchangeRateTableDto>()), out _);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
- 
+
         // Act
         var result = await sut.GetBuySellLatestAsync(TestContext.Current.CancellationToken);
- 
+
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);

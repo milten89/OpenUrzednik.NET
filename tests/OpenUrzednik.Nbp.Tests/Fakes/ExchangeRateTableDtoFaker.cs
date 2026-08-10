@@ -9,7 +9,7 @@ namespace OpenUrzednik.Nbp.Tests.Fakes;
 internal sealed class ExchangeRateTableDtoFaker : Faker<ExchangeRateTableDto>
 {
     private readonly ExchangeRateDtoFaker _ratesFaker = new();
-    
+
     public ExchangeRateTableDtoFaker(int? ratesCount = null)
     {
         RuleFor(x => x.TableId, f => f.Random.AlphaNumeric(10));
