@@ -14,6 +14,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment: nuget-release
     permissions:
       id-token: write
       contents: write   # needed to push tags and create GitHub Releases
