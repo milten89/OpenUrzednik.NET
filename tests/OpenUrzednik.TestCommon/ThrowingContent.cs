@@ -9,7 +9,7 @@ public sealed class ThrowingContent : HttpContent
     public ThrowingContent(Func<Stream, TransportContext?, Task> serializeToStreamDelegate)
     {
         ArgumentNullException.ThrowIfNull(serializeToStreamDelegate);
-        
+
         _serializeToStreamDelegate = serializeToStreamDelegate;
     }
 
