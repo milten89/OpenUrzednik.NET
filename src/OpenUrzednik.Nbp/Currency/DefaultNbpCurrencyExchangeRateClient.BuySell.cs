@@ -18,7 +18,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (currencyValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetBuySellLatestAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellLatestAsync");
             traceSpan.RecordErrors(currencyValidation.Errors);
             return currencyValidation;
         }
@@ -46,7 +46,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetBuySellTopCountAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellTopCountAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
@@ -71,7 +71,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (currencyValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetBuySellTodayAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellTodayAsync");
             traceSpan.RecordErrors(currencyValidation.Errors);
             return currencyValidation;
         }
@@ -99,7 +99,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetBuySellAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
@@ -129,7 +129,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetBuySellAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }

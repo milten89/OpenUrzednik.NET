@@ -65,7 +65,7 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
         if (topCountValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetTopCountAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTopCountAsync");
             traceSpan.RecordErrors(topCountValidation.Errors);
             return topCountValidation;
         }
@@ -108,7 +108,7 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
         if (dateValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
             traceSpan.RecordErrors(dateValidation.Errors);
             return dateValidation;
         }
@@ -141,7 +141,7 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }

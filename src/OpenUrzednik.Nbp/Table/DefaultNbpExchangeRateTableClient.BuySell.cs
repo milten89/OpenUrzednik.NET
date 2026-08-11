@@ -41,7 +41,7 @@ public partial class DefaultNbpExchangeRateTableClient
         if (topCountValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetBuySellTopCountAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellTopCountAsync");
             traceSpan.RecordErrors(topCountValidation.Errors);
             return topCountValidation;
         }
@@ -88,7 +88,7 @@ public partial class DefaultNbpExchangeRateTableClient
         if (dateValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetBuySellAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellAsync");
             traceSpan.RecordErrors(dateValidation.Errors);
             return dateValidation;
         }
@@ -123,7 +123,7 @@ public partial class DefaultNbpExchangeRateTableClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetBuySellAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }

@@ -18,7 +18,7 @@ public partial class DefaultNbpExchangeRateTableClient
         if (midTableValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetLatestAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetLatestAsync");
             traceSpan.RecordErrors(midTableValidation.Errors);
             return midTableValidation;
         }
@@ -53,7 +53,7 @@ public partial class DefaultNbpExchangeRateTableClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetTopCountAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTopCountAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
@@ -78,7 +78,7 @@ public partial class DefaultNbpExchangeRateTableClient
         if (midTableValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetTodayAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTodayAsync");
             traceSpan.RecordErrors(midTableValidation.Errors);
             return midTableValidation;
         }
@@ -113,7 +113,7 @@ public partial class DefaultNbpExchangeRateTableClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
@@ -150,7 +150,7 @@ public partial class DefaultNbpExchangeRateTableClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }

@@ -18,7 +18,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (currencyValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetLatestAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetLatestAsync");
             traceSpan.RecordErrors(currencyValidation.Errors);
             return currencyValidation;
         }
@@ -46,7 +46,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetTopCountAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTopCountAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
@@ -71,7 +71,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (currencyValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetTodayAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTodayAsync");
             traceSpan.RecordErrors(currencyValidation.Errors);
             return currencyValidation;
         }
@@ -99,14 +99,14 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
 
         var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.A, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.CurrencyExchangeRatesDto,_telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.CurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
             return OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value));
@@ -129,7 +129,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }

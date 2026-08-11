@@ -18,7 +18,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (currencyValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetCountryLatestAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetCountryLatestAsync");
             traceSpan.RecordErrors(currencyValidation.Errors);
             return currencyValidation;
         }
@@ -46,7 +46,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetCountryTopCountAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetCountryTopCountAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
@@ -71,7 +71,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (currencyValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetCountryTodayAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetCountryTodayAsync");
             traceSpan.RecordErrors(currencyValidation.Errors);
             return currencyValidation;
         }
@@ -99,7 +99,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetCountryAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetCountryAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
@@ -129,7 +129,7 @@ public partial class DefaultNbpCurrencyExchangeRateClient
         if (validationResult.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null,"Validation failed for GetCountryAsync");
+                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetCountryAsync");
             traceSpan.RecordErrors(validationResult.Errors);
             return validationResult;
         }
