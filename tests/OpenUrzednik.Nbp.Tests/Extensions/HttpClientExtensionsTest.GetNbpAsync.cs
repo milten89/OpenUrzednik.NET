@@ -10,6 +10,8 @@ using Bogus;
 
 using Microsoft.Extensions.Time.Testing;
 
+using NSubstitute;
+
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Extensions;
@@ -271,6 +273,115 @@ public partial class HttpClientExtensionsTest
         result.IsSuccess.ShouldBeFalse();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<SerializationError>();
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_HttpClientThrows_RecordsExceptionOnSpanAndRethrows()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var thrown = new HttpRequestException("Connection refused");
+        var handler = new StubHttpMessageHandler(thrown);
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")) };
+
+        var span = Substitute.For<IOpenUrzednikSpan>();
+        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
+        tracer.StartSpan(Arg.Any<string>()).Returns(span);
+        var telemetryProvider = new NbpTelemetryProvider(NullOpenUrzednikLogger.Instance, tracer);
+
+        // Act
+        var actual = await Should.ThrowAsync<HttpRequestException>(
+            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken));
+
+        // Assert
+        actual.ShouldBeSameAs(thrown);
+        span.Received(1).RecordException(thrown);
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_CancelledDuringSendAsync_DoesNotRecordExceptionOrLog()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var cts = new CancellationTokenSource();
+        var handler = new DelegatingStubHttpMessageHandler(async (_, ct) =>
+        {
+            await cts.CancelAsync();
+            ct.ThrowIfCancellationRequested();
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")) };
+
+        var span = Substitute.For<IOpenUrzednikSpan>();
+        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
+        tracer.StartSpan(Arg.Any<string>()).Returns(span);
+        var logger = Substitute.For<IOpenUrzednikLogger>();
+        var telemetryProvider = new NbpTelemetryProvider(logger, tracer);
+
+        // Act
+        await Should.ThrowAsync<OperationCanceledException>(
+            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, cts.Token));
+
+        // Assert
+        span.DidNotReceive().RecordException(Arg.Any<Exception>());
+        logger.DidNotReceive().Log(Arg.Any<OpenUrzednikLogLevel>(), Arg.Any<Exception>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_CancelledDuringContentRead_DoesNotLogOrRecordAsError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var cts = new CancellationTokenSource();
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ThrowingContent((_, _) => { cts.Cancel(); throw new OperationCanceledException(); })
+        };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        var span = Substitute.For<IOpenUrzednikSpan>();
+        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
+        tracer.StartSpan(Arg.Any<string>()).Returns(span);
+        var logger = Substitute.For<IOpenUrzednikLogger>();
+        var telemetryProvider = new NbpTelemetryProvider(logger, tracer);
+
+        // Act
+        await Should.ThrowAsync<OperationCanceledException>(
+            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, cts.Token));
+
+        // Assert
+        span.DidNotReceive().RecordException(Arg.Any<Exception>());
+        logger.DidNotReceive().Log(Arg.Any<OpenUrzednikLogLevel>(), Arg.Any<Exception>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_UnexpectedExceptionDuringRead_LogsRecordsAndRethrows()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var thrown = new IOException("Connection reset");
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ThrowingContent((_, _) => throw thrown)
+        };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        var span = Substitute.For<IOpenUrzednikSpan>();
+        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
+        tracer.StartSpan(Arg.Any<string>()).Returns(span);
+        var logger = Substitute.For<IOpenUrzednikLogger>();
+        logger.IsEnabled(Arg.Any<OpenUrzednikLogLevel>()).Returns(true);
+        var telemetryProvider = new NbpTelemetryProvider(logger, tracer);
+
+        // Act
+        var actual = await Should.ThrowAsync<HttpRequestException>(
+            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken));
+
+        // Assert
+        actual.InnerException.ShouldBeSameAs(thrown);
+        span.Received(1).RecordException(actual);
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Error, actual, Arg.Any<string>(), "path", Arg.Any<string>());
     }
 
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)

@@ -128,7 +128,7 @@ public static class HttpClientExtensions
         {
             telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Unexpected error while reading NBP response from {path}", "path", relativePath);
             traceSpan.RecordException(ex);
-            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
+            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected error");
             throw;
         }
     }
