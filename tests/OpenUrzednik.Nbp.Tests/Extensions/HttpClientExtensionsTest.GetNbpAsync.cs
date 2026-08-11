@@ -384,8 +384,6 @@ public partial class HttpClientExtensionsTest
         logger.Received(1).Log(OpenUrzednikLogLevel.Error, actual, Arg.Any<string>(), "path", Arg.Any<string>());
     }
 
-
-
     [Fact]
     public async Task GetNbpAsync_ValidRequest_SetsSpanTags()
     {

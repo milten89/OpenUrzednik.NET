@@ -7,6 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 
 using NSubstitute;
 
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
@@ -31,8 +32,9 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         return urlBuilderFactory;
     }
 
-    private static DefaultNbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory)
-        => new(httpClient, urlBuilderFactory, new FakeTimeProvider());
+    private static DefaultNbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory,
+        IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null)
+        => new(httpClient, urlBuilderFactory, new FakeTimeProvider(), logger, tracer);
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CurrencyExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.CurrencyExchangeRatesDto) };

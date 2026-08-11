@@ -7,6 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 
 using NSubstitute;
 
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Gold;
@@ -25,12 +26,13 @@ public partial class DefaultNbpExchangeRateTableClientTest
         return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
     }
 
-    private static DefaultNbpExchangeRateTableClient CreateApiClient(HttpClient httpClient, NbpTable table, INbpUrlBuilder urlBuilder)
+    private static DefaultNbpExchangeRateTableClient CreateApiClient(HttpClient httpClient, NbpTable table, INbpUrlBuilder urlBuilder,
+        IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null)
     {
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         urlBuilderFactory.GetTableBuilder(table).Returns(urlBuilder);
 
-        return new DefaultNbpExchangeRateTableClient(httpClient, urlBuilderFactory, new FakeTimeProvider());
+        return new DefaultNbpExchangeRateTableClient(httpClient, urlBuilderFactory, new FakeTimeProvider(), logger, tracer);
     }
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, ExchangeRateTableDto[] dtos)
