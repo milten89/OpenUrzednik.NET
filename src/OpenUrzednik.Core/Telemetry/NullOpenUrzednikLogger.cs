@@ -2,10 +2,24 @@ namespace OpenUrzednik.Core.Telemetry;
 
 public sealed class NullOpenUrzednikLogger : IOpenUrzednikLogger
 {
-    public bool IsEnabled(OpenUrzednikLogLevel level) => false;
+    public static readonly NullOpenUrzednikLogger Instance = new();
 
-    public void Log(OpenUrzednikLogLevel level, string messageTemplate) { }
-    public void Log<T1>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1) { }
-    public void Log<T1, T2>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1, T2 arg2) { }
-    public void Log<T1, T2, T3>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1, T2 arg2, T3 arg3) { }
+    public bool IsEnabled(OpenUrzednikLogLevel level) => false;
+    public void Log(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate) { }
+
+    public void Log<T0>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+                        string name0, T0 value0) { }
+
+    public void Log<T0, T1>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+                            string name0, T0 value0,
+                            string name1, T1 value1) { }
+
+    public void Log<T0, T1, T2>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+                                string name0, T0 value0,
+                                string name1, T2 value1,
+                                string name2, T2 value2) { }
+
+    public void Log(OpenUrzednikLogLevel level, string messageTemplate, Exception? exception,
+                    IReadOnlyList<KeyValuePair<string, object?>> properties) { }
+
 }

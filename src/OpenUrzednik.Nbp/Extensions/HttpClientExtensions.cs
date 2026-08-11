@@ -7,7 +7,9 @@ using System.Text.Json.Serialization.Metadata;
 
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Options;
+using OpenUrzednik.Nbp.Telemetry;
 
 namespace OpenUrzednik.Nbp.Extensions;
 
@@ -36,28 +38,53 @@ public static class HttpClientExtensions
         return httpClient;
     }
 
-    internal static async Task<OpenUrzednikResult<TDto>> GetNbpAsync<TDto>(this HttpClient httpClient, string relativePath, JsonTypeInfo<TDto> typeInfo, TimeProvider? timeProvider = null, CancellationToken cancellationToken = default)
+    internal static async Task<OpenUrzednikResult<TDto>> GetNbpAsync<TDto>(this HttpClient httpClient, string relativePath, JsonTypeInfo<TDto> typeInfo, NbpTelemetryProvider telemetryProvider, TimeProvider timeProvider, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         ArgumentNullException.ThrowIfNull(typeInfo);
+        ArgumentNullException.ThrowIfNull(telemetryProvider);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         cancellationToken.ThrowIfCancellationRequested();
+
+        using var traceSpan = telemetryProvider.Tracer.StartSpan("nbp.http.get");
+        traceSpan.SetTag("http.path", relativePath);
 
         var request = new HttpRequestMessage(HttpMethod.Get, relativePath);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
         var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                                        .ConfigureAwait(false);
+        traceSpan.SetTag("http.status_code", (int)response.StatusCode);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
-            return OpenUrzednikResult.Failure(new NotFoundError($"Resource at {response.RequestMessage?.RequestUri?.ToString() ?? relativePath} was not found."));
+        {
+            if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
+                telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP resource not found: {path}.", "path", relativePath);
+            return OpenUrzednikResult.Failure(new NotFoundError(
+                $"Resource at {response.RequestMessage?.RequestUri?.ToString() ?? relativePath} was not found."));
+        }
 
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
-            return OpenUrzednikResult.Failure(new RateLimitExceededError("Too many requests.", GetDelay(response, timeProvider)));
+        {
+            var delay = GetDelay(response, timeProvider);
+            if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Warning))
+                if (delay.HasValue)
+                    telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit, retry after {delay}.", "delay", delay);
+                else
+                    telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit.");
+            traceSpan.SetStatus(SpanStatus.Error, "Rate limited");
+            return OpenUrzednikResult.Failure(new RateLimitExceededError("Too many requests.", delay));
+        }
 
         if (!response.IsSuccessStatusCode)
-            return OpenUrzednikResult.Failure(new UnknownError($"NBP API return unknown status: {(int)response.StatusCode}."));
+        {
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP API returned unexpected status {status}", "status", (int)response.StatusCode);
+            traceSpan.SetStatus(SpanStatus.Error, "Unexpected status");
+            return OpenUrzednikResult.Failure(
+                new UnknownError($"NBP API return unknown status: {(int)response.StatusCode}."));
+        }
 
         try
         {
@@ -69,7 +96,10 @@ public static class HttpClientExtensions
         }
         catch (JsonException ex)
         {
-            return OpenUrzednikResult.Failure(new SerializationError($"Error when serializing response from {relativePath}", ex));
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to deserialize NBP response from {path}", "path", relativePath);
+            traceSpan.RecordException(ex);
+            traceSpan.SetStatus(SpanStatus.Error, "Deserialization failed");
+            return OpenUrzednikResult.Failure(new SerializationError($"Error when deserializing response from {relativePath}", ex));
         }
     }
 

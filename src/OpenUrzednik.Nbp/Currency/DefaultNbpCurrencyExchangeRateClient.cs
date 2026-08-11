@@ -1,4 +1,6 @@
-﻿using OpenUrzednik.Nbp.Common;
+﻿using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;
 
 namespace OpenUrzednik.Nbp.Currency;
@@ -8,20 +10,24 @@ public partial class DefaultNbpCurrencyExchangeRateClient : INbpCurrencyExchange
     private static readonly NbpJsonContext JsonContext = new();
 
     private readonly HttpClient _httpClient;
-    private readonly INbpUrlBuilderFactory _urlBuilderFactoy;
+    private readonly INbpUrlBuilderFactory _urlBuilderFactory;
     private readonly TimeProvider _timeProvider;
+    private readonly NbpTelemetryProvider _telemetryProvider;
 
-    public DefaultNbpCurrencyExchangeRateClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory)
-        : this(httpClient, urlBuilderFactory, TimeProvider.System) { }
+    public DefaultNbpCurrencyExchangeRateClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory,
+                                                IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
+        : this(httpClient, urlBuilderFactory, TimeProvider.System, logger, traceSource) { }
 
-    public DefaultNbpCurrencyExchangeRateClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider)
+    public DefaultNbpCurrencyExchangeRateClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider,
+                                                IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
     {
-        ArgumentNullException.ThrowIfNull(httpClient, nameof(httpClient));
-        ArgumentNullException.ThrowIfNull(urlBuilderFactory, nameof(urlBuilderFactory));
-        ArgumentNullException.ThrowIfNull(timeProvider, nameof(timeProvider));
+        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(urlBuilderFactory);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         _httpClient = httpClient;
-        _urlBuilderFactoy = urlBuilderFactory;
+        _urlBuilderFactory = urlBuilderFactory;
         _timeProvider = timeProvider;
+        _telemetryProvider = new NbpTelemetryProvider(logger, traceSource);
     }
 }

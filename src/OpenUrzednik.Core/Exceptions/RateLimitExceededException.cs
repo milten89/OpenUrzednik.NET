@@ -1,9 +1,11 @@
+using OpenUrzednik.Core.Errors;
+
 namespace OpenUrzednik.Core.Exceptions;
 
 /// <summary>
 /// Represents an exception that is thrown when the rate limit has been exceeded.
 /// </summary>
-public class RateLimitExceededException : OpenUrzednikException
+public sealed class RateLimitExceededException : OpenUrzednikException
 {
     public TimeSpan? RetryAfter { get; }
 
@@ -12,7 +14,8 @@ public class RateLimitExceededException : OpenUrzednikException
     /// </summary>
     /// <param name="message">The error message.</param>
     /// <param name="retryAfter">Delay between next request</param>
-    public RateLimitExceededException(string message, TimeSpan? retryAfter) : base(message)
+    public RateLimitExceededException(string message, TimeSpan? retryAfter)
+        : base(RateLimitExceededError.ErrorCode, message)
     {
         RetryAfter = retryAfter;
     }
@@ -23,7 +26,8 @@ public class RateLimitExceededException : OpenUrzednikException
     /// <param name="message">The error message.</param>
     /// <param name="retryAfter">Delay between next request</param>
     /// <param name="innerException">The inner exception.</param>
-    public RateLimitExceededException(string message, TimeSpan? retryAfter, Exception innerException) : base(message, innerException)
+    public RateLimitExceededException(string message, TimeSpan? retryAfter, Exception innerException)
+        : base(RateLimitExceededError.ErrorCode, message, innerException)
     {
         RetryAfter = retryAfter;
     }

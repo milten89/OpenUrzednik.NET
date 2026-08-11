@@ -11,7 +11,9 @@ using Bogus;
 using Microsoft.Extensions.Time.Testing;
 
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Extensions;
+using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.TestCommon;
 using OpenUrzednik.TestCommon.Extensions;
 
@@ -28,6 +30,7 @@ public partial class HttpClientExtensionsTest
     private static readonly JsonTypeInfo<TestDto> TypeInfo = (JsonTypeInfo<TestDto>)JsonOptions.GetTypeInfo(typeof(TestDto));
 
     private readonly TimeProvider _timeProvider = new FakeTimeProvider();
+    private readonly NbpTelemetryProvider _telemetryProvider = new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
 
     [Fact]
     public async Task GetNbpAsync_NullHttpClient_ThrowsArgumentNullException()
@@ -36,7 +39,7 @@ public partial class HttpClientExtensionsTest
         HttpClient httpClient = null!;
 
         // Act && Assert
-        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync("", TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync("", TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("httpClient");
     }
 
@@ -47,7 +50,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(new Faker().WithConstantSeed(), new HttpResponseMessage(HttpStatusCode.OK));
 
         // Act && Assert
-        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync(null!, TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync(null!, TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("relativePath");
     }
 
@@ -60,7 +63,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(new Faker().WithConstantSeed(), new HttpResponseMessage(HttpStatusCode.OK));
 
         // Act && Assert
-        (await Should.ThrowAsync<ArgumentException>(async () => await httpClient.GetNbpAsync(relativePath, TypeInfo, _timeProvider, TestContext.Current.CancellationToken)))
+        (await Should.ThrowAsync<ArgumentException>(async () => await httpClient.GetNbpAsync(relativePath, TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("relativePath");
     }
 
@@ -72,7 +75,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK));
 
         // Act && Assert
-        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync<TestDto>(faker.Internet.UrlRootedPath(), null!, _timeProvider, TestContext.Current.CancellationToken)))
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync<TestDto>(faker.Internet.UrlRootedPath(), null!, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("typeInfo");
     }
 
@@ -86,7 +89,7 @@ public partial class HttpClientExtensionsTest
         await cts.CancelAsync();
 
         // Act && Assert
-        await Should.ThrowAsync<OperationCanceledException>(async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, cts.Token));
     }
 
     [Fact]
@@ -98,7 +101,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto), out var handler);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         handler.Request.ShouldNotBeNull();
@@ -116,7 +119,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound));
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -135,7 +138,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -158,7 +161,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -181,7 +184,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -199,7 +202,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -221,7 +224,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -242,7 +245,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
@@ -262,7 +265,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
