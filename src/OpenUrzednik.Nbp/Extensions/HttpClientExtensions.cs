@@ -61,6 +61,10 @@ public static class HttpClientExtensions
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             traceSpan.RecordException(ex);
@@ -109,6 +113,10 @@ public static class HttpClientExtensions
                 ? OpenUrzednikResult.Success(dto)
                 : OpenUrzednikResult.Failure(new UnknownError($"NBP API return empty response for {relativePath}."));
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (JsonException ex)
         {
             telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to deserialize NBP response from {path}", "path", relativePath);
@@ -118,7 +126,7 @@ public static class HttpClientExtensions
         }
         catch (Exception ex)
         {
-            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to deserialize NBP response from {path}", "path", relativePath);
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Unexpected error while reading NBP response from {path}", "path", relativePath);
             traceSpan.RecordException(ex);
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
             throw;
