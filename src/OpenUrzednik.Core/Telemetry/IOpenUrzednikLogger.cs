@@ -15,6 +15,7 @@ public interface IOpenUrzednikLogger
                          string name1, T1 value1,
                          string name2, T2 value2);
 
-    void Log(OpenUrzednikLogLevel level, string messageTemplate, Exception? exception,
-             IReadOnlyList<KeyValuePair<string, object?>> properties);
+    void Log(OpenUrzednikLogLevel level, Exception? exception,
+        string messageTemplate,
+        IReadOnlyList<KeyValuePair<string, object?>> properties);
 }

@@ -14,9 +14,10 @@ public sealed class NullOpenUrzednikTraceSource : IOpenUrzednikTraceSource
     private sealed class NullOpenUrzednikSpan : IOpenUrzednikSpan
     {
         public bool IsRecording => false;
+
         public void SetTag<T>(string key, T value) { }
 
-        public void SetStatus(SpanStatus status, string? description = null) { }
+        public void SetStatus(OpenUrzednikSpanStatus status, string? description = null) { }
 
         public void RecordException(Exception exception) { }
 
