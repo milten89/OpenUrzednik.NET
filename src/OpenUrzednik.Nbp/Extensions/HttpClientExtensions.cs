@@ -70,10 +70,12 @@ public static class HttpClientExtensions
         {
             var delay = GetDelay(response, timeProvider);
             if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Warning))
+            {
                 if (delay.HasValue)
                     telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit, retry after {delay}.", "delay", delay);
                 else
                     telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit.");
+            }
             traceSpan.SetStatus(SpanStatus.Error, "Rate limited");
             return OpenUrzednikResult.Failure(new RateLimitExceededError("Too many requests.", delay));
         }

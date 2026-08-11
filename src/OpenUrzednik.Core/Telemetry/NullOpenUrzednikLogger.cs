@@ -18,7 +18,7 @@ public sealed class NullOpenUrzednikLogger : IOpenUrzednikLogger
 
     public void Log<T0, T1, T2>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
                                 string name0, T0 value0,
-                                string name1, T2 value1,
+                                string name1, T1 value1,
                                 string name2, T2 value2)
     { }
 

@@ -47,7 +47,9 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
             case true when requestResult.Value.Length != 0:
                 return OpenUrzednikResult.Success(Mapper.MapToGoldPrice(requestResult.Value[0]));
             case true when requestResult.Value.Length == 0:
-                var error = new NotFoundError("NPB API returned empty array.");
+                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
+                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", _urlBuilder.Latest());
+                var error = new NotFoundError("NBP API returned empty array.");
                 traceSpan.RecordError(error);
                 return OpenUrzednikResult.Failure(error);
             default:
@@ -90,7 +92,10 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
             case true when requestResult.Value.Length != 0:
                 return OpenUrzednikResult.Success(Mapper.MapToGoldPrice(requestResult.Value[0]));
             case true when requestResult.Value.Length == 0:
-                var error = new NotFoundError("NPB API returned empty array.");
+
+                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
+                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", _urlBuilder.Today());
+                var error = new NotFoundError("NBP API returned empty array.");
                 traceSpan.RecordError(error);
                 return OpenUrzednikResult.Failure(error);
             default:
@@ -120,7 +125,9 @@ public class DefaultNbpGoldPriceClient : INbpGoldPriceClient
             case true when requestResult.Value.Length != 0:
                 return OpenUrzednikResult.Success(Mapper.MapToGoldPrice(requestResult.Value[0]));
             case true when requestResult.Value.Length == 0:
-                var error = new NotFoundError("NPB API returned empty array.");
+                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
+                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", _urlBuilder.ForDate(date));
+                var error = new NotFoundError("NBP API returned empty array.");
                 traceSpan.RecordError(error);
                 return OpenUrzednikResult.Failure(error);
             default:
