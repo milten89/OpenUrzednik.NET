@@ -384,6 +384,134 @@ public partial class HttpClientExtensionsTest
         logger.Received(1).Log(OpenUrzednikLogLevel.Error, actual, Arg.Any<string>(), "path", Arg.Any<string>());
     }
 
+
+
+    [Fact]
+    public async Task GetNbpAsync_ValidRequest_SetsSpanTags()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var dto = new TestDto(faker.Random.Word(), faker.Random.Int());
+        var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        var relativePath = faker.Internet.UrlRootedPath();
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto));
+
+        // Act
+        await httpClient.GetNbpAsync(relativePath, TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        span.Received(1).SetTag("http.path", relativePath);
+        span.Received(1).SetTag("http.status_code", (int)HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_NotFoundStatusCode_LogsDebugWithPath()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, logger, _) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        // Act
+        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "NBP resource not found: {path}.", "path", Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_TooManyRequestsWithDelay_LogsWarningWithDelay()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var retryDelay = TimeSpan.FromSeconds(5);
+        var (telemetryProvider, logger, _) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Warning).Returns(true);
+        var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        response.Headers.RetryAfter = new RetryConditionHeaderValue(retryDelay);
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit, retry after {delay}.", "delay", retryDelay);
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_TooManyRequestsWithoutDelay_LogsWarningWithoutDelay()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, logger, _) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Warning).Returns(true);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests));
+
+        // Act
+        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit.");
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_TooManyRequests_SetsSpanStatusErrorRateLimited()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests));
+
+        // Act
+        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.BadGateway)]
+    [InlineData(HttpStatusCode.ServiceUnavailable)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task GetNbpAsync_UnsuccessfulStatusCode_LogsWarningAndSetsSpanStatusError(HttpStatusCode statusCode)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, logger, span) = CreateTelemetrySubstitutes();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(statusCode));
+
+        // Act
+        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP API returned unexpected status {status}", "status", (int)statusCode);
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected status");
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_InvalidJson_LogsErrorRecordsExceptionAndSetsSpanStatus()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, logger, span) = CreateTelemetrySubstitutes();
+        var relativePath = faker.Internet.UrlRootedPath();
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("not-valid-json", Encoding.UTF8, MediaTypeNames.Application.Json)
+        };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        await httpClient.GetNbpAsync(relativePath, TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Error, Arg.Any<JsonException>(), "Failed to deserialize NBP response from {path}", "path", relativePath);
+        span.Received(1).RecordException(Arg.Any<JsonException>());
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
+    }
+
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
         => CreateHttpClient(faker, response, out _);
 
@@ -396,6 +524,15 @@ public partial class HttpClientExtensionsTest
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, TestDto dto)
         => new(statusCode) { Content = JsonContent.Create(dto, TypeInfo) };
+
+    private static (NbpTelemetryProvider Provider, IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span) CreateTelemetrySubstitutes()
+    {
+        var logger = Substitute.For<IOpenUrzednikLogger>();
+        var span = Substitute.For<IOpenUrzednikSpan>();
+        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
+        tracer.StartSpan(Arg.Any<string>()).Returns(span);
+        return (new NbpTelemetryProvider(logger, tracer), logger, span);
+    }
 
     private sealed record TestDto(string Name, int Value);
 }
