@@ -73,7 +73,8 @@ public partial class DefaultNbpCurrencyExchangeRateClientTest
         await sut.GetTopCountAsync(currency, count, TestContext.Current.CancellationToken);
 
         // Assert
-        span.Received(2).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Too many requests.");
     }
 
     [Fact]
