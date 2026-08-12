@@ -5,10 +5,20 @@ namespace OpenUrzednik.Core.Errors;
 /// <summary>
 /// Represents an error indicating that the rate limit has been exceeded.
 /// </summary>
-/// <param name="Message">The message associated with the error.</param>
-/// <param name="RetryAfter">Delay between next request</param>
-public record RateLimitExceededError(string Message, TimeSpan? RetryAfter) : OpenUrzednikError(Message)
+public sealed class RateLimitExceededError : OpenUrzednikError
 {
+    public const string ErrorCode = "rateLimitExceeded";
+
+    public TimeSpan? RetryAfter { get; }
+
+    public RateLimitExceededError(string message, TimeSpan? retryAfter)
+        : base(ErrorCode, message)
+    {
+        RetryAfter = retryAfter;
+
+        AddMetadata("retryAfter", retryAfter);
+    }
+
     /// <inheritdoc />
     public override Exception ToException()
         => new RateLimitExceededException(Message, RetryAfter);

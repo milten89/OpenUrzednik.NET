@@ -5,29 +5,38 @@ namespace OpenUrzednik.Core.Errors;
 /// <summary>
 /// Represents a base class for errors in the OpenUrzednik application.
 /// </summary>
-public abstract record OpenUrzednikError
+public abstract class OpenUrzednikError
 {
-    private static readonly IReadOnlyDictionary<string, object?> _emptyMetadata = ReadOnlyDictionary<string, object?>.Empty;
+    private static readonly IReadOnlyDictionary<string, object?> EmptyMetadata = ReadOnlyDictionary<string, object?>.Empty;
 
     private Dictionary<string, object?>? _metadata;
 
     /// <summary>
+    /// Gets the identification code associated with this error.
+    /// </summary>
+    public string Code { get; }
+
+    /// <summary>
     /// Gets the error message associated with this error.
     /// </summary>
-    public string Message { get; init; }
+    public string Message { get; }
+
     /// <summary>
     /// Gets the metadata associated with this error.
     /// </summary>
-    public IReadOnlyDictionary<string, object?> Metadata => _metadata ?? _emptyMetadata;
+    public IReadOnlyDictionary<string, object?> Metadata => _metadata ?? EmptyMetadata;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenUrzednikError"/> class with the specified error message.
     /// </summary>
+    /// <param name="code">The error code.</param>
     /// <param name="message">The error message.</param>
-    protected OpenUrzednikError(string message)
+    protected OpenUrzednikError(string code, string message)
     {
-        ArgumentNullException.ThrowIfNull(message, nameof(message));
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
 
+        Code = code;
         Message = message;
     }
 
@@ -44,4 +53,8 @@ public abstract record OpenUrzednikError
     /// </summary>
     /// <returns>An exception that represents this error.</returns>
     public abstract Exception ToException();
+
+    /// <inheritdoc />
+    public override string ToString()
+        => $"{Code}: {Message}";
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 
 using NSubstitute;
 
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Gold;
@@ -24,12 +25,13 @@ public partial class DefaultNbpGoldPriceClientTest
         return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
     }
 
-    private static DefaultNbpGoldPriceClient CreateApiClient(HttpClient httpClient, INbpUrlBuilder urlBuilder)
+    private static DefaultNbpGoldPriceClient CreateApiClient(HttpClient httpClient, INbpUrlBuilder urlBuilder,
+        IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null)
     {
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         urlBuilderFactory.GetGoldBuilder().Returns(urlBuilder);
 
-        return new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, new FakeTimeProvider());
+        return new DefaultNbpGoldPriceClient(httpClient, urlBuilderFactory, new FakeTimeProvider(), logger, tracer);
     }
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, GoldPriceDto[] dtos)

@@ -5,11 +5,13 @@ namespace OpenUrzednik.Core.Errors;
 /// <summary>
 /// Represents an error indicating that a validation error has occurred.
 /// </summary>
-public record ValidationError : OpenUrzednikError
+public sealed class ValidationError : OpenUrzednikError
 {
+    public const string ErrorCode = "validationError";
+
     private readonly string _ruleName;
     private readonly string? _name;
-    private readonly object _value;
+    private readonly object? _value;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ValidationError"/> class with a specified error message, variable name and value.
@@ -18,11 +20,10 @@ public record ValidationError : OpenUrzednikError
     /// <param name="ruleName">Rule name</param>
     /// <param name="name">Variable name</param>
     /// <param name="value">Variable value</param>
-    public ValidationError(string message, string ruleName, string? name, object value)
-        : base(message)
+    public ValidationError(string message, string ruleName, string? name, object? value)
+        : base(ErrorCode, message)
     {
-        ArgumentNullException.ThrowIfNull(ruleName, nameof(ruleName));
-        ArgumentException.ThrowIfNullOrWhiteSpace(ruleName, nameof(ruleName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(ruleName);
 
         _ruleName = ruleName;
         _name = name;
@@ -31,7 +32,8 @@ public record ValidationError : OpenUrzednikError
         AddMetadata("ruleName", ruleName);
         if (name is not null)
             AddMetadata("name", name);
-        AddMetadata("value", value);
+        if (value is not null)
+            AddMetadata("value", value);
     }
 
     /// <inheritdoc />

@@ -4,8 +4,18 @@ public interface IOpenUrzednikLogger
 {
     bool IsEnabled(OpenUrzednikLogLevel level);
 
-    void Log(OpenUrzednikLogLevel level, string messageTemplate);
-    void Log<T1>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1);
-    void Log<T1, T2>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1, T2 arg2);
-    void Log<T1, T2, T3>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1, T2 arg2, T3 arg3);
+    void Log(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate);
+    void Log<T0>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+                 string name0, T0 value0);
+    void Log<T0, T1>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+                     string name0, T0 value0,
+                     string name1, T1 value1);
+    void Log<T0, T1, T2>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+                         string name0, T0 value0,
+                         string name1, T1 value1,
+                         string name2, T2 value2);
+
+    void Log(OpenUrzednikLogLevel level, Exception? exception,
+        string messageTemplate,
+        IReadOnlyList<KeyValuePair<string, object?>> properties);
 }

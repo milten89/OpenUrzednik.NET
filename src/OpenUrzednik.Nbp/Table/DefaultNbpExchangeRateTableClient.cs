@@ -1,4 +1,6 @@
-﻿using OpenUrzednik.Nbp.Common;
+﻿using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;
 
 namespace OpenUrzednik.Nbp.Table;
@@ -10,18 +12,22 @@ public partial class DefaultNbpExchangeRateTableClient : INbpExchangeRateTableCl
     private readonly HttpClient _httpClient;
     private readonly INbpUrlBuilderFactory _urlBuilderFactory;
     private readonly TimeProvider _timeProvider;
+    private readonly NbpTelemetryProvider _telemetryProvider;
 
-    public DefaultNbpExchangeRateTableClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory)
-        : this(httpClient, urlBuilderFactory, TimeProvider.System) { }
+    public DefaultNbpExchangeRateTableClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory,
+                                             IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
+        : this(httpClient, urlBuilderFactory, TimeProvider.System, logger, traceSource) { }
 
-    public DefaultNbpExchangeRateTableClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider)
+    public DefaultNbpExchangeRateTableClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider,
+                                             IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
     {
-        ArgumentNullException.ThrowIfNull(httpClient, nameof(httpClient));
-        ArgumentNullException.ThrowIfNull(urlBuilderFactory, nameof(urlBuilderFactory));
-        ArgumentNullException.ThrowIfNull(timeProvider, nameof(timeProvider));
+        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(urlBuilderFactory);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         _httpClient = httpClient;
         _urlBuilderFactory = urlBuilderFactory;
         _timeProvider = timeProvider;
+        _telemetryProvider = new NbpTelemetryProvider(logger, traceSource);
     }
 }
