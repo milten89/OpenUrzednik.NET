@@ -1,14 +1,7 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 using System.Net;
 
-using Bogus;
-
-using Microsoft.Extensions.Time.Testing;
-
-using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.TestCommon.Extensions;
 
 using Shouldly;
 
@@ -72,9 +65,13 @@ public partial class DefaultNbpGoldPriceClientWireMockTest
                 .WithStatusCode(HttpStatusCode.OK)
                 .WithBody("[]")
                 .WithDelay(TimeSpan.FromSeconds(5)));
+        var stopwatch = Stopwatch.StartNew();
 
-        // Act && Assert
-        await Should.ThrowAsync<OperationCanceledException>(async () => await CreateSut(timeout: TimeSpan.FromSeconds(0.2)).GetLatestAsync(TestContext.Current.CancellationToken));
+        // Act
+        await Should.ThrowAsync<OperationCanceledException>(async () => await CreateSut(timeout: TimeSpan.FromSeconds(0.1)).GetLatestAsync(TestContext.Current.CancellationToken));
+
+        // Assert
+        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(1));
     }
 
     [Fact]
