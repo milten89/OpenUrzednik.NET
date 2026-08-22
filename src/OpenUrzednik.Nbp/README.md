@@ -6,11 +6,11 @@ Klient **NBP** (Narodowy Bank Polski) dla OpenUrzednik.NET — kursy walut oraz 
 
 ## Status
 
-🚧 Ten pakiet jest obecnie szkieletem — integracja z API NBP jest w trakcie implementacji.
+✅ Stabilne - wersja 1.0.0
 
 ## Instalacja
 
-```bash
+```ps
 dotnet add package OpenUrzednik.Nbp
 ```
 
