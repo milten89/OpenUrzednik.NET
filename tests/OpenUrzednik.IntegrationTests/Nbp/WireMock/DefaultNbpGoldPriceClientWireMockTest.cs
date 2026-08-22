@@ -14,6 +14,7 @@ public partial class DefaultNbpGoldPriceClientWireMockTest : IDisposable
 {
     private readonly WireMockServer _server = WireMockServer.Start(new WireMockServerSettings() { UseSSL = true });
     private readonly DefaultNbpUrlBuilderFactory _urlBuilderFactory = new();
+    private readonly List<HttpClient> _httpClients = new();
 
     private DefaultNbpGoldPriceClient CreateSut(TimeSpan? timeout = null)
     {
@@ -26,11 +27,14 @@ public partial class DefaultNbpGoldPriceClientWireMockTest : IDisposable
             ApiUrl = _server.Urls[0],
             Timeout = timeout ?? NbpOptions.DefaultTimeout
         });
+        _httpClients.Add(httpClient);
         return new DefaultNbpGoldPriceClient(httpClient, _urlBuilderFactory);
     }
 
     public void Dispose()
     {
+        foreach (var httpClient in _httpClients)
+            httpClient.Dispose();
         _server.Dispose();
     }
 }
