@@ -55,6 +55,7 @@ public partial class HttpClientExtensionsTest
     [InlineData("www.example.com/api")]
     [InlineData("/api/v1/")]
     [InlineData("ftp://example.com/")]
+    [InlineData("http://example.com/")]
     [InlineData("https://")]
     [InlineData("https:/example.com")]
     [InlineData("htt ps://example.com")]

@@ -12,7 +12,6 @@
     <Folder Include="Gus\" />
     <Folder Include="Krs\" />
     <Folder Include="Mf\" />
-    <Folder Include="Nbp\WireMock\" />
   </ItemGroup>
 
   <ItemGroup>
