@@ -42,9 +42,9 @@ public interface INbpGoldPriceClient
     /// Gets the gold price for the specified date range. Can return no data if the gold price are not published yet for the given date range.
     /// Date range can't exceed 93 days or finish before 2013-01-02, because the NBP API doesn't support it.
     /// </summary>
-    /// <param name="from"></param>
-    /// <param name="to"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="from">Start date</param>
+    /// <param name="to">End date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the gold prices or an error</returns>
     Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
 }
