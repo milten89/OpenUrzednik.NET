@@ -10,10 +10,10 @@ public sealed class ValidationException : OpenUrzednikException
     /// <summary>
     /// Initializes a new instance of the <see cref="ValidationException"/> class with a specified error message, optional variable name and value.
     /// </summary>
-    /// <param name="message"></param>
+    /// <param name="message">Validation message</param>
     /// <param name="ruleName">Rule name</param>
-    /// <param name="name"></param>
-    /// <param name="value"></param>
+    /// <param name="name">Parameter name</param>
+    /// <param name="value">Parameter value</param>
     public ValidationException(string message, string ruleName, string? name, object? value)
         : base(ValidationError.ErrorCode, message)
     {

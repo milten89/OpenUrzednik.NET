@@ -8,9 +8,9 @@ namespace OpenUrzednik.Nbp.Tests.Table;
 public partial class MapperTest
 {
     [Theory]
-    [InlineData(MidTableType.A, NbpTable.A)]
-    [InlineData(MidTableType.B, NbpTable.B)]
-    public void MapToNbpTable_DefinedValue_ReturnsMappedNbpTable(MidTableType input, NbpTable expected)
+    [InlineData(TableType.A, NbpTable.A)]
+    [InlineData(TableType.B, NbpTable.B)]
+    public void MapToNbpTable_DefinedValue_ReturnsMappedNbpTable(TableType input, NbpTable expected)
     {
         // Act
         var result = Mapper.MapToNbpTable(input);
@@ -20,9 +20,9 @@ public partial class MapperTest
     }
 
     [Theory]
-    [InlineData((MidTableType)99)]
-    [InlineData((MidTableType)(-1))]
-    public void MapToNbpTable_UndefinedValue_ThrowsArgumentException(MidTableType input)
+    [InlineData((TableType)99)]
+    [InlineData((TableType)(-1))]
+    public void MapToNbpTable_UndefinedValue_ThrowsArgumentException(TableType input)
     {
         // Act && Assert
         Should.Throw<ArgumentException>(() => Mapper.MapToNbpTable(input))

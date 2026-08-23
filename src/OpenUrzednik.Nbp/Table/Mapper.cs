@@ -5,13 +5,13 @@ namespace OpenUrzednik.Nbp.Table;
 
 internal static class Mapper
 {
-    internal static NbpTable MapToNbpTable(MidTableType table)
+    internal static NbpTable MapToNbpTable(TableType table)
     {
         return table switch
         {
-            MidTableType.A => NbpTable.A,
-            MidTableType.B => NbpTable.B,
-            _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(MidTableType)}.", nameof(table)),
+            TableType.A => NbpTable.A,
+            TableType.B => NbpTable.B,
+            _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(TableType)}.", nameof(table)),
         };
     }
 

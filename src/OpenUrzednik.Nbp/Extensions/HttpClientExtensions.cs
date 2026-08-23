@@ -25,8 +25,14 @@ public static class HttpClientExtensions
 
         var url = options.ApiUrl[^1] == '/' ? options.ApiUrl : $"{options.ApiUrl}/";
 
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
             throw new ArgumentException($"Invalid API url: {url}", nameof(options));
+
+        if (uri.Scheme == Uri.UriSchemeHttp)
+            throw new ArgumentException($"Invalid API url scheme: {url}. NBP API no longer supports HTTP", nameof(options));
+
+        if (uri.Scheme != Uri.UriSchemeHttps)
+            throw new ArgumentException($"Invalid API url scheme: {url}", nameof(options));
 
         if (options.Timeout != Timeout.InfiniteTimeSpan &&
             options.Timeout <= TimeSpan.Zero)

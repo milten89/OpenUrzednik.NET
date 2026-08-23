@@ -1,6 +1,4 @@
-﻿using OpenUrzednik.Core.Errors;
-
-namespace OpenUrzednik.Core.Telemetry;
+﻿namespace OpenUrzednik.Core.Telemetry;
 
 public interface IOpenUrzednikSpan : IDisposable
 {

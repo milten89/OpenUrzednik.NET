@@ -3,7 +3,7 @@ namespace OpenUrzednik.Nbp.Table;
 /// <summary>
 /// Exchange rate
 /// </summary>
-/// <param name="Currency">Currency name</param>
-/// <param name="Code">ISO 4217 currency code</param>
-/// <param name="Mid">Currency average exchange rate</param>
-public sealed record ExchangeRate(string Currency, string Code, decimal Mid);
+/// <param name="CurrencyName">Currency name</param>
+/// <param name="CurrencyCode">ISO 4217 currency code</param>
+/// <param name="Price">Currency average exchange rate</param>
+public sealed record ExchangeRate(string CurrencyName, string CurrencyCode, decimal Price);

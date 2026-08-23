@@ -1,0 +1,39 @@
+﻿using System.Net;
+using System.Net.Http.Json;
+
+using Bogus;
+
+using Microsoft.Extensions.Time.Testing;
+
+using NSubstitute;
+
+using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp.UrlBuilder;
+using OpenUrzednik.TestCommon;
+
+namespace OpenUrzednik.Nbp.Tests.Gold;
+
+public partial class NbpGoldPriceClientTest
+{
+    private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response, out StubHttpMessageHandler handler)
+    {
+        var baseAddress = faker.Internet.UrlWithPath("https").TrimEnd('/') + '/';
+        handler = new StubHttpMessageHandler(response);
+        return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
+    }
+
+    private static NbpGoldPriceClient CreateApiClient(HttpClient httpClient, INbpUrlBuilder urlBuilder,
+        IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null)
+    {
+        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
+        urlBuilderFactory.GetGoldBuilder().Returns(urlBuilder);
+
+        return new NbpGoldPriceClient(httpClient, urlBuilderFactory, new FakeTimeProvider(), logger, tracer);
+    }
+
+    private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, GoldPriceDto[] dtos)
+        => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.GoldPriceDtoArray) };
+}
