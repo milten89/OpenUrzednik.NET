@@ -13,7 +13,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="table">Table type</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<ExchangeRateTable>> GetLatestAsync(MidTableType table, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<ExchangeRateTable>> GetLatestAsync(TableType table, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the series of the table of currency exchange rate for the specified table type starting from the latest.
@@ -22,7 +22,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="topCount">Number of records to retrieve</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(MidTableType table, int topCount, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(TableType table, int topCount, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the todays table of currency exchange rate for the specified table type. Can return no data if the table is not published yet for today.
@@ -30,7 +30,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="table">Table type</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<ExchangeRateTable>> GetTodayAsync(MidTableType table, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<ExchangeRateTable>> GetTodayAsync(TableType table, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the table of currency exchange rate for the specified table type and date. Can return no data if the table is not published yet for the given date.
@@ -40,7 +40,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(MidTableType table, DateOnly date, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(TableType table, DateOnly date, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the table of currency exchange rate for the specified table type and date range. Can return no data if the tables are not published yet for the given date range.
@@ -51,7 +51,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(MidTableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(TableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the latest table of buy and sell currency exchange rate.
