@@ -160,7 +160,7 @@ public partial class NbpExchangeRateTableClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var from = faker.Date.AfterCurrencyMinDate();
-        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxTablesDateRange));
         var (_, span, tracer) = CreateTelemetrySubstitutes();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
@@ -259,7 +259,7 @@ public partial class NbpExchangeRateTableClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var from = faker.Date.AfterCurrencyMinDate();
-        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxTablesDateRange));
         var (_, span, tracer) = CreateTelemetrySubstitutes();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());

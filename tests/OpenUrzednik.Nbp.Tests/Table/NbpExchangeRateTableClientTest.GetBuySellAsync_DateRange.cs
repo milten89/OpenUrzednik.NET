@@ -25,7 +25,7 @@ public partial class NbpExchangeRateTableClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var to = faker.Date.BeforeCurrencyMinDate();
-        var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxTablesDateRange));
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
@@ -46,7 +46,7 @@ public partial class NbpExchangeRateTableClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var from = faker.Date.AfterCurrencyMinDate();
-        var to = from.AddDays(DateRangeValidator.MaxDateRange + 1);
+        var to = from.AddDays(DateRangeValidator.MaxTablesDateRange + 1);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);
@@ -67,7 +67,7 @@ public partial class NbpExchangeRateTableClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var to = faker.Date.BeforeCurrencyMinDate();
-        var from = to.AddDays(-DateRangeValidator.MaxDateRange - 1);
+        var from = to.AddDays(-DateRangeValidator.MaxTablesDateRange - 1);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.C, urlBuilder);

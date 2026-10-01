@@ -47,4 +47,19 @@ public class NbpCurrencyExchangeRateClientTest : IClassFixture<NbpHttpClientFixt
         result.Value.CurrencyCode.ShouldBe(currency);
         result.Value.Rates.Count.ShouldBe(topCount);
     }
+
+    [ManualFact]
+    public async Task GetAsync_DateRangeAtRatesLimit_IsAcceptedByTheApi()
+    {
+        // Arrange
+        var from = new DateOnly(2025, 1, 1);
+        var to = from.AddDays(367);
+
+        // Act
+        var result = await _client.GetAsync("USD", from, to, cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Rates.Count.ShouldBeGreaterThan(200);
+    }
 }

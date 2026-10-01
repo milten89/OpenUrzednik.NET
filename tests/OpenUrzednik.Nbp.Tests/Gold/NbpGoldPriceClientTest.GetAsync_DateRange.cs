@@ -24,7 +24,7 @@ public partial class NbpGoldPriceClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var to = faker.Date.BeforeGoldMinDate();
-        var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, urlBuilder);
@@ -45,7 +45,7 @@ public partial class NbpGoldPriceClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var from = faker.Date.AfterGoldMinDate();
-        var to = from.AddDays(DateRangeValidator.MaxDateRange + 1);
+        var to = from.AddDays(DateRangeValidator.MaxRatesDateRange + 1);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, urlBuilder);
@@ -66,7 +66,7 @@ public partial class NbpGoldPriceClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var to = faker.Date.BeforeGoldMinDate();
-        var from = to.AddDays(-DateRangeValidator.MaxDateRange - 1);
+        var from = to.AddDays(-DateRangeValidator.MaxRatesDateRange - 1);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, urlBuilder);

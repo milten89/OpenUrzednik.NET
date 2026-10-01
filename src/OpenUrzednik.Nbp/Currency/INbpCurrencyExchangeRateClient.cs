@@ -27,7 +27,7 @@ public interface INbpCurrencyExchangeRateClient
     /// Table A (common currencies) is published on every business day. Table B (less common currencies) is published once a week, on Wednesdays.
     /// </remarks>
     /// <param name="currency">ISO 4217 currency code</param>
-    /// <param name="topCount">Number of records to retrieve</param>
+    /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the currency exchange rates or an error</returns>
@@ -48,7 +48,7 @@ public interface INbpCurrencyExchangeRateClient
 
     /// <summary>
     /// Gets the mid exchange rate of the currency for the specified date. Can return no data if the exchange rate is not published for the given date.
-    /// Date can't be lower than 2002-01-02, because the NBP API doesn't support it.
+    /// Date can't be lower than 2002-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
     /// </summary>
     /// <remarks>
     /// Table A (common currencies) is published on every business day. Table B (less common currencies) is published once a week, on Wednesdays.
@@ -62,7 +62,7 @@ public interface INbpCurrencyExchangeRateClient
 
     /// <summary>
     /// Gets the mid exchange rates of the currency for the specified date range. Can return no data if the exchange rates are not published for the given date range.
-    /// Date range can't exceed 93 days or finish before 2002-01-02, because the NBP API doesn't support it.
+    /// Date range can't exceed 367 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2002-01-02, because the NBP API doesn't support it.
     /// </summary>
     /// <remarks>
     /// Table A (common currencies) is published on every business day. Table B (less common currencies) is published once a week, on Wednesdays.
@@ -87,7 +87,7 @@ public interface INbpCurrencyExchangeRateClient
     /// Gets the series of buy and sell exchange rates starting from the latest.
     /// </summary>
     /// <param name="currency">ISO 4217 currency code</param>
-    /// <param name="topCount">Number of records to retrieve</param>
+    /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the buy and sell exchange rates or an error</returns>
     Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTopCountAsync(string currency, int topCount, CancellationToken cancellationToken = default);
@@ -102,7 +102,7 @@ public interface INbpCurrencyExchangeRateClient
 
     /// <summary>
     /// Gets the buy and sell exchange rate for the specified date. Can return no data if the exchange rate is not published yet for the given date.
-    /// Date can't be lower than 2002-01-02, because the NBP API doesn't support it.
+    /// Date can't be lower than 2002-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
     /// </summary>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="date">Date</param>
@@ -112,7 +112,7 @@ public interface INbpCurrencyExchangeRateClient
 
     /// <summary>
     /// Gets the buy and sell exchange rates for the specified date range. Can return no data if the exchange rates are not published yet for the given date range.
-    /// Date range can't exceed 93 days or finish before 2002-01-02, because the NBP API doesn't support it.
+    /// Date range can't exceed 367 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2002-01-02, because the NBP API doesn't support it.
     /// </summary>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="from">Start date</param>
