@@ -106,8 +106,9 @@ public readonly struct OpenUrzednikResult
 public readonly struct OpenUrzednikResult<TValue>
 {
     // default(OpenUrzednikResult<TValue>) has _isSuccess == false and no errors; it is reported as a failure with this error.
-    private static readonly OpenUrzednikError[] UninitializedErrors =
-        [new UnknownError($"The result was not initialized. default({nameof(OpenUrzednikResult)}<T>) is not a valid result.")];
+    // Read-only, because it is shared by every default instance of this closed type.
+    private static readonly IReadOnlyList<OpenUrzednikError> UninitializedErrors = Array.AsReadOnly<OpenUrzednikError>(
+        [new UnknownError($"The result was not initialized: default({nameof(OpenUrzednikResult)}<T>) was used instead of a result created with Success or Failure.")]);
 
     private readonly TValue? _value;
     private readonly OpenUrzednikError[]? _errors;
@@ -117,7 +118,7 @@ public readonly struct OpenUrzednikResult<TValue>
     /// Gets the list of errors associated with the result. If the result is successful, this will be an empty list.
     /// A <see langword="default"/> instance is a failure with a single <see cref="UnknownError"/>.
     /// </summary>
-    public IReadOnlyList<OpenUrzednikError> Errors => _isSuccess ? [] : _errors ?? UninitializedErrors;
+    public IReadOnlyList<OpenUrzednikError> Errors => _isSuccess ? [] : (IReadOnlyList<OpenUrzednikError>?)_errors ?? UninitializedErrors;
 
     /// <summary>
     /// Gets a value indicating whether the result is successful. Only results created with a value are successful;
@@ -160,6 +161,7 @@ public readonly struct OpenUrzednikResult<TValue>
         ArgumentNullException.ThrowIfNull(error, nameof(error));
 
         _value = default;
+        _isSuccess = false;
         _errors = [error];
     }
 
@@ -177,6 +179,7 @@ public readonly struct OpenUrzednikResult<TValue>
             throw new InvalidOperationException("Cannot create a failure result without any errors.");
 
         _value = default;
+        _isSuccess = false;
         _errors = [.. errors];
     }
 

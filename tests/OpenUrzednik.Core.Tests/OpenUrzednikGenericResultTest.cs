@@ -60,7 +60,38 @@ public class OpenUrzednikGenericResultTest
     }
 
     [Fact]
-    public void SuccessResult_DefaultValue_ShouldBeSuccess()
+    public void UninitializedArrayElement_ShouldBeFailureWithUninitializedError()
+    {
+        // Arrange
+        var results = new OpenUrzednikResult<int>[1];
+
+        // Act
+        var result = results[0];
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnknownError>();
+        error.Code.ShouldBe(UnknownError.ErrorCode);
+        error.Message.ShouldContain("not initialized");
+    }
+
+    [Fact]
+    public void ImplicitConversion_FailedNonGenericResult_ShouldBeFailureWithSameErrors()
+    {
+        // Arrange
+        var error = new TestError("Test error");
+        var source = OpenUrzednikResult.Failure(error);
+
+        // Act
+        OpenUrzednikResult<int> result = source;
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
+    }
+
+    [Fact]
+    public void SuccessResult_NullValue_ShouldBeSuccess()
     {
         // Act
         var result = OpenUrzednikResult.Success<string?>(null);

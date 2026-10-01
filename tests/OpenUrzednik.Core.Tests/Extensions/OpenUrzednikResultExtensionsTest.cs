@@ -1,3 +1,4 @@
+using OpenUrzednik.Core.Exceptions;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.TestCommon;
 
@@ -18,6 +19,16 @@ public class OpenUrzednikResultExtensionsTest
 
         // Assert
         // No exception should be thrown
+    }
+
+    [Fact]
+    public void EnsureSuccess_WhenGenericResultIsDefault_ThrowsUnknownException()
+    {
+        // Arrange
+        var result = default(OpenUrzednikResult<string>);
+
+        // Act && Assert
+        Should.Throw<UnknownException>(() => result.EnsureSuccess());
     }
 
     [Fact]
