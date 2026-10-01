@@ -10,6 +10,7 @@ using OpenUrzednik.Nbp.Validation;
 
 namespace OpenUrzednik.Nbp.Gold;
 
+/// <inheritdoc cref="INbpGoldPriceClient"/>
 public class NbpGoldPriceClient : INbpGoldPriceClient
 {
     private static readonly NbpJsonContext JsonContext = new();
@@ -19,10 +20,25 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     private readonly INbpUrlBuilder _urlBuilder;
     private readonly NbpTelemetryProvider _telemetryProvider;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NbpGoldPriceClient"/> class using the system clock.
+    /// </summary>
+    /// <param name="httpClient">HTTP client configured for the NBP API, e.g. with <see cref="OpenUrzednik.Nbp.Extensions.HttpClientExtensions.ConfigureForNbpApi"/>.</param>
+    /// <param name="urlBuilderFactory">Builds the NBP request paths.</param>
+    /// <param name="logger">Logger; <see langword="null"/> disables logging.</param>
+    /// <param name="traceSource">Trace source for spans; <see langword="null"/> disables tracing.</param>
     public NbpGoldPriceClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory,
                                      IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
         : this(httpClient, urlBuilderFactory, TimeProvider.System, logger, traceSource) { }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NbpGoldPriceClient"/> class.
+    /// </summary>
+    /// <param name="httpClient">HTTP client configured for the NBP API, e.g. with <see cref="OpenUrzednik.Nbp.Extensions.HttpClientExtensions.ConfigureForNbpApi"/>.</param>
+    /// <param name="urlBuilderFactory">Builds the NBP request paths.</param>
+    /// <param name="timeProvider">Clock used for "today" (Europe/Warsaw date) and <c>Retry-After</c> dates.</param>
+    /// <param name="logger">Logger; <see langword="null"/> disables logging.</param>
+    /// <param name="traceSource">Trace source for spans; <see langword="null"/> disables tracing.</param>
     public NbpGoldPriceClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider,
                                      IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
     {
@@ -36,6 +52,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         _telemetryProvider = new NbpTelemetryProvider(logger, traceSource);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetLatestAsync(CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.latest");
@@ -58,6 +75,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.top_count");
@@ -81,6 +99,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         return OpenUrzednikResult.Failure<IReadOnlyList<GoldPrice>>(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetTodayAsync(CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.today");
@@ -104,6 +123,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_date");
@@ -136,6 +156,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_range");

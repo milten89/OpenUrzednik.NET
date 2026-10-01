@@ -10,6 +10,7 @@ namespace OpenUrzednik.Nbp.Currency;
 
 public partial class NbpCurrencyExchangeRateClient
 {
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLatestAsync(string currency, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_latest");
@@ -35,6 +36,7 @@ public partial class NbpCurrencyExchangeRateClient
         return OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTopCountAsync(string currency, int topCount, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_top_count");
@@ -63,6 +65,7 @@ public partial class NbpCurrencyExchangeRateClient
         return OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTodayAsync(string currency, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_today");
@@ -88,6 +91,7 @@ public partial class NbpCurrencyExchangeRateClient
         return OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateOnly date, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_date");
@@ -116,6 +120,7 @@ public partial class NbpCurrencyExchangeRateClient
         return OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_range");

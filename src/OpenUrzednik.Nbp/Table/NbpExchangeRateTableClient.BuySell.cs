@@ -11,6 +11,7 @@ namespace OpenUrzednik.Nbp.Table;
 
 public partial class NbpExchangeRateTableClient
 {
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellLatestAsync(CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_latest");
@@ -35,6 +36,7 @@ public partial class NbpExchangeRateTableClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellTopCountAsync(int topCount, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_top_count");
@@ -60,6 +62,7 @@ public partial class NbpExchangeRateTableClient
         return OpenUrzednikResult.Failure<IReadOnlyList<BuySellExchangeRateTable>>(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellTodayAsync(CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_today");
@@ -84,6 +87,7 @@ public partial class NbpExchangeRateTableClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_date");
@@ -118,6 +122,7 @@ public partial class NbpExchangeRateTableClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_range");
