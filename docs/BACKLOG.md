@@ -10,8 +10,6 @@ None open.
 
 ## P1: NBP correctness
 
-8. **`NbpGoldPriceClient` methods don't default `CancellationToken`**, unlike the interface.
-9. **Validation messages depend on culture** (`{date:d}`). Use invariant `yyyy-MM-dd`.
 10. **Document publication schedules in XML docs.** Table B is published on Wednesdays (`GetTodayAsync(B)` usually returns 404), and rates appear around midday Warsaw time.
 11. **Type name collisions:** `Currency.ExchangeRate` vs `Table.ExchangeRate`, and the same for `BuySellExchangeRate`.
 
