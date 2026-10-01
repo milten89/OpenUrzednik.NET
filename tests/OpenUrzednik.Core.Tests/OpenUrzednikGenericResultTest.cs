@@ -47,6 +47,31 @@ public class OpenUrzednikGenericResultTest
     }
 
     [Fact]
+    public void DefaultValue_ShouldBeFailureWithUnknownError()
+    {
+        // Act
+        var result = default(OpenUrzednikResult<string>);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnknownError>();
+        Should.Throw<InvalidOperationException>(() => result.Value);
+    }
+
+    [Fact]
+    public void SuccessResult_DefaultValue_ShouldBeSuccess()
+    {
+        // Act
+        var result = OpenUrzednikResult.Success<string?>(null);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBeNull();
+        result.Errors.Count.ShouldBe(0);
+    }
+
+    [Fact]
     public void FailureResult_SingleError_ShouldBeFailure()
     {
         // Arrange

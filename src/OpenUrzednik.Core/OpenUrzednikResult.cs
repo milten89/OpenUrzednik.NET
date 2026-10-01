@@ -105,23 +105,30 @@ public readonly struct OpenUrzednikResult
 /// <typeparam name="TValue">The type of the value contained in the result when it succeeds.</typeparam>
 public readonly struct OpenUrzednikResult<TValue>
 {
+    // default(OpenUrzednikResult<TValue>) has _isSuccess == false and no errors; it is reported as a failure with this error.
+    private static readonly OpenUrzednikError[] UninitializedErrors =
+        [new UnknownError($"The result was not initialized. default({nameof(OpenUrzednikResult)}<T>) is not a valid result.")];
+
     private readonly TValue? _value;
     private readonly OpenUrzednikError[]? _errors;
+    private readonly bool _isSuccess;
 
     /// <summary>
     /// Gets the list of errors associated with the result. If the result is successful, this will be an empty list.
+    /// A <see langword="default"/> instance is a failure with a single <see cref="UnknownError"/>.
     /// </summary>
-    public IReadOnlyList<OpenUrzednikError> Errors => _errors ?? [];
+    public IReadOnlyList<OpenUrzednikError> Errors => _isSuccess ? [] : _errors ?? UninitializedErrors;
 
     /// <summary>
-    /// Gets a value indicating whether the result is successful. A result is considered successful if it has no associated errors.
+    /// Gets a value indicating whether the result is successful. Only results created with a value are successful;
+    /// a <see langword="default"/> instance is not.
     /// </summary>
-    public bool IsSuccess => _errors is null;
+    public bool IsSuccess => _isSuccess;
 
     /// <summary>
-    /// Gets a value indicating whether the result is a failure. A result is considered a failure if it has one or more associated errors.
+    /// Gets a value indicating whether the result is a failure. A result is a failure if it was created with errors or is a <see langword="default"/> instance.
     /// </summary>
-    public bool IsFailure => _errors is not null;
+    public bool IsFailure => !_isSuccess;
 
     /// <summary>
     /// Gets the value associated with the result. If the result is in a failed state, accessing this property will throw an <see cref="InvalidOperationException"/>.
@@ -141,7 +148,7 @@ public readonly struct OpenUrzednikResult<TValue>
     /// </summary>
     /// <param name="value">The value associated with the result.</param>
     public OpenUrzednikResult(TValue value)
-        => (_value, _errors) = (value, null);
+        => (_value, _errors, _isSuccess) = (value, null, true);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenUrzednikResult{TValue}"/> struct in a failed state with a single error.
