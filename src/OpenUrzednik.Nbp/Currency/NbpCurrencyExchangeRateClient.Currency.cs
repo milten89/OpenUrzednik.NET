@@ -1,6 +1,7 @@
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Validation;
@@ -31,7 +32,7 @@ public partial class NbpCurrencyExchangeRateClient
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.CurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToCurrencyExchangeRates, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure(requestResult.Errors);
@@ -61,7 +62,7 @@ public partial class NbpCurrencyExchangeRateClient
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.CurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToCurrencyExchangeRates, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure(requestResult.Errors);
@@ -89,7 +90,7 @@ public partial class NbpCurrencyExchangeRateClient
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.CurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToCurrencyExchangeRates, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure(requestResult.Errors);
@@ -119,7 +120,7 @@ public partial class NbpCurrencyExchangeRateClient
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.CurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToCurrencyExchangeRates, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure(requestResult.Errors);
@@ -151,7 +152,7 @@ public partial class NbpCurrencyExchangeRateClient
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.CurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success(Mapper.MapToCurrencyExchangeRates(requestResult.Value));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToCurrencyExchangeRates, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure(requestResult.Errors);

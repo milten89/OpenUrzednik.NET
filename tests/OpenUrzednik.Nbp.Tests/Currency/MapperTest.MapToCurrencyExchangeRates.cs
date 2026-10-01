@@ -1,3 +1,4 @@
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Tests.Fakes;
@@ -51,18 +52,17 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToCurrencyExchangeRates_NullDto_ThrowsArgumentNullException()
+    public void MapToCurrencyExchangeRates_NullDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         CurrencyExchangeRatesDto dto = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToCurrencyExchangeRates(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyExchangeRates(dto));
     }
 
     [Fact]
-    public void MapToCurrencyExchangeRates_RatesArrayContainingNullElement_ThrowsArgumentNullException()
+    public void MapToCurrencyExchangeRates_RatesArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var dtoBase = new CurrencyExchangeRatesDtoFaker(0).WithConstantSeed().Generate();
@@ -74,7 +74,6 @@ public partial class MapperTest
         };
 
         // Act && Assert
-        Should.Throw<ArgumentException>(() => Mapper.MapToCurrencyExchangeRates(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyExchangeRates(dto));
     }
 }

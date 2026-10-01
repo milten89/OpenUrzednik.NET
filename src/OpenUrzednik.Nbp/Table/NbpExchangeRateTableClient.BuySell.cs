@@ -2,6 +2,7 @@ using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
@@ -21,7 +22,7 @@ public partial class NbpExchangeRateTableClient
         switch (requestResult.IsSuccess)
         {
             case true when requestResult.Value.Length != 0:
-                return OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRateTable(requestResult.Value[0]));
+                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
             case true when requestResult.Value.Length == 0:
                 if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
                     _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.Latest());
@@ -53,7 +54,7 @@ public partial class NbpExchangeRateTableClient
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellExchangeRateTableDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success<IReadOnlyList<BuySellExchangeRateTable>>(Array.AsReadOnly(Mapper.MapToBuySellExchangeRateTable(requestResult.Value)));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure<IReadOnlyList<BuySellExchangeRateTable>>(requestResult.Errors);
@@ -70,7 +71,7 @@ public partial class NbpExchangeRateTableClient
         switch (requestResult.IsSuccess)
         {
             case true when requestResult.Value.Length != 0:
-                return OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRateTable(requestResult.Value[0]));
+                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
             case true when requestResult.Value.Length == 0:
                 if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
                     _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.Today());
@@ -104,7 +105,7 @@ public partial class NbpExchangeRateTableClient
         switch (requestResult.IsSuccess)
         {
             case true when requestResult.Value.Length != 0:
-                return OpenUrzednikResult.Success(Mapper.MapToBuySellExchangeRateTable(requestResult.Value[0]));
+                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
             case true when requestResult.Value.Length == 0:
                 if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
                     _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.ForDate(date));
@@ -139,7 +140,7 @@ public partial class NbpExchangeRateTableClient
         var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellExchangeRateTableDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success<IReadOnlyList<BuySellExchangeRateTable>>(Array.AsReadOnly(Mapper.MapToBuySellExchangeRateTable(requestResult.Value)));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure<IReadOnlyList<BuySellExchangeRateTable>>(requestResult.Errors);

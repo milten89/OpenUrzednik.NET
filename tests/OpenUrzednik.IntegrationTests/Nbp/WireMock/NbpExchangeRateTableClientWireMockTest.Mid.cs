@@ -357,4 +357,25 @@ public partial class NbpExchangeRateTableClientWireMockTest
             e.RequestMessage.Path == path &&
             e.RequestMessage.Headers!["Accept"].Contains("application/json"));
     }
+
+    [Fact]
+    public async Task GetLatestAsync_Returns200WithNullRates_ReturnsSerializationError()
+    {
+        // Arrange
+        _server.Given(Request.Create()
+                .WithPath($"{BasePath}/a")
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody("""[{"table":"A","no":"191/A/NBP/2026","effectiveDate":"2026-10-01","rates":null}]"""));
+
+        // Act
+        var result = await CreateSut().GetLatestAsync(TableType.A, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<OpenUrzednik.Core.Errors.SerializationError>()
+            .Message.ShouldBe("NBP API response is missing 'rates'.");
+    }
 }

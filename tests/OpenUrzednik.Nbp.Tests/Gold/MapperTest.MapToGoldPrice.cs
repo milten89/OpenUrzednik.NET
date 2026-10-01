@@ -1,5 +1,6 @@
 using System.Globalization;
 
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Tests.Fakes;
@@ -84,7 +85,7 @@ public class MapperTest
         var result = Mapper.MapToGoldPrice(dtos);
 
         // Assert
-        result.Length.ShouldBe(1);
+        result.Count.ShouldBe(1);
         result[0].ShouldBe(new GoldPrice(dtos[0].Date, dtos[0].Price));
     }
 
@@ -98,7 +99,7 @@ public class MapperTest
         var result = Mapper.MapToGoldPrice(dtos);
 
         // Assert
-        result.Length.ShouldBe(dtos.Length);
+        result.Count.ShouldBe(dtos.Length);
         for (var i = 0; i < dtos.Length; i++)
             result[i].ShouldBe(new GoldPrice(dtos[i].Date, dtos[i].Price));
     }
@@ -114,7 +115,7 @@ public class MapperTest
         var result = Mapper.MapToGoldPrice(dtos);
 
         // Assert
-        result.Length.ShouldBe(3);
+        result.Count.ShouldBe(3);
         result.ShouldAllBe(x => x == new GoldPrice(dto.Date, dto.Price));
     }
 
@@ -125,30 +126,27 @@ public class MapperTest
         GoldPriceDto[] dtos = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dtos))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToGoldPrice(dtos));
     }
 
     [Fact]
-    public void MapToGoldPrice_NullDto_ThrowsArgumentNullException()
+    public void MapToGoldPrice_NullDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         GoldPriceDto dto = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToGoldPrice(dto));
     }
 
     [Fact]
-    public void MapToGoldPrice_ArrayContainingNullElement_ThrowsArgumentNullException()
+    public void MapToGoldPrice_ArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var dto = new GoldPriceDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, null! };
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToGoldPrice(dtos))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToGoldPrice(dtos));
     }
 }

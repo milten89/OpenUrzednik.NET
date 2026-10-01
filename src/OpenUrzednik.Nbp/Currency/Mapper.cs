@@ -1,3 +1,4 @@
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 
 namespace OpenUrzednik.Nbp.Currency;
@@ -6,9 +7,8 @@ internal static class Mapper
 {
     internal static CurrencyExchangeRates MapToCurrencyExchangeRates(CurrencyExchangeRatesDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"{nameof(dto.Rates)} cannot be null.", nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var rates = new ExchangeRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
@@ -19,16 +19,15 @@ internal static class Mapper
 
     internal static ExchangeRate MapToCurrencyExchangeRate(CurrencyExchangeRateDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
+        NbpPayload.EnsurePresent(dto, "item");
 
         return new ExchangeRate(dto.TableId, dto.PublicationDate, dto.Price);
     }
 
     internal static BuySellExchangeRates MapToBuySellExchangeRates(BuySellCurrencyExchangeRatesDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"{nameof(dto.Rates)} cannot be null.", nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var rates = new BuySellExchangeRate[dto.Rates.Length];
         for (var i = 0; i < rates.Length; i++)
@@ -39,7 +38,7 @@ internal static class Mapper
 
     internal static BuySellExchangeRate MapToBuySellExchangeRate(BuySellCurrencyExchangeRateDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
+        NbpPayload.EnsurePresent(dto, "item");
 
         return new BuySellExchangeRate(dto.TableId, dto.PublicationDate, dto.Buy, dto.Sell);
     }

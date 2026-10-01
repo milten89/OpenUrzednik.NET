@@ -364,26 +364,68 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_HttpClientThrows_RecordsExceptionOnSpanAndRethrows()
+    public async Task GetNbpAsync_HttpClientThrowsHttpRequestException_ReturnsServiceUnavailableErrorAndRecordsException()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var thrown = new HttpRequestException("Connection refused");
         var handler = new StubHttpMessageHandler(thrown);
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")) };
-
-        var span = Substitute.For<IOpenUrzednikSpan>();
-        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
-        tracer.StartSpan(Arg.Any<string>()).Returns(span);
-        var telemetryProvider = new NbpTelemetryProvider(NullOpenUrzednikLogger.Instance, tracer);
+        var (telemetryProvider, logger, span) = CreateTelemetrySubstitutes();
 
         // Act
-        var actual = await Should.ThrowAsync<HttpRequestException>(
-            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken));
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
-        actual.ShouldBeSameAs(thrown);
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        error.Exception.ShouldBeSameAs(thrown);
+        error.ToException().InnerException.ShouldBeSameAs(thrown);
         span.Received(1).RecordException(thrown);
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, thrown, "NBP request to {path} failed", "path", Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_HttpClientTimeoutElapses_ReturnsRequestTimeoutError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var handler = new DelegatingStubHttpMessageHandler(async (_, ct) =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        var timeout = TimeSpan.FromMilliseconds(50);
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")), Timeout = timeout };
+        var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>();
+        error.Timeout.ShouldBe(timeout);
+        error.Exception.ShouldBeAssignableTo<OperationCanceledException>();
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_BodyReadExceedsTimeout_ReturnsRequestTimeoutError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new NeverEndingStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+        httpClient.Timeout = TimeSpan.FromMilliseconds(50);
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>();
     }
 
     [Fact]
@@ -443,7 +485,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_UnexpectedExceptionDuringRead_LogsRecordsAndRethrows()
+    public async Task GetNbpAsync_ConnectionFailsDuringRead_ReturnsServiceUnavailableError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -453,23 +495,19 @@ public partial class HttpClientExtensionsTest
             Content = new ThrowingContent((_, _) => throw thrown)
         };
         using var httpClient = CreateHttpClient(faker, response);
-
-        var span = Substitute.For<IOpenUrzednikSpan>();
-        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
-        tracer.StartSpan(Arg.Any<string>()).Returns(span);
-        var logger = Substitute.For<IOpenUrzednikLogger>();
-        logger.IsEnabled(Arg.Any<OpenUrzednikLogLevel>()).Returns(true);
-        var telemetryProvider = new NbpTelemetryProvider(logger, tracer);
+        var (telemetryProvider, logger, span) = CreateTelemetrySubstitutes();
 
         // Act
-        var actual = await Should.ThrowAsync<HttpRequestException>(
-            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken));
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
-        actual.InnerException.ShouldBeSameAs(thrown);
-        span.Received(1).RecordException(actual);
-        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
-        logger.Received(1).Log(OpenUrzednikLogLevel.Error, actual, Arg.Any<string>(), "path", Arg.Any<string>());
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        var recorded = error.Exception.ShouldNotBeNull();
+        (recorded == thrown || recorded.InnerException == thrown).ShouldBeTrue();
+        span.Received(1).RecordException(recorded);
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, recorded, "NBP request to {path} failed", "path", Arg.Any<string>());
     }
 
     [Fact]
@@ -638,6 +676,54 @@ public partial class HttpClientExtensionsTest
         content.IsDisposed.ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task GetNbpAsync_UnknownCharset_ReturnsSerializationError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var content = new StringContent("{\"name\":\"n\",\"value\":1}");
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=foo");
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>().Exception.ShouldBeOfType<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_BadRequestBodyReadTimesOut_ReturnsBadRequestErrorWithoutServerMessage()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StreamContent(new NeverEndingStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+        httpClient.Timeout = TimeSpan.FromMilliseconds(50);
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldNotContain(": ");
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_CallerCancelsDuringBadRequestBodyRead_ThrowsOperationCanceledException()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StreamContent(new NeverEndingStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+
+        // Act && Assert
+        await Should.ThrowAsync<OperationCanceledException>(
+            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, cts.Token));
+    }
+
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
         => CreateHttpClient(faker, response, out _);
 
@@ -661,6 +747,31 @@ public partial class HttpClientExtensionsTest
     }
 
     private sealed record TestDto(string Name, int Value);
+
+    // A response body that never finishes arriving: reads complete only when they are cancelled.
+    private sealed class NeverEndingStream : Stream
+    {
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return 0;
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override void Flush() { }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    }
 
     private sealed class DisposeTrackingContent(string body) : StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json)
     {

@@ -6,7 +6,7 @@ Work through items one PR at a time. When an item is done, delete it from this f
 
 ## P0: Bugs
 
-4. **Failures that escape the result** ([ADR-0002](adr/0002-result-pattern-and-error-handling.md)): `HttpRequestException` and timeouts are thrown; mappers throw `ArgumentException` when `Rates` is null; `catch (Exception)` blocks in `GetNbpAsync`.
+None open.
 
 ## P1: NBP correctness
 

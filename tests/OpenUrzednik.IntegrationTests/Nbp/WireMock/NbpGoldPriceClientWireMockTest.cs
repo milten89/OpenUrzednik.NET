@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 
+using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Options;
@@ -183,7 +184,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
     }
 
     [Fact]
-    public async Task Timeout_ThrowsOperationCanceledException()
+    public async Task Timeout_ReturnsRequestTimeoutError()
     {
         // Arrange
         _server.Given(Request.Create()
@@ -196,10 +197,12 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
         var stopwatch = Stopwatch.StartNew();
 
         // Act
-        await Should.ThrowAsync<OperationCanceledException>(async () => await CreateSut(timeout: TimeSpan.FromSeconds(0.1)).GetLatestAsync(TestContext.Current.CancellationToken));
+        var result = await CreateSut(timeout: TimeSpan.FromSeconds(0.1)).GetLatestAsync(TestContext.Current.CancellationToken);
 
         // Assert
         stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(1));
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(TimeSpan.FromSeconds(0.1));
     }
 
     [Fact]

@@ -63,23 +63,36 @@ public static class HttpClientExtensions
         using var request = new HttpRequestMessage(HttpMethod.Get, relativePath);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
-        using var response = await SendAsync(httpClient, request, traceSpan, cancellationToken).ConfigureAwait(false);
+        // With ResponseHeadersRead, HttpClient.Timeout stops applying once the headers arrive,
+        // so the same deadline is applied to reading the body as well.
+        using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        if (httpClient.Timeout != Timeout.InfiniteTimeSpan)
+            timeoutSource.CancelAfter(httpClient.Timeout);
+        var requestToken = timeoutSource.Token;
+
+        var sendResult = await SendAsync(httpClient, request, relativePath, telemetryProvider, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+        if (sendResult.IsFailure)
+            return OpenUrzednikResult.Failure(sendResult.Errors);
+
+        using var response = sendResult.Value;
         traceSpan.SetTag("http.status_code", (int)response.StatusCode);
 
         if (!response.IsSuccessStatusCode)
-            return await MapErrorResponseAsync(response, relativePath, telemetryProvider, traceSpan, timeProvider, cancellationToken).ConfigureAwait(false);
+            return await MapErrorResponseAsync(response, relativePath, telemetryProvider, traceSpan, timeProvider, requestToken, cancellationToken).ConfigureAwait(false);
 
         try
         {
-            var dto = await response.Content.ReadFromJsonAsync(typeInfo, cancellationToken).ConfigureAwait(false);
+            var dto = await response.Content.ReadFromJsonAsync(typeInfo, requestToken).ConfigureAwait(false);
+            if (dto is not null)
+                return OpenUrzednikResult.Success(dto);
 
-            return dto is not null
-                ? OpenUrzednikResult.Success(dto)
-                : OpenUrzednikResult.Failure(new UnknownError($"NBP API return empty response for {relativePath}."));
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, null, "NBP API returned an empty response for {path}", "path", relativePath);
+            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Empty response");
+            return OpenUrzednikResult.Failure(new SerializationError($"NBP API returned an empty response for {relativePath}."));
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            throw;
+            return TimeoutFailure(httpClient, relativePath, telemetryProvider, traceSpan, ex);
         }
         catch (JsonException ex)
         {
@@ -88,16 +101,71 @@ public static class HttpClientExtensions
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
             return OpenUrzednikResult.Failure(new SerializationError($"Error when deserializing response from {relativePath}", ex));
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex)
         {
-            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Unexpected error while reading NBP response from {path}", "path", relativePath);
+            return NetworkFailure(relativePath, telemetryProvider, traceSpan, ex);
+        }
+        catch (IOException ex)
+        {
+            return NetworkFailure(relativePath, telemetryProvider, traceSpan, ex);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // ReadFromJsonAsync throws this when the response declares a charset it can't decode.
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to decode NBP response from {path}", "path", relativePath);
             traceSpan.RecordException(ex);
-            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected error");
-            throw;
+            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
+            return OpenUrzednikResult.Failure(new SerializationError($"Error when decoding response from {relativePath}", ex));
         }
     }
 
-    private static async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, TimeProvider timeProvider, CancellationToken cancellationToken)
+    private static async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpClient httpClient, HttpRequestMessage request, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var response = await httpClient
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, requestToken)
+                .ConfigureAwait(false);
+            return OpenUrzednikResult.Success(response);
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            return TimeoutFailure(httpClient, relativePath, telemetryProvider, traceSpan, ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            return NetworkFailure(relativePath, telemetryProvider, traceSpan, ex);
+        }
+    }
+
+    // The caller's token is not cancelled, so the cancellation came from HttpClient.Timeout or the body-read deadline.
+    private static OpenUrzednikResult TimeoutFailure(HttpClient httpClient, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, OperationCanceledException exception)
+    {
+        TimeSpan? timeout = httpClient.Timeout == Timeout.InfiniteTimeSpan ? null : httpClient.Timeout;
+        telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "NBP request to {path} timed out after {timeout}", "path", relativePath, "timeout", timeout);
+        var error = new RequestTimeoutError(
+            timeout is null
+                ? $"NBP request to {relativePath} timed out."
+                : $"NBP API did not respond to {relativePath} within {timeout}.",
+            timeout, exception);
+        traceSpan.RecordException(exception);
+        traceSpan.SetTag("error.code", error.Code);
+        traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
+        return OpenUrzednikResult.Failure(error);
+    }
+
+    private static OpenUrzednikResult NetworkFailure(string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, Exception exception)
+    {
+        telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "NBP request to {path} failed", "path", relativePath);
+        var error = new ServiceUnavailableError(
+            $"NBP API could not be reached for {relativePath}: {exception.Message}", exception: exception);
+        traceSpan.RecordException(exception);
+        traceSpan.SetTag("error.code", error.Code);
+        traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
+        return OpenUrzednikResult.Failure(error);
+    }
+
+    private static async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, TimeProvider timeProvider, CancellationToken requestToken, CancellationToken cancellationToken)
     {
         var statusCode = (int)response.StatusCode;
         var path = response.RequestMessage?.RequestUri?.ToString() ?? relativePath;
@@ -126,7 +194,7 @@ public static class HttpClientExtensions
                 }
             case HttpStatusCode.BadRequest:
                 {
-                    var serverMessage = await ReadServerMessageAsync(response, telemetryProvider, cancellationToken).ConfigureAwait(false);
+                    var serverMessage = await ReadServerMessageAsync(response, telemetryProvider, requestToken, cancellationToken).ConfigureAwait(false);
                     telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP API rejected the request to {path}", "path", path);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Bad request");
                     return OpenUrzednikResult.Failure(new BadRequestError(
@@ -165,18 +233,23 @@ public static class HttpClientExtensions
     /// At most <see cref="MaxServerMessageLength"/> characters are read, so a large body (e.g. an HTML page from a proxy) is not buffered.
     /// Returns <see langword="null"/> when there is no body or it can't be read, because the message is only extra context.
     /// </summary>
-    private static async Task<string?> ReadServerMessageAsync(HttpResponseMessage response, NbpTelemetryProvider telemetryProvider, CancellationToken cancellationToken)
+    private static async Task<string?> ReadServerMessageAsync(HttpResponseMessage response, NbpTelemetryProvider telemetryProvider, CancellationToken requestToken, CancellationToken cancellationToken)
     {
         var buffer = new char[MaxServerMessageLength];
         var length = 0;
         try
         {
-            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync(requestToken).ConfigureAwait(false);
             using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
             int read;
             while (length < buffer.Length &&
-                   (read = await reader.ReadAsync(buffer.AsMemory(length), cancellationToken).ConfigureAwait(false)) > 0)
+                   (read = await reader.ReadAsync(buffer.AsMemory(length), requestToken).ConfigureAwait(false)) > 0)
                 length += read;
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            LogUnreadableBody(telemetryProvider, ex);
+            return null;
         }
         catch (HttpRequestException ex)
         {
@@ -197,25 +270,6 @@ public static class HttpClientExtensions
     {
         if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
             telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, exception, "Could not read NBP error response body.");
-    }
-
-    private static async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpRequestMessage request, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await httpClient
-                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            traceSpan.RecordException(ex);
-            throw;
-        }
     }
 
     private static TimeSpan? GetDelay(HttpResponseMessage response, TimeProvider? timeProvider)

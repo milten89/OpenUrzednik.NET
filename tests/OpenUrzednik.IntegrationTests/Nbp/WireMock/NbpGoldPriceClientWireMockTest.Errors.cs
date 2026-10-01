@@ -110,4 +110,57 @@ public partial class NbpGoldPriceClientWireMockTest
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
         error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe((int)statusCode);
     }
+
+    [Fact]
+    public async Task GetLatestAsync_ConnectionFails_ReturnsServiceUnavailableError()
+    {
+        // Arrange
+        var sut = CreateSut();
+        _server.Stop();
+
+        // Act
+        var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        error.Exception.ShouldBeOfType<HttpRequestException>();
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_Returns200WithMalformedJson_ReturnsSerializationError()
+    {
+        // Arrange
+        _server.Given(Request.Create().WithPath(BasePath).UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody("[{\"data\":\"2026-10-01\",\"cena\":"));
+
+        // Act
+        var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>();
+        error.ToException().ShouldBeOfType<OpenUrzednik.Core.Exceptions.SerializationException>();
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_Returns200WithNullItem_ReturnsSerializationError()
+    {
+        // Arrange
+        _server.Given(Request.Create().WithPath(BasePath).UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody("[null]"));
+
+        // Act
+        var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>();
+    }
 }
