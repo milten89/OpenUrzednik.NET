@@ -6,7 +6,7 @@ namespace OpenUrzednik.Nbp.Currency;
 /// <param name="CurrencyName">Currency name</param>
 /// <param name="CurrencyCode">ISO 4217 currency code</param>
 /// <param name="Rates">List of exchange rates</param>
-public sealed record CurrencyExchangeRates(string CurrencyName, string CurrencyCode, IReadOnlyList<ExchangeRate> Rates)
+public sealed record CurrencyExchangeRates(string CurrencyName, string CurrencyCode, IReadOnlyList<CurrencyRate> Rates)
 {
     public bool Equals(CurrencyExchangeRates? other)
         => other is not null &&

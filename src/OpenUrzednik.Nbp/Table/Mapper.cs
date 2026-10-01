@@ -32,18 +32,18 @@ internal static class Mapper
         NbpPayload.EnsurePresent(dto, "item");
         NbpPayload.EnsurePresent(dto.Rates, "rates");
 
-        var rates = new ExchangeRate[dto.Rates.Length];
+        var rates = new TableRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToExchangeRate(dto.Rates[i]);
+            rates[i] = MapToTableRate(dto.Rates[i]);
 
         return new(dto.TableId, dto.PublicationDate, Array.AsReadOnly(rates));
     }
 
-    internal static ExchangeRate MapToExchangeRate(ExchangeRateDto dto)
+    internal static TableRate MapToTableRate(ExchangeRateDto dto)
     {
         NbpPayload.EnsurePresent(dto, "item");
 
-        return new ExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Price);
+        return new TableRate(dto.CurrencyName, dto.CurrencyCode, dto.Price);
     }
 
     internal static IReadOnlyList<BuySellExchangeRateTable> MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
@@ -62,17 +62,17 @@ internal static class Mapper
         NbpPayload.EnsurePresent(dto, "item");
         NbpPayload.EnsurePresent(dto.Rates, "rates");
 
-        var rates = new BuySellExchangeRate[dto.Rates.Length];
+        var rates = new TableBuySellRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToBuySellExchangeRateTable(dto.Rates[i]);
+            rates[i] = MapToTableBuySellRate(dto.Rates[i]);
 
         return new(dto.TableId, dto.TradingDate, dto.PublicationDate, Array.AsReadOnly(rates));
     }
 
-    internal static BuySellExchangeRate MapToBuySellExchangeRateTable(BuySellExchangeRateDto dto)
+    internal static TableBuySellRate MapToTableBuySellRate(BuySellExchangeRateDto dto)
     {
         NbpPayload.EnsurePresent(dto, "item");
 
-        return new BuySellExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell);
+        return new TableBuySellRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell);
     }
 }

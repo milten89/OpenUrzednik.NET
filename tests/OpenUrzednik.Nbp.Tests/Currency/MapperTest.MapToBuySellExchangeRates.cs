@@ -11,32 +11,6 @@ namespace OpenUrzednik.Nbp.Tests.Currency;
 public partial class MapperTest
 {
     [Fact]
-    public void MapToBuySellExchangeRate_ValidDto_MapsAllFieldsCorrectly()
-    {
-        // Arrange
-        var dto = new BuySellCurrencyExchangeRateDtoFaker().WithConstantSeed().Generate();
-
-        // Act
-        var result = Mapper.MapToBuySellExchangeRate(dto);
-
-        // Assert
-        result.ShouldBe(new BuySellExchangeRate(dto.TableId, dto.PublicationDate, dto.Buy, dto.Sell));
-    }
-
-    [Fact]
-    public void MapToBuySellExchangeRate_NullDto_ThrowsInvalidPayloadException()
-    {
-        // Arrange
-        BuySellCurrencyExchangeRateDto dto = null!;
-
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRate(dto));
-
-        // Assert
-        exception.ShouldBeOfType<InvalidPayloadException>();
-    }
-
-    [Fact]
     public void MapToBuySellExchangeRates_EmptyRates_ReturnsEmptyRatesList()
     {
         // Arrange
@@ -60,7 +34,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [new BuySellExchangeRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate, dto.Rates[0].Buy, dto.Rates[0].Sell)]));
+            [new CurrencyBuySellRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate, dto.Rates[0].Buy, dto.Rates[0].Sell)]));
     }
 
     [Fact]
@@ -74,7 +48,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [.. dto.Rates.Select(x => new BuySellExchangeRate(x.TableId, x.PublicationDate, x.Buy, x.Sell))]));
+            [.. dto.Rates.Select(x => new CurrencyBuySellRate(x.TableId, x.PublicationDate, x.Buy, x.Sell))]));
     }
 
     [Fact]
