@@ -20,7 +20,7 @@ public partial class MapperTest
         var result = Mapper.MapToBuySellExchangeRateTable(dto);
 
         // Assert
-        result.ShouldBe(new BuySellExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell));
+        result.ShouldBe(new TableBuySellRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell));
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate, dto.PublicationDate,
-            [new BuySellExchangeRate(dto.Rates[0].CurrencyName, dto.Rates[0].CurrencyCode, dto.Rates[0].Buy, dto.Rates[0].Sell)]));
+            [new TableBuySellRate(dto.Rates[0].CurrencyName, dto.Rates[0].CurrencyCode, dto.Rates[0].Buy, dto.Rates[0].Sell)]));
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate, dto.PublicationDate,
-            dto.Rates.Select(x => new BuySellExchangeRate(x.CurrencyName, x.CurrencyCode, x.Buy, x.Sell)).ToArray()));
+            dto.Rates.Select(x => new TableBuySellRate(x.CurrencyName, x.CurrencyCode, x.Buy, x.Sell)).ToArray()));
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(dtos.Select(x => new BuySellExchangeRateTable(x.TableId, x.TradingDate, x.PublicationDate,
-            [.. x.Rates.Select(r => new BuySellExchangeRate(r.CurrencyName, r.CurrencyCode, r.Buy, r.Sell))])));
+            [.. x.Rates.Select(r => new TableBuySellRate(r.CurrencyName, r.CurrencyCode, r.Buy, r.Sell))])));
     }
 
     [Fact]

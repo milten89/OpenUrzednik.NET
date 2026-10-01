@@ -20,7 +20,7 @@ public partial class MapperTest
         var result = Mapper.MapToExchangeRate(dto);
 
         // Assert
-        result.ShouldBe(new ExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Price));
+        result.ShouldBe(new TableRate(dto.CurrencyName, dto.CurrencyCode, dto.Price));
     }
 
     [Fact]

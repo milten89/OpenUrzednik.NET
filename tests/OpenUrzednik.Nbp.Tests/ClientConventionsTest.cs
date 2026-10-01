@@ -43,7 +43,7 @@ public class ClientConventionsTest
             .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
             .Where(m => AsyncReturnTypes.Contains(m.ReturnType.IsGenericType ? m.ReturnType.GetGenericTypeDefinition() : m.ReturnType));
 
-    // Full type names keep signatures unique across namespaces (e.g. Currency.ExchangeRate vs Table.ExchangeRate).
+    // Full type names keep signatures unique if two public types ever share a name across namespaces.
     private static string Describe(MethodInfo method)
         => $"{method.DeclaringType!.FullName}.{method.Name}({string.Join(", ", method.GetParameters().Select(p => p.ParameterType.ToString()))})";
 }
