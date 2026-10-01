@@ -10,7 +10,6 @@ None open.
 
 ## P1: NBP correctness
 
-10. **Document publication schedules in XML docs.** Table B is published on Wednesdays (`GetTodayAsync(B)` usually returns 404), and rates appear around midday Warsaw time.
 11. **Type name collisions:** `Currency.ExchangeRate` vs `Table.ExchangeRate`, and the same for `BuySellExchangeRate`.
 
 ## P2: Framework (implements accepted ADRs)
