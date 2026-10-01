@@ -34,7 +34,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [new ExchangeRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate, dto.Rates[0].Price)]));
+            [new CurrencyRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate, dto.Rates[0].Price)]));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [.. dto.Rates.Select(x => new ExchangeRate(x.TableId, x.PublicationDate, x.Price))]));
+            [.. dto.Rates.Select(x => new CurrencyRate(x.TableId, x.PublicationDate, x.Price))]));
     }
 
     [Fact]

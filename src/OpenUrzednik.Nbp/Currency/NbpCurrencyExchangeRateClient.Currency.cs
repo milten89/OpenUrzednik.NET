@@ -10,6 +10,7 @@ namespace OpenUrzednik.Nbp.Currency;
 
 public partial class NbpCurrencyExchangeRateClient
 {
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetLatestAsync(string currency, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.latest");
@@ -38,6 +39,7 @@ public partial class NbpCurrencyExchangeRateClient
         return OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetTopCountAsync(string currency, int topCount, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.top_count");
@@ -68,6 +70,7 @@ public partial class NbpCurrencyExchangeRateClient
         return OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetTodayAsync(string currency, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.today");
@@ -96,6 +99,7 @@ public partial class NbpCurrencyExchangeRateClient
         return OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly date, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.get_date");
@@ -126,6 +130,7 @@ public partial class NbpCurrencyExchangeRateClient
         return OpenUrzednikResult.Failure(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly from, DateOnly to, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.get_range");

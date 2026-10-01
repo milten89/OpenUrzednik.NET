@@ -6,7 +6,7 @@ namespace OpenUrzednik.Nbp.Table;
 /// <param name="TableId">Exchange rate table number</param>
 /// <param name="PublicationDate">Publication date</param>
 /// <param name="Rates">List of exchange rates</param>
-public sealed record ExchangeRateTable(string TableId, DateOnly PublicationDate, IReadOnlyList<ExchangeRate> Rates)
+public sealed record ExchangeRateTable(string TableId, DateOnly PublicationDate, IReadOnlyList<TableRate> Rates)
 {
     public bool Equals(ExchangeRateTable? other)
         => other is not null &&
