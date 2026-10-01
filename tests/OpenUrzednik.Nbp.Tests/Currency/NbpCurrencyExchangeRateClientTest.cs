@@ -39,9 +39,6 @@ public partial class NbpCurrencyExchangeRateClientTest
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CurrencyExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.CurrencyExchangeRatesDto) };
 
-    private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CountryExchangeRatesDto dtos)
-        => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.CountryExchangeRatesDto) };
-
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, BuySellCurrencyExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.BuySellCurrencyExchangeRatesDto) };
 }
