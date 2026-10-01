@@ -1,3 +1,5 @@
+using OpenUrzednik.Nbp.Extensions;
+
 namespace OpenUrzednik.Nbp.UrlBuilder;
 
 public class NbpUrlBuilder : INbpUrlBuilder
@@ -15,14 +17,14 @@ public class NbpUrlBuilder : INbpUrlBuilder
         => _baseUrl;
 
     public string ForTopCount(int topCount)
-        => $"{_baseUrl}/last/{topCount}";
+        => $"{_baseUrl}/last/{topCount.ToInvariantString()}";
 
     public string Today()
         => $"{_baseUrl}/today";
 
     public string ForDate(DateOnly date)
-        => $"{_baseUrl}/{date:yyyy-MM-dd}";
+        => $"{_baseUrl}/{date.ToIso8601String()}";
 
     public string ForDateRange(DateOnly from, DateOnly to)
-        => $"{_baseUrl}/{from:yyyy-MM-dd}/{to:yyyy-MM-dd}";
+        => $"{_baseUrl}/{from.ToIso8601String()}/{to.ToIso8601String()}";
 }

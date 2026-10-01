@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 
 using Bogus;
@@ -31,7 +32,7 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         tracer.Received(1).StartSpan("nbp.gold.get_date");
-        span.Received(1).SetTag("nbp.date", date);
+        span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -168,8 +169,8 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         tracer.Received(1).StartSpan("nbp.gold.get_range");
-        span.Received(1).SetTag("nbp.from", from);
-        span.Received(1).SetTag("nbp.to", to);
+        span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
 

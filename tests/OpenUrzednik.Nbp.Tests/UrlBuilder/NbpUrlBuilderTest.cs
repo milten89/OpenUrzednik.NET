@@ -1,4 +1,5 @@
 using OpenUrzednik.Nbp.UrlBuilder;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
@@ -132,5 +133,53 @@ public class NbpUrlBuilderTest
 
         // Assert
         result.ShouldBe("cenyzlota/2026-05-01/2026-01-01");
+    }
+
+    [Theory]
+    [InlineData("th-TH")]
+    [InlineData("ar-SA")]
+    [InlineData("fa-IR")]
+    public void ForDate_NonGregorianCulture_UsesGregorianIsoDate(string culture)
+    {
+        // Arrange
+        using var _ = new CultureScope(culture);
+        var sut = new NbpUrlBuilder("exchangerates/rates/a/eur");
+
+        // Act
+        var result = sut.ForDate(new DateOnly(2026, 1, 5));
+
+        // Assert
+        result.ShouldBe("exchangerates/rates/a/eur/2026-01-05");
+    }
+
+    [Theory]
+    [InlineData("th-TH")]
+    [InlineData("ar-SA")]
+    [InlineData("fa-IR")]
+    public void ForDateRange_NonGregorianCulture_UsesGregorianIsoDates(string culture)
+    {
+        // Arrange
+        using var _ = new CultureScope(culture);
+        var sut = new NbpUrlBuilder("exchangerates/rates/a/eur");
+
+        // Act
+        var result = sut.ForDateRange(new DateOnly(2026, 1, 5), new DateOnly(2026, 2, 9));
+
+        // Assert
+        result.ShouldBe("exchangerates/rates/a/eur/2026-01-05/2026-02-09");
+    }
+
+    [Fact]
+    public void ForTopCount_CultureWithUnicodeMinusSign_UsesAsciiDigits()
+    {
+        // Arrange
+        using var _ = new CultureScope("fa-IR");
+        var sut = new NbpUrlBuilder("cenyzlota");
+
+        // Act
+        var result = sut.ForTopCount(-1);
+
+        // Assert
+        result.ShouldBe("cenyzlota/last/-1");
     }
 }

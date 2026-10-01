@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 
 using Bogus;
@@ -186,7 +187,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         tracer.Received(1).StartSpan("nbp.currency.get_date");
         span.Received(1).SetTag("nbp.currency", currency);
         span.Received(1).SetTag("nbp.table", TableType.A);
-        span.Received(1).SetTag("nbp.date", date);
+        span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -211,8 +212,8 @@ public partial class NbpCurrencyExchangeRateClientTest
         tracer.Received(1).StartSpan("nbp.currency.get_range");
         span.Received(1).SetTag("nbp.currency", currency);
         span.Received(1).SetTag("nbp.table", TableType.A);
-        span.Received(1).SetTag("nbp.from", from);
-        span.Received(1).SetTag("nbp.to", to);
+        span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -300,7 +301,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.buy_sell_date");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.date", date);
+        span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -324,8 +325,8 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.buy_sell_range");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.from", from);
-        span.Received(1).SetTag("nbp.to", to);
+        span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     private static (IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span, IOpenUrzednikTraceSource Tracer) CreateTelemetrySubstitutes()

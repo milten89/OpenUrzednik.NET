@@ -101,7 +101,7 @@ public partial class NbpCurrencyExchangeRateClient
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.get_date");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table);
-        traceSpan.SetTag("nbp.date", date);
+        traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
         var tableValidation = new TableTypeValidator(nameof(table), table).Validate();
@@ -131,8 +131,8 @@ public partial class NbpCurrencyExchangeRateClient
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.get_range");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table);
-        traceSpan.SetTag("nbp.from", from);
-        traceSpan.SetTag("nbp.to", to);
+        traceSpan.SetTag("nbp.from", from.ToIso8601String());
+        traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
         var tableValidation = new TableTypeValidator(nameof(table), table).Validate();

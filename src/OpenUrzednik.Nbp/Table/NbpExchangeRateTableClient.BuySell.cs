@@ -87,7 +87,7 @@ public partial class NbpExchangeRateTableClient
     public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_date");
-        traceSpan.SetTag("nbp.date", date);
+        traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
         var dateValidation = new CurrencyDateValidator(nameof(date), date).Validate();
         if (dateValidation.IsFailure)
@@ -121,8 +121,8 @@ public partial class NbpExchangeRateTableClient
     public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_range");
-        traceSpan.SetTag("nbp.from", from);
-        traceSpan.SetTag("nbp.to", to);
+        traceSpan.SetTag("nbp.from", from.ToIso8601String());
+        traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
         var toValidation = new CurrencyDateValidator(nameof(to), to).Validate();
         var dateRangeValidation = new DateRangeValidator((from, to)).Validate();

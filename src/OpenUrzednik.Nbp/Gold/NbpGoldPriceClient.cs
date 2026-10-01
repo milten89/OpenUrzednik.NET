@@ -107,7 +107,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_date");
-        traceSpan.SetTag("nbp.date", date);
+        traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
         var dateValidation = new GoldDateValidator(nameof(date), date).Validate();
         if (dateValidation.IsFailure)
@@ -139,8 +139,8 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_range");
-        traceSpan.SetTag("nbp.from", from);
-        traceSpan.SetTag("nbp.to", to);
+        traceSpan.SetTag("nbp.from", from.ToIso8601String());
+        traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
         var toValidation = new GoldDateValidator(nameof(to), to).Validate();
         var dateRangeValidation = new DateRangeValidator((from, to)).Validate();

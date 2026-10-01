@@ -1,5 +1,6 @@
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Validation;
+using OpenUrzednik.Nbp.Extensions;
 
 namespace OpenUrzednik.Nbp.Validation;
 
@@ -13,6 +14,6 @@ internal sealed class GoldDateValidator(string propertyName, DateOnly value) : V
     {
         return Value >= MinDate
             ? OpenUrzednikResult.Success()
-            : GetValidationErrorResult($"'{PropertyName}' should be greater or equal {MinDate:d}.");
+            : GetValidationErrorResult($"'{PropertyName}' should be greater or equal {MinDate.ToIso8601String()}.");
     }
 }
