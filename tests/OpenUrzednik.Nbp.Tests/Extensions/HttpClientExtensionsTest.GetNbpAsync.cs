@@ -513,6 +513,7 @@ public partial class HttpClientExtensionsTest
     [Theory]
     [InlineData(HttpStatusCode.OK, "{\"name\":\"n\",\"value\":1}")]
     [InlineData(HttpStatusCode.OK, "not-valid-json")]
+    [InlineData(HttpStatusCode.OK, "null")]
     [InlineData(HttpStatusCode.NotFound, "")]
     [InlineData(HttpStatusCode.TooManyRequests, "")]
     [InlineData(HttpStatusCode.InternalServerError, "")]
