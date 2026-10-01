@@ -19,7 +19,7 @@ public interface INbpExchangeRateTableClient
     /// Gets the series of the table of currency exchange rate for the specified table type starting from the latest.
     /// </summary>
     /// <param name="table">Table type</param>
-    /// <param name="topCount">Number of records to retrieve</param>
+    /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
     Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(TableType table, int topCount, CancellationToken cancellationToken = default);
@@ -34,7 +34,7 @@ public interface INbpExchangeRateTableClient
 
     /// <summary>
     /// Gets the table of currency exchange rate for the specified table type and date. Can return no data if the table is not published yet for the given date.
-    /// Date can't be lower than 2002-01-02, because the NBP API doesn't support it.
+    /// Date can't be lower than 2002-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
     /// </summary>
     /// <param name="table">Table type</param>
     /// <param name="date">Date</param>
@@ -44,7 +44,7 @@ public interface INbpExchangeRateTableClient
 
     /// <summary>
     /// Gets the table of currency exchange rate for the specified table type and date range. Can return no data if the tables are not published yet for the given date range.
-    /// Date range can't exceed 93 days or finish before 2002-01-02, because the NBP API doesn't support it.
+    /// Date range can't exceed 93 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2002-01-02, because the NBP API doesn't support it.
     /// </summary>
     /// <param name="table">Table type</param>
     /// <param name="from">Start date</param>
@@ -63,7 +63,7 @@ public interface INbpExchangeRateTableClient
     /// <summary>
     /// Gets the series of table of buy and sell currency exchange rate starting from the latest.
     /// </summary>
-    /// <param name="topCount">Number of records to retrieve</param>
+    /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
     Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellTopCountAsync(int topCount, CancellationToken cancellationToken = default);
@@ -77,7 +77,7 @@ public interface INbpExchangeRateTableClient
 
     /// <summary>
     /// Gets the table of buy and sell currency exchange rate for the specified date. Can return no data if the table is not published yet for the given date.
-    /// Date can't be lower than 2002-01-02, because the NBP API doesn't support it.
+    /// Date can't be lower than 2002-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
     /// </summary>
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -86,7 +86,7 @@ public interface INbpExchangeRateTableClient
 
     /// <summary>
     /// Gets the table of buy and sell currency exchange rate for the specified date range. Can return no data if the tables are not published yet for the given date range.
-    /// Date range can't exceed 93 days or finish before 2002-01-02, because the NBP API doesn't support it.
+    /// Date range can't exceed 93 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2002-01-02, because the NBP API doesn't support it.
     /// </summary>
     /// <param name="from">Start date</param>
     /// <param name="to">End date</param>

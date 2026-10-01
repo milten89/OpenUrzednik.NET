@@ -8,6 +8,7 @@ using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
+using OpenUrzednik.Nbp.Validation;
 using OpenUrzednik.TestCommon.Extensions;
 
 using Shouldly;
@@ -124,5 +125,22 @@ public partial class NbpCurrencyExchangeRateClientTest
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
+    }
+
+    [Fact]
+    public async Task GetBuySellTopCountAsync_TopCountAboveApiLimit_ReturnsFailureWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetBuySellTopCountAsync("USD", TopCountValidator.MaxTopCount + 1, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
     }
 }
