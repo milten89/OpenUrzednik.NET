@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.TestCommon;
 
@@ -44,6 +46,69 @@ public class OpenUrzednikGenericResultTest
     {
         // Act && Assert
         Should.Throw<InvalidOperationException>(() => new OpenUrzednikResult<int>());
+    }
+
+    [Fact]
+    public void Size_ReferenceTypeValue_IsTwoPointers()
+    {
+        // The result is designed to stay two machine words wide (value + errors), so it can be passed in registers.
+        Unsafe.SizeOf<OpenUrzednikResult<object>>().ShouldBe(2 * IntPtr.Size);
+    }
+
+    [Fact]
+    public void DefaultValue_ShouldBeFailureWithUnknownError()
+    {
+        // Act
+        var result = default(OpenUrzednikResult<string>);
+
+        // Assert
+        result.IsSuccess.ShouldBeFalse();
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnknownError>();
+        Should.Throw<InvalidOperationException>(() => result.Value);
+    }
+
+    [Fact]
+    public void UninitializedArrayElement_ShouldBeFailureWithUninitializedError()
+    {
+        // Arrange
+        var results = new OpenUrzednikResult<int>[1];
+
+        // Act
+        var result = results[0];
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnknownError>();
+        error.Code.ShouldBe(UnknownError.ErrorCode);
+        error.Message.ShouldContain("not initialized");
+    }
+
+    [Fact]
+    public void ImplicitConversion_FailedNonGenericResult_ShouldBeFailureWithSameErrors()
+    {
+        // Arrange
+        var error = new TestError("Test error");
+        var source = OpenUrzednikResult.Failure(error);
+
+        // Act
+        OpenUrzednikResult<int> result = source;
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
+    }
+
+    [Fact]
+    public void SuccessResult_NullValue_ShouldBeSuccess()
+    {
+        // Act
+        var result = OpenUrzednikResult.Success<string?>(null);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBeNull();
+        result.Errors.Count.ShouldBe(0);
     }
 
     [Fact]
