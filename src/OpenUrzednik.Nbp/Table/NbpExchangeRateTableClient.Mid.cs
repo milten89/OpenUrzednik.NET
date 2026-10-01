@@ -10,6 +10,7 @@ namespace OpenUrzednik.Nbp.Table;
 
 public partial class NbpExchangeRateTableClient
 {
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetLatestAsync(TableType table, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.latest");
@@ -44,6 +45,7 @@ public partial class NbpExchangeRateTableClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(TableType table, int topCount, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.top_count");
@@ -72,6 +74,7 @@ public partial class NbpExchangeRateTableClient
         return OpenUrzednikResult.Failure<IReadOnlyList<ExchangeRateTable>>(requestResult.Errors);
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetTodayAsync(TableType table, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.today");
@@ -106,6 +109,7 @@ public partial class NbpExchangeRateTableClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(TableType table, DateOnly date, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.get_date");
@@ -143,6 +147,7 @@ public partial class NbpExchangeRateTableClient
         }
     }
 
+    /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(TableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.get_range");
