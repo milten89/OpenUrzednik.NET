@@ -2,6 +2,8 @@ using System.Net;
 
 using Bogus;
 
+using Microsoft.Extensions.Time.Testing;
+
 using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
@@ -184,6 +186,23 @@ public partial class NbpExchangeRateTableClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>().Message.ShouldEndWith("should not exceed 93 days.");
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetAsync_DateRange_ToAfterTodayInWarsaw_ReturnsFailureWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, NbpTable.A, Substitute.For<INbpUrlBuilder>(), timeProvider: new FakeTimeProvider(new DateTimeOffset(2026, 10, 1, 10, 0, 0, TimeSpan.Zero)));
+
+        // Act
+        var result = await sut.GetAsync(TableType.A, new DateOnly(2026, 9, 1), new DateOnly(2026, 10, 2), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldContain(e => e is ValidationError && e.Message.Contains("later than today (2026-10-01"));
         handler.Request.ShouldBeNull();
     }
 }

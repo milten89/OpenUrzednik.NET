@@ -1,4 +1,6 @@
 using OpenUrzednik.Nbp.Currency;
+using OpenUrzednik.Nbp.Extensions;
+using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Attributes;
@@ -61,5 +63,25 @@ public class NbpCurrencyExchangeRateClientTest : IClassFixture<NbpHttpClientFixt
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.Rates.Count.ShouldBeGreaterThan(200);
+    }
+
+    // Guards the limits in DateRangeValidator and TopCountValidator: one step past each must be rejected by the API itself.
+    [ManualTheory]
+    [InlineData("exchangerates/rates/a/usd/2025-01-01/2026-01-04/", "367")]
+    [InlineData("cenyzlota/2025-01-01/2026-01-04/", "367")]
+    [InlineData("exchangerates/tables/a/2026-01-01/2026-04-05/", "93")]
+    [InlineData("exchangerates/rates/a/usd/last/256/", "255")]
+    public async Task Api_OneStepPastLimit_ReturnsBadRequest(string path, string limit)
+    {
+        // Arrange
+        using var httpClient = new HttpClient().ConfigureForNbpApi(new NbpOptions());
+
+        // Act
+        using var response = await httpClient.GetAsync(path, TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        ((int)response.StatusCode).ShouldBe(400);
+        body.ShouldContain(limit);
     }
 }

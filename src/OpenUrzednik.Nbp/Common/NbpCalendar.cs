@@ -1,3 +1,5 @@
+using System.Security;
+
 namespace OpenUrzednik.Nbp.Common;
 
 /// <summary>
@@ -26,10 +28,27 @@ internal static class NbpCalendar
             catch (InvalidTimeZoneException)
             {
             }
+            catch (SecurityException)
+            {
+                // The time zone data exists but can't be read. This runs in a static initializer, so letting it
+                // escape would turn every date method into a TypeInitializationException.
+            }
         }
 
-        // No time zone data (e.g. a minimal container): CET without daylight saving. Off by one hour in summer,
-        // which can only matter for a request made between 23:00 and 24:00 UTC.
-        return TimeZoneInfo.CreateCustomTimeZone("Europe/Warsaw (UTC+1)", TimeSpan.FromHours(1), "Europe/Warsaw (UTC+1)", "Europe/Warsaw (UTC+1)");
+        return CreateCentralEuropeanTime();
+    }
+
+    // No readable time zone data (e.g. a minimal container): CET/CEST with the EU rules in force since 1996
+    // (UTC+1, UTC+2 from the last Sunday of March 02:00 to the last Sunday of October 03:00 local time).
+    internal static TimeZoneInfo CreateCentralEuropeanTime()
+    {
+        var summerTime = TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(
+            DateTime.MinValue.Date,
+            DateTime.MaxValue.Date,
+            TimeSpan.FromHours(1),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1, 1, 1, 2, 0, 0), 3, 5, DayOfWeek.Sunday),
+            TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1, 1, 1, 3, 0, 0), 10, 5, DayOfWeek.Sunday));
+
+        return TimeZoneInfo.CreateCustomTimeZone("Europe/Warsaw", TimeSpan.FromHours(1), "Europe/Warsaw", "CET", "CEST", [summerTime]);
     }
 }

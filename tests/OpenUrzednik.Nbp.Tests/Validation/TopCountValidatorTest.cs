@@ -58,7 +58,7 @@ public class TopCountValidatorTest
     [InlineData(int.MinValue)]
     [InlineData(TopCountValidator.MaxTopCount + 1)]
     [InlineData(int.MaxValue)]
-    public void Validate_ZeroOrNegativeValue_ReturnsValidationError(int value)
+    public void Validate_OutOfRangeValue_ReturnsValidationError(int value)
     {
         // Arrange
         var validator = new TopCountValidator(PropertyName, value);

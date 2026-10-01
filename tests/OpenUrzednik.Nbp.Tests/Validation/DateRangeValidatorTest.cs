@@ -195,13 +195,4 @@ public class DateRangeValidatorTest
         // Assert
         result.Errors.ShouldHaveSingleItem().Message.ShouldEndWith($"should not exceed {maxDays} days.");
     }
-
-    [Fact]
-    public void Limits_MatchTheNbpApi()
-    {
-        // Observed 2026-10-01: rates and gold accept to - from = 367 days and reject 368 ("Limit of 367 days"),
-        // tables accept 93 and reject 94 ("Limit of 93 days").
-        DateRangeValidator.MaxRatesDateRange.ShouldBe(367);
-        DateRangeValidator.MaxTablesDateRange.ShouldBe(93);
-    }
 }

@@ -24,4 +24,17 @@ public class NbpCalendarTest
         // Assert
         today.ShouldBe(DateOnly.Parse(expected, System.Globalization.CultureInfo.InvariantCulture));
     }
+
+    [Fact]
+    public void CreateCentralEuropeanTime_MatchesSystemWarsawZoneOverAYear()
+    {
+        // Arrange
+        var fallback = NbpCalendar.CreateCentralEuropeanTime();
+        var warsaw = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+        var start = new DateTimeOffset(2026, 1, 1, 0, 30, 0, TimeSpan.Zero);
+
+        // Act && Assert
+        for (var instant = start; instant < start.AddYears(1); instant = instant.AddHours(1))
+            fallback.GetUtcOffset(instant).ShouldBe(warsaw.GetUtcOffset(instant), $"at {instant:O}");
+    }
 }

@@ -9,6 +9,7 @@ using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
+using OpenUrzednik.Nbp.Validation;
 using OpenUrzednik.TestCommon.Extensions;
 
 using Shouldly;
@@ -136,5 +137,22 @@ public partial class NbpExchangeRateTableClientTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task GetTopCountAsync_TopCountAboveApiLimit_ReturnsFailureWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, NbpTable.A, Substitute.For<INbpUrlBuilder>());
+
+        // Act
+        var result = await sut.GetTopCountAsync(TableType.A, TopCountValidator.MaxTopCount + 1, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
     }
 }
