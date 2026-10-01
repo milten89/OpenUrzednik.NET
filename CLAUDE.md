@@ -93,10 +93,13 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Before opening a PR, run the `reviewer` agent on the diff.
 - **CI job names are required status checks in the GitHub ruleset.** If you rename a job in `.github/workflows/build.yml` or `format.yml`, say so: the ruleset must be updated (see `docs/GITHUB-SETUP.md`).
 - Language ([ADR-0009](docs/adr/0009-documentation-language.md)): code, ADRs and technical docs are in English. User-facing docs (README, CONTRIBUTING) are in Polish and link to an English version. Update both versions together.
+- Prose style: when you write or edit a README (root or per package), run `/miodkuj` on the Polish version (`README.md`) and `/stop-slop` on the English version (`README.en.md`). Use the same skills for `CONTRIBUTING`, `SECURITY` and other user-facing prose. Edit only the prose: keep code blocks, commands, package and API names, badges, links and numbers exactly as they are.
 
 ## Skills and agents
 
 - `/new-endpoint`: checklist for adding or changing a client method (DTO, mapper, validation, client, tests, docs).
 - `/verify-api`: compare DTOs and test payloads with live API responses, and capture fixtures.
 - `/adr`: create a new MADR record and update the index.
+- `/miodkuj`: remove AI-sounding, bureaucratic and translated phrasing from Polish prose (vendored from [bartekpucek/miodkuj](https://github.com/bartekpucek/miodkuj), MIT).
+- `/stop-slop`: remove predictable AI writing patterns from English prose (vendored from [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop), MIT).
 - `reviewer` agent: reviews a diff against the ADRs and the conventions above.
