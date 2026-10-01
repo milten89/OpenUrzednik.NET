@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Core abstractions for OpenUrzednik.NET: Result-pattern error handling (OpenUrzednikResult), typed exceptions, and provider-agnostic building blocks for Polish government API clients.</Description>

@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Core;
+using OpenUrzednik.Core;
 
 namespace OpenUrzednik.Nbp.Gold;
 

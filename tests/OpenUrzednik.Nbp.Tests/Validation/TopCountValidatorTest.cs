@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Validation;

@@ -1,4 +1,4 @@
-﻿using Bogus.DataSets;
+using Bogus.DataSets;
 
 using OpenUrzednik.Nbp.Validation;
 

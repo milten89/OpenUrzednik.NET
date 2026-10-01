@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.UrlBuilder;
 
 namespace OpenUrzednik.Nbp.Table;

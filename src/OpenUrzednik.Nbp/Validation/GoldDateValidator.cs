@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Core;
+using OpenUrzednik.Core;
 using OpenUrzednik.Core.Validation;
 
 namespace OpenUrzednik.Nbp.Validation;

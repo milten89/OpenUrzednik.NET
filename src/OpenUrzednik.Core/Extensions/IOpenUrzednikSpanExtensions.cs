@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
 
 namespace OpenUrzednik.Core.Extensions;

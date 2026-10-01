@@ -1,4 +1,4 @@
-﻿namespace OpenUrzednik.Nbp.Options;
+namespace OpenUrzednik.Nbp.Options;
 
 public class NbpOptions
 {

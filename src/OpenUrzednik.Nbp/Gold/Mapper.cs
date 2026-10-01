@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Dto;
 
 namespace OpenUrzednik.Nbp.Gold;
 
