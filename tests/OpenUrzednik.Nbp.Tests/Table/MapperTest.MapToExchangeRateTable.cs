@@ -1,3 +1,4 @@
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
@@ -51,18 +52,17 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToExchangeRateTable_NullDto_ThrowsArgumentNullException()
+    public void MapToExchangeRateTable_NullDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         ExchangeRateTableDto dto = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRateTable(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dto));
     }
 
     [Fact]
-    public void MapToExchangeRateTable_RatesArrayContainingNullElement_ThrowsArgumentException()
+    public void MapToExchangeRateTable_RatesArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var dtoBase = new ExchangeRateTableDtoFaker(0).WithConstantSeed().Generate();
@@ -74,8 +74,7 @@ public partial class MapperTest
         };
 
         // Act && Assert
-        Should.Throw<ArgumentException>(() => Mapper.MapToExchangeRateTable(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dto));
     }
 
     [Fact]
@@ -106,25 +105,23 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToExchangeRateTable_NullArray_ThrowsArgumentNullException()
+    public void MapToExchangeRateTable_NullArray_ThrowsInvalidPayloadException()
     {
         // Arrange
         ExchangeRateTableDto[] dtos = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRateTable(dtos))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dtos));
     }
 
     [Fact]
-    public void MapToExchangeRateTable_ArrayContainingNullElement_ThrowsArgumentNullException()
+    public void MapToExchangeRateTable_ArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var dto = new ExchangeRateTableDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, null! };
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToExchangeRateTable(dtos))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dtos));
     }
 }

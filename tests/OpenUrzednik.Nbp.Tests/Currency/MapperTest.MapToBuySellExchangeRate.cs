@@ -1,3 +1,4 @@
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Tests.Fakes;
@@ -23,7 +24,7 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToBuySellExchangeRate_NullDto_ThrowsArgumentNullException()
+    public void MapToBuySellExchangeRate_NullDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         BuySellCurrencyExchangeRateDto dto = null!;
@@ -32,8 +33,7 @@ public partial class MapperTest
         var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRate(dto));
 
         // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
-            .ParamName.ShouldBe("dto");
+        exception.ShouldBeOfType<InvalidPayloadException>();
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToBuySellExchangeRates_NullDto_ThrowsArgumentNullException()
+    public void MapToBuySellExchangeRates_NullDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         BuySellCurrencyExchangeRatesDto dto = null!;
@@ -87,12 +87,11 @@ public partial class MapperTest
         var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRates(dto));
 
         // Assert
-        exception.ShouldBeOfType<ArgumentNullException>()
-            .ParamName.ShouldBe("dto");
+        exception.ShouldBeOfType<InvalidPayloadException>();
     }
 
     [Fact]
-    public void MapToBuySellExchangeRates_RatesArrayContainingNullElement_ThrowsArgumentNullException()
+    public void MapToBuySellExchangeRates_RatesArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var dtoBase = new BuySellCurrencyExchangeRatesDtoFaker(0).WithConstantSeed().Generate();
@@ -107,7 +106,6 @@ public partial class MapperTest
         var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRates(dto));
 
         // Assert
-        exception.ShouldBeOfType<ArgumentException>()
-            .ParamName.ShouldBe("dto");
+        exception.ShouldBeOfType<InvalidPayloadException>();
     }
 }

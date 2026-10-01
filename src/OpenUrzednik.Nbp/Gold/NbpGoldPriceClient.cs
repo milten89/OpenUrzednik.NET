@@ -45,7 +45,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         switch (requestResult.IsSuccess)
         {
             case true when requestResult.Value.Length != 0:
-                return OpenUrzednikResult.Success(Mapper.MapToGoldPrice(requestResult.Value[0]));
+                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
             case true when requestResult.Value.Length == 0:
                 if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
                     _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", _urlBuilder.Latest());
@@ -75,7 +75,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.ForTopCount(topCount), JsonContext.GoldPriceDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success<IReadOnlyList<GoldPrice>>(Array.AsReadOnly(Mapper.MapToGoldPrice(requestResult.Value)));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure<IReadOnlyList<GoldPrice>>(requestResult.Errors);
@@ -90,7 +90,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         switch (requestResult.IsSuccess)
         {
             case true when requestResult.Value.Length != 0:
-                return OpenUrzednikResult.Success(Mapper.MapToGoldPrice(requestResult.Value[0]));
+                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
             case true when requestResult.Value.Length == 0:
 
                 if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
@@ -123,7 +123,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         switch (requestResult.IsSuccess)
         {
             case true when requestResult.Value.Length != 0:
-                return OpenUrzednikResult.Success(Mapper.MapToGoldPrice(requestResult.Value[0]));
+                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
             case true when requestResult.Value.Length == 0:
                 if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
                     _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", _urlBuilder.ForDate(date));
@@ -156,7 +156,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.ForDateRange(from, to), JsonContext.GoldPriceDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
 
         if (requestResult.IsSuccess)
-            return OpenUrzednikResult.Success<IReadOnlyList<GoldPrice>>(Array.AsReadOnly(Mapper.MapToGoldPrice(requestResult.Value)));
+            return NbpPayload.Map(requestResult.Value, Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
 
         traceSpan.RecordErrors(requestResult.Errors);
         return OpenUrzednikResult.Failure<IReadOnlyList<GoldPrice>>(requestResult.Errors);

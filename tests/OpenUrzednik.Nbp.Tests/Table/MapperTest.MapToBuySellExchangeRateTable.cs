@@ -1,3 +1,4 @@
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
@@ -23,14 +24,13 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToBuySellExchangeRateTable_NullRateDto_ThrowsArgumentNullException()
+    public void MapToBuySellExchangeRateTable_NullRateDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         BuySellExchangeRateDto dto = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto));
     }
 
     [Fact]
@@ -75,18 +75,17 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToBuySellExchangeRateTable_NullTableDto_ThrowsArgumentNullException()
+    public void MapToBuySellExchangeRateTable_NullTableDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         BuySellExchangeRateTableDto dto = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto));
     }
 
     [Fact]
-    public void MapToBuySellExchangeRateTable_RatesArrayContainingNullElement_ThrowsArgumentNullException()
+    public void MapToBuySellExchangeRateTable_RatesArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var rateDto = new BuySellExchangeRateDtoFaker().WithConstantSeed().Generate();
@@ -100,8 +99,7 @@ public partial class MapperTest
         };
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto));
     }
 
     [Fact]
@@ -132,25 +130,23 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToBuySellExchangeRateTable_NullArray_ThrowsArgumentNullException()
+    public void MapToBuySellExchangeRateTable_NullArray_ThrowsInvalidPayloadException()
     {
         // Arrange
         BuySellExchangeRateTableDto[] dtos = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dtos))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dtos));
     }
 
     [Fact]
-    public void MapToBuySellExchangeRateTable_ArrayContainingNullElement_ThrowsArgumentNullException()
+    public void MapToBuySellExchangeRateTable_ArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var dto = new BuySellExchangeRateTableDtoFaker().WithConstantSeed().Generate();
         var dtos = new[] { dto, null! };
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToBuySellExchangeRateTable(dtos))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dtos));
     }
 }

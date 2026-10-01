@@ -1,3 +1,4 @@
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.UrlBuilder;
 
@@ -15,22 +16,21 @@ internal static class Mapper
         };
     }
 
-    internal static ExchangeRateTable[] MapToExchangeRateTable(ExchangeRateTableDto[] dto)
+    internal static IReadOnlyList<ExchangeRateTable> MapToExchangeRateTable(ExchangeRateTableDto[] dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
+        NbpPayload.EnsurePresent(dto, nameof(dto));
 
         var tables = new ExchangeRateTable[dto.Length];
         for (int i = 0; i < tables.Length; i++)
             tables[i] = MapToExchangeRateTable(dto[i]);
 
-        return tables;
+        return Array.AsReadOnly(tables);
     }
 
     internal static ExchangeRateTable MapToExchangeRateTable(ExchangeRateTableDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"'{nameof(dto.Rates)}' cannot be null.", nameof(dto));
+        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var rates = new ExchangeRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
@@ -41,27 +41,26 @@ internal static class Mapper
 
     internal static ExchangeRate MapToExchangeRate(ExchangeRateDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
+        NbpPayload.EnsurePresent(dto, nameof(dto));
 
         return new ExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Price);
     }
 
-    internal static BuySellExchangeRateTable[] MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
+    internal static IReadOnlyList<BuySellExchangeRateTable> MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
+        NbpPayload.EnsurePresent(dto, nameof(dto));
 
         var tables = new BuySellExchangeRateTable[dto.Length];
         for (int i = 0; i < tables.Length; i++)
             tables[i] = MapToBuySellExchangeRateTable(dto[i]);
 
-        return tables;
+        return Array.AsReadOnly(tables);
     }
 
     internal static BuySellExchangeRateTable MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"'{nameof(dto.Rates)}' cannot be null.", nameof(dto));
+        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var rates = new BuySellExchangeRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
@@ -72,7 +71,7 @@ internal static class Mapper
 
     internal static BuySellExchangeRate MapToBuySellExchangeRateTable(BuySellExchangeRateDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
+        NbpPayload.EnsurePresent(dto, nameof(dto));
 
         return new BuySellExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell);
     }
