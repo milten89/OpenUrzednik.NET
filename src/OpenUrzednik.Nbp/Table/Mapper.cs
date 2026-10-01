@@ -34,12 +34,12 @@ internal static class Mapper
 
         var rates = new TableRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToExchangeRate(dto.Rates[i]);
+            rates[i] = MapToTableRate(dto.Rates[i]);
 
         return new(dto.TableId, dto.PublicationDate, Array.AsReadOnly(rates));
     }
 
-    internal static TableRate MapToExchangeRate(ExchangeRateDto dto)
+    internal static TableRate MapToTableRate(ExchangeRateDto dto)
     {
         NbpPayload.EnsurePresent(dto, "item");
 
@@ -64,12 +64,12 @@ internal static class Mapper
 
         var rates = new TableBuySellRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToBuySellExchangeRateTable(dto.Rates[i]);
+            rates[i] = MapToTableBuySellRate(dto.Rates[i]);
 
         return new(dto.TableId, dto.TradingDate, dto.PublicationDate, Array.AsReadOnly(rates));
     }
 
-    internal static TableBuySellRate MapToBuySellExchangeRateTable(BuySellExchangeRateDto dto)
+    internal static TableBuySellRate MapToTableBuySellRate(BuySellExchangeRateDto dto)
     {
         NbpPayload.EnsurePresent(dto, "item");
 

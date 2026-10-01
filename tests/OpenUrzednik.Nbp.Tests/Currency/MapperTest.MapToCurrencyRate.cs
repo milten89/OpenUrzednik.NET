@@ -11,25 +11,25 @@ namespace OpenUrzednik.Nbp.Tests.Currency;
 public partial class MapperTest
 {
     [Fact]
-    public void MapToCurrencyExchangeRate_ValidDto_MapsAllFieldsCorrectly()
+    public void MapToCurrencyRate_ValidDto_MapsAllFieldsCorrectly()
     {
         // Arrange
         var dto = new CurrencyExchangeRateDtoFaker().WithConstantSeed().Generate();
 
         // Act
-        var result = Mapper.MapToCurrencyExchangeRate(dto);
+        var result = Mapper.MapToCurrencyRate(dto);
 
         // Assert
         result.ShouldBe(new CurrencyRate(dto.TableId, dto.PublicationDate, dto.Price));
     }
 
     [Fact]
-    public void MapToCurrencyExchangeRate_NullDto_ThrowsInvalidPayloadException()
+    public void MapToCurrencyRate_NullDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         CurrencyExchangeRateDto dto = null!;
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyExchangeRate(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyRate(dto));
     }
 }

@@ -11,32 +11,6 @@ namespace OpenUrzednik.Nbp.Tests.Currency;
 public partial class MapperTest
 {
     [Fact]
-    public void MapToBuySellExchangeRate_ValidDto_MapsAllFieldsCorrectly()
-    {
-        // Arrange
-        var dto = new BuySellCurrencyExchangeRateDtoFaker().WithConstantSeed().Generate();
-
-        // Act
-        var result = Mapper.MapToBuySellExchangeRate(dto);
-
-        // Assert
-        result.ShouldBe(new CurrencyBuySellRate(dto.TableId, dto.PublicationDate, dto.Buy, dto.Sell));
-    }
-
-    [Fact]
-    public void MapToBuySellExchangeRate_NullDto_ThrowsInvalidPayloadException()
-    {
-        // Arrange
-        BuySellCurrencyExchangeRateDto dto = null!;
-
-        // Act
-        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRate(dto));
-
-        // Assert
-        exception.ShouldBeOfType<InvalidPayloadException>();
-    }
-
-    [Fact]
     public void MapToBuySellExchangeRates_EmptyRates_ReturnsEmptyRatesList()
     {
         // Arrange

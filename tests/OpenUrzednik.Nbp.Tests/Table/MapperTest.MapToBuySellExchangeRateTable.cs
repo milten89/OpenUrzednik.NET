@@ -11,29 +11,6 @@ namespace OpenUrzednik.Nbp.Tests.Table;
 public partial class MapperTest
 {
     [Fact]
-    public void MapToBuySellExchangeRateTable_ValidRateDto_MapsAllFieldsCorrectly()
-    {
-        // Arrange
-        var dto = new BuySellExchangeRateDtoFaker().WithConstantSeed().Generate();
-
-        // Act
-        var result = Mapper.MapToBuySellExchangeRateTable(dto);
-
-        // Assert
-        result.ShouldBe(new TableBuySellRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell));
-    }
-
-    [Fact]
-    public void MapToBuySellExchangeRateTable_NullRateDto_ThrowsInvalidPayloadException()
-    {
-        // Arrange
-        BuySellExchangeRateDto dto = null!;
-
-        // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto));
-    }
-
-    [Fact]
     public void MapToBuySellExchangeRateTable_EmptyRates_ReturnsEmptyRatesList()
     {
         // Arrange

@@ -1,7 +1,7 @@
 namespace OpenUrzednik.Nbp.Currency;
 
 /// <summary>
-/// Buy and sell rates of one currency, as published in one NBP table C.
+/// One entry of <see cref="BuySellExchangeRates.Rates"/>: the buy and sell rates of the currency in one NBP table C
 /// </summary>
 /// <param name="TableId">Exchange rate table number</param>
 /// <param name="PublicationDate">Publication date</param>
