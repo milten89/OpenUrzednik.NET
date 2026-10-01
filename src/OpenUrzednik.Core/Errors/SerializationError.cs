@@ -1,19 +1,34 @@
+using OpenUrzednik.Core.Exceptions;
+
 namespace OpenUrzednik.Core.Errors;
 
+/// <summary>
+/// Represents an error indicating that a response payload was empty or could not be deserialized or mapped.
+/// </summary>
 public sealed class SerializationError : OpenUrzednikError
 {
     public const string ErrorCode = "serializationError";
 
-    public Exception Exception { get; }
+    /// <summary>
+    /// Gets the exception that caused the error (for example a <see cref="System.Text.Json.JsonException"/>), if any.
+    /// </summary>
+    public Exception? Exception { get; }
 
-    public SerializationError(string message, Exception exception)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SerializationError"/> class.
+    /// </summary>
+    /// <param name="message">The message associated with the error.</param>
+    /// <param name="exception">The exception that caused the error, if any.</param>
+    public SerializationError(string message, Exception? exception = null)
         : base(ErrorCode, message)
     {
-        ArgumentNullException.ThrowIfNull(exception);
-
         Exception = exception;
     }
 
+    /// <inheritdoc />
+    /// <remarks>The returned exception keeps <see cref="Exception"/> as its <see cref="System.Exception.InnerException"/>.</remarks>
     public override Exception ToException()
-        => Exception;
+        => Exception is null
+            ? new SerializationException(Message)
+            : new SerializationException(Message, Exception);
 }
