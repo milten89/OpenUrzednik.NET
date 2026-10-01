@@ -510,6 +510,26 @@ public partial class HttpClientExtensionsTest
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.OK, "{\"name\":\"n\",\"value\":1}")]
+    [InlineData(HttpStatusCode.OK, "not-valid-json")]
+    [InlineData(HttpStatusCode.NotFound, "")]
+    [InlineData(HttpStatusCode.TooManyRequests, "")]
+    [InlineData(HttpStatusCode.InternalServerError, "")]
+    public async Task GetNbpAsync_AnyResponse_DisposesResponse(HttpStatusCode statusCode, string body)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var content = new DisposeTrackingContent(body);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(statusCode) { Content = content });
+
+        // Act
+        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        content.IsDisposed.ShouldBeTrue();
+    }
+
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
         => CreateHttpClient(faker, response, out _);
 
@@ -533,4 +553,15 @@ public partial class HttpClientExtensionsTest
     }
 
     private sealed record TestDto(string Name, int Value);
+
+    private sealed class DisposeTrackingContent(string body) : StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json)
+    {
+        public bool IsDisposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            IsDisposed = true;
+            base.Dispose(disposing);
+        }
+    }
 }

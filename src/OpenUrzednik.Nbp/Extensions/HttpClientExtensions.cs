@@ -57,25 +57,10 @@ public static class HttpClientExtensions
         using var traceSpan = telemetryProvider.Tracer.StartSpan("nbp.http.get");
         traceSpan.SetTag("http.path", relativePath);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, relativePath);
+        using var request = new HttpRequestMessage(HttpMethod.Get, relativePath);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
-        HttpResponseMessage response;
-        try
-        {
-            response = await httpClient
-                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            traceSpan.RecordException(ex);
-            throw;
-        }
+        using var response = await SendAsync(httpClient, request, traceSpan, cancellationToken).ConfigureAwait(false);
         traceSpan.SetTag("http.status_code", (int)response.StatusCode);
 
         switch (response.StatusCode)
@@ -135,6 +120,25 @@ public static class HttpClientExtensions
             telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Unexpected error while reading NBP response from {path}", "path", relativePath);
             traceSpan.RecordException(ex);
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected error");
+            throw;
+        }
+    }
+
+    private static async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpRequestMessage request, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await httpClient
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            traceSpan.RecordException(ex);
             throw;
         }
     }
