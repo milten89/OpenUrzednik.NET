@@ -19,8 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Nbp\Fixtures\**\*.json" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="Nbp\Fixtures\**\*.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Nbp\Fixtures\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -293,8 +293,33 @@ public partial class HttpClientExtensionsTest
         var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
+        result.IsFailure.ShouldBeTrue();
         var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
         error.Message.ShouldEndWith($": {new string('x', 500)}");
+        error.Message.ShouldNotContain(new string('x', 501));
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_BadRequestWithUnreadableBody_ReturnsBadRequestErrorAndLogsDebug()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, logger, _) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new ThrowingContent((_, _) => throw new IOException("Connection reset."))
+        };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
+        error.Message.ShouldEndWith(".");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, Arg.Any<Exception>(), "Could not read NBP error response body.");
     }
 
     [Fact]

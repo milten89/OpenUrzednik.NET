@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Mime;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -125,7 +126,7 @@ public static class HttpClientExtensions
                 }
             case HttpStatusCode.BadRequest:
                 {
-                    var serverMessage = await ReadServerMessageAsync(response, cancellationToken).ConfigureAwait(false);
+                    var serverMessage = await ReadServerMessageAsync(response, telemetryProvider, cancellationToken).ConfigureAwait(false);
                     telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP API rejected the request to {path}", "path", path);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Bad request");
                     return OpenUrzednikResult.Failure(new BadRequestError(
@@ -161,29 +162,41 @@ public static class HttpClientExtensions
 
     /// <summary>
     /// Reads the plain-text message NBP returns with error responses (e.g. <c>400 BadRequest - Błędny zakres dat</c>).
+    /// At most <see cref="MaxServerMessageLength"/> characters are read, so a large body (e.g. an HTML page from a proxy) is not buffered.
     /// Returns <see langword="null"/> when there is no body or it can't be read, because the message is only extra context.
     /// </summary>
-    private static async Task<string?> ReadServerMessageAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    private static async Task<string?> ReadServerMessageAsync(HttpResponseMessage response, NbpTelemetryProvider telemetryProvider, CancellationToken cancellationToken)
     {
-        string body;
+        var buffer = new char[MaxServerMessageLength];
+        var length = 0;
         try
         {
-            body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+            int read;
+            while (length < buffer.Length &&
+                   (read = await reader.ReadAsync(buffer.AsMemory(length), cancellationToken).ConfigureAwait(false)) > 0)
+                length += read;
         }
-        catch (HttpRequestException)
+        catch (HttpRequestException ex)
         {
+            LogUnreadableBody(telemetryProvider, ex);
             return null;
         }
-        catch (IOException)
+        catch (IOException ex)
         {
+            LogUnreadableBody(telemetryProvider, ex);
             return null;
         }
 
-        body = body.Trim();
-        if (body.Length == 0)
-            return null;
+        var message = new string(buffer, 0, length).Trim();
+        return message.Length == 0 ? null : message;
+    }
 
-        return body.Length <= MaxServerMessageLength ? body : body[..MaxServerMessageLength];
+    private static void LogUnreadableBody(NbpTelemetryProvider telemetryProvider, Exception exception)
+    {
+        if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, exception, "Could not read NBP error response body.");
     }
 
     private static async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpRequestMessage request, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)
