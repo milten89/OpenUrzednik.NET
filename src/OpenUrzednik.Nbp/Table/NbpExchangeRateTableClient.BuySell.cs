@@ -89,7 +89,7 @@ public partial class NbpExchangeRateTableClient
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_date");
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
-        var dateValidation = new CurrencyDateValidator(nameof(date), date).Validate();
+        var dateValidation = new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
         if (dateValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
@@ -124,8 +124,8 @@ public partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
-        var toValidation = new CurrencyDateValidator(nameof(to), to).Validate();
-        var dateRangeValidation = new DateRangeValidator((from, to)).Validate();
+        var toValidation = new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate();
+        var dateRangeValidation = new DateRangeValidator((from, to), DateRangeValidator.MaxTablesDateRange).Validate();
         var validationResult = toValidation.And(dateRangeValidation);
         if (validationResult.IsFailure)
         {

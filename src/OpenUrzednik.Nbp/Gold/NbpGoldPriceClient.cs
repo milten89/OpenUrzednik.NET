@@ -109,7 +109,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_date");
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
-        var dateValidation = new GoldDateValidator(nameof(date), date).Validate();
+        var dateValidation = new GoldDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
         if (dateValidation.IsFailure)
         {
             if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
@@ -142,8 +142,8 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
-        var toValidation = new GoldDateValidator(nameof(to), to).Validate();
-        var dateRangeValidation = new DateRangeValidator((from, to)).Validate();
+        var toValidation = new GoldDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate();
+        var dateRangeValidation = new DateRangeValidator((from, to), DateRangeValidator.MaxRatesDateRange).Validate();
         var validationResult = toValidation.And(dateRangeValidation);
         if (validationResult.IsFailure)
         {

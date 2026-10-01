@@ -3,14 +3,13 @@ using System.Net.Http.Json;
 
 using Bogus;
 
-using Microsoft.Extensions.Time.Testing;
-
 using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon;
 
@@ -33,8 +32,8 @@ public partial class NbpCurrencyExchangeRateClientTest
     }
 
     private static NbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory,
-        IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null)
-        => new(httpClient, urlBuilderFactory, new FakeTimeProvider(), logger, tracer);
+        IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null, TimeProvider? timeProvider = null)
+        => new(httpClient, urlBuilderFactory, timeProvider ?? TestClock.FarFuture(), logger, tracer);
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CurrencyExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.CurrencyExchangeRatesDto) };

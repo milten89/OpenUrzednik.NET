@@ -2,6 +2,8 @@ using System.Net;
 
 using Bogus;
 
+using Microsoft.Extensions.Time.Testing;
+
 using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
@@ -29,7 +31,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var from = faker.Date.AfterCurrencyMinDate();
-        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
@@ -50,7 +52,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var from = faker.Date.AfterCurrencyMinDate();
-        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
@@ -71,7 +73,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var to = faker.Date.BeforeCurrencyMinDate();
-        var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var from = to.AddDays(-faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
@@ -92,7 +94,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var from = faker.Date.AfterCurrencyMinDate();
-        var to = from.AddDays(DateRangeValidator.MaxDateRange + 1);
+        var to = from.AddDays(DateRangeValidator.MaxRatesDateRange + 1);
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
@@ -113,7 +115,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var to = faker.Date.BeforeCurrencyMinDate();
-        var from = to.AddDays(-DateRangeValidator.MaxDateRange - 1);
+        var from = to.AddDays(-DateRangeValidator.MaxRatesDateRange - 1);
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
@@ -136,7 +138,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var from = faker.Date.AfterCurrencyMinDate();
-        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         var dto = new CurrencyExchangeRatesDtoFaker().LinkRandomizerTo(faker).Generate();
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto), out _);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
@@ -176,5 +178,42 @@ public partial class NbpCurrencyExchangeRateClientTest
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
+    }
+
+    [Fact]
+    public async Task GetAsync_DateRange_RangeOf367Days_SendsRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var from = new DateOnly(2025, 1, 1);
+        var to = from.AddDays(DateRangeValidator.MaxRatesDateRange);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
+        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, "USD", urlBuilder);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out var handler);
+        var sut = CreateApiClient(httpClient, urlBuilderFactory);
+
+        // Act
+        await sut.GetAsync("USD", from, to, cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        handler.Request.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task GetAsync_DateRange_ToAfterTodayInWarsaw_ReturnsFailureWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>(), timeProvider: new FakeTimeProvider(new DateTimeOffset(2026, 10, 1, 10, 0, 0, TimeSpan.Zero)));
+
+        // Act
+        var result = await sut.GetAsync("USD", new DateOnly(2026, 9, 1), new DateOnly(2026, 10, 2), cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldContain(e => e is ValidationError && e.Message.Contains("later than today (2026-10-01"));
+        handler.Request.ShouldBeNull();
     }
 }

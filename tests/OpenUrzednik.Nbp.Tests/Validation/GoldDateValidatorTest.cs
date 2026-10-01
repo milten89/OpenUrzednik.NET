@@ -8,6 +8,8 @@ namespace OpenUrzednik.Nbp.Tests.Validation;
 
 public class GoldDateValidatorTest
 {
+    private static readonly DateOnly FarFuture = new(2100, 1, 1);
+
     private const string RuleName = "goldDate";
     private const string PropertyName = "date";
     private static readonly DateOnly MinDate = new(2013, 1, 2);
@@ -16,7 +18,7 @@ public class GoldDateValidatorTest
     public void Constructor_NullPropertyName_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new GoldDateValidator(null!, MinDate))
+        Should.Throw<ArgumentNullException>(() => new GoldDateValidator(null!, MinDate, FarFuture))
             .ParamName.ShouldBe("propertyName");
     }
 
@@ -27,7 +29,7 @@ public class GoldDateValidatorTest
     public void Validate_DateOnOrAfterMinDate_ReturnsSuccess(int year, int month, int day)
     {
         // Arrange
-        var validator = new GoldDateValidator(PropertyName, new DateOnly(year, month, day));
+        var validator = new GoldDateValidator(PropertyName, new DateOnly(year, month, day), FarFuture);
 
         // Act
         var result = validator.Validate();
@@ -44,7 +46,7 @@ public class GoldDateValidatorTest
     {
         // Arrange
         var date = new DateOnly(year, month, day);
-        var validator = new GoldDateValidator(PropertyName, date);
+        var validator = new GoldDateValidator(PropertyName, date, FarFuture);
 
         // Act
         var result = validator.Validate();
@@ -61,7 +63,7 @@ public class GoldDateValidatorTest
     public void Name_Always_ReturnsGoldDate()
     {
         // Arrange
-        var validator = new GoldDateValidator(PropertyName, MinDate);
+        var validator = new GoldDateValidator(PropertyName, MinDate, FarFuture);
 
         // Act
         var name = validator.Name;
@@ -75,12 +77,41 @@ public class GoldDateValidatorTest
     {
         // Arrange
         using var _ = new CultureScope("th-TH");
-        var validator = new GoldDateValidator("date", new DateOnly(2012, 12, 31));
+        var validator = new GoldDateValidator("date", new DateOnly(2012, 12, 31), FarFuture);
 
         // Act
         var result = validator.Validate();
 
         // Assert
         result.Errors.ShouldHaveSingleItem().Message.ShouldBe("'date' should be greater or equal 2013-01-02.");
+    }
+
+    [Fact]
+    public void Validate_DateIsToday_ReturnsSuccess()
+    {
+        // Arrange
+        var today = new DateOnly(2026, 10, 1);
+        var validator = new GoldDateValidator("date", today, today);
+
+        // Act
+        var result = validator.Validate();
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Validate_DateAfterToday_ReturnsValidationError()
+    {
+        // Arrange
+        var today = new DateOnly(2026, 10, 1);
+        var validator = new GoldDateValidator("date", today.AddDays(1), today);
+
+        // Act
+        var result = validator.Validate();
+
+        // Assert
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        error.Message.ShouldBe("'date' should not be later than today (2026-10-01, Europe/Warsaw).");
     }
 }

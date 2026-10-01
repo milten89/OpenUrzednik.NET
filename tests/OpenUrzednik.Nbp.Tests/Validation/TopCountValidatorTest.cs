@@ -24,7 +24,7 @@ public class TopCountValidatorTest
     [Theory]
     [InlineData(1)]
     [InlineData(5)]
-    [InlineData(int.MaxValue)]
+    [InlineData(TopCountValidator.MaxTopCount)]
     public void Validate_PositiveValue_ReturnsSuccess(int value)
     {
         // Arrange
@@ -39,10 +39,10 @@ public class TopCountValidatorTest
     }
 
     [Fact]
-    public void Validate_RandomPositiveValue_ReturnsSuccess()
+    public void Validate_RandomValueWithinLimit_ReturnsSuccess()
     {
         // Arrange
-        var value = new Faker().WithConstantSeed().Random.Int(1);
+        var value = new Faker().WithConstantSeed().Random.Int(1, TopCountValidator.MaxTopCount);
         var validator = new TopCountValidator(PropertyName, value);
 
         // Act
@@ -56,7 +56,9 @@ public class TopCountValidatorTest
     [InlineData(0)]
     [InlineData(-1)]
     [InlineData(int.MinValue)]
-    public void Validate_ZeroOrNegativeValue_ReturnsValidationError(int value)
+    [InlineData(TopCountValidator.MaxTopCount + 1)]
+    [InlineData(int.MaxValue)]
+    public void Validate_OutOfRangeValue_ReturnsValidationError(int value)
     {
         // Arrange
         var validator = new TopCountValidator(PropertyName, value);

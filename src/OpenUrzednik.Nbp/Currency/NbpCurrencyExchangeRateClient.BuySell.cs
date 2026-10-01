@@ -95,7 +95,7 @@ public partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        var dateValidation = new CurrencyDateValidator(nameof(date), date).Validate();
+        var dateValidation = new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
         var validationResult = currencyValidation.And(dateValidation);
         if (validationResult.IsFailure)
         {
@@ -124,8 +124,8 @@ public partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        var toValidation = new CurrencyDateValidator(nameof(to), to).Validate();
-        var dateRangeValidation = new DateRangeValidator((from, to)).Validate();
+        var toValidation = new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate();
+        var dateRangeValidation = new DateRangeValidator((from, to), DateRangeValidator.MaxRatesDateRange).Validate();
         var validationResult = currencyValidation.And(toValidation).And(dateRangeValidation);
         if (validationResult.IsFailure)
         {

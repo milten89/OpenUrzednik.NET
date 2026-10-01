@@ -29,7 +29,7 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.Date.ShouldBeLessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Now));
+        result.Value.Date.ShouldBeLessThanOrEqualTo(WarsawToday());
         result.Value.Price.ShouldBeGreaterThan(0m);
     }
 
@@ -42,7 +42,7 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
         var result = await _client.GetLatestAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = WarsawToday();
         if (today.DayOfWeek == DayOfWeek.Saturday ||
             today.DayOfWeek == DayOfWeek.Sunday)
         {
@@ -75,7 +75,7 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     public async Task GetAsync_ReturnGoldPriceFromSelectedDate()
     {
         // Arrange
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = WarsawToday();
 
         // Act
         var result = await _client.GetAsync(today, TestContext.Current.CancellationToken);
@@ -91,7 +91,7 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     {
         // Arrange
         var daysBefore = 10;
-        var today = DateOnly.FromDateTime(DateTime.Now);
+        var today = WarsawToday();
         var before = today.AddDays(-daysBefore);
 
         // Act
@@ -101,4 +101,7 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
         result.IsSuccess.ShouldBeTrue();
         result.Value.Count.ShouldBeLessThan(daysBefore);
     }
+
+    private static DateOnly WarsawToday()
+        => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw")).DateTime);
 }

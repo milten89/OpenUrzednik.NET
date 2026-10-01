@@ -157,7 +157,7 @@ public partial class NbpGoldPriceClientTest
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var from = faker.Date.AfterGoldMinDate();
-        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         var (_, span, tracer) = CreateTelemetrySubstitutes();
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());

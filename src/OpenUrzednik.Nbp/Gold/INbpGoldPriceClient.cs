@@ -17,7 +17,7 @@ public interface INbpGoldPriceClient
     /// <summary>
     /// Gets the series of gold prices starting from the latest.
     /// </summary>
-    /// <param name="topCount">Number of records to retrieve</param>
+    /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the gold prices or an error</returns>
     Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken = default);
@@ -31,7 +31,7 @@ public interface INbpGoldPriceClient
 
     /// <summary>
     /// Gets the gold price for the specified date. Can return no data if the gold price is not published yet for the given date.
-    /// Date can't be lower than 2013-01-02, because the NBP API doesn't support it.
+    /// Date can't be lower than 2013-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
     /// </summary>
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -40,7 +40,7 @@ public interface INbpGoldPriceClient
 
     /// <summary>
     /// Gets the gold price for the specified date range. Can return no data if the gold price are not published yet for the given date range.
-    /// Date range can't exceed 93 days or finish before 2013-01-02, because the NBP API doesn't support it.
+    /// Date range can't exceed 367 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2013-01-02, because the NBP API doesn't support it.
     /// </summary>
     /// <param name="from">Start date</param>
     /// <param name="to">End date</param>

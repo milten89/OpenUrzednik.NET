@@ -10,9 +10,6 @@ None open.
 
 ## P1: NBP correctness
 
-7. **Validators don't match the API.** `TopCountValidator` must cap at 255 (`last/256` returns 400). Re-check the date-range limit: the code enforces 93 days, the live API accepted 367 days on 2026-10-01, and the message says "less than" while the check allows equality. Reject future dates using the injected `TimeProvider` (Europe/Warsaw date).
-8. **`NbpGoldPriceClient` methods don't default `CancellationToken`**, unlike the interface.
-9. **Validation messages depend on culture** (`{date:d}`). Use invariant `yyyy-MM-dd`.
 10. **Document publication schedules in XML docs.** Table B is published on Wednesdays (`GetTodayAsync(B)` usually returns 404), and rates appear around midday Warsaw time.
 11. **Type name collisions:** `Currency.ExchangeRate` vs `Table.ExchangeRate`, and the same for `BuySellExchangeRate`.
 

@@ -3,14 +3,13 @@ using System.Net.Http.Json;
 
 using Bogus;
 
-using Microsoft.Extensions.Time.Testing;
-
 using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Table;
+using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon;
 
@@ -26,12 +25,12 @@ public partial class NbpExchangeRateTableClientTest
     }
 
     private static NbpExchangeRateTableClient CreateApiClient(HttpClient httpClient, NbpTable table, INbpUrlBuilder urlBuilder,
-        IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null)
+        IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null, TimeProvider? timeProvider = null)
     {
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         urlBuilderFactory.GetTableBuilder(table).Returns(urlBuilder);
 
-        return new NbpExchangeRateTableClient(httpClient, urlBuilderFactory, new FakeTimeProvider(), logger, tracer);
+        return new NbpExchangeRateTableClient(httpClient, urlBuilderFactory, timeProvider ?? TestClock.FarFuture(), logger, tracer);
     }
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, ExchangeRateTableDto[] dtos)
