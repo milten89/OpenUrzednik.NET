@@ -1,4 +1,4 @@
-﻿namespace OpenUrzednik.Nbp.Gold;
+namespace OpenUrzednik.Nbp.Gold;
 
 /// <summary>
 /// Gold price

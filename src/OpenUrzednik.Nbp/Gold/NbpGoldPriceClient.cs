@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Core;
+using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;

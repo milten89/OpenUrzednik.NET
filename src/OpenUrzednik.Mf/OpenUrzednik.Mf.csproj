@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>OpenUrzednik.NET client for the Polish Ministry of Finance "Biała Lista" VAT whitelist — verify VAT payer status and bank account numbers.</Description>

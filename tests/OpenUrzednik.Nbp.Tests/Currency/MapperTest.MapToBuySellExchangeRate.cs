@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Nbp.Currency;
+using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;

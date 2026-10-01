@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Gold;

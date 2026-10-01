@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Nbp.Currency;
+using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.UrlBuilder;

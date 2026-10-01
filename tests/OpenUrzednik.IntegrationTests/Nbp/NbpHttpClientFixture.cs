@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Nbp.Extensions;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Options;
 
 namespace OpenUrzednik.IntegrationTests.Nbp;

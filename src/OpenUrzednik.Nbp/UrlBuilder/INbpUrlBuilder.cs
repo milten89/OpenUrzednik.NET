@@ -1,4 +1,4 @@
-﻿namespace OpenUrzednik.Nbp.UrlBuilder;
+namespace OpenUrzednik.Nbp.UrlBuilder;
 
 public interface INbpUrlBuilder
 {

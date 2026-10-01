@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Core.Telemetry;
 
 using Shouldly;
 

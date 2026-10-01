@@ -6,7 +6,7 @@ Klient **NBP** (Narodowy Bank Polski) dla OpenUrzednik.NET — kursy walut oraz 
 
 ## Status
 
-🚧 Ten pakiet jest obecnie szkieletem — integracja z API NBP jest w trakcie implementacji.
+🧪 Wersja preview — dostępne są klienty kursów walut (`NbpCurrencyExchangeRateClient`), tabel kursów (`NbpExchangeRateTableClient`) i cen złota (`NbpGoldPriceClient`). Publiczne API może się jeszcze zmienić przed wydaniem stabilnym.
 
 ## Instalacja
 

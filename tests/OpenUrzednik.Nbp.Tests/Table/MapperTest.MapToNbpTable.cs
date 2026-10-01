@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Nbp.Table;
+using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
 
 using Shouldly;

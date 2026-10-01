@@ -1,4 +1,4 @@
-﻿namespace OpenUrzednik.TestCommon;
+namespace OpenUrzednik.TestCommon;
 
 public static class TestConst
 {

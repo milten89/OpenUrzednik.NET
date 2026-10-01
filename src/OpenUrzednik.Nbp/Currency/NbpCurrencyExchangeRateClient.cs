@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;

@@ -5,46 +5,66 @@ on:
     branches: [ main, develop ]
   workflow_call:
 
+permissions:
+  contents: read
+
+concurrency:
+  # Only PR runs are grouped; runs called from the NuGet workflows use a unique group so they never wait on each other.
+  group: ${{ github.event_name == 'pull_request' && format('build-pr-{0}', github.event.pull_request.number) || format('build-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
+    # NOTE: job names "build (<tfm>)" are required status checks in the "protected-branches" ruleset.
+    # If you rename this job or change the matrix, update the ruleset (see docs/GITHUB-SETUP.md).
+    name: build (${{ matrix.tfm }})
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - tfm: net8.0
-            sdk-version: '8.0.x'
-          - tfm: net9.0
-            sdk-version: '9.0.x'
-          - tfm: net10.0
-            sdk-version: '10.0.x'
+        tfm: [ net8.0, net9.0, net10.0 ]
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 0   # NBGV needs full history to compute versions
 
-    - name: Setup .NET SDK for ${{ matrix.tfm }}
-      uses: actions/setup-dotnet@v6
+    # All SDKs are installed in every job: projects multi-target, so restore/build always needs the newest SDK,
+    # and tests for a TFM need its runtime.
+    - name: Setup .NET SDKs
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
-        dotnet-version: ${{ matrix.sdk-version }}
+        dotnet-version: |
+          8.0.x
+          9.0.x
+          10.0.x
 
-    - name: Cache NuGet packages (${{ matrix.tfm }})
-      uses: actions/cache@v5
+    - name: Cache NuGet packages
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
       with:
         path: ~/.nuget/packages
-        key: nuget-${{ runner.os }}-${{ matrix.tfm }}-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj', '**/packages.lock.json') }}
         restore-keys: |
-          nuget-${{ runner.os }}-${{ matrix.tfm }}-
+          nuget-${{ runner.os }}-
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore OpenUrzednik.slnx
 
     - name: Build (${{ matrix.tfm }})
-      run: dotnet build --configuration Release --no-restore --framework ${{ matrix.tfm }}
+      run: dotnet build OpenUrzednik.slnx --configuration Release --no-restore --framework ${{ matrix.tfm }}
 
     - name: Run Tests (${{ matrix.tfm }})
-      run: dotnet test --configuration Release --no-build --framework ${{ matrix.tfm }} --verbosity normal
+      run: >
+        dotnet test OpenUrzednik.slnx --configuration Release --no-build --framework ${{ matrix.tfm }}
+        --verbosity normal
+        --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+    - name: Upload coverage
+      if: ${{ matrix.tfm == 'net10.0' && always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: coverage-${{ matrix.tfm }}
+        path: ./TestResults/**/coverage.cobertura.xml
+        if-no-files-found: ignore
+        retention-days: 14

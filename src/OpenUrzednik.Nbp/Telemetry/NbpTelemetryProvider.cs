@@ -1,4 +1,4 @@
-﻿using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Core.Telemetry;
 
 namespace OpenUrzednik.Nbp.Telemetry;
 

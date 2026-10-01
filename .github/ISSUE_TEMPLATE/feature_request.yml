@@ -1,0 +1,38 @@
+name: 💡 Propozycja funkcji / Feature request
+description: Zaproponuj zmianę lub nową funkcję w istniejącym pakiecie. / Propose a change or feature for an existing package.
+labels: [ "enhancement" ]
+body:
+  - type: dropdown
+    id: package
+    attributes:
+      label: Pakiet / Package
+      options:
+        - OpenUrzednik.Core
+        - OpenUrzednik.Nbp
+        - Nowy pakiet integracyjny (DI, logowanie, telemetria) / New integration package
+        - Inny / Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Problem
+      description: Jaki problem rozwiąże ta zmiana? / What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propozycja / Proposal
+      description: Jak powinno wyglądać API? Przykład kodu mile widziany. / What should the API look like? A code sample helps.
+      render: csharp
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatywy / Alternatives considered
+  - type: checkboxes
+    id: adr
+    attributes:
+      label: Decyzje architektoniczne / Architecture decisions
+      options:
+        - label: Sprawdziłem/am, że propozycja jest zgodna z [ADR](https://github.com/milten89/OpenUrzednik.NET/tree/develop/docs/adr) lub opisałem/am, którą decyzję zmienia. / I checked the ADRs or described which decision this changes.

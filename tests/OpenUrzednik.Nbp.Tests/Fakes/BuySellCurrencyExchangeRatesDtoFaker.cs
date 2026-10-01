@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.TestCommon.Extensions;
