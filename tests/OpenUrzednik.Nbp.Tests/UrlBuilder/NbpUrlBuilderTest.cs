@@ -1,4 +1,5 @@
 using OpenUrzednik.Nbp.UrlBuilder;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
@@ -132,5 +133,26 @@ public class NbpUrlBuilderTest
 
         // Assert
         result.ShouldBe("cenyzlota/2026-05-01/2026-01-01");
+    }
+
+    [Theory]
+    [InlineData("th-TH")]
+    [InlineData("ar-SA")]
+    [InlineData("fa-IR")]
+    public void ForDateAndForDateRange_NonGregorianCulture_UseGregorianIsoDates(string culture)
+    {
+        // Arrange
+        using var _ = new CultureScope(culture);
+        var sut = new NbpUrlBuilder("exchangerates/rates/a/eur");
+        var from = new DateOnly(2026, 1, 5);
+        var to = new DateOnly(2026, 2, 9);
+
+        // Act
+        var date = sut.ForDate(from);
+        var range = sut.ForDateRange(from, to);
+
+        // Assert
+        date.ShouldBe("exchangerates/rates/a/eur/2026-01-05");
+        range.ShouldBe("exchangerates/rates/a/eur/2026-01-05/2026-02-09");
     }
 }

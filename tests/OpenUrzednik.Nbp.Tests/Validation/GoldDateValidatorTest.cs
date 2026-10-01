@@ -1,5 +1,6 @@
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Validation;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
@@ -67,5 +68,19 @@ public class GoldDateValidatorTest
 
         // Assert
         name.ShouldBe(RuleName);
+    }
+
+    [Fact]
+    public void Validate_DateBeforeMinDate_NonGregorianCulture_FormatsMinDateInvariantly()
+    {
+        // Arrange
+        using var _ = new CultureScope("th-TH");
+        var validator = new GoldDateValidator("date", new DateOnly(2012, 12, 31));
+
+        // Act
+        var result = validator.Validate();
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().Message.ShouldBe("'date' should be greater or equal 2013-01-02.");
     }
 }

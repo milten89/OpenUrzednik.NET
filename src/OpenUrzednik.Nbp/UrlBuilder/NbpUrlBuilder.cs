@@ -1,3 +1,5 @@
+using OpenUrzednik.Nbp.Common;
+
 namespace OpenUrzednik.Nbp.UrlBuilder;
 
 public class NbpUrlBuilder : INbpUrlBuilder
@@ -21,8 +23,8 @@ public class NbpUrlBuilder : INbpUrlBuilder
         => $"{_baseUrl}/today";
 
     public string ForDate(DateOnly date)
-        => $"{_baseUrl}/{date:yyyy-MM-dd}";
+        => $"{_baseUrl}/{NbpFormat.Date(date)}";
 
     public string ForDateRange(DateOnly from, DateOnly to)
-        => $"{_baseUrl}/{from:yyyy-MM-dd}/{to:yyyy-MM-dd}";
+        => $"{_baseUrl}/{NbpFormat.Date(from)}/{NbpFormat.Date(to)}";
 }

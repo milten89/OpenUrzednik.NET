@@ -1,5 +1,6 @@
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Validation;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
@@ -54,7 +55,7 @@ public class CurrencyDateValidatorTest
         error.Metadata["ruleName"].ShouldBe(RuleName);
         error.Metadata["name"].ShouldBe(PropertyName);
         error.Metadata["value"].ShouldBe(date);
-        error.Message.ShouldContain(MinDate.ToString("d"));
+        error.Message.ShouldContain("2002-01-02");
     }
 
     [Fact]
@@ -68,5 +69,19 @@ public class CurrencyDateValidatorTest
 
         // Assert
         name.ShouldBe(RuleName);
+    }
+
+    [Fact]
+    public void Validate_DateBeforeMinDate_NonGregorianCulture_FormatsMinDateInvariantly()
+    {
+        // Arrange
+        using var _ = new CultureScope("th-TH");
+        var validator = new CurrencyDateValidator("date", new DateOnly(2001, 12, 31));
+
+        // Act
+        var result = validator.Validate();
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().Message.ShouldBe("'date' should be greater or equal 2002-01-02.");
     }
 }
