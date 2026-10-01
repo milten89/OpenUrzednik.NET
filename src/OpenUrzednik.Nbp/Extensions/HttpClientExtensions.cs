@@ -15,6 +15,8 @@ namespace OpenUrzednik.Nbp.Extensions;
 
 public static class HttpClientExtensions
 {
+    private const int MaxServerMessageLength = 500;
+
     public static HttpClient ConfigureForNbpApi(this HttpClient httpClient, NbpOptions options)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
@@ -63,38 +65,8 @@ public static class HttpClientExtensions
         using var response = await SendAsync(httpClient, request, traceSpan, cancellationToken).ConfigureAwait(false);
         traceSpan.SetTag("http.status_code", (int)response.StatusCode);
 
-        switch (response.StatusCode)
-        {
-            case HttpStatusCode.NotFound:
-                {
-                    var path = response.RequestMessage?.RequestUri?.ToString() ?? relativePath;
-                    if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                        telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP resource not found: {path}.", "path", path);
-                    return OpenUrzednikResult.Failure(new NotFoundError(
-                        $"Resource at {path} was not found."));
-                }
-            case HttpStatusCode.TooManyRequests:
-                {
-                    var delay = GetDelay(response, timeProvider);
-                    if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Warning))
-                    {
-                        if (delay.HasValue)
-                            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit, retry after {delay}.", "delay", delay);
-                        else
-                            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit.");
-                    }
-                    traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
-                    return OpenUrzednikResult.Failure(new RateLimitExceededError("Too many requests.", delay));
-                }
-        }
-
         if (!response.IsSuccessStatusCode)
-        {
-            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP API returned unexpected status {status}", "status", (int)response.StatusCode);
-            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected status");
-            return OpenUrzednikResult.Failure(
-                new UnknownError($"NBP API return unknown status: {(int)response.StatusCode}."));
-        }
+            return await MapErrorResponseAsync(response, relativePath, telemetryProvider, traceSpan, timeProvider, cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -122,6 +94,96 @@ public static class HttpClientExtensions
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected error");
             throw;
         }
+    }
+
+    private static async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, TimeProvider timeProvider, CancellationToken cancellationToken)
+    {
+        var statusCode = (int)response.StatusCode;
+        var path = response.RequestMessage?.RequestUri?.ToString() ?? relativePath;
+
+        switch (response.StatusCode)
+        {
+            case HttpStatusCode.NotFound:
+                {
+                    if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
+                        telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP resource not found: {path}.", "path", path);
+                    return OpenUrzednikResult.Failure(new NotFoundError(
+                        $"Resource at {path} was not found.", statusCode));
+                }
+            case HttpStatusCode.TooManyRequests:
+                {
+                    var delay = GetDelay(response, timeProvider);
+                    if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Warning))
+                    {
+                        if (delay.HasValue)
+                            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit, retry after {delay}.", "delay", delay);
+                        else
+                            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit.");
+                    }
+                    traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
+                    return OpenUrzednikResult.Failure(new RateLimitExceededError("Too many requests.", delay, statusCode));
+                }
+            case HttpStatusCode.BadRequest:
+                {
+                    var serverMessage = await ReadServerMessageAsync(response, cancellationToken).ConfigureAwait(false);
+                    telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP API rejected the request to {path}", "path", path);
+                    traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Bad request");
+                    return OpenUrzednikResult.Failure(new BadRequestError(
+                        serverMessage is null
+                            ? $"NBP API rejected the request to {path}."
+                            : $"NBP API rejected the request to {path}: {serverMessage}",
+                        statusCode));
+                }
+            case HttpStatusCode.Unauthorized:
+            case HttpStatusCode.Forbidden:
+                {
+                    telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP API denied access to {path} with status {status}", "path", path, "status", statusCode);
+                    traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unauthorized");
+                    return OpenUrzednikResult.Failure(new UnauthorizedError(
+                        $"NBP API denied access to {path} with status {statusCode}.", statusCode));
+                }
+            case >= HttpStatusCode.InternalServerError:
+                {
+                    telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP API is unavailable, status {status}", "status", statusCode);
+                    traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Service unavailable");
+                    return OpenUrzednikResult.Failure(new ServiceUnavailableError(
+                        $"NBP API is unavailable, status {statusCode}.", statusCode));
+                }
+            default:
+                {
+                    telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, null, "NBP API returned unexpected status {status}", "status", statusCode);
+                    traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected status");
+                    return OpenUrzednikResult.Failure(
+                        new UnknownError($"NBP API return unknown status: {statusCode}.", statusCode));
+                }
+        }
+    }
+
+    /// <summary>
+    /// Reads the plain-text message NBP returns with error responses (e.g. <c>400 BadRequest - Błędny zakres dat</c>).
+    /// Returns <see langword="null"/> when there is no body or it can't be read, because the message is only extra context.
+    /// </summary>
+    private static async Task<string?> ReadServerMessageAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        string body;
+        try
+        {
+            body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+
+        body = body.Trim();
+        if (body.Length == 0)
+            return null;
+
+        return body.Length <= MaxServerMessageLength ? body : body[..MaxServerMessageLength];
     }
 
     private static async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpRequestMessage request, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)

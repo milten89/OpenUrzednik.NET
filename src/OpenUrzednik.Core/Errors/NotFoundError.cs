@@ -6,7 +6,8 @@ namespace OpenUrzednik.Core.Errors;
 /// Represents an error indicating that a requested resource was not found.
 /// </summary>
 /// <param name="message">The message associated with the error.</param>
-public sealed class NotFoundError(string message) : OpenUrzednikError(ErrorCode, message)
+/// <param name="statusCode">HTTP status code of the response that caused the error, if any.</param>
+public sealed class NotFoundError(string message, int? statusCode = null) : OpenUrzednikError(ErrorCode, message, statusCode)
 {
     public const string ErrorCode = "notFound";
 

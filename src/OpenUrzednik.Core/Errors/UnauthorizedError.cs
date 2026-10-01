@@ -6,7 +6,8 @@ namespace OpenUrzednik.Core.Errors;
 /// Represents an error indicating that the user is unauthorized to perform the requested action.
 /// </summary>
 /// <param name="message">The message associated with the error.</param>
-public sealed class UnauthorizedError(string message) : OpenUrzednikError(ErrorCode, message)
+/// <param name="statusCode">HTTP status code of the response that caused the error, if any.</param>
+public sealed class UnauthorizedError(string message, int? statusCode = null) : OpenUrzednikError(ErrorCode, message, statusCode)
 {
     public const string ErrorCode = "unauthorized";
 

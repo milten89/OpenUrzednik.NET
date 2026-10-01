@@ -214,16 +214,22 @@ public partial class HttpClientExtensionsTest
     }
 
     [Theory]
-    [InlineData(HttpStatusCode.InternalServerError)]
-    [InlineData(HttpStatusCode.BadGateway)]
-    [InlineData(HttpStatusCode.ServiceUnavailable)]
-    [InlineData(HttpStatusCode.BadRequest)]
-    public async Task GetNbpAsync_UnsuccessfulStatusCode_ReturnsFailureWithUnknownError(HttpStatusCode statusCode)
+    [InlineData(HttpStatusCode.BadRequest, BadRequestError.ErrorCode)]
+    [InlineData(HttpStatusCode.Unauthorized, UnauthorizedError.ErrorCode)]
+    [InlineData(HttpStatusCode.Forbidden, UnauthorizedError.ErrorCode)]
+    [InlineData(HttpStatusCode.NotFound, NotFoundError.ErrorCode)]
+    [InlineData(HttpStatusCode.TooManyRequests, RateLimitExceededError.ErrorCode)]
+    [InlineData(HttpStatusCode.InternalServerError, ServiceUnavailableError.ErrorCode)]
+    [InlineData(HttpStatusCode.BadGateway, ServiceUnavailableError.ErrorCode)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, ServiceUnavailableError.ErrorCode)]
+    [InlineData(HttpStatusCode.GatewayTimeout, ServiceUnavailableError.ErrorCode)]
+    [InlineData(HttpStatusCode.Conflict, UnknownError.ErrorCode)]
+    [InlineData(HttpStatusCode.MultipleChoices, UnknownError.ErrorCode)]
+    public async Task GetNbpAsync_UnsuccessfulStatusCode_ReturnsMappedErrorWithStatusCode(HttpStatusCode statusCode, string expectedErrorCode)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
-        var response = new HttpResponseMessage(statusCode);
-        using var httpClient = CreateHttpClient(faker, response);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(statusCode));
 
         // Act
         var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
@@ -231,7 +237,64 @@ public partial class HttpClientExtensionsTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<UnknownError>();
+        result.Errors[0].Code.ShouldBe(expectedErrorCode);
+        result.Errors[0].Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe((int)statusCode);
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_BadRequestWithServerMessage_ReturnsBadRequestErrorWithServerMessage()
+    {
+        // Arrange
+        const string serverMessage = "400 BadRequest - Błędny zakres dat / Invalid date range";
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent($"{serverMessage}\r\n", Encoding.UTF8, MediaTypeNames.Text.Plain)
+        };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
+        error.Message.ShouldEndWith($": {serverMessage}");
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_BadRequestWithoutBody_ReturnsBadRequestErrorWithoutServerMessage()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var relativePath = faker.Internet.UrlRootedPath();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.BadRequest));
+
+        // Act
+        var result = await httpClient.GetNbpAsync(relativePath, TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
+        error.Message.ShouldStartWith("NBP API rejected the request to ");
+        error.Message.ShouldEndWith($"{relativePath}.");
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_BadRequestWithLongBody_TruncatesServerMessage()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var body = new string('x', 2000);
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StringContent(body) };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
+        error.Message.ShouldEndWith($": {new string('x', 500)}");
     }
 
     [Fact]
@@ -469,11 +532,13 @@ public partial class HttpClientExtensionsTest
     }
 
     [Theory]
-    [InlineData(HttpStatusCode.InternalServerError)]
-    [InlineData(HttpStatusCode.BadGateway)]
-    [InlineData(HttpStatusCode.ServiceUnavailable)]
-    [InlineData(HttpStatusCode.BadRequest)]
-    public async Task GetNbpAsync_UnsuccessfulStatusCode_LogsWarningAndSetsSpanStatusError(HttpStatusCode statusCode)
+    [InlineData(HttpStatusCode.BadRequest, "Bad request")]
+    [InlineData(HttpStatusCode.Unauthorized, "Unauthorized")]
+    [InlineData(HttpStatusCode.Forbidden, "Unauthorized")]
+    [InlineData(HttpStatusCode.InternalServerError, "Service unavailable")]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "Service unavailable")]
+    [InlineData(HttpStatusCode.Conflict, "Unexpected status")]
+    public async Task GetNbpAsync_UnsuccessfulStatusCode_LogsWarningAndSetsSpanStatusError(HttpStatusCode statusCode, string expectedSpanStatus)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -484,8 +549,25 @@ public partial class HttpClientExtensionsTest
         await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP API returned unexpected status {status}", "status", (int)statusCode);
-        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected status");
+        logger.ReceivedCalls()
+            .Count(c => c.GetMethodInfo().Name == nameof(IOpenUrzednikLogger.Log) && Equals(c.GetArguments()[0], OpenUrzednikLogLevel.Warning))
+            .ShouldBe(1);
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, expectedSpanStatus);
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_ServerErrorStatusCode_LogsWarningWithStatus()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, logger, _) = CreateTelemetrySubstitutes();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.BadGateway));
+
+        // Act
+        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP API is unavailable, status {status}", "status", (int)HttpStatusCode.BadGateway);
     }
 
     [Fact]
