@@ -5,6 +5,7 @@ using Bogus;
 using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
@@ -29,11 +30,12 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, urlBuilderFactory, logger: logger, tracer: tracer);
 
         // Act
-        await sut.GetTopCountAsync(currency, count, TestContext.Current.CancellationToken);
+        await sut.GetTopCountAsync(currency, count, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.top_count");
         span.Received(1).SetTag("nbp.currency", currency);
+        span.Received(1).SetTag("nbp.table", TableType.A);
         span.Received(1).SetTag("nbp.top_count", count);
     }
 
@@ -48,7 +50,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>(), logger: logger, tracer: tracer);
 
         // Act
-        await sut.GetTopCountAsync("US", 0, TestContext.Current.CancellationToken);
+        await sut.GetTopCountAsync("US", 0, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTopCountAsync");
@@ -70,7 +72,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, urlBuilderFactory, logger: logger, tracer: tracer);
 
         // Act
-        await sut.GetTopCountAsync(currency, count, TestContext.Current.CancellationToken);
+        await sut.GetTopCountAsync(currency, count, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
@@ -92,7 +94,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, urlBuilderFactory, logger: logger, tracer: tracer);
 
         // Act
-        await sut.GetTopCountAsync(currency, count, TestContext.Current.CancellationToken);
+        await sut.GetTopCountAsync(currency, count, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         span.DidNotReceive().RecordException(Arg.Any<Exception>());
@@ -112,11 +114,33 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
 
         // Act
-        await sut.GetLatestAsync(currency, TestContext.Current.CancellationToken);
+        await sut.GetLatestAsync(currency, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.latest");
         span.Received(1).SetTag("nbp.currency", currency);
+        span.Received(1).SetTag("nbp.table", TableType.A);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_TableB_StartsSpanWithTableTag()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        var (_, span, tracer) = CreateTelemetrySubstitutes();
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
+        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
+
+        // Act
+        await sut.GetLatestAsync(currency, TableType.B, TestContext.Current.CancellationToken);
+
+        // Assert
+        tracer.Received(1).StartSpan("nbp.currency.latest");
+        span.Received(1).SetTag("nbp.table", TableType.B);
     }
 
     [Fact]
@@ -133,11 +157,12 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
 
         // Act
-        await sut.GetTodayAsync(currency, TestContext.Current.CancellationToken);
+        await sut.GetTodayAsync(currency, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.today");
         span.Received(1).SetTag("nbp.currency", currency);
+        span.Received(1).SetTag("nbp.table", TableType.A);
     }
 
     [Fact]
@@ -155,11 +180,12 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
 
         // Act
-        await sut.GetAsync(currency, date, TestContext.Current.CancellationToken);
+        await sut.GetAsync(currency, date, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.get_date");
         span.Received(1).SetTag("nbp.currency", currency);
+        span.Received(1).SetTag("nbp.table", TableType.A);
         span.Received(1).SetTag("nbp.date", date);
     }
 
@@ -179,124 +205,12 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
 
         // Act
-        await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
+        await sut.GetAsync(currency, from, to, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.get_range");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.from", from);
-        span.Received(1).SetTag("nbp.to", to);
-    }
-
-    [Fact]
-    public async Task GetCountryLatestAsync_StartsSpanWithCurrencyTag()
-    {
-        // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var currency = faker.Finance.Currency().Code;
-        var (_, span, tracer) = CreateTelemetrySubstitutes();
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        urlBuilder.Latest().Returns(faker.Internet.UrlRootedPath());
-        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
-        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
-        var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
-
-        // Act
-        await sut.GetCountryLatestAsync(currency, TestContext.Current.CancellationToken);
-
-        // Assert
-        tracer.Received(1).StartSpan("nbp.currency.country_latest");
-        span.Received(1).SetTag("nbp.currency", currency);
-    }
-
-    [Fact]
-    public async Task GetCountryTopCountAsync_StartsSpanWithTags()
-    {
-        // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var currency = faker.Finance.Currency().Code;
-        var count = faker.Random.Int(3, 10);
-        var (_, span, tracer) = CreateTelemetrySubstitutes();
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
-        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
-        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
-        var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
-
-        // Act
-        await sut.GetCountryTopCountAsync(currency, count, TestContext.Current.CancellationToken);
-
-        // Assert
-        tracer.Received(1).StartSpan("nbp.currency.country_top_count");
-        span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.top_count", count);
-    }
-
-    [Fact]
-    public async Task GetCountryTodayAsync_StartsSpanWithCurrencyTag()
-    {
-        // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var currency = faker.Finance.Currency().Code;
-        var (_, span, tracer) = CreateTelemetrySubstitutes();
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        urlBuilder.Today().Returns(faker.Internet.UrlRootedPath());
-        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
-        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
-        var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
-
-        // Act
-        await sut.GetCountryTodayAsync(currency, TestContext.Current.CancellationToken);
-
-        // Assert
-        tracer.Received(1).StartSpan("nbp.currency.country_today");
-        span.Received(1).SetTag("nbp.currency", currency);
-    }
-
-    [Fact]
-    public async Task GetCountryAsync_Date_StartsSpanWithTags()
-    {
-        // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var currency = faker.Finance.Currency().Code;
-        var date = faker.Date.AfterCurrencyMinDate();
-        var (_, span, tracer) = CreateTelemetrySubstitutes();
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
-        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
-        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
-        var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
-
-        // Act
-        await sut.GetCountryAsync(currency, date, TestContext.Current.CancellationToken);
-
-        // Assert
-        tracer.Received(1).StartSpan("nbp.currency.country_date");
-        span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.date", date);
-    }
-
-    [Fact]
-    public async Task GetCountryAsync_DateRange_StartsSpanWithTags()
-    {
-        // Arrange
-        var faker = new Faker().WithConstantSeed();
-        var currency = faker.Finance.Currency().Code;
-        var from = faker.Date.AfterCurrencyMinDate();
-        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
-        var (_, span, tracer) = CreateTelemetrySubstitutes();
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
-        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.B, currency, urlBuilder);
-        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
-        var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
-
-        // Act
-        await sut.GetCountryAsync(currency, from, to, TestContext.Current.CancellationToken);
-
-        // Assert
-        tracer.Received(1).StartSpan("nbp.currency.country_range");
-        span.Received(1).SetTag("nbp.currency", currency);
+        span.Received(1).SetTag("nbp.table", TableType.A);
         span.Received(1).SetTag("nbp.from", from);
         span.Received(1).SetTag("nbp.to", to);
     }
