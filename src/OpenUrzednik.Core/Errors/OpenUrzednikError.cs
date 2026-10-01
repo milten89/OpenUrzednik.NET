@@ -7,6 +7,11 @@ namespace OpenUrzednik.Core.Errors;
 /// </summary>
 public abstract class OpenUrzednikError
 {
+    /// <summary>
+    /// The metadata key under which errors caused by an HTTP response store its status code (as <see cref="int"/>).
+    /// </summary>
+    public const string StatusCodeMetadataKey = "statusCode";
+
     private static readonly IReadOnlyDictionary<string, object?> EmptyMetadata = ReadOnlyDictionary<string, object?>.Empty;
 
     private Dictionary<string, object?>? _metadata;
@@ -38,6 +43,20 @@ public abstract class OpenUrzednikError
 
         Code = code;
         Message = message;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenUrzednikError"/> class with the specified error message
+    /// and the HTTP status code of the response that caused the error.
+    /// </summary>
+    /// <param name="code">The error code.</param>
+    /// <param name="message">The error message.</param>
+    /// <param name="statusCode">HTTP status code stored in <see cref="Metadata"/> under <see cref="StatusCodeMetadataKey"/>; nothing is stored when <see langword="null"/>.</param>
+    protected OpenUrzednikError(string code, string message, int? statusCode)
+        : this(code, message)
+    {
+        if (statusCode.HasValue)
+            AddMetadata(StatusCodeMetadataKey, statusCode.Value);
     }
 
     /// <summary>

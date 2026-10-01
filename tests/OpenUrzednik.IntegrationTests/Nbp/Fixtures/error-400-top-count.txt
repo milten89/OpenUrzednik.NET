@@ -1,0 +1,1 @@
+400 BadRequest - Przekroczony limit 255 wyników / Maximum size of 255 data series has been exceeded
