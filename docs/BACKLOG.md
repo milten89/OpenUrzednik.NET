@@ -6,7 +6,7 @@ Work through items one PR at a time. When an item is done, delete it from this f
 
 ## P0: Bugs
 
-5. **`default(OpenUrzednikResult<T>)` is a success holding `null`.** Store an explicit state so `default` is not a success.
+None open.
 
 ## P1: NBP correctness
 
