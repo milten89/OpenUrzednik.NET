@@ -10,4 +10,7 @@ internal static class NbpFormat
 {
     internal static string Date(DateOnly date)
         => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    internal static string Integer(int value)
+        => value.ToString(CultureInfo.InvariantCulture);
 }

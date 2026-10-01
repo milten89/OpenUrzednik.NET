@@ -151,4 +151,18 @@ public class DateRangeValidatorTest
         // Assert
         result.Errors.ShouldHaveSingleItem().Message.ShouldBe("Start date '2026-02-01' is greater than end date '2026-01-01'.");
     }
+
+    [Fact]
+    public void Validate_RangeTooLong_NonGregorianCulture_FormatsDatesInvariantly()
+    {
+        // Arrange
+        using var _ = new CultureScope("th-TH");
+        var validator = new DateRangeValidator((new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)));
+
+        // Act
+        var result = validator.Validate();
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().Message.ShouldContain("'2026-01-01 : 2026-12-31'");
+    }
 }

@@ -110,7 +110,7 @@ public partial class NbpExchangeRateTableClient
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.get_date");
         traceSpan.SetTag("nbp.table", table);
-        traceSpan.SetTag("nbp.date", date);
+        traceSpan.SetTag("nbp.date", NbpFormat.Date(date));
 
         var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
         var dateValidation = new CurrencyDateValidator(nameof(date), date).Validate();
@@ -147,8 +147,8 @@ public partial class NbpExchangeRateTableClient
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.get_range");
         traceSpan.SetTag("nbp.table", table);
-        traceSpan.SetTag("nbp.from", from);
-        traceSpan.SetTag("nbp.to", to);
+        traceSpan.SetTag("nbp.from", NbpFormat.Date(from));
+        traceSpan.SetTag("nbp.to", NbpFormat.Date(to));
 
         var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
         var toValidation = new CurrencyDateValidator(nameof(to), to).Validate();

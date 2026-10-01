@@ -17,7 +17,7 @@ public class NbpUrlBuilder : INbpUrlBuilder
         => _baseUrl;
 
     public string ForTopCount(int topCount)
-        => $"{_baseUrl}/last/{topCount}";
+        => $"{_baseUrl}/last/{NbpFormat.Integer(topCount)}";
 
     public string Today()
         => $"{_baseUrl}/today";
