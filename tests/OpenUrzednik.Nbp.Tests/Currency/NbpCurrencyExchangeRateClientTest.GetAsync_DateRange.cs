@@ -14,6 +14,8 @@ using OpenUrzednik.TestCommon.Extensions;
 
 using Shouldly;
 
+using TableType = OpenUrzednik.Nbp.Table.TableType;
+
 namespace OpenUrzednik.Nbp.Tests.Currency;
 
 public partial class NbpCurrencyExchangeRateClientTest
@@ -32,7 +34,28 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
         // Act
-        var result = await sut.GetAsync(currency!, from, to, TestContext.Current.CancellationToken);
+        var result = await sut.GetAsync(currency!, from, to, cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetAsync_DateRange_UndefinedTable_ReturnsFailureWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        var from = faker.Date.AfterCurrencyMinDate();
+        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxDateRange));
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetAsync(currency, from, to, (TableType)42, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -53,7 +76,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
         // Act
-        var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
+        var result = await sut.GetAsync(currency, from, to, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -74,7 +97,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
         // Act
-        var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
+        var result = await sut.GetAsync(currency, from, to, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -95,7 +118,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
         // Act
-        var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
+        var result = await sut.GetAsync(currency, from, to, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -104,8 +127,10 @@ public partial class NbpCurrencyExchangeRateClientTest
         handler.Request.ShouldBeNull();
     }
 
-    [Fact]
-    public async Task GetAsync_DateRange_SuccessfulResponse_ReturnsMappedCurrencyExchangeRates()
+    [Theory]
+    [InlineData(TableType.A, NbpTable.A)]
+    [InlineData(TableType.B, NbpTable.B)]
+    public async Task GetAsync_DateRange_SuccessfulResponse_ReturnsMappedCurrencyExchangeRates(TableType table, NbpTable nbpTable)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -116,16 +141,16 @@ public partial class NbpCurrencyExchangeRateClientTest
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto), out _);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
-        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, currency, urlBuilder);
+        var urlBuilderFactory = CreateUrlBuilderFactory(nbpTable, currency, urlBuilder);
         var sut = CreateApiClient(httpClient, urlBuilderFactory);
 
         // Act
-        var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
+        var result = await sut.GetAsync(currency, from, to, table, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(Mapper.MapToCurrencyExchangeRates(dto));
-        urlBuilderFactory.Received(1).GetCurrencyBuilder(NbpTable.A, currency);
+        urlBuilderFactory.Received(1).GetCurrencyBuilder(nbpTable, currency);
         urlBuilder.Received(1).ForDateRange(from, to);
     }
 
@@ -145,7 +170,7 @@ public partial class NbpCurrencyExchangeRateClientTest
 
 
         // Act
-        var result = await sut.GetAsync(currency, from, to, TestContext.Current.CancellationToken);
+        var result = await sut.GetAsync(currency, from, to, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();

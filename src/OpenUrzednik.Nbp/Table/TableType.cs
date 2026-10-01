@@ -10,7 +10,7 @@ public enum TableType
     /// </summary>
     A,
     /// <summary>
-    /// Rare currencies
+    /// Less common currencies
     /// </summary>
     B,
 }
