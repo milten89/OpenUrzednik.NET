@@ -37,7 +37,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
                           """));
 
         // Act
-        var result = await CreateSut().GetLatestAsync(currencyCode, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetLatestAsync(currencyCode, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -92,7 +92,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
                           """));
 
         // Act
-        var result = await CreateSut().GetTopCountAsync(currencyCode, count, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetTopCountAsync(currencyCode, count, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -142,7 +142,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
                           """));
 
         // Act
-        var result = await CreateSut().GetTodayAsync(currencyCode, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetTodayAsync(currencyCode, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -187,7 +187,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
                           """));
 
         // Act
-        var result = await CreateSut().GetAsync(currencyCode, date, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetAsync(currencyCode, date, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -238,7 +238,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
                           """));
 
         // Act
-        var result = await CreateSut().GetAsync(currencyCode, from, to, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetAsync(currencyCode, from, to, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
