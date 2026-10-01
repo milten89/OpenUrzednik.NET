@@ -11,7 +11,6 @@ Work through items one PR at a time. When an item is done, delete it from this f
 3. **Status mapping** ([ADR-0002](adr/0002-result-pattern-and-error-handling.md)): 5xx → `ServiceUnavailableError` (currently `UnknownError`); 400 → validation/bad-request error carrying the NBP message (e.g. `400 BadRequest - Błędny zakres dat`); 401/403 → `UnauthorizedError`; status code in error metadata.
 4. **Failures that escape the result** ([ADR-0002](adr/0002-result-pattern-and-error-handling.md)): `HttpRequestException` and timeouts are thrown; mappers throw `ArgumentException` when `Rates` is null; `catch (Exception)` blocks in `GetNbpAsync`.
 5. **`default(OpenUrzednikResult<T>)` is a success holding `null`.** Store an explicit state so `default` is not a success.
-6. **`SerializationError.ToException()` returns the raw `JsonException`.** Wrap it in an `OpenUrzednikException`-derived type and keep the original as `InnerException`.
 
 ## P1: NBP correctness
 
