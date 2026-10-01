@@ -36,7 +36,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         _telemetryProvider = new NbpTelemetryProvider(logger, traceSource);
     }
 
-    public async Task<OpenUrzednikResult<GoldPrice>> GetLatestAsync(CancellationToken cancellationToken)
+    public async Task<OpenUrzednikResult<GoldPrice>> GetLatestAsync(CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.latest");
 
@@ -58,7 +58,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         }
     }
 
-    public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken)
+    public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.top_count");
         traceSpan.SetTag("nbp.top_count", topCount);
@@ -81,7 +81,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         return OpenUrzednikResult.Failure<IReadOnlyList<GoldPrice>>(requestResult.Errors);
     }
 
-    public async Task<OpenUrzednikResult<GoldPrice>> GetTodayAsync(CancellationToken cancellationToken)
+    public async Task<OpenUrzednikResult<GoldPrice>> GetTodayAsync(CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.today");
 
@@ -104,7 +104,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         }
     }
 
-    public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken)
+    public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_date");
         traceSpan.SetTag("nbp.date", date);
@@ -136,7 +136,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         }
     }
 
-    public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_range");
         traceSpan.SetTag("nbp.from", from);
