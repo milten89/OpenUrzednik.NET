@@ -1,0 +1,102 @@
+# CLAUDE.md
+
+Instructions for AI coding agents working in this repository. Also read [`docs/adr/`](docs/adr/README.md): accepted ADRs are binding, and this file summarizes them.
+
+## Project
+
+OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public APIs, published to NuGet as separate packages.
+
+| Project | State |
+|---|---|
+| `src/OpenUrzednik.Core` | Result pattern (`OpenUrzednikResult`, `OpenUrzednikResult<T>`), errors and exceptions, telemetry abstractions, `ValueValidator<T>` |
+| `src/OpenUrzednik.Nbp` | NBP API: currency rates (`Currency/`), rate tables (`Table/`), gold prices (`Gold/`). **Reference provider**, still being hardened |
+| `src/OpenUrzednik.Gus`, `Krs`, `Mf` | Empty skeletons. **Do not work on them** ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)) |
+| `tests/OpenUrzednik.*.Tests` | Unit tests (xUnit v3, Shouldly, NSubstitute, Bogus, `FakeTimeProvider`) |
+| `tests/OpenUrzednik.IntegrationTests` | WireMock tests (run in CI) and tests against the real API (skipped unless `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set) |
+| `tests/OpenUrzednik.TestCommon` | Shared test helpers: `StubHttpMessageHandler`, `ManualFact`/`ManualTheory`, Faker extensions |
+
+Current priorities are listed in [`docs/BACKLOG.md`](docs/BACKLOG.md). Pick work from there unless told otherwise.
+
+## Commands
+
+```bash
+dotnet build OpenUrzednik.slnx
+dotnet test OpenUrzednik.slnx                    # all TFMs; locally only installed runtimes work
+dotnet test OpenUrzednik.slnx -f net10.0         # fastest local loop
+dotnet test tests/OpenUrzednik.Nbp.Tests --filter "FullyQualifiedName~NbpGoldPriceClientTest"
+dotnet format OpenUrzednik.slnx --verify-no-changes   # CI fails if this reports changes
+dotnet test tests/OpenUrzednik.IntegrationTests --settings integrationTest.runsettings  # also hits the real NBP API
+```
+
+Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and `dotnet format --verify-no-changes`, and report the results.
+
+## Architecture rules (from ADRs)
+
+**Errors ([ADR-0002](docs/adr/0002-result-pattern-and-error-handling.md))**
+- Public async APIs return `Task<OpenUrzednikResult<T>>`. Failures that can happen during normal execution are returned, not thrown: validation, every non-success HTTP status, bad payloads, network errors, timeouts.
+- Throw only for caller cancellation (`OperationCanceledException` when the caller's token is cancelled), programmer errors (`ArgumentNullException`, invalid options) and fatal errors.
+- **Never write `catch (Exception)` or a bare `catch`.** Catch specific types and convert them to errors.
+- A timeout is an `OperationCanceledException` while `cancellationToken.IsCancellationRequested == false`. Return it as an error.
+- New error types derive from `OpenUrzednikError`, define `public const string ErrorCode`, and implement `ToException()` returning an `OpenUrzednikException` subtype.
+
+**Dependencies ([ADR-0004](docs/adr/0004-dependency-policy.md))**
+- Core, `OpenUrzednik.Http` and provider packages take **no package dependencies** on .NET targets.
+- On netstandard2.0, only official Microsoft BCL packages are allowed (`System.Text.Json`, `Microsoft.Bcl.TimeProvider`).
+- `Microsoft.Extensions.*` is allowed only in integration packages (`*.DependencyInjection`, `OpenUrzednik.Extensions.Logging`, `OpenUrzednik.OpenTelemetry`).
+- Versions live in `Directory.Packages.props` (central package management). Never put `Version=` on a `PackageReference`.
+- Do not add a `PackageReference` to a `src/` project without an ADR or explicit approval.
+
+**Telemetry ([ADR-0003](docs/adr/0003-telemetry-abstractions.md))**
+- Use `IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` and `IOpenUrzednikSpan` from Core, with `Null*` defaults. Don't use `ILogger` or `ActivitySource` in Core or provider packages.
+- Span names: `<provider>.<area>.<operation>` (e.g. `nbp.currency.buy_sell_latest`). Tags: `<provider>.<parameter>`. Record failures with `span.RecordError(s)`.
+- Guard `Debug` logs with `IsEnabled`, use message templates (no interpolation), and never log secrets or full personal identifiers.
+
+**Target frameworks ([ADR-0005](docs/adr/0005-target-frameworks.md), proposed)**
+- Currently `net8.0;net9.0;net10.0`; netstandard2.0 is planned.
+- Write code that will work with `#if NET`: dates are `DateOnly` on .NET and `DateTime` on netstandard2.0. Keep `#if` inside small helpers, not spread through business logic.
+
+**HTTP ([ADR-0006](docs/adr/0006-shared-http-layer.md))**
+- Shared REST plumbing is moving to a new `OpenUrzednik.Http` package. Until then it lives in `Nbp/Extensions/HttpClientExtensions.cs` (`GetNbpAsync`).
+- Dispose `HttpRequestMessage` and `HttpResponseMessage`.
+- Deserialize with source-generated `JsonTypeInfo<T>` (`NbpJsonContext`); no reflection-based serialization.
+
+**Client API ([ADR-0007](docs/adr/0007-client-api-and-extensibility.md))**
+- The default case is one line (`new NbpGoldPriceClient(httpClient)`).
+- Parts that shape requests (e.g. `INbpUrlBuilderFactory`) are public interfaces with public defaults, passed as optional constructor parameters.
+- Cross-cutting HTTP concerns belong in `DelegatingHandler`s.
+- `CancellationToken cancellationToken = default` is the last parameter of every async method, in both interfaces and implementations.
+
+## Code conventions
+
+- C# `latest`, nullable enabled, file-scoped namespaces, `_camelCase` private fields. `.editorconfig` is authoritative.
+- Public models are `sealed record`s with `IReadOnlyList<T>` collections. Records holding lists override `Equals`/`GetHashCode` (see `Currency/CurrencyExchangeRates.cs`).
+- DTOs are `internal sealed class` in `Dto/`, with `[JsonPropertyName]`. Mark a property `required` **only if the real API always returns it**: check with `/verify-api`.
+- Mappers are `internal static class Mapper` per area. Validators derive from `ValueValidator<T>` in `Validation/` and are `internal sealed`.
+- Public API needs `///` XML docs. Mention API limits (date ranges, top count, publication schedule).
+- Large clients are split into `partial` files by area (`NbpCurrencyExchangeRateClient.BuySell.cs`).
+- Messages and logs are in English. Format dates invariantly (`yyyy-MM-dd`).
+
+## Testing conventions
+
+- One `partial` test class per production class, with one file per method: `NbpGoldPriceClientTest.GetLatestAsync.cs`. Shared helpers go in the main file (`NbpGoldPriceClientTest.cs`).
+- Test names: `Method_Condition_ExpectedResult`. Use `// Arrange / // Act / // Assert` sections.
+- Use deterministic data: `new Faker().WithConstantSeed()`, the DTO fakers in `tests/OpenUrzednik.Nbp.Tests/Fakes`, and `FakeTimeProvider`.
+- Fake HTTP in unit tests with `StubHttpMessageHandler`; mock interfaces with NSubstitute. Pass `TestContext.Current.CancellationToken` to async calls.
+- WireMock tests must use **response bodies captured from the real API**, not hand-written JSON. Each error path in ADR-0002 (404, 400, 429 with `Retry-After`, 5xx, timeout, connection failure, malformed JSON) needs a test.
+- Tests against the real API use `[ManualFact]`/`[ManualTheory]` and must never run in default CI.
+
+## Workflow
+
+- Branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`). PRs target `develop` and are squash-merged. Releases go `develop` → `main` ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
+- Commit or push only when asked. Keep one backlog item per PR.
+- If a change contradicts an accepted ADR, stop and propose a new ADR (`/adr`) instead of working around it.
+- Before opening a PR, run the `reviewer` agent on the diff.
+- **CI job names are required status checks in the GitHub ruleset.** If you rename a job in `.github/workflows/build.yml` or `format.yml`, say so: the ruleset must be updated (see `docs/GITHUB-SETUP.md`).
+- Language ([ADR-0009](docs/adr/0009-documentation-language.md)): code, ADRs and technical docs are in English. User-facing docs (README, CONTRIBUTING) are in Polish and link to an English version. Update both versions together.
+
+## Skills and agents
+
+- `/new-endpoint`: checklist for adding or changing a client method (DTO, mapper, validation, client, tests, docs).
+- `/verify-api`: compare DTOs and test payloads with live API responses, and capture fixtures.
+- `/adr`: create a new MADR record and update the index.
+- `reviewer` agent: reviews a diff against the ADRs and the conventions above.

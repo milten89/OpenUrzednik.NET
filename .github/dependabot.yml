@@ -1,0 +1,35 @@
+version: 2
+
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      timezone: "Europe/Warsaw"
+    open-pull-requests-limit: 5
+    labels: [ "dependencies" ]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      microsoft-extensions:
+        patterns: [ "Microsoft.Extensions.*", "System.*" ]
+      test-dependencies:
+        patterns: [ "xunit*", "Microsoft.NET.Test.Sdk", "coverlet.*", "NSubstitute*", "Shouldly", "Bogus", "WireMock.Net*" ]
+      build-tooling:
+        patterns: [ "Nerdbank.GitVersioning", "Microsoft.SourceLink.*" ]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "develop"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      timezone: "Europe/Warsaw"
+    labels: [ "dependencies", "ci" ]
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns: [ "*" ]

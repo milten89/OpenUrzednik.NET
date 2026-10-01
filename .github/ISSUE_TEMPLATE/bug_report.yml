@@ -1,0 +1,53 @@
+name: 🐞 Błąd / Bug report
+description: Zgłoś błąd w działaniu biblioteki. / Report a bug.
+labels: [ "bug" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dziękujemy za zgłoszenie! Możesz pisać po polsku lub po angielsku. / Thanks for the report! Polish or English is fine.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Pakiet / Package
+      options:
+        - OpenUrzednik.Core
+        - OpenUrzednik.Nbp
+        - Inny / Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Wersja pakietu / Package version
+      placeholder: "1.0.0-preview.12"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Środowisko .NET / .NET runtime
+      placeholder: "net10.0, Windows 11"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Opis problemu / What happened?
+      description: Co się stało i czego oczekiwałeś? / What happened and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Kroki do odtworzenia / Steps to reproduce
+      description: Minimalny kod, wywołana metoda i parametry. / Minimal code, method called and parameters.
+      render: csharp
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Zwrócony błąd lub wyjątek / Returned error or exception
+      description: "`OpenUrzednikError.Code`, komunikat, stack trace. Usuń klucze API i dane osobowe. / Error code, message, stack trace. Remove API keys and personal data."
+      render: text

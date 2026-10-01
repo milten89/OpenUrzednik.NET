@@ -2,29 +2,34 @@ name: CI - Code Format
 
 on:
   pull_request:
-    branches: [ develop ]
+    branches: [ main, develop ]
 
 permissions:
   contents: read
 
+concurrency:
+  group: format-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   format:
+    # NOTE: "format" is a required status check in the "protected-branches" ruleset. Do not rename.
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v6
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: '10.0.x'
 
     - name: Cache NuGet packages
-      uses: actions/cache@v5
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
       with:
         path: ~/.nuget/packages
-        key: nuget-${{ runner.os }}-format-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+        key: nuget-${{ runner.os }}-format-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj', '**/packages.lock.json') }}
         restore-keys: |
           nuget-${{ runner.os }}-format-
 
