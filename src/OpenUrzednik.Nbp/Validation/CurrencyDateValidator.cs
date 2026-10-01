@@ -1,6 +1,6 @@
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Validation;
-using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Extensions;
 
 namespace OpenUrzednik.Nbp.Validation;
 
@@ -14,6 +14,6 @@ internal sealed class CurrencyDateValidator(string propertyName, DateOnly value)
     {
         return Value >= MinDate
             ? OpenUrzednikResult.Success()
-            : GetValidationErrorResult($"'{PropertyName}' should be greater or equal {NbpFormat.Date(MinDate)}.");
+            : GetValidationErrorResult($"'{PropertyName}' should be greater or equal {MinDate.ToIso8601String()}.");
     }
 }
