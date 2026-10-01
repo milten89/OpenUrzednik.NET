@@ -256,4 +256,26 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
             e.RequestMessage.Path == path &&
             e.RequestMessage.Headers!["Accept"].Contains("application/json"));
     }
+
+    [Fact]
+    public async Task GetLatestAsync_Returns200WithNullRates_ReturnsSerializationError()
+    {
+        // Arrange
+        const string currencyCode = "USD";
+        _server.Given(Request.Create()
+                .WithPath($"{BasePath}/a/{currencyCode}")
+                .UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody("""{"table":"A","currency":"dolar amerykański","code":"USD","rates":null}"""));
+
+        // Act
+        var result = await CreateSut().GetLatestAsync(currencyCode, cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<OpenUrzednik.Core.Errors.SerializationError>()
+            .Message.ShouldBe("NBP API response is missing 'rates'.");
+    }
 }

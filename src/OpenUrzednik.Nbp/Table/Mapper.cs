@@ -18,7 +18,7 @@ internal static class Mapper
 
     internal static IReadOnlyList<ExchangeRateTable> MapToExchangeRateTable(ExchangeRateTableDto[] dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
 
         var tables = new ExchangeRateTable[dto.Length];
         for (int i = 0; i < tables.Length; i++)
@@ -29,7 +29,7 @@ internal static class Mapper
 
     internal static ExchangeRateTable MapToExchangeRateTable(ExchangeRateTableDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
         NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var rates = new ExchangeRate[dto.Rates.Length];
@@ -41,14 +41,14 @@ internal static class Mapper
 
     internal static ExchangeRate MapToExchangeRate(ExchangeRateDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
 
         return new ExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Price);
     }
 
     internal static IReadOnlyList<BuySellExchangeRateTable> MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
 
         var tables = new BuySellExchangeRateTable[dto.Length];
         for (int i = 0; i < tables.Length; i++)
@@ -59,7 +59,7 @@ internal static class Mapper
 
     internal static BuySellExchangeRateTable MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
         NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var rates = new BuySellExchangeRate[dto.Rates.Length];
@@ -71,7 +71,7 @@ internal static class Mapper
 
     internal static BuySellExchangeRate MapToBuySellExchangeRateTable(BuySellExchangeRateDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
 
         return new BuySellExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell);
     }

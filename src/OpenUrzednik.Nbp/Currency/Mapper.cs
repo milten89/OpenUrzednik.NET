@@ -7,7 +7,7 @@ internal static class Mapper
 {
     internal static CurrencyExchangeRates MapToCurrencyExchangeRates(CurrencyExchangeRatesDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
         NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var rates = new ExchangeRate[dto.Rates.Length];
@@ -19,14 +19,14 @@ internal static class Mapper
 
     internal static ExchangeRate MapToCurrencyExchangeRate(CurrencyExchangeRateDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
 
         return new ExchangeRate(dto.TableId, dto.PublicationDate, dto.Price);
     }
 
     internal static BuySellExchangeRates MapToBuySellExchangeRates(BuySellCurrencyExchangeRatesDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
         NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var rates = new BuySellExchangeRate[dto.Rates.Length];
@@ -38,7 +38,7 @@ internal static class Mapper
 
     internal static BuySellExchangeRate MapToBuySellExchangeRate(BuySellCurrencyExchangeRateDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
 
         return new BuySellExchangeRate(dto.TableId, dto.PublicationDate, dto.Buy, dto.Sell);
     }

@@ -676,6 +676,54 @@ public partial class HttpClientExtensionsTest
         content.IsDisposed.ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task GetNbpAsync_UnknownCharset_ReturnsSerializationError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var content = new StringContent("{\"name\":\"n\",\"value\":1}");
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=foo");
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>().Exception.ShouldBeOfType<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_BadRequestBodyReadTimesOut_ReturnsBadRequestErrorWithoutServerMessage()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StreamContent(new NeverEndingStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+        httpClient.Timeout = TimeSpan.FromMilliseconds(50);
+
+        // Act
+        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldNotContain(": ");
+    }
+
+    [Fact]
+    public async Task GetNbpAsync_CallerCancelsDuringBadRequestBodyRead_ThrowsOperationCanceledException()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StreamContent(new NeverEndingStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+
+        // Act && Assert
+        await Should.ThrowAsync<OperationCanceledException>(
+            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, cts.Token));
+    }
+
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
         => CreateHttpClient(faker, response, out _);
 

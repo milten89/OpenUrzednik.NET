@@ -109,6 +109,14 @@ public static class HttpClientExtensions
         {
             return NetworkFailure(relativePath, telemetryProvider, traceSpan, ex);
         }
+        catch (InvalidOperationException ex)
+        {
+            // ReadFromJsonAsync throws this when the response declares a charset it can't decode.
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to decode NBP response from {path}", "path", relativePath);
+            traceSpan.RecordException(ex);
+            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
+            return OpenUrzednikResult.Failure(new SerializationError($"Error when decoding response from {relativePath}", ex));
+        }
     }
 
     private static async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpClient httpClient, HttpRequestMessage request, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
@@ -135,19 +143,26 @@ public static class HttpClientExtensions
     {
         TimeSpan? timeout = httpClient.Timeout == Timeout.InfiniteTimeSpan ? null : httpClient.Timeout;
         telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "NBP request to {path} timed out after {timeout}", "path", relativePath, "timeout", timeout);
+        var error = new RequestTimeoutError(
+            timeout is null
+                ? $"NBP request to {relativePath} timed out."
+                : $"NBP API did not respond to {relativePath} within {timeout}.",
+            timeout, exception);
         traceSpan.RecordException(exception);
+        traceSpan.SetTag("error.code", error.Code);
         traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
-        return OpenUrzednikResult.Failure(new RequestTimeoutError(
-            $"NBP API did not respond to {relativePath} within {timeout}.", timeout, exception));
+        return OpenUrzednikResult.Failure(error);
     }
 
     private static OpenUrzednikResult NetworkFailure(string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, Exception exception)
     {
         telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "NBP request to {path} failed", "path", relativePath);
+        var error = new ServiceUnavailableError(
+            $"NBP API could not be reached for {relativePath}: {exception.Message}", exception: exception);
         traceSpan.RecordException(exception);
+        traceSpan.SetTag("error.code", error.Code);
         traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
-        return OpenUrzednikResult.Failure(new ServiceUnavailableError(
-            $"NBP API could not be reached for {relativePath}: {exception.Message}", exception: exception));
+        return OpenUrzednikResult.Failure(error);
     }
 
     private static async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, TimeProvider timeProvider, CancellationToken requestToken, CancellationToken cancellationToken)

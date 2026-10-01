@@ -7,7 +7,7 @@ internal static class Mapper
 {
     internal static IReadOnlyList<GoldPrice> MapToGoldPrice(GoldPriceDto[] dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
 
         var goldPrices = new GoldPrice[dto.Length];
         for (int i = 0; i < goldPrices.Length; i++)
@@ -18,7 +18,7 @@ internal static class Mapper
 
     internal static GoldPrice MapToGoldPrice(GoldPriceDto dto)
     {
-        NbpPayload.EnsurePresent(dto, nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
 
         return new GoldPrice(dto.Date, dto.Price);
     }
