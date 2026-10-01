@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.TestCommon;
 
@@ -44,6 +46,13 @@ public class OpenUrzednikGenericResultTest
     {
         // Act && Assert
         Should.Throw<InvalidOperationException>(() => new OpenUrzednikResult<int>());
+    }
+
+    [Fact]
+    public void Size_ReferenceTypeValue_IsTwoPointers()
+    {
+        // The result is designed to stay two machine words wide (value + errors), so it can be passed in registers.
+        Unsafe.SizeOf<OpenUrzednikResult<object>>().ShouldBe(2 * IntPtr.Size);
     }
 
     [Fact]
