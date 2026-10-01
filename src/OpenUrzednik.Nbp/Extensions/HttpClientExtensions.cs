@@ -66,6 +66,42 @@ public static class HttpClientExtensions
         using var response = await SendAsync(httpClient, request, traceSpan, cancellationToken).ConfigureAwait(false);
         traceSpan.SetTag("http.status_code", (int)response.StatusCode);
 
+        if (!response.IsSuccessStatusCode)
+            return await MapErrorResponseAsync(response, relativePath, telemetryProvider, traceSpan, timeProvider, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            var dto = await response.Content.ReadFromJsonAsync(typeInfo, cancellationToken).ConfigureAwait(false);
+
+            return dto is not null
+                ? OpenUrzednikResult.Success(dto)
+                : OpenUrzednikResult.Failure(new UnknownError($"NBP API return empty response for {relativePath}."));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (JsonException ex)
+        {
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to deserialize NBP response from {path}", "path", relativePath);
+            traceSpan.RecordException(ex);
+            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
+            return OpenUrzednikResult.Failure(new SerializationError($"Error when deserializing response from {relativePath}", ex));
+        }
+        catch (Exception ex)
+        {
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Unexpected error while reading NBP response from {path}", "path", relativePath);
+            traceSpan.RecordException(ex);
+            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected error");
+            throw;
+        }
+    }
+
+    private static async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, TimeProvider timeProvider, CancellationToken cancellationToken)
+    {
+        var statusCode = (int)response.StatusCode;
+        var path = response.RequestMessage?.RequestUri?.ToString() ?? relativePath;
+
         switch (response.StatusCode)
         {
             case HttpStatusCode.NotFound:
@@ -161,25 +197,6 @@ public static class HttpClientExtensions
     {
         if (telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
             telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, exception, "Could not read NBP error response body.");
-    }
-
-    private static async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpRequestMessage request, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)
-    {
-        try
-        {
-            return await httpClient
-                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                .ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            traceSpan.RecordException(ex);
-            throw;
-        }
     }
 
     private static async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpRequestMessage request, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)

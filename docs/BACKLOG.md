@@ -6,9 +6,7 @@ Work through items one PR at a time. When an item is done, delete it from this f
 
 ## P0: Bugs
 
-1. **Table B (`GetCountry*`) fails against the real API.** `CountryExchangeRatesDto` marks `country` and `symbol` as `required`, but the live API no longer returns them (`{"table":"B","currency":"afgani (Afganistan)","code":"AFN","rates":[…]}`), so every call ends in `SerializationError`. The WireMock tests use made-up payloads that include `country`, which is why they pass. Fix: make the fields optional, rename the API (table B is "less common currencies", not "country"), and replace the test payloads with captured real responses (`/verify-api`).
 4. **Failures that escape the result** ([ADR-0002](adr/0002-result-pattern-and-error-handling.md)): `HttpRequestException` and timeouts are thrown; mappers throw `ArgumentException` when `Rates` is null; `catch (Exception)` blocks in `GetNbpAsync`.
-6. **`SerializationError.ToException()` returns the raw `JsonException`.** Wrap it in an `OpenUrzednikException`-derived type and keep the original as `InnerException`.
 
 ## P1: NBP correctness
 
