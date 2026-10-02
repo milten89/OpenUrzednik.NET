@@ -1,7 +1,5 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
-using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Validation;
@@ -16,33 +14,10 @@ public partial class NbpExchangeRateTableClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.latest");
         traceSpan.SetTag("nbp.table", table);
 
-        var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
-        if (midTableValidation.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetLatestAsync");
-            traceSpan.RecordErrors(midTableValidation.Errors);
-            return midTableValidation;
-        }
+        var validation = new TableTypeValidator(nameof(table), table).Validate();
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
-
-        var requestResult = await _connection.GetAsync(urlBuilder.Latest(), JsonContext.ExchangeRateTableDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToExchangeRateTable, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.Latest());
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetLatestAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).Latest(), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -52,26 +27,11 @@ public partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.top_count", topCount);
 
-        var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
-        var topCountValidation = new TopCountValidator(nameof(topCount), topCount).Validate();
-        var validationResult = midTableValidation.And(topCountValidation);
-        if (validationResult.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTopCountAsync");
-            traceSpan.RecordErrors(validationResult.Errors);
-            return validationResult;
-        }
+        var validation = new TableTypeValidator(nameof(table), table).Validate()
+            .And(new TopCountValidator(nameof(topCount), topCount).Validate());
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForTopCount(topCount), JsonContext.ExchangeRateTableDtoArray, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToExchangeRateTable, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure<IReadOnlyList<ExchangeRateTable>>(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetTopCountAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForTopCount(topCount), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -80,101 +40,39 @@ public partial class NbpExchangeRateTableClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.today");
         traceSpan.SetTag("nbp.table", table);
 
-        var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
-        if (midTableValidation.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTodayAsync");
-            traceSpan.RecordErrors(midTableValidation.Errors);
-            return midTableValidation;
-        }
+        var validation = new TableTypeValidator(nameof(table), table).Validate();
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
-
-        var requestResult = await _connection.GetAsync(urlBuilder.Today(), JsonContext.ExchangeRateTableDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToExchangeRateTable, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.Today());
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetTodayAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).Today(), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(TableType table, DateOnly date, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.get_date");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.date");
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
-        var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
-        var dateValidation = new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
-        var validationResult = midTableValidation.And(dateValidation);
-        if (validationResult.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
-            traceSpan.RecordErrors(validationResult.Errors);
-            return validationResult;
-        }
+        var validation = new TableTypeValidator(nameof(table), table).Validate()
+            .And(new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate());
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForDate(date), JsonContext.ExchangeRateTableDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToExchangeRateTable, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.ForDate(date));
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForDate(date), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(TableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.get_range");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.range");
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
-        var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
-        var toValidation = new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate();
-        var dateRangeValidation = new DateRangeValidator((from, to), DateRangeValidator.MaxTablesDateRange).Validate();
-        var validationResult = midTableValidation.And(toValidation).And(dateRangeValidation);
-        if (validationResult.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
-            traceSpan.RecordErrors(validationResult.Errors);
-            return validationResult;
-        }
+        var validation = new TableTypeValidator(nameof(table), table).Validate()
+            .And(new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate())
+            .And(new DateRangeValidator((from, to), DateRangeValidator.MaxTablesDateRange).Validate());
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table));
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForDateRange(from, to), JsonContext.ExchangeRateTableDtoArray, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToExchangeRateTable, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure<IReadOnlyList<ExchangeRateTable>>(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForDateRange(from, to), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 }

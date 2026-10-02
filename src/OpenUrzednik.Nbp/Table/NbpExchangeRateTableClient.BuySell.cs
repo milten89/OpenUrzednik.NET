@@ -1,7 +1,5 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
-using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
@@ -16,24 +14,8 @@ public partial class NbpExchangeRateTableClient
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_latest");
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.Latest(), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.Latest());
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetBuySellLatestAsync), OpenUrzednikResult.Success(),
+            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).Latest(), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -42,24 +24,10 @@ public partial class NbpExchangeRateTableClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_top_count");
         traceSpan.SetTag("nbp.top_count", topCount);
 
-        var topCountValidation = new TopCountValidator(nameof(topCount), topCount).Validate();
-        if (topCountValidation.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellTopCountAsync");
-            traceSpan.RecordErrors(topCountValidation.Errors);
-            return topCountValidation;
-        }
+        var validation = new TopCountValidator(nameof(topCount), topCount).Validate();
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure<IReadOnlyList<BuySellExchangeRateTable>>(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellTopCountAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForTopCount(topCount), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -67,24 +35,8 @@ public partial class NbpExchangeRateTableClient
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_today");
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.Today(), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.Today());
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetBuySellTodayAsync), OpenUrzednikResult.Success(),
+            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).Today(), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -93,33 +45,10 @@ public partial class NbpExchangeRateTableClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_date");
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
-        var dateValidation = new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
-        if (dateValidation.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellAsync");
-            traceSpan.RecordErrors(dateValidation.Errors);
-            return dateValidation;
-        }
+        var validation = new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForDate(date), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", urlBuilder.ForDate(date));
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetBuySellAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForDate(date), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -129,25 +58,10 @@ public partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
-        var toValidation = new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate();
-        var dateRangeValidation = new DateRangeValidator((from, to), DateRangeValidator.MaxTablesDateRange).Validate();
-        var validationResult = toValidation.And(dateRangeValidation);
-        if (validationResult.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellAsync");
-            traceSpan.RecordErrors(validationResult.Errors);
-            return validationResult;
-        }
+        var validation = new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate()
+            .And(new DateRangeValidator((from, to), DateRangeValidator.MaxTablesDateRange).Validate());
 
-        var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure<IReadOnlyList<BuySellExchangeRateTable>>(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForDateRange(from, to), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 }

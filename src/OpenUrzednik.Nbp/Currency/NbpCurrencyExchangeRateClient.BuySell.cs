@@ -1,6 +1,5 @@
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Extensions;
-using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
@@ -16,24 +15,10 @@ public partial class NbpCurrencyExchangeRateClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_latest");
         traceSpan.SetTag("nbp.currency", currency);
 
-        var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        if (currencyValidation.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellLatestAsync");
-            traceSpan.RecordErrors(currencyValidation.Errors);
-            return currencyValidation;
-        }
+        var validation = new Iso4217Validator(nameof(currency), currency).Validate();
 
-        var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.Latest(), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellLatestAsync), validation,
+            () => _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency).Latest(), JsonContext.BuySellCurrencyExchangeRatesDto, Mapper.MapToBuySellExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -43,26 +28,11 @@ public partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.top_count", topCount);
 
-        var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        var topCountValidation = new TopCountValidator(nameof(topCount), topCount).Validate();
-        var validationResult = currencyValidation.And(topCountValidation);
-        if (validationResult.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellTopCountAsync");
-            traceSpan.RecordErrors(validationResult.Errors);
-            return validationResult;
-        }
+        var validation = new Iso4217Validator(nameof(currency), currency).Validate()
+            .And(new TopCountValidator(nameof(topCount), topCount).Validate());
 
-        var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellTopCountAsync), validation,
+            () => _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency).ForTopCount(topCount), JsonContext.BuySellCurrencyExchangeRatesDto, Mapper.MapToBuySellExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -71,24 +41,10 @@ public partial class NbpCurrencyExchangeRateClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_today");
         traceSpan.SetTag("nbp.currency", currency);
 
-        var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        if (currencyValidation.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellTodayAsync");
-            traceSpan.RecordErrors(currencyValidation.Errors);
-            return currencyValidation;
-        }
+        var validation = new Iso4217Validator(nameof(currency), currency).Validate();
 
-        var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.Today(), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellTodayAsync), validation,
+            () => _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency).Today(), JsonContext.BuySellCurrencyExchangeRatesDto, Mapper.MapToBuySellExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -98,26 +54,11 @@ public partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
-        var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        var dateValidation = new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
-        var validationResult = currencyValidation.And(dateValidation);
-        if (validationResult.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellAsync");
-            traceSpan.RecordErrors(validationResult.Errors);
-            return validationResult;
-        }
+        var validation = new Iso4217Validator(nameof(currency), currency).Validate()
+            .And(new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate());
 
-        var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForDate(date), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellAsync), validation,
+            () => _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency).ForDate(date), JsonContext.BuySellCurrencyExchangeRatesDto, Mapper.MapToBuySellExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -128,26 +69,11 @@ public partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
-        var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
-        var toValidation = new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate();
-        var dateRangeValidation = new DateRangeValidator((from, to), DateRangeValidator.MaxRatesDateRange).Validate();
-        var validationResult = currencyValidation.And(toValidation).And(dateRangeValidation);
-        if (validationResult.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetBuySellAsync");
-            traceSpan.RecordErrors(validationResult.Errors);
-            return validationResult;
-        }
+        var validation = new Iso4217Validator(nameof(currency), currency).Validate()
+            .And(new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate())
+            .And(new DateRangeValidator((from, to), DateRangeValidator.MaxRatesDateRange).Validate());
 
-        var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
-
-        var requestResult = await _connection.GetAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellAsync), validation,
+            () => _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency).ForDateRange(from, to), JsonContext.BuySellCurrencyExchangeRatesDto, Mapper.MapToBuySellExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 }

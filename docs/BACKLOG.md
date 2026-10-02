@@ -47,10 +47,10 @@ How to use this file:
     * Unexpected exceptions no longer mark the `nbp.http.get` span as an error (#18 removed the catch-all). Fix it with try/finally, not `catch (Exception)`.
     * Typo in the `UnknownError` message: "NBP API return unknown status".
 
-- [ ] **13. Remove duplication in NBP clients.** 25 methods repeat span → validate → log → GET → map → record. Mapping is shared since #18 (`NbpPayload.Map`); the rest needs one internal pipeline helper (after items 12 and 18).
-    * No `await` in the three clients uses `ConfigureAwait(false)`.
-    * The empty-array `NotFoundError` has no status code, unlike a real 404.
-    * Span names are inconsistent: only date and range use a `get_` prefix (`get_date`, `get_range` vs `latest`, `today`, `top_count`), and the buy/sell variants drop it (`buy_sell_date`, `buy_sell_range`).
+- [x] **13. Remove duplication in NBP clients.** 25 methods repeat span → validate → log → GET → map → record. Mapping is shared since #18 (`NbpPayload.Map`); the rest needs one internal pipeline helper (after items 12 and 18). Done in #31 (`Nbp/Common/NbpRequestPipeline.cs`).
+    * No `await` in the three clients uses `ConfigureAwait(false)`. Fixed: every await uses it.
+    * The empty-array `NotFoundError` has no status code, unlike a real 404. Kept: the response was `200 OK`, so there is no 404 to report; documented on the pipeline.
+    * Span names are inconsistent: only date and range use a `get_` prefix (`get_date`, `get_range` vs `latest`, `today`, `top_count`), and the buy/sell variants drop it (`buy_sell_date`, `buy_sell_range`). Fixed by dropping the prefix: `date`, `range`.
 
 - [x] **14. Client construction** ([ADR-0007](adr/0007-client-api-and-extensibility.md)): the default constructor `new NbpGoldPriceClient(httpClient)`; `NbpOptions` and `INbpUrlBuilderFactory` optional; remove the static cache in `NbpUrlBuilderFactory`. Done in #28.
     * Remove `ConfigureForNbpApi`: it mutates a caller-owned `HttpClient` and is a second way to configure the client. Options go to the constructor; its checks move to `NbpOptions` validation.
