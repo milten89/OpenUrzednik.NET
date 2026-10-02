@@ -16,7 +16,7 @@ namespace OpenUrzednik.Nbp.Tests.Gold;
 public partial class NbpGoldPriceClientTest
 {
     [Fact]
-    public void Ctor_HttpClientOnly_NullHttpClient_ThrowsArgumentNullException()
+    public void Ctor_NullHttpClient_ThrowsArgumentNullException()
     {
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(null!))
@@ -24,7 +24,7 @@ public partial class NbpGoldPriceClientTest
     }
 
     [Fact]
-    public void Ctor_AllArgs_NullHttpClient_ThrowsArgumentNullException()
+    public void CtorWithOptions_NullHttpClient_ThrowsArgumentNullException()
     {
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(null!, new NbpOptions(), Substitute.For<INbpUrlBuilderFactory>(), new FakeTimeProvider()))

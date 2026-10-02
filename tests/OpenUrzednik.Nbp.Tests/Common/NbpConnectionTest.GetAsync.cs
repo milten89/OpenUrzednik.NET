@@ -35,17 +35,6 @@ public partial class NbpConnectionTest
     private readonly NbpTelemetryProvider _telemetryProvider = new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
 
     [Fact]
-    public async Task GetAsync_NullHttpClient_ThrowsArgumentNullException()
-    {
-        // Arrange
-        HttpClient httpClient = null!;
-
-        // Act && Assert
-        (await Should.ThrowAsync<ArgumentNullException>(async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync("", TypeInfo, TestContext.Current.CancellationToken)))
-            .ParamName.ShouldBe("httpClient");
-    }
-
-    [Fact]
     public async Task GetAsync_NullRelativePath_ThrowsArgumentNullException()
     {
         // Arrange
@@ -409,6 +398,65 @@ public partial class NbpConnectionTest
         error.Timeout.ShouldBe(timeout);
         error.Exception.ShouldBeAssignableTo<OperationCanceledException>();
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
+    }
+
+    [Fact]
+    public async Task GetAsync_OptionTimeoutShorterThanHttpClientTimeout_ReturnsRequestTimeoutErrorWithOptionTimeout()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var handler = new DelegatingStubHttpMessageHandler(async (_, ct) =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        var timeout = TimeSpan.FromMilliseconds(50);
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")) };
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider, timeout).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(timeout);
+    }
+
+    [Theory]
+    [InlineData(30_000)]
+    [InlineData(-1)] // Timeout.InfiniteTimeSpan
+    public async Task GetAsync_OptionTimeoutLongerThanHttpClientTimeout_ReturnsRequestTimeoutErrorWithHttpClientTimeout(double optionMilliseconds)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var handler = new DelegatingStubHttpMessageHandler(async (_, ct) =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        var httpClientTimeout = TimeSpan.FromMilliseconds(50);
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")), Timeout = httpClientTimeout };
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider, TimeSpan.FromMilliseconds(optionMilliseconds))
+            .GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(httpClientTimeout);
+    }
+
+    [Theory]
+    [InlineData("cenyzlota")]
+    [InlineData("/cenyzlota")]
+    public async Task GetAsync_BaseAddressWithPath_KeepsBasePath(string relativePath)
+    {
+        // Arrange
+        var handler = new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("gold", 1)));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://gateway.example.com/nbp/") };
+
+        // Act
+        await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        handler.Request.ShouldNotBeNull().RequestUri.ShouldBe(new Uri("https://gateway.example.com/nbp/cenyzlota"));
     }
 
     [Fact]

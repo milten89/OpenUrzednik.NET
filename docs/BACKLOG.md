@@ -56,11 +56,12 @@ How to use this file:
     * Remove `ConfigureForNbpApi`: it mutates a caller-owned `HttpClient` and is a second way to configure the client. Options go to the constructor; its checks move to `NbpOptions` validation.
     * Base URL: `NbpOptions.ApiUrl`, then `HttpClient.BaseAddress`, then `NbpOptions.DefaultApiUrl`. Today a missing `BaseAddress` makes `HttpClient` throw `InvalidOperationException`, which escapes the result.
     * `NbpOptions.Timeout` becomes optional; when unset, the `HttpClient`'s own timeout applies (.NET default 100 s).
-    * `NbpUrlBuilderFactoryTest` asserts the static cache (`*_ReturnsSameCachedInstance`, `GetTableBuilder_SameTableOnDifferentFactoryInstances_*`), and the constructor tests read private fields.
+    * `NbpUrlBuilderFactoryTest` asserts the static cache (`*_ReturnsSameCachedInstance`, `GetTableBuilder_SameTableOnDifferentFactoryInstances_*`). The constructor tests still read private fields: moved to item 30.
 
 - [ ] **15. DI package** `OpenUrzednik.Nbp.DependencyInjection` ([ADR-0004](adr/0004-dependency-policy.md)): `AddOpenUrzednikNbp()`, typed clients, options validation.
     * Resilience follows the .NET standard: `AddOpenUrzednikNbp()` returns the `IHttpClientBuilder`, and the app opts in with `.AddStandardResilienceHandler()`. One handler, not stacked.
     * Polly's rejections (`TimeoutRejectedException`, circuit breaker, rate limiter) must be converted into errors, or they escape the result.
+    * Register the clients with factory lambdas (`AddHttpClient<T>((http, sp) => new T(http, ...))`): a bare `AddHttpClient<T>()` fails, because `ActivatorUtilities` finds two public constructors that accept an `HttpClient` (ADR-0007 asks for both).
     * Version mismatch: `Microsoft.Extensions.DependencyInjection.Abstractions` is 10.0.0, while `Logging.Abstractions`, `Http` and `Options` are 10.0.10.
 
 - [ ] **16. Telemetry adapters** ([ADR-0003](adr/0003-telemetry-abstractions.md)): `OpenUrzednik.Extensions.Logging` (`ILogger`) and `OpenUrzednik.Diagnostics` (`ActivitySource`). The core packages keep the custom interfaces, so they need no dependencies on .NET Framework 4.8.
@@ -78,7 +79,7 @@ How to use this file:
     * `SerializationException` and `ValidationException` clash with BCL type names. Decide before 1.0.
 
 - [ ] **26. WireMock error paths for every client.** The 400/401/403/404/429/5xx, timeout, connection-failure and malformed-JSON tests run only through the gold client. Add them for the currency and table clients after item 12.
-    * The currency and table WireMock success bodies are hand-written. Capture fixtures with `/verify-api`.
+    * The currency and table WireMock success bodies are hand-written, and so are the gold ones (including `NbpGoldPriceClientWireMockTest.Construction.cs`). Capture fixtures with `/verify-api`.
 
 ## P3: Repository and quality
 
@@ -114,6 +115,7 @@ How to use this file:
 - [ ] **30. Test conventions.**
     * Core tests aren't `partial` or file-per-method (CLAUDE.md), and `NetworkErrorsTest` covers two production classes.
     * `CultureScope` (TestCommon) needs ICU: it fails under `InvariantGlobalization`. Note it in the class docs.
+    * The client constructor tests (`*Test.ctor.cs`) read private fields with `GetPrivateField`. Test through behaviour instead (e.g. which URL builder and clock a request uses).
 
 - [ ] **31. Prose skills follow-ups** (#24).
     * Say that meaning, API limits and qualifiers ("only", "never") take precedence over style rules: stop-slop removes absolutes.

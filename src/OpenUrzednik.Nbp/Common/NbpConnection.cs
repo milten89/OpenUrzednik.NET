@@ -47,15 +47,30 @@ internal sealed class NbpConnection
     /// <summary>
     /// The request deadline: <see cref="NbpOptions.Timeout"/> when set, otherwise <see cref="HttpClient.Timeout"/>.
     /// It also covers reading the body, which <see cref="HttpClient.Timeout"/> doesn't with <see cref="HttpCompletionOption.ResponseHeadersRead"/>.
+    /// <see langword="null"/> means no deadline.
     /// </summary>
-    internal TimeSpan? Timeout
+    internal TimeSpan? Timeout => Finite(_timeout ?? _httpClient.Timeout);
+
+    /// <summary>
+    /// The deadline until the headers arrive. <see cref="HttpClient.Timeout"/> still applies inside <see cref="HttpClient.SendAsync(HttpRequestMessage, HttpCompletionOption, CancellationToken)"/>,
+    /// so <see cref="NbpOptions.Timeout"/> can shorten it but not extend it. <see langword="null"/> means no deadline.
+    /// </summary>
+    internal TimeSpan? SendTimeout
     {
         get
         {
-            var timeout = _timeout ?? _httpClient.Timeout;
-            return timeout == System.Threading.Timeout.InfiniteTimeSpan ? null : timeout;
+            var deadline = Timeout;
+            var clientTimeout = Finite(_httpClient.Timeout);
+            if (deadline is null)
+                return clientTimeout;
+            if (clientTimeout is null)
+                return deadline;
+            return deadline < clientTimeout ? deadline : clientTimeout;
         }
     }
+
+    private static TimeSpan? Finite(TimeSpan timeout)
+        => timeout == System.Threading.Timeout.InfiniteTimeSpan ? null : timeout;
 
     /// <summary>
     /// Creates the connection for a client: base address from <paramref name="options"/>, then
@@ -79,6 +94,10 @@ internal sealed class NbpConnection
         return new NbpConnection(httpClient, baseAddress, options?.Timeout, telemetryProvider, timeProvider);
     }
 
+    /// <summary>
+    /// Sends a GET request for <paramref name="relativePath"/>, resolved against the base address.
+    /// A leading <c>/</c> is ignored, so the path never replaces the base address path (e.g. <c>/api/</c>).
+    /// </summary>
     internal async Task<OpenUrzednikResult<TDto>> GetAsync<TDto>(string relativePath, JsonTypeInfo<TDto> typeInfo, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
@@ -88,13 +107,14 @@ internal sealed class NbpConnection
         var telemetryProvider = _telemetryProvider;
         var timeProvider = _timeProvider;
         var timeout = Timeout;
+        var sendTimeout = SendTimeout;
 
         cancellationToken.ThrowIfCancellationRequested();
 
         using var traceSpan = telemetryProvider.Tracer.StartSpan("nbp.http.get");
         traceSpan.SetTag("http.path", relativePath);
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseAddress, relativePath));
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseAddress, relativePath.TrimStart('/')));
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
         // With ResponseHeadersRead, HttpClient.Timeout stops applying once the headers arrive,
@@ -104,7 +124,7 @@ internal sealed class NbpConnection
             timeoutSource.CancelAfter(deadline);
         var requestToken = timeoutSource.Token;
 
-        var sendResult = await SendAsync(httpClient, request, relativePath, timeout, telemetryProvider, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+        var sendResult = await SendAsync(httpClient, request, relativePath, sendTimeout, telemetryProvider, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
         if (sendResult.IsFailure)
             return OpenUrzednikResult.Failure(sendResult.Errors);
 

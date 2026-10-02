@@ -100,6 +100,8 @@ public partial class NbpConnectionTest
     [InlineData("htt ps://example.com")]
     [InlineData("https://example.com:abc/")]
     [InlineData("https://exa mple.com/")]
+    [InlineData("https://gateway.example.com/api?key=1")]
+    [InlineData("https://gateway.example.com/api/#fragment")]
     public void Create_InvalidApiUrl_ThrowsArgumentException(string apiUrl)
     {
         // Arrange
@@ -151,6 +153,7 @@ public partial class NbpConnectionTest
     [Theory]
     [InlineData(0)]
     [InlineData(-5)]
+    [InlineData(60 * 60 * 24 * 60)] // more than int.MaxValue ms, which CancelAfter rejects
     public void Create_InvalidTimeout_ThrowsArgumentException(double seconds)
     {
         // Arrange
