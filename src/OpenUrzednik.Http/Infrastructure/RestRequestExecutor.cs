@@ -1,7 +1,7 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -26,6 +26,13 @@ public sealed class RestRequestExecutor
 {
     // The number of characters read from an error response body (ErrorResponseContext.ReadMessageAsync, 400 messages).
     internal const int MaxServerMessageLength = 500;
+
+    // Not in netstandard2.0's HttpStatusCode and MediaTypeNames.
+    private const HttpStatusCode TooManyRequests = (HttpStatusCode)429;
+    private const string JsonMediaType = "application/json";
+
+    // Timers can fire up to one system clock tick (about 15.6 ms on Windows) before their due time.
+    private static readonly TimeSpan TimerResolution = TimeSpan.FromMilliseconds(16);
 
     private readonly HttpClient _httpClient;
     private readonly TimeSpan? _timeout;
@@ -131,7 +138,7 @@ public sealed class RestRequestExecutor
         var timeout = Timeout;
 
         using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonMediaType));
 
         // With ResponseHeadersRead, HttpClient.Timeout stops applying once the headers arrive,
         // so the deadline is applied to reading the body as well.
@@ -153,7 +160,8 @@ public sealed class RestRequestExecutor
         var logger = _telemetry.Logger;
         try
         {
-            var dto = await response.Content.ReadFromJsonAsync(typeInfo, requestToken).ConfigureAwait(false);
+            // .NET Framework leaves Content null when there is no body; .NET always sets one.
+            var dto = response.Content is null ? default : await response.Content.ReadFromJsonAsync(typeInfo, requestToken).ConfigureAwait(false);
             if (dto is not null)
                 return OpenUrzednikResult.Success(dto);
 
@@ -192,6 +200,7 @@ public sealed class RestRequestExecutor
 
     private async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpRequestMessage request, string relativePath, TimeSpan? deadline, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
     {
+        var started = Stopwatch.GetTimestamp();
         try
         {
             var response = await _httpClient
@@ -201,7 +210,7 @@ public sealed class RestRequestExecutor
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return TimeoutFailure(ElapsedLimit(ex, deadline, requestToken), relativePath, traceSpan, ex);
+            return TimeoutFailure(ElapsedLimit(deadline, requestToken, started), relativePath, traceSpan, ex);
         }
         catch (HttpRequestException ex)
         {
@@ -209,14 +218,16 @@ public sealed class RestRequestExecutor
         }
     }
 
-    // Names only a limit known to have elapsed: the request deadline cancels requestToken, and HttpClient.Timeout
-    // surfaces as an inner TimeoutException. Anything else, e.g. a resilience handler's timeout in the pipeline, has a limit we don't know.
-    // Not exact: SocketsHttpHandler.ConnectTimeout also has an inner TimeoutException (backlog item 17 covers .NET Framework).
-    private TimeSpan? ElapsedLimit(OperationCanceledException exception, TimeSpan? deadline, CancellationToken requestToken)
+    // Names only a limit known to have elapsed. The request deadline cancels requestToken. HttpClient.Timeout counts when at least
+    // that long went by: it runs on the real clock, as Stopwatch does, and .NET Framework gives it no inner TimeoutException.
+    // Anything shorter, e.g. a resilience handler's timeout or a connect timeout, is a limit we don't know.
+    private TimeSpan? ElapsedLimit(TimeSpan? deadline, CancellationToken requestToken, long started)
     {
         if (requestToken.IsCancellationRequested)
             return deadline;
-        return exception.InnerException is TimeoutException ? Finite(_httpClient.Timeout) : null;
+
+        var elapsed = TimeSpan.FromTicks((long)((Stopwatch.GetTimestamp() - started) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
+        return Finite(_httpClient.Timeout) is { } clientTimeout && elapsed + TimerResolution >= clientTimeout ? clientTimeout : null;
     }
 
     // The caller's token is not cancelled, so the cancellation came from the request deadline, HttpClient.Timeout
@@ -254,7 +265,7 @@ public sealed class RestRequestExecutor
     private async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string relativePath, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
     {
         var path = response.RequestMessage?.RequestUri?.ToString() ?? relativePath;
-        var delay = response.StatusCode == HttpStatusCode.TooManyRequests ? GetDelay(response, _timeProvider) : null;
+        var delay = response.StatusCode == TooManyRequests ? GetDelay(response, _timeProvider) : null;
 
         // The body can be read only once, so the override and the default mapping share one read.
         Task<string?>? messageTask = null;
@@ -289,7 +300,7 @@ public sealed class RestRequestExecutor
                         logger.Log(OpenUrzednikLogLevel.Debug, null, "{provider} resource not found: {path}.", "provider", displayName, "path", path);
                     return new NotFoundError($"Resource at {path} was not found.", statusCode);
                 }
-            case HttpStatusCode.TooManyRequests:
+            case TooManyRequests:
                 {
                     if (logger.IsEnabled(OpenUrzednikLogLevel.Warning))
                     {
@@ -341,6 +352,10 @@ public sealed class RestRequestExecutor
     /// </summary>
     private async Task<string?> ReadServerMessageAsync(HttpResponseMessage response, CancellationToken requestToken, CancellationToken cancellationToken)
     {
+        // .NET Framework leaves Content null when there is no body.
+        if (response.Content is null)
+            return null;
+
         var buffer = new char[MaxServerMessageLength];
         var length = 0;
         try

@@ -10,7 +10,7 @@ public class NbpUrlBuilder : INbpUrlBuilder
     {
         ArgumentNullException.ThrowIfNull(baseUrl);
 
-        _baseUrl = baseUrl.EndsWith('/') ? baseUrl[..^1] : baseUrl;
+        _baseUrl = baseUrl.EndsWith("/", StringComparison.Ordinal) ? baseUrl.Substring(0, baseUrl.Length - 1) : baseUrl;
     }
 
     public string Latest()

@@ -10,7 +10,7 @@ public sealed class SerializationError : OpenUrzednikError
     public const string ErrorCode = "serializationError";
 
     /// <summary>
-    /// Gets the exception that caused the error (for example a <see cref="System.Text.Json.JsonException"/>), if any.
+    /// Gets the exception that caused the error (for example a <c>System.Text.Json.JsonException</c>), if any.
     /// </summary>
     public Exception? Exception { get; }
 

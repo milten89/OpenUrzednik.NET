@@ -101,5 +101,14 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     }
 
     private static DateOnly WarsawToday()
-        => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw")).DateTime);
+    {
+        // .NET Framework only knows the Windows time zone id.
+#if NET
+        var warsaw = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+        return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, warsaw).DateTime);
+#else
+        var warsaw = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+        return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, warsaw).DateTime.Date;
+#endif
+    }
 }

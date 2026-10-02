@@ -88,7 +88,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
     {
         // Arrange
         var date = new DateOnly(2026, 9, 30);
-        var path = $"{BasePath}/{date:O}";
+        var path = $"{BasePath}/{date:yyyy-MM-dd}";
         _server.GivenFixture(path, "gold-date.json");
 
         // Act
@@ -106,7 +106,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
         // Arrange
         var from = new DateOnly(2026, 9, 28);
         var to = new DateOnly(2026, 9, 30);
-        var path = $"{BasePath}/{from:O}/{to:O}";
+        var path = $"{BasePath}/{from:yyyy-MM-dd}/{to:yyyy-MM-dd}";
         _server.GivenFixture(path, "gold-range.json");
 
         // Act

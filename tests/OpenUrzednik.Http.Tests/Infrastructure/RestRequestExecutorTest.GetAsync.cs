@@ -195,7 +195,7 @@ public partial class RestRequestExecutorTest
     [InlineData(HttpStatusCode.Unauthorized, UnauthorizedError.ErrorCode)]
     [InlineData(HttpStatusCode.Forbidden, UnauthorizedError.ErrorCode)]
     [InlineData(HttpStatusCode.NotFound, NotFoundError.ErrorCode)]
-    [InlineData(HttpStatusCode.TooManyRequests, RateLimitExceededError.ErrorCode)]
+    [InlineData((HttpStatusCode)429, RateLimitExceededError.ErrorCode)]
     [InlineData(HttpStatusCode.InternalServerError, ServiceUnavailableError.ErrorCode)]
     [InlineData(HttpStatusCode.BadGateway, ServiceUnavailableError.ErrorCode)]
     [InlineData(HttpStatusCode.ServiceUnavailable, ServiceUnavailableError.ErrorCode)]
@@ -734,7 +734,7 @@ public partial class RestRequestExecutorTest
     [InlineData(HttpStatusCode.OK, "not-valid-json")]
     [InlineData(HttpStatusCode.OK, "null")]
     [InlineData(HttpStatusCode.NotFound, "")]
-    [InlineData(HttpStatusCode.TooManyRequests, "")]
+    [InlineData((HttpStatusCode)429, "")] // TooManyRequests; an attribute argument must be a constant on .NET Framework
     [InlineData(HttpStatusCode.InternalServerError, "")]
     public async Task GetAsync_AnyResponse_DisposesResponse(HttpStatusCode statusCode, string body)
     {

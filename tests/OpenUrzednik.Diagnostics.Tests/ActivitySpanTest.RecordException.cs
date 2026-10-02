@@ -17,7 +17,7 @@ public sealed partial class ActivitySpanTest
         // Assert
         var activityEvent = Stop(span).Events.ShouldHaveSingleItem();
         activityEvent.Name.ShouldBe("exception");
-        var tags = activityEvent.Tags.ToDictionary();
+        var tags = activityEvent.Tags.ToDictionary(tag => tag.Key, tag => tag.Value);
         tags["exception.type"].ShouldBe("System.Net.Http.HttpRequestException");
         tags["exception.message"].ShouldBe("Connection refused");
         tags["exception.stacktrace"].ShouldBe(exception.ToString());
