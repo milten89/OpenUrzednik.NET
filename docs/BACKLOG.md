@@ -5,8 +5,8 @@ Known bugs and design work, ordered by priority. Found in the repository review 
 How to use this file:
 
 - Work through items one PR at a time.
-- When an item is done, tick its checkbox and add `Done in #<PR>.` in the same PR. Don't delete items: a deleted line can come back when an older branch is merged.
-- Keep a blank line between items, so two PRs that tick neighbouring items don't conflict.
+- When an item is done, tick its checkbox and add `Done in #<PR>.` in the same PR. Don't delete items: a deletion conflicts with any branch that edits a neighbouring item (resolving that conflict wrongly is how items 8, 9 and 11 came back), and the record of what was done is lost.
+- Keep a blank line between items, so two PRs that tick neighbouring items don't conflict. Two PRs that both add a new item at the end of the same section still conflict, and may pick the same number: renumber when resolving.
 - Item numbers stay stable. New items get the next free number, in the section they belong to.
 - Done items are removed only when they go into the release notes of a stable release (item 28).
 - If an item turns into a GitHub issue, replace its text with a link to the issue.
@@ -50,25 +50,25 @@ How to use this file:
 - [ ] **13. Remove duplication in NBP clients.** 25 methods repeat span → validate → log → GET → map → record. Mapping is shared since #18 (`NbpPayload.Map`); the rest needs one internal pipeline helper (after items 12 and 18).
     * No `await` in the three clients uses `ConfigureAwait(false)`.
     * The empty-array `NotFoundError` has no status code, unlike a real 404.
-    * Span names are inconsistent: `buy_sell_date`/`buy_sell_range` vs `get_date`/`get_range`.
+    * Span names are inconsistent: only date and range use a `get_` prefix (`get_date`, `get_range` vs `latest`, `today`, `top_count`), and the buy/sell variants drop it (`buy_sell_date`, `buy_sell_range`).
 
 - [ ] **14. Client construction** ([ADR-0007](adr/0007-client-api-and-extensibility.md)): the default constructor `new NbpGoldPriceClient(httpClient)`; `NbpOptions` and `INbpUrlBuilderFactory` optional; remove the static cache in `NbpUrlBuilderFactory`.
     * Remove `ConfigureForNbpApi`: it mutates a caller-owned `HttpClient` and is a second way to configure the client. Options go to the constructor; its checks move to `NbpOptions` validation.
     * Base URL: `NbpOptions.ApiUrl`, then `HttpClient.BaseAddress`, then `NbpOptions.DefaultApiUrl`. Today a missing `BaseAddress` makes `HttpClient` throw `InvalidOperationException`, which escapes the result.
     * `NbpOptions.Timeout` becomes optional; when unset, the `HttpClient`'s own timeout applies (.NET default 100 s).
-    * Tests assert the static cache (`NbpUrlBuilderFactoryTest` L91, L105, L164, L180, L210), and the constructor tests read private fields.
+    * `NbpUrlBuilderFactoryTest` asserts the static cache (`*_ReturnsSameCachedInstance`, `GetTableBuilder_SameTableOnDifferentFactoryInstances_*`), and the constructor tests read private fields.
 
 - [ ] **15. DI package** `OpenUrzednik.Nbp.DependencyInjection` ([ADR-0004](adr/0004-dependency-policy.md)): `AddOpenUrzednikNbp()`, typed clients, options validation.
     * Resilience follows the .NET standard: `AddOpenUrzednikNbp()` returns the `IHttpClientBuilder`, and the app opts in with `.AddStandardResilienceHandler()`. One handler, not stacked.
     * Polly's rejections (`TimeoutRejectedException`, circuit breaker, rate limiter) must be converted into errors, or they escape the result.
-    * Version mismatch: `Microsoft.Extensions.DependencyInjection.Abstractions` is 10.0.0, the other `Microsoft.Extensions.*` packages are 10.0.10.
+    * Version mismatch: `Microsoft.Extensions.DependencyInjection.Abstractions` is 10.0.0, while `Logging.Abstractions`, `Http` and `Options` are 10.0.10.
 
 - [ ] **16. Telemetry adapters** ([ADR-0003](adr/0003-telemetry-abstractions.md)): `OpenUrzednik.Extensions.Logging` (`ILogger`) and `OpenUrzednik.Diagnostics` (`ActivitySource`). The core packages keep the custom interfaces, so they need no dependencies on .NET Framework 4.8.
     * Rename tags per ADR-0003: `http.status_code` → `http.response.status_code`, `http.path` → `url.path`.
     * Decide the logger category per client. The abstraction has no `ActivityKind`.
 
 - [ ] **17. netstandard2.0 target** ([ADR-0005](adr/0005-target-frameworks.md)): `DateTime` instead of `DateOnly` on that target, polyfills, `System.Text.Json` and `Microsoft.Bcl.TimeProvider` only for it, plus a .NET Framework test job.
-    * Blockers: ~45 `DateOnly` sites, 29 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, and ranges/`EndsWith(char)` in `NbpUrlBuilder` and `ConfigureForNbpApi`.
+    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, and ranges/`EndsWith(char)` in `NbpUrlBuilder` and `ConfigureForNbpApi`.
 
 - [ ] **18. Result API ergonomics:** `Map`/`Bind`/`Match`/`TryGetValue`, and an `Error` property on `OpenUrzednikException`.
     * `EnsureSuccess` throws `AggregateException` for several errors, against ADR-0002. Several errors come only from validation, so throw one `ValidationException` carrying all of them.
