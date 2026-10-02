@@ -4,6 +4,7 @@ using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Currency;
+using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
@@ -15,107 +16,82 @@ namespace OpenUrzednik.Nbp.Tests.Currency;
 public partial class NbpCurrencyExchangeRateClientTest
 {
     [Fact]
-    public void Ctor_4Args_NullHttpClient_ThrowArgumentNullException()
+    public void Ctor_HttpClientOnly_NullHttpClient_ThrowsArgumentNullException()
     {
-        // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(null!, urlBuilderFactory, null, null))
+        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(null!))
             .ParamName.ShouldBe("httpClient");
     }
 
     [Fact]
-    public void Ctor_4Args_NullUrlBuilderFactory_ThrowArgumentNullException()
+    public void Ctor_AllArgs_NullHttpClient_ThrowsArgumentNullException()
     {
-        // Arrange
-        using var httpClient = new HttpClient();
-
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(httpClient, null!, null, null))
-            .ParamName.ShouldBe("urlBuilderFactory");
-    }
-
-    [Fact]
-    public void Ctor_5Args_NullHttpClient_ThrowArgumentNullException()
-    {
-        // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        var timeProvider = new FakeTimeProvider();
-
-        // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(null!, urlBuilderFactory, timeProvider))
+        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(null!, new NbpOptions(), Substitute.For<INbpUrlBuilderFactory>(), new FakeTimeProvider()))
             .ParamName.ShouldBe("httpClient");
     }
 
     [Fact]
-    public void Ctor_5Args_NullUrlBuilderFactory_ThrowArgumentNullException()
+    public void Ctor_HttpClientOnly_UsesDefaults()
     {
         // Arrange
-        using var httpClient = new HttpClient();
-        var timeProvider = new FakeTimeProvider();
-
-        // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(httpClient, null!, timeProvider))
-            .ParamName.ShouldBe("urlBuilderFactory");
-    }
-
-    [Fact]
-    public void Ctor_5Args_NullTimeProvider_ThrowArgumentNullException()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-
-        // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(httpClient, urlBuilderFactory, null!, null, null))
-            .ParamName.ShouldBe("timeProvider");
-    }
-
-    [Fact]
-    public void Ctor_4Args_UsesSystemTimeProvider()
-    {
-        // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         using var httpClient = new HttpClient();
 
         // Act
-        var sut = new NbpCurrencyExchangeRateClient(httpClient, urlBuilderFactory, null, null);
+        var sut = new NbpCurrencyExchangeRateClient(httpClient);
 
         // Assert
         sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(TimeProvider.System);
-    }
-
-    [Fact]
-    public void Ctor_4Args_UsesNullLoggerAndTraceSource()
-    {
-        // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        using var httpClient = new HttpClient();
-
-        // Act
-        var sut = new NbpCurrencyExchangeRateClient(httpClient, urlBuilderFactory, null, null);
-
-        // Assert
         var telemetryProvider = sut.GetPrivateField<NbpTelemetryProvider>("_telemetryProvider");
         telemetryProvider.Logger.ShouldBeSameAs(NullOpenUrzednikLogger.Instance);
         telemetryProvider.Tracer.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
+        sut.GetPrivateField<INbpUrlBuilderFactory>("_urlBuilderFactory").ShouldBeOfType<NbpUrlBuilderFactory>();
     }
 
     [Fact]
-    public void Ctor_5Args_UsesNullLoggerAndTraceSource()
+    public void Ctor_CustomComponents_UsesThem()
     {
         // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         using var httpClient = new HttpClient();
+        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         var timeProvider = new FakeTimeProvider();
+        var logger = Substitute.For<IOpenUrzednikLogger>();
+        var traceSource = Substitute.For<IOpenUrzednikTraceSource>();
 
         // Act
-        var sut = new NbpCurrencyExchangeRateClient(httpClient, urlBuilderFactory, timeProvider, null, null);
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions(), urlBuilderFactory, timeProvider, logger, traceSource);
 
         // Assert
+        sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(timeProvider);
         var telemetryProvider = sut.GetPrivateField<NbpTelemetryProvider>("_telemetryProvider");
-        telemetryProvider.Logger.ShouldBeSameAs(NullOpenUrzednikLogger.Instance);
-        telemetryProvider.Tracer.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
+        telemetryProvider.Logger.ShouldBeSameAs(logger);
+        telemetryProvider.Tracer.ShouldBeSameAs(traceSource);
+        sut.GetPrivateField<INbpUrlBuilderFactory>("_urlBuilderFactory").ShouldBeSameAs(urlBuilderFactory);
+    }
+
+    [Fact]
+    public void Ctor_InvalidOptions_ThrowsArgumentException()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+
+        // Act && Assert
+        Should.Throw<ArgumentException>(() => new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions { ApiUrl = "http://api.nbp.pl/api/" }))
+            .ParamName.ShouldBe("options");
+    }
+
+    [Fact]
+    public void Ctor_Always_LeavesHttpClientUnchanged()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var timeout = httpClient.Timeout;
+
+        // Act
+        _ = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions { ApiUrl = "https://proxy.example.com/", Timeout = TimeSpan.FromSeconds(5) });
+
+        // Assert
+        httpClient.BaseAddress.ShouldBeNull();
+        httpClient.Timeout.ShouldBe(timeout);
     }
 }

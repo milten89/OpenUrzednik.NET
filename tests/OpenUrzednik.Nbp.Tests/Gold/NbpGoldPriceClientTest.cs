@@ -30,7 +30,7 @@ public partial class NbpGoldPriceClientTest
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         urlBuilderFactory.GetGoldBuilder().Returns(urlBuilder);
 
-        return new NbpGoldPriceClient(httpClient, urlBuilderFactory, timeProvider ?? TestClock.FarFuture(), logger, tracer);
+        return new NbpGoldPriceClient(httpClient, urlBuilderFactory: urlBuilderFactory, timeProvider: timeProvider ?? TestClock.FarFuture(), logger: logger, traceSource: tracer);
     }
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, GoldPriceDto[] dtos)

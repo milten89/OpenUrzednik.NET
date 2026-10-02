@@ -14,16 +14,16 @@ using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
-using OpenUrzednik.Nbp.Extensions;
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.TestCommon;
 using OpenUrzednik.TestCommon.Extensions;
 
 using Shouldly;
 
-namespace OpenUrzednik.Nbp.Tests.Extensions;
+namespace OpenUrzednik.Nbp.Tests.Common;
 
-public partial class HttpClientExtensionsTest
+public partial class NbpConnectionTest
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -35,54 +35,54 @@ public partial class HttpClientExtensionsTest
     private readonly NbpTelemetryProvider _telemetryProvider = new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
 
     [Fact]
-    public async Task GetNbpAsync_NullHttpClient_ThrowsArgumentNullException()
+    public async Task GetAsync_NullHttpClient_ThrowsArgumentNullException()
     {
         // Arrange
         HttpClient httpClient = null!;
 
         // Act && Assert
-        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync("", TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken)))
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync("", TypeInfo, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("httpClient");
     }
 
     [Fact]
-    public async Task GetNbpAsync_NullRelativePath_ThrowsArgumentNullException()
+    public async Task GetAsync_NullRelativePath_ThrowsArgumentNullException()
     {
         // Arrange
         using var httpClient = CreateHttpClient(new Faker().WithConstantSeed(), new HttpResponseMessage(HttpStatusCode.OK));
 
         // Act && Assert
-        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync(null!, TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken)))
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(null!, TypeInfo, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("relativePath");
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public async Task GetNbpAsync_EmptyOrWhiteSpaceRelativePath_ThrowsArgumentException(string relativePath)
+    public async Task GetAsync_EmptyOrWhiteSpaceRelativePath_ThrowsArgumentException(string relativePath)
     {
         // Arrange
         using var httpClient = CreateHttpClient(new Faker().WithConstantSeed(), new HttpResponseMessage(HttpStatusCode.OK));
 
         // Act && Assert
-        (await Should.ThrowAsync<ArgumentException>(async () => await httpClient.GetNbpAsync(relativePath, TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken)))
+        (await Should.ThrowAsync<ArgumentException>(async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("relativePath");
     }
 
     [Fact]
-    public async Task GetNbpAsync_NullTypeInfo_ThrowsArgumentNullException()
+    public async Task GetAsync_NullTypeInfo_ThrowsArgumentNullException()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK));
 
         // Act && Assert
-        (await Should.ThrowAsync<ArgumentNullException>(async () => await httpClient.GetNbpAsync<TestDto>(faker.Internet.UrlRootedPath(), null!, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken)))
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync<TestDto>(faker.Internet.UrlRootedPath(), null!, TestContext.Current.CancellationToken)))
             .ParamName.ShouldBe("typeInfo");
     }
 
     [Fact]
-    public async Task GetNbpAsync_AlreadyCancelledToken_ThrowsOperationCanceledException()
+    public async Task GetAsync_AlreadyCancelledToken_ThrowsOperationCanceledException()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -91,11 +91,11 @@ public partial class HttpClientExtensionsTest
         await cts.CancelAsync();
 
         // Act && Assert
-        await Should.ThrowAsync<OperationCanceledException>(async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
     }
 
     [Fact]
-    public async Task GetNbpAsync_ValidRequest_ReturnDto()
+    public async Task GetAsync_ValidRequest_ReturnDto()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -103,7 +103,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto), out var handler);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         handler.Request.ShouldNotBeNull();
@@ -114,14 +114,14 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_NotFoundStatusCode_ReturnFailureWithNotFoundError()
+    public async Task GetAsync_NotFoundStatusCode_ReturnFailureWithNotFoundError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound));
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -130,7 +130,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_TooManyRequestsWithRetryAfterSeconds_ReturnsRateLimitErrorWithDelta()
+    public async Task GetAsync_TooManyRequestsWithRetryAfterSeconds_ReturnsRateLimitErrorWithDelta()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -140,7 +140,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -150,7 +150,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_TooManyRequestsWithRetryAfterDateWithResponseDate_ReturnsRateLimitErrorWithDate()
+    public async Task GetAsync_TooManyRequestsWithRetryAfterDateWithResponseDate_ReturnsRateLimitErrorWithDate()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -163,7 +163,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -173,7 +173,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_TooManyRequestsWithRetryAfterDateWithoutResponseDate_ReturnsRateLimitErrorWithDate()
+    public async Task GetAsync_TooManyRequestsWithRetryAfterDateWithoutResponseDate_ReturnsRateLimitErrorWithDate()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -186,7 +186,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -196,7 +196,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_TooManyRequestsWithoutRetryAfterDate_ReturnsRateLimitErrorWithoutDelay()
+    public async Task GetAsync_TooManyRequestsWithoutRetryAfterDate_ReturnsRateLimitErrorWithoutDelay()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -204,7 +204,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -225,14 +225,14 @@ public partial class HttpClientExtensionsTest
     [InlineData(HttpStatusCode.GatewayTimeout, ServiceUnavailableError.ErrorCode)]
     [InlineData(HttpStatusCode.Conflict, UnknownError.ErrorCode)]
     [InlineData(HttpStatusCode.MultipleChoices, UnknownError.ErrorCode)]
-    public async Task GetNbpAsync_UnsuccessfulStatusCode_ReturnsMappedErrorWithStatusCode(HttpStatusCode statusCode, string expectedErrorCode)
+    public async Task GetAsync_UnsuccessfulStatusCode_ReturnsMappedErrorWithStatusCode(HttpStatusCode statusCode, string expectedErrorCode)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(statusCode));
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -242,7 +242,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_BadRequestWithServerMessage_ReturnsBadRequestErrorWithServerMessage()
+    public async Task GetAsync_BadRequestWithServerMessage_ReturnsBadRequestErrorWithServerMessage()
     {
         // Arrange
         const string serverMessage = "400 BadRequest - Błędny zakres dat / Invalid date range";
@@ -254,7 +254,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -263,7 +263,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_BadRequestWithoutBody_ReturnsBadRequestErrorWithoutServerMessage()
+    public async Task GetAsync_BadRequestWithoutBody_ReturnsBadRequestErrorWithoutServerMessage()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -271,7 +271,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.BadRequest));
 
         // Act
-        var result = await httpClient.GetNbpAsync(relativePath, TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -281,7 +281,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_BadRequestWithLongBody_TruncatesServerMessage()
+    public async Task GetAsync_BadRequestWithLongBody_TruncatesServerMessage()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -290,7 +290,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -300,7 +300,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_BadRequestWithUnreadableBody_ReturnsBadRequestErrorAndLogsDebug()
+    public async Task GetAsync_BadRequestWithUnreadableBody_ReturnsBadRequestErrorAndLogsDebug()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -313,7 +313,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -323,7 +323,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_SuccessfulResponseWithNullJsonContent_ReturnsFailureWithUnknownError()
+    public async Task GetAsync_SuccessfulResponseWithNullJsonContent_ReturnsFailureWithUnknownError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -335,7 +335,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
@@ -344,7 +344,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_SuccessfulResponseWithInvalidJson_ReturnsFailureWithSerializationError()
+    public async Task GetAsync_SuccessfulResponseWithInvalidJson_ReturnsFailureWithSerializationError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -355,7 +355,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeFalse();
@@ -364,7 +364,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_HttpClientThrowsHttpRequestException_ReturnsServiceUnavailableErrorAndRecordsException()
+    public async Task GetAsync_HttpClientThrowsHttpRequestException_ReturnsServiceUnavailableErrorAndRecordsException()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -374,7 +374,7 @@ public partial class HttpClientExtensionsTest
         var (telemetryProvider, logger, span) = CreateTelemetrySubstitutes();
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -387,7 +387,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_HttpClientTimeoutElapses_ReturnsRequestTimeoutError()
+    public async Task GetAsync_HttpClientTimeoutElapses_ReturnsRequestTimeoutError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -401,7 +401,7 @@ public partial class HttpClientExtensionsTest
         var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -412,7 +412,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_BodyReadExceedsTimeout_ReturnsRequestTimeoutError()
+    public async Task GetAsync_BodyReadExceedsTimeout_ReturnsRequestTimeoutError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -421,7 +421,7 @@ public partial class HttpClientExtensionsTest
         httpClient.Timeout = TimeSpan.FromMilliseconds(50);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -429,7 +429,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_CancelledDuringSendAsync_DoesNotRecordExceptionOrLog()
+    public async Task GetAsync_CancelledDuringSendAsync_DoesNotRecordExceptionOrLog()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -450,7 +450,7 @@ public partial class HttpClientExtensionsTest
 
         // Act
         await Should.ThrowAsync<OperationCanceledException>(
-            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, cts.Token));
+            async () => await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
 
         // Assert
         span.DidNotReceive().RecordException(Arg.Any<Exception>());
@@ -458,7 +458,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_CancelledDuringContentRead_DoesNotLogOrRecordAsError()
+    public async Task GetAsync_CancelledDuringContentRead_DoesNotLogOrRecordAsError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -477,7 +477,7 @@ public partial class HttpClientExtensionsTest
 
         // Act
         await Should.ThrowAsync<OperationCanceledException>(
-            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, cts.Token));
+            async () => await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
 
         // Assert
         span.DidNotReceive().RecordException(Arg.Any<Exception>());
@@ -485,7 +485,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_ConnectionFailsDuringRead_ReturnsServiceUnavailableError()
+    public async Task GetAsync_ConnectionFailsDuringRead_ReturnsServiceUnavailableError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -498,7 +498,7 @@ public partial class HttpClientExtensionsTest
         var (telemetryProvider, logger, span) = CreateTelemetrySubstitutes();
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -511,7 +511,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_ValidRequest_SetsSpanTags()
+    public async Task GetAsync_ValidRequest_SetsSpanTags()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -521,7 +521,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto));
 
         // Act
-        await httpClient.GetNbpAsync(relativePath, TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         span.Received(1).SetTag("http.path", relativePath);
@@ -529,7 +529,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_NotFoundStatusCode_LogsDebugWithPath()
+    public async Task GetAsync_NotFoundStatusCode_LogsDebugWithPath()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -538,14 +538,14 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound));
 
         // Act
-        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "NBP resource not found: {path}.", "path", Arg.Any<string>());
     }
 
     [Fact]
-    public async Task GetNbpAsync_TooManyRequestsWithDelay_LogsWarningWithDelay()
+    public async Task GetAsync_TooManyRequestsWithDelay_LogsWarningWithDelay()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -557,14 +557,14 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit, retry after {delay}.", "delay", retryDelay);
     }
 
     [Fact]
-    public async Task GetNbpAsync_TooManyRequestsWithoutDelay_LogsWarningWithoutDelay()
+    public async Task GetAsync_TooManyRequestsWithoutDelay_LogsWarningWithoutDelay()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -573,14 +573,14 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests));
 
         // Act
-        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit.");
     }
 
     [Fact]
-    public async Task GetNbpAsync_TooManyRequests_SetsSpanStatusErrorRateLimited()
+    public async Task GetAsync_TooManyRequests_SetsSpanStatusErrorRateLimited()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -588,7 +588,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests));
 
         // Act
-        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
@@ -601,7 +601,7 @@ public partial class HttpClientExtensionsTest
     [InlineData(HttpStatusCode.InternalServerError, "Service unavailable")]
     [InlineData(HttpStatusCode.ServiceUnavailable, "Service unavailable")]
     [InlineData(HttpStatusCode.Conflict, "Unexpected status")]
-    public async Task GetNbpAsync_UnsuccessfulStatusCode_LogsWarningAndSetsSpanStatusError(HttpStatusCode statusCode, string expectedSpanStatus)
+    public async Task GetAsync_UnsuccessfulStatusCode_LogsWarningAndSetsSpanStatusError(HttpStatusCode statusCode, string expectedSpanStatus)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -609,7 +609,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(statusCode));
 
         // Act
-        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         logger.ReceivedCalls()
@@ -619,7 +619,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_ServerErrorStatusCode_LogsWarningWithStatus()
+    public async Task GetAsync_ServerErrorStatusCode_LogsWarningWithStatus()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -627,14 +627,14 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.BadGateway));
 
         // Act
-        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP API is unavailable, status {status}", "status", (int)HttpStatusCode.BadGateway);
     }
 
     [Fact]
-    public async Task GetNbpAsync_InvalidJson_LogsErrorRecordsExceptionAndSetsSpanStatus()
+    public async Task GetAsync_InvalidJson_LogsErrorRecordsExceptionAndSetsSpanStatus()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -647,7 +647,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, response);
 
         // Act
-        await httpClient.GetNbpAsync(relativePath, TypeInfo, telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         logger.Received(1).Log(OpenUrzednikLogLevel.Error, Arg.Any<JsonException>(), "Failed to deserialize NBP response from {path}", "path", relativePath);
@@ -662,7 +662,7 @@ public partial class HttpClientExtensionsTest
     [InlineData(HttpStatusCode.NotFound, "")]
     [InlineData(HttpStatusCode.TooManyRequests, "")]
     [InlineData(HttpStatusCode.InternalServerError, "")]
-    public async Task GetNbpAsync_AnyResponse_DisposesResponse(HttpStatusCode statusCode, string body)
+    public async Task GetAsync_AnyResponse_DisposesResponse(HttpStatusCode statusCode, string body)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -670,14 +670,14 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(statusCode) { Content = content });
 
         // Act
-        await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         content.IsDisposed.ShouldBeTrue();
     }
 
     [Fact]
-    public async Task GetNbpAsync_UnknownCharset_ReturnsSerializationError()
+    public async Task GetAsync_UnknownCharset_ReturnsSerializationError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -686,7 +686,7 @@ public partial class HttpClientExtensionsTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -694,7 +694,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_BadRequestBodyReadTimesOut_ReturnsBadRequestErrorWithoutServerMessage()
+    public async Task GetAsync_BadRequestBodyReadTimesOut_ReturnsBadRequestErrorWithoutServerMessage()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -703,7 +703,7 @@ public partial class HttpClientExtensionsTest
         httpClient.Timeout = TimeSpan.FromMilliseconds(50);
 
         // Act
-        var result = await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
@@ -711,7 +711,7 @@ public partial class HttpClientExtensionsTest
     }
 
     [Fact]
-    public async Task GetNbpAsync_CallerCancelsDuringBadRequestBodyRead_ThrowsOperationCanceledException()
+    public async Task GetAsync_CallerCancelsDuringBadRequestBodyRead_ThrowsOperationCanceledException()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -721,8 +721,12 @@ public partial class HttpClientExtensionsTest
 
         // Act && Assert
         await Should.ThrowAsync<OperationCanceledException>(
-            async () => await httpClient.GetNbpAsync(faker.Internet.UrlRootedPath(), TypeInfo, _telemetryProvider, _timeProvider, cts.Token));
+            async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
     }
+
+    // The connection resolves its base address from the HttpClient, as NbpConnection.Create does when no ApiUrl is set.
+    private static NbpConnection CreateConnection(HttpClient httpClient, NbpTelemetryProvider telemetryProvider, TimeProvider timeProvider, TimeSpan? timeout = null)
+        => new(httpClient, httpClient?.BaseAddress ?? new Uri(Options.NbpOptions.DefaultApiUrl), timeout, telemetryProvider, timeProvider);
 
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
         => CreateHttpClient(faker, response, out _);

@@ -4,6 +4,7 @@ using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
@@ -15,122 +16,82 @@ namespace OpenUrzednik.Nbp.Tests.Gold;
 public partial class NbpGoldPriceClientTest
 {
     [Fact]
-    public void Ctor_4Args_NullHttpClient_ThrowArgumentNullException()
+    public void Ctor_HttpClientOnly_NullHttpClient_ThrowsArgumentNullException()
     {
-        // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(null!, urlBuilderFactory, null, null))
+        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(null!))
             .ParamName.ShouldBe("httpClient");
     }
 
     [Fact]
-    public void Ctor_4Args_NullUrlBuilderFactory_ThrowArgumentNullException()
+    public void Ctor_AllArgs_NullHttpClient_ThrowsArgumentNullException()
     {
-        // Arrange
-        using var httpClient = new HttpClient();
-
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(httpClient, null!, null, null))
-            .ParamName.ShouldBe("urlBuilderFactory");
-    }
-
-    [Fact]
-    public void Ctor_5Args_NullHttpClient_ThrowArgumentNullException()
-    {
-        // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        var timeProvider = new FakeTimeProvider();
-
-        // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(null!, urlBuilderFactory, timeProvider, null, null))
+        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(null!, new NbpOptions(), Substitute.For<INbpUrlBuilderFactory>(), new FakeTimeProvider()))
             .ParamName.ShouldBe("httpClient");
     }
 
     [Fact]
-    public void Ctor_5Args_NullUrlBuilderFactory_ThrowArgumentNullException()
+    public void Ctor_HttpClientOnly_UsesDefaults()
     {
         // Arrange
         using var httpClient = new HttpClient();
-        var timeProvider = new FakeTimeProvider();
-
-        // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(httpClient, null!, timeProvider, null, null))
-            .ParamName.ShouldBe("urlBuilderFactory");
-    }
-
-    [Fact]
-    public void Ctor_5Args_NullTimeProvider_ThrowArgumentNullException()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-
-        // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(httpClient, urlBuilderFactory, null!, null, null))
-            .ParamName.ShouldBe("timeProvider");
-    }
-
-    [Fact]
-    public void Ctor_ValidParameters_GetSingleInstanceOfGoldBuilder()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        var timeProvider = new FakeTimeProvider();
 
         // Act
-        new NbpGoldPriceClient(httpClient, urlBuilderFactory, timeProvider);
+        var sut = new NbpGoldPriceClient(httpClient);
 
         // Assert
+        sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(TimeProvider.System);
+        var telemetryProvider = sut.GetPrivateField<NbpTelemetryProvider>("_telemetryProvider");
+        telemetryProvider.Logger.ShouldBeSameAs(NullOpenUrzednikLogger.Instance);
+        telemetryProvider.Tracer.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
+        sut.GetPrivateField<INbpUrlBuilder>("_urlBuilder").ShouldBeOfType<NbpUrlBuilder>();
+    }
+
+    [Fact]
+    public void Ctor_CustomComponents_UsesThem()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
+        var timeProvider = new FakeTimeProvider();
+        var logger = Substitute.For<IOpenUrzednikLogger>();
+        var traceSource = Substitute.For<IOpenUrzednikTraceSource>();
+
+        // Act
+        var sut = new NbpGoldPriceClient(httpClient, new NbpOptions(), urlBuilderFactory, timeProvider, logger, traceSource);
+
+        // Assert
+        sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(timeProvider);
+        var telemetryProvider = sut.GetPrivateField<NbpTelemetryProvider>("_telemetryProvider");
+        telemetryProvider.Logger.ShouldBeSameAs(logger);
+        telemetryProvider.Tracer.ShouldBeSameAs(traceSource);
         urlBuilderFactory.Received(1).GetGoldBuilder();
     }
 
     [Fact]
-    public void Ctor_4Args_UsesSystemTimeProvider()
+    public void Ctor_InvalidOptions_ThrowsArgumentException()
     {
         // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         using var httpClient = new HttpClient();
 
-        // Act
-        var sut = new NbpGoldPriceClient(httpClient, urlBuilderFactory, null, null);
-
-        // Assert
-        sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(TimeProvider.System);
+        // Act && Assert
+        Should.Throw<ArgumentException>(() => new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = "http://api.nbp.pl/api/" }))
+            .ParamName.ShouldBe("options");
     }
 
     [Fact]
-    public void Ctor_4Args_UsesNullLoggerAndTraceSource()
+    public void Ctor_Always_LeavesHttpClientUnchanged()
     {
         // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         using var httpClient = new HttpClient();
+        var timeout = httpClient.Timeout;
 
         // Act
-        var sut = new NbpGoldPriceClient(httpClient, urlBuilderFactory, null, null);
+        _ = new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = "https://proxy.example.com/", Timeout = TimeSpan.FromSeconds(5) });
 
         // Assert
-        var telemetryProvider = sut.GetPrivateField<NbpTelemetryProvider>("_telemetryProvider");
-        telemetryProvider.Logger.ShouldBeSameAs(NullOpenUrzednikLogger.Instance);
-        telemetryProvider.Tracer.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
-    }
-
-    [Fact]
-    public void Ctor_5Args_UsesNullLoggerAndTraceSource()
-    {
-        // Arrange
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        using var httpClient = new HttpClient();
-        var timeProvider = new FakeTimeProvider();
-
-        // Act
-        var sut = new NbpGoldPriceClient(httpClient, urlBuilderFactory, timeProvider, null, null);
-
-        // Assert
-        var telemetryProvider = sut.GetPrivateField<NbpTelemetryProvider>("_telemetryProvider");
-        telemetryProvider.Logger.ShouldBeSameAs(NullOpenUrzednikLogger.Instance);
-        telemetryProvider.Tracer.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
+        httpClient.BaseAddress.ShouldBeNull();
+        httpClient.Timeout.ShouldBe(timeout);
     }
 }

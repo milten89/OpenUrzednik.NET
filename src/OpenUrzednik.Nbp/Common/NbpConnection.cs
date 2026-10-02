@@ -12,65 +12,99 @@ using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Telemetry;
 
-namespace OpenUrzednik.Nbp.Extensions;
+namespace OpenUrzednik.Nbp.Common;
 
-public static class HttpClientExtensions
+/// <summary>
+/// Sends requests to the NBP API and turns every response into an <see cref="OpenUrzednikResult{TValue}"/> (ADR-0002).
+/// Requests use absolute URIs built from the resolved base address, so the caller's <see cref="HttpClient"/> is never changed.
+/// </summary>
+internal sealed class NbpConnection
 {
     private const int MaxServerMessageLength = 500;
 
-    public static HttpClient ConfigureForNbpApi(this HttpClient httpClient, NbpOptions options)
+    private readonly HttpClient _httpClient;
+    private readonly Uri _baseAddress;
+    private readonly TimeSpan? _timeout;
+    private readonly NbpTelemetryProvider _telemetryProvider;
+    private readonly TimeProvider _timeProvider;
+
+    internal NbpConnection(HttpClient httpClient, Uri baseAddress, TimeSpan? timeout, NbpTelemetryProvider telemetryProvider, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
-        ArgumentNullException.ThrowIfNull(options);
-
-        if (string.IsNullOrWhiteSpace(options.ApiUrl))
-            throw new ArgumentException("API url must be provided", nameof(options));
-
-        var url = options.ApiUrl[^1] == '/' ? options.ApiUrl : $"{options.ApiUrl}/";
-
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
-            throw new ArgumentException($"Invalid API url: {url}", nameof(options));
-
-        if (uri.Scheme == Uri.UriSchemeHttp)
-            throw new ArgumentException($"Invalid API url scheme: {url}. NBP API no longer supports HTTP", nameof(options));
-
-        if (uri.Scheme != Uri.UriSchemeHttps)
-            throw new ArgumentException($"Invalid API url scheme: {url}", nameof(options));
-
-        if (options.Timeout != Timeout.InfiniteTimeSpan &&
-            options.Timeout <= TimeSpan.Zero)
-            throw new ArgumentException($"Invalid timeout value: {options.Timeout}", nameof(options));
-
-        httpClient.BaseAddress = uri;
-        httpClient.Timeout = options.Timeout;
-
-        return httpClient;
-    }
-
-    internal static async Task<OpenUrzednikResult<TDto>> GetNbpAsync<TDto>(this HttpClient httpClient, string relativePath, JsonTypeInfo<TDto> typeInfo, NbpTelemetryProvider telemetryProvider, TimeProvider timeProvider, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(httpClient);
-        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
-        ArgumentNullException.ThrowIfNull(typeInfo);
+        ArgumentNullException.ThrowIfNull(baseAddress);
         ArgumentNullException.ThrowIfNull(telemetryProvider);
         ArgumentNullException.ThrowIfNull(timeProvider);
+
+        _httpClient = httpClient;
+        _baseAddress = baseAddress;
+        _timeout = timeout;
+        _telemetryProvider = telemetryProvider;
+        _timeProvider = timeProvider;
+    }
+
+    internal Uri BaseAddress => _baseAddress;
+
+    /// <summary>
+    /// The request deadline: <see cref="NbpOptions.Timeout"/> when set, otherwise <see cref="HttpClient.Timeout"/>.
+    /// It also covers reading the body, which <see cref="HttpClient.Timeout"/> doesn't with <see cref="HttpCompletionOption.ResponseHeadersRead"/>.
+    /// </summary>
+    internal TimeSpan? Timeout
+    {
+        get
+        {
+            var timeout = _timeout ?? _httpClient.Timeout;
+            return timeout == System.Threading.Timeout.InfiniteTimeSpan ? null : timeout;
+        }
+    }
+
+    /// <summary>
+    /// Creates the connection for a client: base address from <paramref name="options"/>, then
+    /// <see cref="HttpClient.BaseAddress"/>, then <see cref="NbpOptions.DefaultApiUrl"/>.
+    /// </summary>
+    /// <exception cref="ArgumentException">The options or the <see cref="HttpClient.BaseAddress"/> are invalid.</exception>
+    internal static NbpConnection Create(HttpClient httpClient, NbpOptions? options, NbpTelemetryProvider telemetryProvider, TimeProvider timeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(httpClient);
+
+        Uri baseAddress;
+        if (options?.ApiUrl is { } apiUrl)
+            baseAddress = NbpOptionsValidator.ParseApiUrl(apiUrl, nameof(options));
+        else if (httpClient.BaseAddress is { } clientBaseAddress)
+            baseAddress = NbpOptionsValidator.ParseApiUrl(clientBaseAddress.OriginalString, nameof(httpClient));
+        else
+            baseAddress = new Uri(NbpOptions.DefaultApiUrl);
+
+        NbpOptionsValidator.ValidateTimeout(options?.Timeout, nameof(options));
+
+        return new NbpConnection(httpClient, baseAddress, options?.Timeout, telemetryProvider, timeProvider);
+    }
+
+    internal async Task<OpenUrzednikResult<TDto>> GetAsync<TDto>(string relativePath, JsonTypeInfo<TDto> typeInfo, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        var httpClient = _httpClient;
+        var telemetryProvider = _telemetryProvider;
+        var timeProvider = _timeProvider;
+        var timeout = Timeout;
 
         cancellationToken.ThrowIfCancellationRequested();
 
         using var traceSpan = telemetryProvider.Tracer.StartSpan("nbp.http.get");
         traceSpan.SetTag("http.path", relativePath);
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, relativePath);
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseAddress, relativePath));
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
         // With ResponseHeadersRead, HttpClient.Timeout stops applying once the headers arrive,
-        // so the same deadline is applied to reading the body as well.
+        // so the deadline is applied to reading the body as well.
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        if (httpClient.Timeout != Timeout.InfiniteTimeSpan)
-            timeoutSource.CancelAfter(httpClient.Timeout);
+        if (timeout is { } deadline)
+            timeoutSource.CancelAfter(deadline);
         var requestToken = timeoutSource.Token;
 
-        var sendResult = await SendAsync(httpClient, request, relativePath, telemetryProvider, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+        var sendResult = await SendAsync(httpClient, request, relativePath, timeout, telemetryProvider, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
         if (sendResult.IsFailure)
             return OpenUrzednikResult.Failure(sendResult.Errors);
 
@@ -92,7 +126,7 @@ public static class HttpClientExtensions
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return TimeoutFailure(httpClient, relativePath, telemetryProvider, traceSpan, ex);
+            return TimeoutFailure(timeout, relativePath, telemetryProvider, traceSpan, ex);
         }
         catch (JsonException ex)
         {
@@ -119,7 +153,7 @@ public static class HttpClientExtensions
         }
     }
 
-    private static async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpClient httpClient, HttpRequestMessage request, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
+    private static async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpClient httpClient, HttpRequestMessage request, string relativePath, TimeSpan? timeout, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
     {
         try
         {
@@ -130,7 +164,7 @@ public static class HttpClientExtensions
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return TimeoutFailure(httpClient, relativePath, telemetryProvider, traceSpan, ex);
+            return TimeoutFailure(timeout, relativePath, telemetryProvider, traceSpan, ex);
         }
         catch (HttpRequestException ex)
         {
@@ -138,10 +172,9 @@ public static class HttpClientExtensions
         }
     }
 
-    // The caller's token is not cancelled, so the cancellation came from HttpClient.Timeout or the body-read deadline.
-    private static OpenUrzednikResult TimeoutFailure(HttpClient httpClient, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, OperationCanceledException exception)
+    // The caller's token is not cancelled, so the cancellation came from HttpClient.Timeout or the request deadline.
+    private static OpenUrzednikResult TimeoutFailure(TimeSpan? timeout, string relativePath, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan, OperationCanceledException exception)
     {
-        TimeSpan? timeout = httpClient.Timeout == Timeout.InfiniteTimeSpan ? null : httpClient.Timeout;
         telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "NBP request to {path} timed out after {timeout}", "path", relativePath, "timeout", timeout);
         var error = new RequestTimeoutError(
             timeout is null

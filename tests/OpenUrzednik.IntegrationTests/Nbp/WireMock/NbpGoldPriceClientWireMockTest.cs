@@ -2,10 +2,8 @@ using System.Diagnostics;
 using System.Net;
 
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Options;
-using OpenUrzednik.Nbp.UrlBuilder;
 
 using Shouldly;
 
@@ -21,7 +19,6 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
     private const string BasePath = "/cenyzlota";
 
     private readonly WireMockServer _server = WireMockServer.Start(new WireMockServerSettings() { UseSSL = true });
-    private readonly NbpUrlBuilderFactory _urlBuilderFactory = new();
     private readonly List<HttpClient> _httpClients = new();
 
     private NbpGoldPriceClient CreateSut(TimeSpan? timeout = null)
@@ -30,13 +27,10 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
-        var httpClient = new HttpClient(handler).ConfigureForNbpApi(new NbpOptions
-        {
-            ApiUrl = _server.Urls[0],
-            Timeout = timeout ?? NbpOptions.DefaultTimeout
-        });
+        // A plain HttpClient: the base URL and timeout go to the client, the HttpClient isn't configured.
+        var httpClient = new HttpClient(handler);
         _httpClients.Add(httpClient);
-        return new NbpGoldPriceClient(httpClient, _urlBuilderFactory);
+        return new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = _server.Urls[0], Timeout = timeout });
     }
 
     [Fact]

@@ -30,7 +30,7 @@ public partial class NbpExchangeRateTableClientTest
         var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
         urlBuilderFactory.GetTableBuilder(table).Returns(urlBuilder);
 
-        return new NbpExchangeRateTableClient(httpClient, urlBuilderFactory, timeProvider ?? TestClock.FarFuture(), logger, tracer);
+        return new NbpExchangeRateTableClient(httpClient, urlBuilderFactory: urlBuilderFactory, timeProvider: timeProvider ?? TestClock.FarFuture(), logger: logger, traceSource: tracer);
     }
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, ExchangeRateTableDto[] dtos)

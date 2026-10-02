@@ -42,7 +42,7 @@ How to use this file:
 ## P2: Framework (implements accepted ADRs)
 
 - [ ] **12. `OpenUrzednik.Http` package** ([ADR-0006](adr/0006-shared-http-layer.md)): move the request executor out of NBP and migrate NBP to it.
-    * `GetNbpAsync` (`Nbp/Extensions/HttpClientExtensions.cs`) already implements the ADR-0002 behaviour: disposal, status mapping, timeouts, network errors and a bounded read of 400 error bodies.
+    * `NbpConnection.GetAsync` (`Nbp/Common/NbpConnection.cs`, since #28) already implements the ADR-0002 behaviour: disposal, status mapping, timeouts, network errors and a bounded read of 400 error bodies.
     * Missing: the provider-neutral package, and per-provider overrides (e.g. how a provider's error body becomes a message).
     * Unexpected exceptions no longer mark the `nbp.http.get` span as an error (#18 removed the catch-all). Fix it with try/finally, not `catch (Exception)`.
     * Typo in the `UnknownError` message: "NBP API return unknown status".
@@ -52,7 +52,7 @@ How to use this file:
     * The empty-array `NotFoundError` has no status code, unlike a real 404.
     * Span names are inconsistent: only date and range use a `get_` prefix (`get_date`, `get_range` vs `latest`, `today`, `top_count`), and the buy/sell variants drop it (`buy_sell_date`, `buy_sell_range`).
 
-- [ ] **14. Client construction** ([ADR-0007](adr/0007-client-api-and-extensibility.md)): the default constructor `new NbpGoldPriceClient(httpClient)`; `NbpOptions` and `INbpUrlBuilderFactory` optional; remove the static cache in `NbpUrlBuilderFactory`.
+- [x] **14. Client construction** ([ADR-0007](adr/0007-client-api-and-extensibility.md)): the default constructor `new NbpGoldPriceClient(httpClient)`; `NbpOptions` and `INbpUrlBuilderFactory` optional; remove the static cache in `NbpUrlBuilderFactory`. Done in #28.
     * Remove `ConfigureForNbpApi`: it mutates a caller-owned `HttpClient` and is a second way to configure the client. Options go to the constructor; its checks move to `NbpOptions` validation.
     * Base URL: `NbpOptions.ApiUrl`, then `HttpClient.BaseAddress`, then `NbpOptions.DefaultApiUrl`. Today a missing `BaseAddress` makes `HttpClient` throw `InvalidOperationException`, which escapes the result.
     * `NbpOptions.Timeout` becomes optional; when unset, the `HttpClient`'s own timeout applies (.NET default 100 s).
@@ -68,7 +68,7 @@ How to use this file:
     * Decide the logger category per client. The abstraction has no `ActivityKind`.
 
 - [ ] **17. netstandard2.0 target** ([ADR-0005](adr/0005-target-frameworks.md)): `DateTime` instead of `DateOnly` on that target, polyfills, `System.Text.Json` and `Microsoft.Bcl.TimeProvider` only for it, plus a .NET Framework test job.
-    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, and ranges/`EndsWith(char)` in `NbpUrlBuilder` and `ConfigureForNbpApi`.
+    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, and ranges/`EndsWith(char)` in `NbpUrlBuilder`.
 
 - [ ] **18. Result API ergonomics:** `Map`/`Bind`/`Match`/`TryGetValue`, and an `Error` property on `OpenUrzednikException`.
     * `EnsureSuccess` throws `AggregateException` for several errors, against ADR-0002. Several errors come only from validation, so throw one `ValidationException` carrying all of them.
