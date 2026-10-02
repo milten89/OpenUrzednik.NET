@@ -16,6 +16,7 @@ body:
         - OpenUrzednik.Extensions.Logging
         - OpenUrzednik.Diagnostics
         - OpenUrzednik.Nbp
+        - OpenUrzednik.Nbp.DependencyInjection
         - Inny / Other
     validations:
       required: true

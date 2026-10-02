@@ -62,19 +62,19 @@ How to use this file:
     * `NbpOptions.Timeout` becomes optional; when unset, the `HttpClient`'s own timeout applies (.NET default 100 s).
     * `NbpUrlBuilderFactoryTest` asserts the static cache (`*_ReturnsSameCachedInstance`, `GetTableBuilder_SameTableOnDifferentFactoryInstances_*`). The constructor tests still read private fields: moved to item 30.
 
-- [ ] **15. DI package** `OpenUrzednik.Nbp.DependencyInjection` ([ADR-0004](adr/0004-dependency-policy.md)): `AddOpenUrzednikNbp()`, typed clients, options validation.
+- [x] **15. DI package** `OpenUrzednik.Nbp.DependencyInjection` ([ADR-0004](adr/0004-dependency-policy.md)): `AddOpenUrzednikNbp()`, typed clients, options validation. Done in #34.
     * Resilience follows the .NET standard: `AddOpenUrzednikNbp()` returns the `IHttpClientBuilder`, and the app opts in with `.AddStandardResilienceHandler()`. One handler, not stacked.
     * Polly's rejections (`TimeoutRejectedException`, circuit breaker, rate limiter) must be converted into errors, or they escape the result.
     * Register the clients with factory lambdas (`AddHttpClient<T>((http, sp) => new T(http, ...))`): a bare `AddHttpClient<T>()` fails, because `ActivatorUtilities` finds two public constructors that accept an `HttpClient` (ADR-0007 asks for both).
-    * Version mismatch: `Microsoft.Extensions.DependencyInjection.Abstractions` is 10.0.0, while `Logging.Abstractions`, `Http` and `Options` are 10.0.10.
-    * Decide which `Microsoft.Extensions.*` major the integration packages reference per target. `OpenUrzednik.Extensions.Logging` (#33) references `Logging.Abstractions` 10.0.10 on every target, which moves an ASP.NET Core 8 app to 10.x `DiagnosticSource` and `DependencyInjection.Abstractions`. Either use the lowest supported version per TFM, or record in ADR-0004 that integration packages track the latest major.
+    * Version mismatch: `Microsoft.Extensions.DependencyInjection.Abstractions` is 10.0.0, while `Logging.Abstractions`, `Http` and `Options` are 10.0.10. Aligned to 10.0.10.
+    * Which `Microsoft.Extensions.*` major to reference per target moved to item 35.
 
 - [x] **16. Telemetry adapters** ([ADR-0003](adr/0003-telemetry-abstractions.md)): `OpenUrzednik.Extensions.Logging` (`ILogger`) and `OpenUrzednik.Diagnostics` (`ActivitySource`). The core packages keep the custom interfaces, so they need no dependencies on .NET Framework 4.8. Done in #33.
     * Rename tags per ADR-0003: `http.status_code` → `http.response.status_code`, `http.path` → `url.path`. Done; `http.request.method` added, and `url.path` is now the absolute path (`/api/cenyzlota`) instead of the relative one.
     * Decide the logger category per client. The abstraction has no `ActivityKind`. Decided: the category is the client's full type name (as `ILogger<T>`), and every span is `Internal`, because `HttpClient`'s own instrumentation creates the client span.
 
 - [ ] **17. netstandard2.0 target** ([ADR-0005](adr/0005-target-frameworks.md)): `DateTime` instead of `DateOnly` on that target, polyfills, `System.Text.Json` and `Microsoft.Bcl.TimeProvider` only for it, plus a .NET Framework test job.
-    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, `[MaybeNullWhen]` and `string.Create(IFormatProvider, …)` in Core, and ranges/`EndsWith(char)` in `NbpUrlBuilder`. The adapters add `ThrowIfNegative`/`ThrowIfGreaterThan`/`ThrowIfNullOrWhiteSpace`, span `string.Concat`, `StringBuilder.Append(ReadOnlySpan<char>)` and span ranges in `LogValues`, and `OpenUrzednik.Diagnostics` needs a netstandard2.0-only `System.Diagnostics.DiagnosticSource` reference.
+    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, `[MaybeNullWhen]` and `string.Create(IFormatProvider, …)` in Core, and ranges/`EndsWith(char)` in `NbpUrlBuilder`. The adapters add `ThrowIfNegative`/`ThrowIfGreaterThan`/`ThrowIfNullOrWhiteSpace`, span `string.Concat`, `StringBuilder.Append(ReadOnlySpan<char>)` and span ranges in `LogValues`, and `OpenUrzednik.Diagnostics` needs a netstandard2.0-only `System.Diagnostics.DiagnosticSource` reference. On .NET Framework, `HttpClient.Timeout` has no inner `TimeoutException`, so `RestRequestExecutor.ElapsedLimit` (#34) reports such a timeout without a limit; consider measuring the elapsed time instead.
 
 - [x] **18. Result API ergonomics:** `Map`/`Bind`/`Match`/`TryGetValue`, and an `Error` property on `OpenUrzednikException`. Done in #29.
     * `EnsureSuccess` throws `AggregateException` for several errors, against ADR-0002. Several errors come only from validation, so throw one `ValidationException` carrying all of them.
@@ -85,6 +85,8 @@ How to use this file:
 
 - [x] **26. WireMock error paths for every client.** The 400/401/403/404/429/5xx, timeout, connection-failure and malformed-JSON tests run only through the gold client. Add them for the currency and table clients after item 12. Done in #32 (`*WireMockTest.Errors.cs`, plus the empty-array case).
     * The currency and table WireMock success bodies are hand-written, and so are the gold ones (including `NbpGoldPriceClientWireMockTest.Construction.cs`). Capture fixtures with `/verify-api`. Done in #32: every success body is a fixture captured on 2026-10-02 (`Nbp/Fixtures`, table rates trimmed to 3).
+
+- [ ] **35. `Microsoft.Extensions.*` versions per target.** The integration packages (`OpenUrzednik.Extensions.Logging`, `OpenUrzednik.Nbp.DependencyInjection`) reference the 10.0.x packages on every target, so an ASP.NET Core 8 app that adds them moves `DiagnosticSource`, `DependencyInjection.Abstractions`, `Logging.Abstractions`, `Http` and `Options` to 10.x. Microsoft's own packages (e.g. `Microsoft.Extensions.Resilience` 10.8) reference the lowest version per target: 8.0.x for net8.0, 9.0.x for net9.0. Decide whether to do the same (TFM-conditional `PackageVersion`s) or record in ADR-0004 that integration packages track the latest major.
 
 ## P3: Repository and quality
 

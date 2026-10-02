@@ -5,6 +5,7 @@
     <ProjectReference Include="..\..\src\OpenUrzednik.Krs\OpenUrzednik.Krs.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Mf\OpenUrzednik.Mf.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Nbp.DependencyInjection\OpenUrzednik.Nbp.DependencyInjection.csproj" />
     <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
   </ItemGroup>
 
@@ -15,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="WireMock.Net" />
   </ItemGroup>
 

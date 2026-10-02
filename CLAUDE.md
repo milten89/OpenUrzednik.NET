@@ -13,6 +13,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | `src/OpenUrzednik.Extensions.Logging` | `IOpenUrzednikLogger` over `ILogger` (`OpenUrzednikLogger`, `CreateOpenUrzednikLogger<TClient>()`) |
 | `src/OpenUrzednik.Diagnostics` | `IOpenUrzednikTraceSource` over `ActivitySource` (`ActivityTraceSource`, `GetShared("OpenUrzednik.<Provider>")`) |
 | `src/OpenUrzednik.Nbp` | NBP API: currency rates (`Currency/`), rate tables (`Table/`), gold prices (`Gold/`). **Reference provider**, still being hardened |
+| `src/OpenUrzednik.Nbp.DependencyInjection` | `services.AddOpenUrzednikNbp()`: the NBP clients as typed clients of one named `HttpClient`, validated options, adapters wired; returns the `IHttpClientBuilder` |
 | `src/OpenUrzednik.Gus`, `Krs`, `Mf` | Empty skeletons. **Do not work on them** ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)) |
 | `tests/OpenUrzednik.*.Tests` | Unit tests (xUnit v3, Shouldly, NSubstitute, Bogus, `FakeTimeProvider`) |
 | `tests/OpenUrzednik.IntegrationTests` | WireMock tests (run in CI) and tests against the real API (skipped unless `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set) |

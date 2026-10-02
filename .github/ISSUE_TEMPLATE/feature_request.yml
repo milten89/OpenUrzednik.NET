@@ -12,6 +12,7 @@ body:
         - OpenUrzednik.Extensions.Logging
         - OpenUrzednik.Diagnostics
         - OpenUrzednik.Nbp
+        - OpenUrzednik.Nbp.DependencyInjection
         - Nowy pakiet integracyjny (DI, logowanie, telemetria) / New integration package
         - Inny / Other
     validations:

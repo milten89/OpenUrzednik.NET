@@ -27,4 +27,17 @@ public class NbpOptions
     /// When a deadline elapses, the result is a <see cref="OpenUrzednik.Core.Errors.RequestTimeoutError"/>.
     /// </summary>
     public TimeSpan? Timeout { get; set; }
+
+    /// <summary>
+    /// Checks the values the clients would reject in their constructor, e.g. to fail at startup instead of on the first client.
+    /// </summary>
+    /// <exception cref="ArgumentException"><see cref="ApiUrl"/> isn't an absolute <c>https</c> URL without a query or fragment,
+    /// or <see cref="Timeout"/> isn't positive (at most <see cref="int.MaxValue"/> milliseconds) or <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>.</exception>
+    public void Validate()
+    {
+        if (ApiUrl is { } apiUrl)
+            NbpOptionsValidator.ParseApiUrl(apiUrl, nameof(ApiUrl));
+
+        NbpOptionsValidator.ValidateTimeout(Timeout, nameof(Timeout));
+    }
 }

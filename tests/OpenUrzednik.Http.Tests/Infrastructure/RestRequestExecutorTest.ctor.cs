@@ -88,6 +88,5 @@ public partial class RestRequestExecutorTest
 
         // Assert
         sut.Timeout.ShouldBeNull();
-        sut.SendTimeout.ShouldBe(TimeSpan.FromSeconds(42));
     }
 }

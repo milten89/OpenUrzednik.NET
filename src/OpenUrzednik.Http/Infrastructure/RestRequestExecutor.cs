@@ -81,24 +81,6 @@ public sealed class RestRequestExecutor
     /// </summary>
     public TimeSpan? Timeout => Finite(_timeout ?? _httpClient.Timeout);
 
-    /// <summary>
-    /// The deadline until the headers arrive. <see cref="HttpClient.Timeout"/> still applies inside <see cref="HttpClient.SendAsync(HttpRequestMessage, HttpCompletionOption, CancellationToken)"/>,
-    /// so the constructor's timeout can shorten it but not extend it. <see langword="null"/> means no deadline.
-    /// </summary>
-    internal TimeSpan? SendTimeout
-    {
-        get
-        {
-            var deadline = Timeout;
-            var clientTimeout = Finite(_httpClient.Timeout);
-            if (deadline is null)
-                return clientTimeout;
-            if (clientTimeout is null)
-                return deadline;
-            return deadline < clientTimeout ? deadline : clientTimeout;
-        }
-    }
-
     private static TimeSpan? Finite(TimeSpan timeout)
         => timeout == System.Threading.Timeout.InfiniteTimeSpan ? null : timeout;
 
@@ -158,7 +140,7 @@ public sealed class RestRequestExecutor
             timeoutSource.CancelAfter(deadline);
         var requestToken = timeoutSource.Token;
 
-        var sendResult = await SendAsync(request, relativePath, SendTimeout, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+        var sendResult = await SendAsync(request, relativePath, timeout, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
         if (!sendResult.TryGetValue(out var sentResponse))
             return OpenUrzednikResult.Failure<TDto>(sendResult.Errors);
 
@@ -208,7 +190,7 @@ public sealed class RestRequestExecutor
         }
     }
 
-    private async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpRequestMessage request, string relativePath, TimeSpan? timeout, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
+    private async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpRequestMessage request, string relativePath, TimeSpan? deadline, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
     {
         try
         {
@@ -219,7 +201,7 @@ public sealed class RestRequestExecutor
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return TimeoutFailure(timeout, relativePath, traceSpan, ex);
+            return TimeoutFailure(ElapsedLimit(ex, deadline, requestToken), relativePath, traceSpan, ex);
         }
         catch (HttpRequestException ex)
         {
@@ -227,11 +209,26 @@ public sealed class RestRequestExecutor
         }
     }
 
-    // The caller's token is not cancelled, so the cancellation came from HttpClient.Timeout or the request deadline.
+    // Names only a limit known to have elapsed: the request deadline cancels requestToken, and HttpClient.Timeout
+    // surfaces as an inner TimeoutException. Anything else, e.g. a resilience handler's timeout in the pipeline, has a limit we don't know.
+    // Not exact: SocketsHttpHandler.ConnectTimeout also has an inner TimeoutException (backlog item 17 covers .NET Framework).
+    private TimeSpan? ElapsedLimit(OperationCanceledException exception, TimeSpan? deadline, CancellationToken requestToken)
+    {
+        if (requestToken.IsCancellationRequested)
+            return deadline;
+        return exception.InnerException is TimeoutException ? Finite(_httpClient.Timeout) : null;
+    }
+
+    // The caller's token is not cancelled, so the cancellation came from the request deadline, HttpClient.Timeout
+    // or a handler's own timeout; timeout is null when the limit isn't known.
     private OpenUrzednikResult TimeoutFailure(TimeSpan? timeout, string relativePath, IOpenUrzednikSpan traceSpan, OperationCanceledException exception)
     {
-        _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "{provider} request to {path} timed out after {timeout}",
-            "provider", _profile.DisplayName, "path", relativePath, "timeout", timeout);
+        if (timeout is null)
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "{provider} request to {path} timed out",
+                "provider", _profile.DisplayName, "path", relativePath);
+        else
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "{provider} request to {path} timed out after {timeout}",
+                "provider", _profile.DisplayName, "path", relativePath, "timeout", timeout);
         var error = new RequestTimeoutError(
             timeout is null
                 ? $"{_profile.DisplayName} request to {relativePath} timed out."

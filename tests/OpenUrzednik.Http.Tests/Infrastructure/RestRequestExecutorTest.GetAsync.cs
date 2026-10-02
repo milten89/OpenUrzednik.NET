@@ -408,6 +408,26 @@ public partial class RestRequestExecutorTest
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(timeout);
     }
 
+    [Fact]
+    public async Task GetAsync_HandlerTimesOutWithItsOwnLimit_ReturnsRequestTimeoutErrorWithoutLimit()
+    {
+        // Arrange
+        // E.g. a resilience handler: its timeout is neither the request deadline nor HttpClient.Timeout.
+        var faker = new Faker().WithConstantSeed();
+        var thrown = new TaskCanceledException("The operation didn't complete within the allowed timeout of '00:00:30'.");
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(thrown)) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")) };
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider, TimeSpan.FromSeconds(10))
+            .GetAsync("cenyzlota", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>();
+        error.Timeout.ShouldBeNull();
+        error.Message.ShouldBe("Test API request to cenyzlota timed out.");
+        error.Exception.ShouldBeSameAs(thrown);
+    }
+
     [Theory]
     [InlineData(30_000)]
     [InlineData(-1)] // Timeout.InfiniteTimeSpan
