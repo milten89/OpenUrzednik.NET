@@ -1,4 +1,5 @@
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Core.Exceptions;
 
 namespace OpenUrzednik.TestCommon;
 
@@ -6,5 +7,5 @@ public sealed class TestError(string message) : OpenUrzednikError(ErrorCode, mes
 {
     public const string ErrorCode = "testError";
 
-    public override Exception ToException() => new TestException(Message);
+    protected override OpenUrzednikException CreateException() => new TestException(Message);
 }

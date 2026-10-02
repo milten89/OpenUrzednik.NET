@@ -69,14 +69,14 @@ How to use this file:
     * Decide the logger category per client. The abstraction has no `ActivityKind`.
 
 - [ ] **17. netstandard2.0 target** ([ADR-0005](adr/0005-target-frameworks.md)): `DateTime` instead of `DateOnly` on that target, polyfills, `System.Text.Json` and `Microsoft.Bcl.TimeProvider` only for it, plus a .NET Framework test job.
-    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, and ranges/`EndsWith(char)` in `NbpUrlBuilder`.
+    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, `[MaybeNullWhen]` and `string.Create(IFormatProvider, …)` in Core, and ranges/`EndsWith(char)` in `NbpUrlBuilder`.
 
-- [ ] **18. Result API ergonomics:** `Map`/`Bind`/`Match`/`TryGetValue`, and an `Error` property on `OpenUrzednikException`.
+- [x] **18. Result API ergonomics:** `Map`/`Bind`/`Match`/`TryGetValue`, and an `Error` property on `OpenUrzednikException`. Done in #29.
     * `EnsureSuccess` throws `AggregateException` for several errors, against ADR-0002. Several errors come only from validation, so throw one `ValidationException` carrying all of them.
     * Exceptions lose their error and its metadata. `ToException()` returns `Exception` instead of `OpenUrzednikException`.
     * Forwarding a failure copies the error array twice.
     * Implicit conversions from a value or an error to `OpenUrzednikResult<T>` were considered and rejected (they don't apply to interface types and are ambiguous for `object`). Only `OpenUrzednikError` → non-generic `OpenUrzednikResult`.
-    * `SerializationException` and `ValidationException` clash with BCL type names. Decide before 1.0.
+    * The BCL name clash moved to item 32.
 
 - [ ] **26. WireMock error paths for every client.** The 400/401/403/404/429/5xx, timeout, connection-failure and malformed-JSON tests run only through the gold client. Add them for the currency and table clients after item 12.
     * The currency and table WireMock success bodies are hand-written, and so are the gold ones (including `NbpGoldPriceClientWireMockTest.Construction.cs`). Capture fixtures with `/verify-api`.
@@ -121,3 +121,5 @@ How to use this file:
     * Say that meaning, API limits and qualifiers ("only", "never") take precedence over style rules: stop-slop removes absolutes.
     * Make `AGENTS.md` protect the same items as `CLAUDE.md` (badges, numbers, which README is Polish).
     * Record the upstream versions: miodkuj@32004e3, stop-slop@8da1f03.
+
+- [ ] **32. Exception names clash with the BCL.** `SerializationException` (`System.Runtime.Serialization`) and `ValidationException` (`System.ComponentModel.DataAnnotations`) need an alias when both namespaces are imported. Decide before 1.0 whether to rename them (e.g. `OpenUrzednikValidationException`).

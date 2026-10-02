@@ -26,6 +26,6 @@ public sealed class RateLimitExceededError : OpenUrzednikError
     }
 
     /// <inheritdoc />
-    public override Exception ToException()
+    protected override OpenUrzednikException CreateException()
         => new RateLimitExceededException(Message, RetryAfter);
 }

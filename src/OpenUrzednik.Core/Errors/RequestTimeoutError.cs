@@ -25,7 +25,7 @@ public sealed class RequestTimeoutError(string message, TimeSpan? timeout = null
 
     /// <inheritdoc />
     /// <remarks>The returned exception keeps <see cref="Exception"/> as its <see cref="System.Exception.InnerException"/>.</remarks>
-    public override Exception ToException()
+    protected override OpenUrzednikException CreateException()
         => Exception is null
             ? new RequestTimeoutException(Message)
             : new RequestTimeoutException(Message, Exception);

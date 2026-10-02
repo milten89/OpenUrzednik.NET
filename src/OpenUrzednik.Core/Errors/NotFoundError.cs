@@ -12,6 +12,6 @@ public sealed class NotFoundError(string message, int? statusCode = null) : Open
     public const string ErrorCode = "notFound";
 
     /// <inheritdoc />
-    public override Exception ToException()
+    protected override OpenUrzednikException CreateException()
         => new NotFoundException(Message);
 }

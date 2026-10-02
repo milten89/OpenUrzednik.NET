@@ -12,6 +12,6 @@ public sealed class UnauthorizedError(string message, int? statusCode = null) : 
     public const string ErrorCode = "unauthorized";
 
     /// <inheritdoc />
-    public override Exception ToException()
+    protected override OpenUrzednikException CreateException()
         => new UnauthorizedException(Message);
 }

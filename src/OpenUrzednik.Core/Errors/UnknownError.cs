@@ -12,6 +12,6 @@ public sealed class UnknownError(string message, int? statusCode = null) : OpenU
     public const string ErrorCode = "unknownError";
 
     /// <inheritdoc />
-    public override Exception ToException()
+    protected override OpenUrzednikException CreateException()
         => new UnknownException(Message);
 }

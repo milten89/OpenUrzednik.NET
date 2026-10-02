@@ -20,5 +20,7 @@ public class BadRequestErrorTest
         var badRequest = exception.ShouldBeOfType<BadRequestException>();
         badRequest.Message.ShouldBe("message");
         badRequest.Code.ShouldBe(BadRequestError.ErrorCode);
+        badRequest.Error.ShouldBeSameAs(error);
+        badRequest.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
     }
 }
