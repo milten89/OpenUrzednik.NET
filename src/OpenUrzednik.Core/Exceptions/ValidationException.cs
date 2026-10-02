@@ -4,6 +4,7 @@ namespace OpenUrzednik.Core.Exceptions;
 
 /// <summary>
 /// Represents an exception that is thrown when a validation error occurs.
+/// When validation found several problems, <see cref="OpenUrzednikException.Errors"/> lists all of them.
 /// </summary>
 public sealed class ValidationException : OpenUrzednikException
 {
@@ -24,5 +25,29 @@ public sealed class ValidationException : OpenUrzednikException
             Data.Add(nameof(name), name);
         if (value is not null)
             Data.Add(nameof(value), value);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ValidationException"/> class for several validation errors.
+    /// The message lists every error; <see cref="OpenUrzednikException.Errors"/> holds them.
+    /// </summary>
+    /// <param name="errors">The validation errors, at least one.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="errors"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="errors"/> is empty or contains null.</exception>
+    public ValidationException(IReadOnlyList<ValidationError> errors)
+        : base(ValidationError.ErrorCode, CreateMessage(errors))
+        => SetErrors(errors[0], [.. errors]);
+
+    private static string CreateMessage(IReadOnlyList<ValidationError> errors)
+    {
+        ArgumentNullException.ThrowIfNull(errors);
+        if (errors.Count == 0)
+            throw new ArgumentException("At least one validation error is required.", nameof(errors));
+        if (errors.Any(e => e is null))
+            throw new ArgumentException("Validation errors must not contain null.", nameof(errors));
+
+        return errors.Count == 1
+            ? errors[0].Message
+            : $"Validation failed with {errors.Count} errors: {string.Join(" ", errors.Select(e => e.Message))}";
     }
 }

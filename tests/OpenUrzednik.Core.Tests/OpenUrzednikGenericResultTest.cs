@@ -7,7 +7,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Core.Tests;
 
-public class OpenUrzednikGenericResultTest
+public partial class OpenUrzednikGenericResultTest
 {
     [Fact]
     public void SuccessResult_ShouldBeSuccess()

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using OpenUrzednik.Core.Errors;
 
 namespace OpenUrzednik.Core;
@@ -49,13 +51,70 @@ public readonly struct OpenUrzednikResult
     /// <exception cref="ArgumentNullException">Thrown when the errors collection is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the errors collection is empty.</exception>
     public OpenUrzednikResult(IEnumerable<OpenUrzednikError> errors)
+        : this(ToErrorArray(errors)) { }
+
+    // Takes ownership of a non-empty array without copying it; used to forward the errors of another result.
+    private OpenUrzednikResult(OpenUrzednikError[] errors)
+        => _errors = errors;
+
+    internal static OpenUrzednikError[] ToErrorArray(IEnumerable<OpenUrzednikError> errors)
     {
         ArgumentNullException.ThrowIfNull(errors, nameof(errors));
         var errorsArray = errors.ToArray();
         if (errorsArray.Length == 0)
             throw new InvalidOperationException("Cannot create a failure result without any errors.");
 
-        _errors = errorsArray;
+        return errorsArray;
+    }
+
+    internal OpenUrzednikError[]? ErrorArray => _errors;
+
+    /// <summary>
+    /// Creates a failed result from a single error, so an error can be returned where an <see cref="OpenUrzednikResult"/> is expected.
+    /// </summary>
+    /// <param name="error">The error associated with the failed result.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the error is null.</exception>
+    public static implicit operator OpenUrzednikResult(OpenUrzednikError error) => new(error);
+
+    /// <summary>
+    /// Runs <paramref name="next"/> when this result is successful; otherwise returns this result's errors without running it.
+    /// </summary>
+    /// <typeparam name="TOut">The type of the value returned by <paramref name="next"/>.</typeparam>
+    /// <param name="next">The operation to run after a success.</param>
+    /// <returns>The result of <paramref name="next"/>, or a failure with this result's errors.</returns>
+    public OpenUrzednikResult<TOut> Bind<TOut>(Func<OpenUrzednikResult<TOut>> next)
+    {
+        ArgumentNullException.ThrowIfNull(next);
+
+        return _errors is null ? next() : OpenUrzednikResult<TOut>.FromErrors(_errors);
+    }
+
+    /// <summary>
+    /// Runs <paramref name="next"/> when this result is successful; otherwise returns this result's errors without running it.
+    /// </summary>
+    /// <typeparam name="TOut">The type of the value returned by <paramref name="next"/>.</typeparam>
+    /// <param name="next">The asynchronous operation to run after a success.</param>
+    /// <returns>The result of <paramref name="next"/>, or a failure with this result's errors.</returns>
+    public Task<OpenUrzednikResult<TOut>> BindAsync<TOut>(Func<Task<OpenUrzednikResult<TOut>>> next)
+    {
+        ArgumentNullException.ThrowIfNull(next);
+
+        return _errors is null ? next() : Task.FromResult(OpenUrzednikResult<TOut>.FromErrors(_errors));
+    }
+
+    /// <summary>
+    /// Returns the value of <paramref name="onSuccess"/> or <paramref name="onFailure"/>, depending on the state of the result.
+    /// </summary>
+    /// <typeparam name="TOut">The type of the returned value.</typeparam>
+    /// <param name="onSuccess">Called when the result is successful.</param>
+    /// <param name="onFailure">Called with the errors when the result is a failure.</param>
+    /// <returns>The value returned by the called function.</returns>
+    public TOut Match<TOut>(Func<TOut> onSuccess, Func<IReadOnlyList<OpenUrzednikError>, TOut> onFailure)
+    {
+        ArgumentNullException.ThrowIfNull(onSuccess);
+        ArgumentNullException.ThrowIfNull(onFailure);
+
+        return _errors is null ? onSuccess() : onFailure(_errors);
     }
 
     /// <summary>
@@ -171,14 +230,85 @@ public readonly struct OpenUrzednikResult<TValue>
     /// <exception cref="ArgumentNullException">Thrown when the errors collection is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the errors collection is empty.</exception>
     public OpenUrzednikResult(IEnumerable<OpenUrzednikError> errors)
+        : this(OpenUrzednikResult.ToErrorArray(errors), owned: true) { }
+
+    // Takes ownership of a non-empty array without copying it; used to forward the errors of another result.
+    // The flag keeps this overload apart from OpenUrzednikResult(TValue) when TValue is an error array.
+    private OpenUrzednikResult(OpenUrzednikError[] errors, bool owned)
     {
-        ArgumentNullException.ThrowIfNull(errors, nameof(errors));
-
-        if (!errors.Any())
-            throw new InvalidOperationException("Cannot create a failure result without any errors.");
-
+        _ = owned;
         _value = default;
-        _errors = [.. errors];
+        _errors = errors;
+    }
+
+    internal static OpenUrzednikResult<TValue> FromErrors(OpenUrzednikError[] errors) => new(errors, owned: true);
+
+    // The errors of a failure; a default instance gets its UnknownError.
+    private OpenUrzednikError[] FailureErrors => _errors ?? [UninitializedErrors[0]];
+
+    /// <summary>
+    /// Gets the value when the result is successful.
+    /// </summary>
+    /// <param name="value">The value when this method returns <see langword="true"/>; otherwise <see langword="default"/>.</param>
+    /// <returns><see langword="true"/> when the result is successful.</returns>
+    public bool TryGetValue([MaybeNullWhen(false)] out TValue value)
+    {
+        value = _value;
+        return IsSuccess;
+    }
+
+    /// <summary>
+    /// Transforms the value of a successful result. A failure is returned with its errors, and <paramref name="map"/> isn't called.
+    /// </summary>
+    /// <typeparam name="TOut">The type of the transformed value.</typeparam>
+    /// <param name="map">The transformation. It must not fail; use <see cref="Bind{TOut}(Func{TValue, OpenUrzednikResult{TOut}})"/> if it can.</param>
+    /// <returns>A successful result with the transformed value, or a failure with this result's errors.</returns>
+    public OpenUrzednikResult<TOut> Map<TOut>(Func<TValue, TOut> map)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+
+        return IsSuccess ? new OpenUrzednikResult<TOut>(map(_value!)) : OpenUrzednikResult<TOut>.FromErrors(FailureErrors);
+    }
+
+    /// <summary>
+    /// Runs <paramref name="next"/> with the value of a successful result. A failure is returned with its errors, and <paramref name="next"/> isn't called.
+    /// </summary>
+    /// <typeparam name="TOut">The type of the value returned by <paramref name="next"/>.</typeparam>
+    /// <param name="next">The operation to run with the value.</param>
+    /// <returns>The result of <paramref name="next"/>, or a failure with this result's errors.</returns>
+    public OpenUrzednikResult<TOut> Bind<TOut>(Func<TValue, OpenUrzednikResult<TOut>> next)
+    {
+        ArgumentNullException.ThrowIfNull(next);
+
+        return IsSuccess ? next(_value!) : OpenUrzednikResult<TOut>.FromErrors(FailureErrors);
+    }
+
+    /// <summary>
+    /// Runs <paramref name="next"/> with the value of a successful result. A failure is returned with its errors, and <paramref name="next"/> isn't called.
+    /// </summary>
+    /// <typeparam name="TOut">The type of the value returned by <paramref name="next"/>.</typeparam>
+    /// <param name="next">The asynchronous operation to run with the value.</param>
+    /// <returns>The result of <paramref name="next"/>, or a failure with this result's errors.</returns>
+    public Task<OpenUrzednikResult<TOut>> BindAsync<TOut>(Func<TValue, Task<OpenUrzednikResult<TOut>>> next)
+    {
+        ArgumentNullException.ThrowIfNull(next);
+
+        return IsSuccess ? next(_value!) : Task.FromResult(OpenUrzednikResult<TOut>.FromErrors(FailureErrors));
+    }
+
+    /// <summary>
+    /// Returns the value of <paramref name="onSuccess"/> or <paramref name="onFailure"/>, depending on the state of the result.
+    /// </summary>
+    /// <typeparam name="TOut">The type of the returned value.</typeparam>
+    /// <param name="onSuccess">Called with the value when the result is successful.</param>
+    /// <param name="onFailure">Called with the errors when the result is a failure.</param>
+    /// <returns>The value returned by the called function.</returns>
+    public TOut Match<TOut>(Func<TValue, TOut> onSuccess, Func<IReadOnlyList<OpenUrzednikError>, TOut> onFailure)
+    {
+        ArgumentNullException.ThrowIfNull(onSuccess);
+        ArgumentNullException.ThrowIfNull(onFailure);
+
+        return IsSuccess ? onSuccess(_value!) : onFailure(Errors);
     }
 
     /// <summary>
@@ -188,5 +318,5 @@ public readonly struct OpenUrzednikResult<TValue>
     /// <exception cref="InvalidOperationException">Thrown when the source result is successful.</exception>
     /// <returns>A failed <see cref="OpenUrzednikResult{TValue}"/> instance.</returns>
     public static implicit operator OpenUrzednikResult<TValue>(OpenUrzednikResult result)
-        => result.IsFailure ? new(result.Errors) : throw new InvalidOperationException("Cannot convert a successful Result to Result<TValue>.");
+        => result.ErrorArray is { } errors ? FromErrors(errors) : throw new InvalidOperationException("Cannot convert a successful Result to Result<TValue>.");
 }

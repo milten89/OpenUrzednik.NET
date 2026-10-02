@@ -37,6 +37,6 @@ public sealed class ValidationError : OpenUrzednikError
     }
 
     /// <inheritdoc />
-    public override Exception ToException()
+    protected override OpenUrzednikException CreateException()
         => new ValidationException(Message, _ruleName, _name, _value);
 }

@@ -13,6 +13,6 @@ public sealed class BadRequestError(string message, int? statusCode = null) : Op
     public const string ErrorCode = "badRequest";
 
     /// <inheritdoc />
-    public override Exception ToException()
+    protected override OpenUrzednikException CreateException()
         => new BadRequestException(Message);
 }

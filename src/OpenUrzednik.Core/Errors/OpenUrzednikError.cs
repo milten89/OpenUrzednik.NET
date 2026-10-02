@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 
+using OpenUrzednik.Core.Exceptions;
+
 namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
@@ -68,10 +70,23 @@ public abstract class OpenUrzednikError
         => (_metadata ??= []).Add(key, value);
 
     /// <summary>
-    /// Creates an exception that represents this error.
+    /// Creates an exception that represents this error. The exception keeps this error in
+    /// <see cref="OpenUrzednikException.Error"/> and <see cref="OpenUrzednikException.Errors"/>.
     /// </summary>
     /// <returns>An exception that represents this error.</returns>
-    public abstract Exception ToException();
+    public OpenUrzednikException ToException()
+    {
+        var exception = CreateException();
+        exception.SetErrors(this, [this]);
+        return exception;
+    }
+
+    /// <summary>
+    /// Creates the exception returned by <see cref="ToException"/>. Pass the original exception, if any, as its
+    /// <see cref="System.Exception.InnerException"/>. <see cref="ToException"/> attaches this error to it.
+    /// </summary>
+    /// <returns>A new exception that represents this error.</returns>
+    protected abstract OpenUrzednikException CreateException();
 
     /// <inheritdoc />
     public override string ToString()
