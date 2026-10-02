@@ -38,11 +38,13 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - **Never write `catch (Exception)` or a bare `catch`.** Catch specific types and convert them to errors.
 - A timeout is an `OperationCanceledException` while `cancellationToken.IsCancellationRequested == false`. Return it as an error.
 - New error types derive from `OpenUrzednikError`, define `public const string ErrorCode`, and implement `ToException()` returning an `OpenUrzednikException` subtype.
+- Several errors (only validation produces them) are thrown by `EnsureSuccess()` as one `ValidationException` listing all of them, never as `AggregateException`.
 
 **Dependencies ([ADR-0004](docs/adr/0004-dependency-policy.md))**
 - Core, `OpenUrzednik.Http` and provider packages take **no package dependencies** on .NET targets.
 - On netstandard2.0, only official Microsoft BCL packages are allowed (`System.Text.Json`, `Microsoft.Bcl.TimeProvider`).
-- `Microsoft.Extensions.*` is allowed only in integration packages (`*.DependencyInjection`, `OpenUrzednik.Extensions.Logging`, `OpenUrzednik.OpenTelemetry`).
+- `Microsoft.Extensions.*` is allowed only in integration packages (`*.DependencyInjection`, `OpenUrzednik.Extensions.Logging`, `OpenUrzednik.Diagnostics`).
+- DI packages don't add a resilience handler: they return the `IHttpClientBuilder`, the app chains `AddStandardResilienceHandler()`, and the DI package turns the handler's rejections into errors.
 - Versions live in `Directory.Packages.props` (central package management). Never put `Version=` on a `PackageReference`.
 - Do not add a `PackageReference` to a `src/` project without an ADR or explicit approval.
 
@@ -51,8 +53,8 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Span names: `<provider>.<area>.<operation>` (e.g. `nbp.currency.buy_sell_latest`). Tags: `<provider>.<parameter>`. Record failures with `span.RecordError(s)`.
 - Guard `Debug` logs with `IsEnabled`, use message templates (no interpolation), and never log secrets or full personal identifiers.
 
-**Target frameworks ([ADR-0005](docs/adr/0005-target-frameworks.md), proposed)**
-- Currently `net8.0;net9.0;net10.0`; netstandard2.0 is planned.
+**Target frameworks ([ADR-0005](docs/adr/0005-target-frameworks.md))**
+- Currently `net8.0;net9.0;net10.0`; netstandard2.0 is planned (backlog item 17). A .NET target is dropped 6 months after Microsoft ends its support; netstandard2.0 stays.
 - Write code that will work with `#if NET`: dates are `DateOnly` on .NET and `DateTime` on netstandard2.0. Keep `#if` inside small helpers, not spread through business logic.
 
 **HTTP ([ADR-0006](docs/adr/0006-shared-http-layer.md))**

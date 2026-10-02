@@ -15,7 +15,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 ## Checklist
 
 **ADR compliance**
-- ADR-0002: no `catch (Exception)` or bare `catch`. Expected failures (HTTP status, payload, network, timeout) are returned as `OpenUrzednikResult` errors. Only caller cancellation, argument errors and fatal errors are thrown. Timeouts are distinguished from caller cancellation. `ToException()` returns `OpenUrzednikException` subtypes.
+- ADR-0002: no `catch (Exception)` or bare `catch`. Expected failures (HTTP status, payload, network, timeout) are returned as `OpenUrzednikResult` errors. Only caller cancellation, argument errors and fatal errors are thrown. Timeouts are distinguished from caller cancellation. `ToException()` returns `OpenUrzednikException` subtypes. Several errors are thrown as one `ValidationException`, not `AggregateException`.
 - ADR-0003: no `ILogger`/`ActivitySource` in Core or provider packages. Span and tag naming. `IsEnabled` guards. No secrets or personal identifiers in logs or tags.
 - ADR-0004: no new `PackageReference` in Core, Http or provider projects, apart from netstandard2.0-only Microsoft BCL packages. No `Version=` on package references (central package management).
 - ADR-0005: code ready for netstandard2.0. `#if` kept inside helpers.

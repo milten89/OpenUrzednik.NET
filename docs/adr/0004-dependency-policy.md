@@ -31,12 +31,14 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 | Core | `OpenUrzednik.Core` | None on .NET targets. On netstandard2.0 only official Microsoft out-of-band BCL packages (e.g. `System.Text.Json`, `Microsoft.Bcl.TimeProvider`, `System.Memory`). |
 | Shared infrastructure | `OpenUrzednik.Http` | Same as Core + `OpenUrzednik.Core`. |
 | Provider | `OpenUrzednik.Nbp` | Same as Core + other OpenUrzednik packages. |
-| Integration | `OpenUrzednik.Nbp.DependencyInjection`, `OpenUrzednik.Extensions.Logging`, `OpenUrzednik.OpenTelemetry` | `Microsoft.Extensions.*` (DI, Options, Http, Http.Resilience, Logging) and the package they integrate. |
+| Integration | `OpenUrzednik.Nbp.DependencyInjection`, `OpenUrzednik.Extensions.Logging`, `OpenUrzednik.Diagnostics` | `Microsoft.Extensions.*` (DI, Options, Http, Http.Resilience, Logging) and the package they integrate (e.g. `System.Diagnostics.DiagnosticSource` on netstandard2.0, where `ActivitySource` isn't built in). |
 | Tests | `tests/*` | Anything appropriate. |
 
 * Build-only tooling (`Nerdbank.GitVersioning`, analyzers) uses `PrivateAssets="all"` and never becomes a package dependency.
 * Versions are managed centrally in `Directory.Packages.props`; netstandard2.0-only references use a `Condition` on `TargetFramework`.
-* DI packages expose `services.AddOpenUrzednik<Provider>(...)` registering typed `HttpClient`s with sensible resilience defaults and validated options.
+* DI packages expose `services.AddOpenUrzednik<Provider>(...)` registering typed `HttpClient`s and validated options, and return the `IHttpClientBuilder`.
+* Resilience follows the .NET standard ([Microsoft.Extensions.Http.Resilience](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience)): the app opts in by chaining `AddStandardResilienceHandler(...)` (or `AddResilienceHandler(...)`) on that builder. DI packages don't add a resilience handler themselves, because the guidance is one handler per client, not stacked.
+* DI packages translate the exceptions a resilience handler throws when it rejects a request (`TimeoutRejectedException`, an open circuit breaker, the rate limiter) into errors, so they don't escape the result ([ADR-0002](0002-result-pattern-and-error-handling.md)). A timeout becomes a `RequestTimeoutError`; a rejection becomes a `ServiceUnavailableError`. Caller cancellation still throws.
 
 ### Consequences
 
@@ -48,3 +50,7 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 ### Confirmation
 
 `dotnet list package --include-transitive` for each `src/` provider/Core project shows no non-BCL dependencies; the `reviewer` agent flags new `PackageReference`s in Core/provider projects.
+
+## More Information
+
+**2026-10-02 clarification.** The first version said DI packages register clients "with sensible resilience defaults". That would make the library add Polly's standard handler itself, and an app adding its own would then stack two handlers, which Microsoft's guidance advises against. The resilience is now the app's explicit choice, through the standard API, and the DI package only guarantees that the handler's rejections are returned as errors. The tracing adapter is named `OpenUrzednik.Diagnostics` ([ADR-0003](0003-telemetry-abstractions.md)).

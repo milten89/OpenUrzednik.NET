@@ -46,7 +46,9 @@ Chosen option: "All failures that can happen during normal execution are returne
 * Never write `catch (Exception)` or a bare `catch`. Catch the specific exception types listed above and convert them to errors. The rule is not dogmatic: if a new specific exception type is expected during normal execution, add it explicitly and document why.
 * Mappers and other internal code must not throw on bad API data; they return a result or the caller converts a known exception type to an error.
 * Every `OpenUrzednikError` implements `ToException()` returning an `OpenUrzednikException`-derived type (the original exception, if any, becomes `InnerException`), so `EnsureSuccess()` always throws exceptions from the library's hierarchy.
-* `default(OpenUrzednikResult<T>)` must not be observable as a successful result (backlog item).
+* The exception keeps the error it was created from (`OpenUrzednikException.Error`, with its metadata) and, when there were several, all of them (`Errors`).
+* Several errors are produced only by validation. `EnsureSuccess()` then throws **one `ValidationException` whose `Errors` lists every failure**, the pattern used by FluentValidation, never an `AggregateException`. If a result ever holds several errors of other kinds, the first error's exception is thrown, with all of them in `Errors`.
+* `default(OpenUrzednikResult<T>)` must not be observable as a successful result: it is a failure with an `UnknownError`.
 
 ### Consequences
 
@@ -63,3 +65,5 @@ Chosen option: "All failures that can happen during normal execution are returne
 ## More Information
 
 Supersedes the informal rule in `CONTRIBUTING.md`. Shared HTTP behaviour is implemented once, see [ADR-0006](0006-shared-http-layer.md).
+
+**2026-10-02 clarification.** `EnsureSuccess()` threw `AggregateException` for several errors, which is outside the library's hierarchy and contradicted the rule above; the multiple-errors rule now says what to throw instead. The `Error`/`Errors` properties and the `default(OpenUrzednikResult<T>)` behaviour (implemented in #15) are recorded here so the result and exception API stay consistent.
