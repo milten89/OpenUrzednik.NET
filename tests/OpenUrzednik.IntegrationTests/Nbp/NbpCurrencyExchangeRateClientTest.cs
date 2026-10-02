@@ -1,8 +1,6 @@
 using OpenUrzednik.Nbp.Currency;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Table;
-using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Attributes;
 
 using Shouldly;
@@ -14,7 +12,7 @@ public class NbpCurrencyExchangeRateClientTest : IClassFixture<NbpHttpClientFixt
     private readonly NbpCurrencyExchangeRateClient _client;
 
     public NbpCurrencyExchangeRateClientTest(NbpHttpClientFixture fixture)
-        => _client = new NbpCurrencyExchangeRateClient(fixture.HttpClient, new NbpUrlBuilderFactory());
+        => _client = new NbpCurrencyExchangeRateClient(fixture.HttpClient);
 
     [ManualTheory]
     [InlineData("USD", TableType.A)]
@@ -74,7 +72,7 @@ public class NbpCurrencyExchangeRateClientTest : IClassFixture<NbpHttpClientFixt
     public async Task Api_OneStepPastLimit_ReturnsBadRequest(string path, string limit)
     {
         // Arrange
-        using var httpClient = new HttpClient().ConfigureForNbpApi(new NbpOptions());
+        using var httpClient = new HttpClient { BaseAddress = new Uri(NbpOptions.DefaultApiUrl) };
 
         // Act
         using var response = await httpClient.GetAsync(path, TestContext.Current.CancellationToken);

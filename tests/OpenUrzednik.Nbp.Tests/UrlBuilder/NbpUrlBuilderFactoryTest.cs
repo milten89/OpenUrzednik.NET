@@ -53,7 +53,7 @@ public class NbpUrlBuilderFactoryTest
     }
 
     [Fact]
-    public void GetTableBuilder_SameTableOnDifferentFactoryInstances_ReturnsSameCachedInstance()
+    public void GetTableBuilder_SameTableOnDifferentFactoryInstances_ReturnsSeparateInstancesWithSamePaths()
     {
         // Arrange
         var first = new NbpUrlBuilderFactory();
@@ -64,7 +64,8 @@ public class NbpUrlBuilderFactoryTest
         var secondBuilder = second.GetTableBuilder(NbpTable.B);
 
         // Assert
-        secondBuilder.ShouldBeSameAs(firstBuilder);
+        secondBuilder.ShouldNotBeSameAs(firstBuilder);
+        secondBuilder.Latest().ShouldBe(firstBuilder.Latest());
     }
 
     [Theory]

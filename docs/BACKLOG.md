@@ -42,7 +42,7 @@ How to use this file:
 ## P2: Framework (implements accepted ADRs)
 
 - [ ] **12. `OpenUrzednik.Http` package** ([ADR-0006](adr/0006-shared-http-layer.md)): move the request executor out of NBP and migrate NBP to it.
-    * `GetNbpAsync` (`Nbp/Extensions/HttpClientExtensions.cs`) already implements the ADR-0002 behaviour: disposal, status mapping, timeouts, network errors and a bounded read of 400 error bodies.
+    * `NbpConnection.GetAsync` (`Nbp/Common/NbpConnection.cs`, since #28) already implements the ADR-0002 behaviour: disposal, status mapping, timeouts, network errors and a bounded read of 400 error bodies.
     * Missing: the provider-neutral package, and per-provider overrides (e.g. how a provider's error body becomes a message).
     * Unexpected exceptions no longer mark the `nbp.http.get` span as an error (#18 removed the catch-all). Fix it with try/finally, not `catch (Exception)`.
     * Typo in the `UnknownError` message: "NBP API return unknown status".
@@ -52,15 +52,16 @@ How to use this file:
     * The empty-array `NotFoundError` has no status code, unlike a real 404.
     * Span names are inconsistent: only date and range use a `get_` prefix (`get_date`, `get_range` vs `latest`, `today`, `top_count`), and the buy/sell variants drop it (`buy_sell_date`, `buy_sell_range`).
 
-- [ ] **14. Client construction** ([ADR-0007](adr/0007-client-api-and-extensibility.md)): the default constructor `new NbpGoldPriceClient(httpClient)`; `NbpOptions` and `INbpUrlBuilderFactory` optional; remove the static cache in `NbpUrlBuilderFactory`.
+- [x] **14. Client construction** ([ADR-0007](adr/0007-client-api-and-extensibility.md)): the default constructor `new NbpGoldPriceClient(httpClient)`; `NbpOptions` and `INbpUrlBuilderFactory` optional; remove the static cache in `NbpUrlBuilderFactory`. Done in #28.
     * Remove `ConfigureForNbpApi`: it mutates a caller-owned `HttpClient` and is a second way to configure the client. Options go to the constructor; its checks move to `NbpOptions` validation.
     * Base URL: `NbpOptions.ApiUrl`, then `HttpClient.BaseAddress`, then `NbpOptions.DefaultApiUrl`. Today a missing `BaseAddress` makes `HttpClient` throw `InvalidOperationException`, which escapes the result.
     * `NbpOptions.Timeout` becomes optional; when unset, the `HttpClient`'s own timeout applies (.NET default 100 s).
-    * `NbpUrlBuilderFactoryTest` asserts the static cache (`*_ReturnsSameCachedInstance`, `GetTableBuilder_SameTableOnDifferentFactoryInstances_*`), and the constructor tests read private fields.
+    * `NbpUrlBuilderFactoryTest` asserts the static cache (`*_ReturnsSameCachedInstance`, `GetTableBuilder_SameTableOnDifferentFactoryInstances_*`). The constructor tests still read private fields: moved to item 30.
 
 - [ ] **15. DI package** `OpenUrzednik.Nbp.DependencyInjection` ([ADR-0004](adr/0004-dependency-policy.md)): `AddOpenUrzednikNbp()`, typed clients, options validation.
     * Resilience follows the .NET standard: `AddOpenUrzednikNbp()` returns the `IHttpClientBuilder`, and the app opts in with `.AddStandardResilienceHandler()`. One handler, not stacked.
     * Polly's rejections (`TimeoutRejectedException`, circuit breaker, rate limiter) must be converted into errors, or they escape the result.
+    * Register the clients with factory lambdas (`AddHttpClient<T>((http, sp) => new T(http, ...))`): a bare `AddHttpClient<T>()` fails, because `ActivatorUtilities` finds two public constructors that accept an `HttpClient` (ADR-0007 asks for both).
     * Version mismatch: `Microsoft.Extensions.DependencyInjection.Abstractions` is 10.0.0, while `Logging.Abstractions`, `Http` and `Options` are 10.0.10.
 
 - [ ] **16. Telemetry adapters** ([ADR-0003](adr/0003-telemetry-abstractions.md)): `OpenUrzednik.Extensions.Logging` (`ILogger`) and `OpenUrzednik.Diagnostics` (`ActivitySource`). The core packages keep the custom interfaces, so they need no dependencies on .NET Framework 4.8.
@@ -68,7 +69,7 @@ How to use this file:
     * Decide the logger category per client. The abstraction has no `ActivityKind`.
 
 - [ ] **17. netstandard2.0 target** ([ADR-0005](adr/0005-target-frameworks.md)): `DateTime` instead of `DateOnly` on that target, polyfills, `System.Text.Json` and `Microsoft.Bcl.TimeProvider` only for it, plus a .NET Framework test job.
-    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, and ranges/`EndsWith(char)` in `NbpUrlBuilder` and `ConfigureForNbpApi`.
+    * Blockers: ~45 `DateOnly` sites, ~30 `ThrowIf*` calls, `required`/`init`/records (polyfills), `HashCode`, `[GeneratedRegex]`, `HttpStatusCode.TooManyRequests`, `MediaTypeNames`, `ReadAsStreamAsync(ct)`, `Memory<char>` reads, `Enum.IsDefined<T>`, and ranges/`EndsWith(char)` in `NbpUrlBuilder`.
 
 - [ ] **18. Result API ergonomics:** `Map`/`Bind`/`Match`/`TryGetValue`, and an `Error` property on `OpenUrzednikException`.
     * `EnsureSuccess` throws `AggregateException` for several errors, against ADR-0002. Several errors come only from validation, so throw one `ValidationException` carrying all of them.
@@ -78,7 +79,7 @@ How to use this file:
     * `SerializationException` and `ValidationException` clash with BCL type names. Decide before 1.0.
 
 - [ ] **26. WireMock error paths for every client.** The 400/401/403/404/429/5xx, timeout, connection-failure and malformed-JSON tests run only through the gold client. Add them for the currency and table clients after item 12.
-    * The currency and table WireMock success bodies are hand-written. Capture fixtures with `/verify-api`.
+    * The currency and table WireMock success bodies are hand-written, and so are the gold ones (including `NbpGoldPriceClientWireMockTest.Construction.cs`). Capture fixtures with `/verify-api`.
 
 ## P3: Repository and quality
 
@@ -114,6 +115,7 @@ How to use this file:
 - [ ] **30. Test conventions.**
     * Core tests aren't `partial` or file-per-method (CLAUDE.md), and `NetworkErrorsTest` covers two production classes.
     * `CultureScope` (TestCommon) needs ICU: it fails under `InvariantGlobalization`. Note it in the class docs.
+    * The client constructor tests (`*Test.ctor.cs`) read private fields with `GetPrivateField`. Test through behaviour instead (e.g. which URL builder and clock a request uses).
 
 - [ ] **31. Prose skills follow-ups** (#24).
     * Say that meaning, API limits and qualifiers ("only", "never") take precedence over style rules: stop-slop removes absolutes.

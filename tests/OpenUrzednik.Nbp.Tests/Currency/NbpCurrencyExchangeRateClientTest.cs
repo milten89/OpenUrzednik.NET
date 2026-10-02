@@ -33,7 +33,7 @@ public partial class NbpCurrencyExchangeRateClientTest
 
     private static NbpCurrencyExchangeRateClient CreateApiClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory,
         IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? tracer = null, TimeProvider? timeProvider = null)
-        => new(httpClient, urlBuilderFactory, timeProvider ?? TestClock.FarFuture(), logger, tracer);
+        => new(httpClient, urlBuilderFactory: urlBuilderFactory, timeProvider: timeProvider ?? TestClock.FarFuture(), logger: logger, traceSource: tracer);
 
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, CurrencyExchangeRatesDto dtos)
         => new(statusCode) { Content = JsonContent.Create(dtos, NbpJsonContext.Default.CurrencyExchangeRatesDto) };

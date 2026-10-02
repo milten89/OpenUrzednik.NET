@@ -18,7 +18,7 @@ public partial class NbpExchangeRateTableClient
 
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.BuySellExchangeRateTableDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.Latest(), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
 
         switch (requestResult.IsSuccess)
         {
@@ -53,7 +53,7 @@ public partial class NbpExchangeRateTableClient
 
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellExchangeRateTableDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);
@@ -69,7 +69,7 @@ public partial class NbpExchangeRateTableClient
 
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.BuySellExchangeRateTableDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.Today(), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
 
         switch (requestResult.IsSuccess)
         {
@@ -104,7 +104,7 @@ public partial class NbpExchangeRateTableClient
 
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.BuySellExchangeRateTableDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.ForDate(date), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
 
         switch (requestResult.IsSuccess)
         {
@@ -142,7 +142,7 @@ public partial class NbpExchangeRateTableClient
 
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellExchangeRateTableDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellExchangeRateTableDtoArray, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRateTable, _telemetryProvider, traceSpan);

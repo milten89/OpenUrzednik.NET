@@ -27,7 +27,7 @@ public partial class NbpCurrencyExchangeRateClient
 
         var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Latest(), JsonContext.BuySellCurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.Latest(), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
@@ -56,7 +56,7 @@ public partial class NbpCurrencyExchangeRateClient
 
         var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellCurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.ForTopCount(topCount), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
@@ -82,7 +82,7 @@ public partial class NbpCurrencyExchangeRateClient
 
         var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.Today(), JsonContext.BuySellCurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.Today(), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
@@ -111,7 +111,7 @@ public partial class NbpCurrencyExchangeRateClient
 
         var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDate(date), JsonContext.BuySellCurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.ForDate(date), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);
@@ -142,7 +142,7 @@ public partial class NbpCurrencyExchangeRateClient
 
         var urlBuilder = _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency);
 
-        var requestResult = await _httpClient.GetNbpAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellCurrencyExchangeRatesDto, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(urlBuilder.ForDateRange(from, to), JsonContext.BuySellCurrencyExchangeRatesDto, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToBuySellExchangeRates, _telemetryProvider, traceSpan);

@@ -58,7 +58,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Write code that will work with `#if NET`: dates are `DateOnly` on .NET and `DateTime` on netstandard2.0. Keep `#if` inside small helpers, not spread through business logic.
 
 **HTTP ([ADR-0006](docs/adr/0006-shared-http-layer.md))**
-- Shared REST plumbing is moving to a new `OpenUrzednik.Http` package. Until then it lives in `Nbp/Extensions/HttpClientExtensions.cs` (`GetNbpAsync`).
+- Shared REST plumbing is moving to a new `OpenUrzednik.Http` package. Until then it lives in `Nbp/Common/NbpConnection.cs` (`NbpConnection.GetAsync`). Clients take an `HttpClient` and optional `NbpOptions`; they never change the `HttpClient`.
 - Dispose `HttpRequestMessage` and `HttpResponseMessage`.
 - Deserialize with source-generated `JsonTypeInfo<T>` (`NbpJsonContext`); no reflection-based serialization.
 

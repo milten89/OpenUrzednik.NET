@@ -4,6 +4,7 @@ using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
+using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
@@ -15,41 +16,40 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
 {
     private static readonly NbpJsonContext JsonContext = new();
 
-    private readonly HttpClient _httpClient;
+    private readonly NbpConnection _connection;
     private readonly TimeProvider _timeProvider;
     private readonly INbpUrlBuilder _urlBuilder;
     private readonly NbpTelemetryProvider _telemetryProvider;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NbpGoldPriceClient"/> class using the system clock.
+    /// Initializes a new instance of the <see cref="NbpGoldPriceClient"/> class with the default settings:
+    /// the public NBP API (or <see cref="HttpClient.BaseAddress"/>, when set) and the <see cref="HttpClient"/>'s own timeout.
     /// </summary>
-    /// <param name="httpClient">HTTP client configured for the NBP API, e.g. with <see cref="OpenUrzednik.Nbp.Extensions.HttpClientExtensions.ConfigureForNbpApi"/>.</param>
-    /// <param name="urlBuilderFactory">Builds the NBP request paths.</param>
-    /// <param name="logger">Logger; <see langword="null"/> disables logging.</param>
-    /// <param name="traceSource">Trace source for spans; <see langword="null"/> disables tracing.</param>
-    public NbpGoldPriceClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory,
-                                     IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
-        : this(httpClient, urlBuilderFactory, TimeProvider.System, logger, traceSource) { }
+    /// <param name="httpClient">HTTP client used for the requests. It isn't changed, so it can be shared with other code.</param>
+    public NbpGoldPriceClient(HttpClient httpClient)
+        : this(httpClient, options: null) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NbpGoldPriceClient"/> class.
     /// </summary>
-    /// <param name="httpClient">HTTP client configured for the NBP API, e.g. with <see cref="OpenUrzednik.Nbp.Extensions.HttpClientExtensions.ConfigureForNbpApi"/>.</param>
-    /// <param name="urlBuilderFactory">Builds the NBP request paths.</param>
-    /// <param name="timeProvider">Clock used for "today" (Europe/Warsaw date) and <c>Retry-After</c> dates.</param>
+    /// <param name="httpClient">HTTP client used for the requests. It isn't changed, so it can be shared with other code.</param>
+    /// <param name="options">Base URL and timeout; <see langword="null"/> uses the defaults (see <see cref="NbpOptions"/>).</param>
+    /// <param name="urlBuilderFactory">Builds the request paths; <see langword="null"/> uses <see cref="NbpUrlBuilderFactory"/>.
+    /// Replace it to change paths or query parameters, e.g. for a gateway.</param>
+    /// <param name="timeProvider">Clock used for "today" (Europe/Warsaw date) and <c>Retry-After</c> dates; <see langword="null"/> uses <see cref="TimeProvider.System"/>.</param>
     /// <param name="logger">Logger; <see langword="null"/> disables logging.</param>
     /// <param name="traceSource">Trace source for spans; <see langword="null"/> disables tracing.</param>
-    public NbpGoldPriceClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, TimeProvider timeProvider,
-                                     IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
+    /// <exception cref="ArgumentNullException"><paramref name="httpClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="options"/> or the <see cref="HttpClient.BaseAddress"/> is invalid (not an absolute <c>https</c> URL, or a non-positive timeout).</exception>
+    public NbpGoldPriceClient(HttpClient httpClient, NbpOptions? options = null, INbpUrlBuilderFactory? urlBuilderFactory = null,
+        TimeProvider? timeProvider = null, IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
-        ArgumentNullException.ThrowIfNull(urlBuilderFactory);
-        ArgumentNullException.ThrowIfNull(timeProvider);
 
-        _httpClient = httpClient;
-        _timeProvider = timeProvider;
-        _urlBuilder = urlBuilderFactory.GetGoldBuilder();
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _telemetryProvider = new NbpTelemetryProvider(logger, traceSource);
+        _connection = NbpConnection.Create(httpClient, options, _telemetryProvider, _timeProvider);
+        _urlBuilder = (urlBuilderFactory ?? new NbpUrlBuilderFactory()).GetGoldBuilder();
     }
 
     /// <inheritdoc/>
@@ -57,7 +57,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.latest");
 
-        var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.Latest(), JsonContext.GoldPriceDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(_urlBuilder.Latest(), JsonContext.GoldPriceDtoArray, cancellationToken);
 
         switch (requestResult.IsSuccess)
         {
@@ -90,7 +90,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
             return topCountValidation;
         }
 
-        var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.ForTopCount(topCount), JsonContext.GoldPriceDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(_urlBuilder.ForTopCount(topCount), JsonContext.GoldPriceDtoArray, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
@@ -104,7 +104,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     {
         using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.today");
 
-        var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.Today(), JsonContext.GoldPriceDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(_urlBuilder.Today(), JsonContext.GoldPriceDtoArray, cancellationToken);
 
         switch (requestResult.IsSuccess)
         {
@@ -138,7 +138,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
             return dateValidation;
         }
 
-        var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.ForDate(date), JsonContext.GoldPriceDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(_urlBuilder.ForDate(date), JsonContext.GoldPriceDtoArray, cancellationToken);
 
         switch (requestResult.IsSuccess)
         {
@@ -174,7 +174,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
             return validationResult;
         }
 
-        var requestResult = await _httpClient.GetNbpAsync(_urlBuilder.ForDateRange(from, to), JsonContext.GoldPriceDtoArray, _telemetryProvider, _timeProvider, cancellationToken);
+        var requestResult = await _connection.GetAsync(_urlBuilder.ForDateRange(from, to), JsonContext.GoldPriceDtoArray, cancellationToken);
 
         if (requestResult.IsSuccess)
             return NbpPayload.Map(requestResult.Value, Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);

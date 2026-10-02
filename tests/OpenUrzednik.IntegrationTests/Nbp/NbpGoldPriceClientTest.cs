@@ -1,6 +1,5 @@
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Attributes;
 
 using Shouldly;
@@ -10,13 +9,12 @@ namespace OpenUrzednik.IntegrationTests.Nbp;
 public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
 {
     private readonly HttpClient _httpClient;
-    private readonly NbpUrlBuilderFactory _urlBuilderFactory = new();
     private readonly NbpGoldPriceClient _client;
 
     public NbpGoldPriceClientTest(NbpHttpClientFixture fixture)
     {
         _httpClient = fixture.HttpClient;
-        _client = new NbpGoldPriceClient(_httpClient, _urlBuilderFactory);
+        _client = new NbpGoldPriceClient(_httpClient);
     }
 
     [ManualFact]
