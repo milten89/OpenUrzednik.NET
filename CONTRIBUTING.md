@@ -14,7 +14,7 @@ Wiążące decyzje architektoniczne są opisane w [`docs/adr/`](docs/adr/README.
 - **`OpenUrzednikError`** jest bazowym typem dla błędów przewidywalnych. Każdy konkretny błąd powinien dziedziczyć po nim i implementować `Code` oraz `CreateException()`, które zwraca wyjątek pochodny od `OpenUrzednikException`.
 - **Pakiety provider-specific** powinny być zgodne z ruchem przyjętym w `OpenUrzednik.Core` — nazwy typów, nazewnictwo błędów i sposób zwracania rezultatów mają być spójne.
 - **Publiczne API** dokumentuj komentarzami `///` — `GenerateDocumentationFile` jest włączone, więc trafiają do IntelliSense konsumenta.
-- **Testy** nie mogą zależeć od prawdziwych serwerów urzędów w domyślnym przebiegu CI. Scenariusze HTTP testuj stubami (`StubHttpMessageHandler`) i WireMockiem, używając odpowiedzi przechwyconych z prawdziwego API. Testy wywołujące prawdziwe API oznaczaj `[ManualFact]` / `[ManualTheory]` — uruchamiają się tylko z ustawioną zmienną `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED`.
+- **Testy** nie mogą zależeć od prawdziwych serwerów urzędów w domyślnym przebiegu CI. Scenariusze HTTP testuj stubami (`StubHttpMessageHandler`) i WireMockiem, używając odpowiedzi przechwyconych z prawdziwego API. Testy wywołujące prawdziwe API oznaczaj `[ManualFact]` / `[ManualTheory]` — uruchamiają się tylko na żądanie: `dotnet test tests/OpenUrzednik.IntegrationTests --explicit on` albo z ustawioną zmienną `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED`.
 
 ## Zgłaszanie luk bezpieczeństwa
 

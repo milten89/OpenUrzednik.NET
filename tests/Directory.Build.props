@@ -8,10 +8,12 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+  <!-- Items are evaluated after every property, so a project that sets IsTestProject=false (TestCommon) doesn't get the runner. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <!-- VSTest only, kept for IDEs that don't run Microsoft.Testing.Platform yet (xUnit's advice). -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 

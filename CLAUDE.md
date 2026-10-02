@@ -16,7 +16,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | `src/OpenUrzednik.Nbp.DependencyInjection` | `services.AddOpenUrzednikNbp()`: the NBP clients as typed clients of one named `HttpClient`, validated options, adapters wired; returns the `IHttpClientBuilder` |
 | `src/OpenUrzednik.Gus`, `Krs`, `Mf` | Empty skeletons. **Do not work on them** ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)) |
 | `tests/OpenUrzednik.*.Tests` | Unit tests (xUnit v3, Shouldly, NSubstitute, Bogus, `FakeTimeProvider`) |
-| `tests/OpenUrzednik.IntegrationTests` | WireMock tests (run in CI) and tests against the real API (skipped unless `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set) |
+| `tests/OpenUrzednik.IntegrationTests` | WireMock tests (run in CI) and tests against the real API (explicit: they run with `--explicit on` or when `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set) |
 | `tests/OpenUrzednik.TestCommon` | Shared test helpers: `StubHttpMessageHandler`, `ManualFact`/`ManualTheory`, Faker extensions |
 
 Current priorities are listed in [`docs/BACKLOG.md`](docs/BACKLOG.md). Pick work from there unless told otherwise.
@@ -27,9 +27,9 @@ Current priorities are listed in [`docs/BACKLOG.md`](docs/BACKLOG.md). Pick work
 dotnet build OpenUrzednik.slnx
 dotnet test OpenUrzednik.slnx                    # all TFMs; locally only installed runtimes work
 dotnet test OpenUrzednik.slnx -f net10.0         # fastest local loop
-dotnet test tests/OpenUrzednik.Nbp.Tests --filter "FullyQualifiedName~NbpGoldPriceClientTest"
+dotnet test tests/OpenUrzednik.Nbp.Tests --filter-class "*NbpGoldPriceClientTest"
 dotnet format OpenUrzednik.slnx --verify-no-changes   # CI fails if this reports changes
-dotnet test tests/OpenUrzednik.IntegrationTests --settings integrationTest.runsettings  # also hits the real NBP API
+dotnet test tests/OpenUrzednik.IntegrationTests --explicit on   # also hits the real NBP API
 ```
 
 Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and `dotnet format --verify-no-changes`, and report the results.
@@ -90,7 +90,8 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Use deterministic data: `new Faker().WithConstantSeed()`, the DTO fakers in `tests/OpenUrzednik.Nbp.Tests/Fakes`, and `FakeTimeProvider`.
 - Fake HTTP in unit tests with `StubHttpMessageHandler`; mock interfaces with NSubstitute. Pass `TestContext.Current.CancellationToken` to async calls.
 - WireMock tests must use **response bodies captured from the real API**, not hand-written JSON. Each error path in ADR-0002 (404, 400, 429 with `Retry-After`, 5xx, timeout, connection failure, malformed JSON) needs a test.
-- Tests against the real API use `[ManualFact]`/`[ManualTheory]` and must never run in default CI.
+- Tests against the real API use `[ManualFact]`/`[ManualTheory]` (explicit tests) and must never run in default CI.
+- Tests run on Microsoft.Testing.Platform (`global.json`), so filters are xUnit's (`--filter-class`, `--filter-method`, `--filter-trait`), not VSTest's `--filter`.
 
 ## Workflow
 

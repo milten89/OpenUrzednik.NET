@@ -57,14 +57,13 @@ jobs:
     - name: Run Tests (${{ matrix.tfm }})
       run: >
         dotnet test OpenUrzednik.slnx --configuration Release --no-build --framework ${{ matrix.tfm }}
-        --verbosity normal
-        --collect:"XPlat Code Coverage" --results-directory ./TestResults
+        --coverage --coverage-output-format cobertura --results-directory ./TestResults
 
     - name: Upload coverage
       if: ${{ matrix.tfm == 'net10.0' && always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: coverage-${{ matrix.tfm }}
-        path: ./TestResults/**/coverage.cobertura.xml
+        path: ./TestResults/**/*.cobertura.xml
         if-no-files-found: ignore
         retention-days: 14

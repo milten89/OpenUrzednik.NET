@@ -90,7 +90,7 @@ How to use this file:
 
 ## P3: Repository and quality
 
-- [ ] **19. Skeleton packages are published empty.** Set `IsPackable=false` for Gus, Krs and Mf ([ADR-0010](adr/0010-provider-readiness-gate.md)), and remove or keep their empty test projects (they produce "no tests available" warnings).
+- [ ] **19. Skeleton packages are published empty.** Set `IsPackable=false` for Gus, Krs and Mf ([ADR-0010](adr/0010-provider-readiness-gate.md)), and remove or keep their empty test projects. Under Microsoft.Testing.Platform a test project with no tests fails the run (exit code 8), so since #35 they build as libraries (`IsTestProject=false`).
 
 - [ ] **20. Redundant SourceLink package.** The NU1902 warning is gone since #12 (`Microsoft.SourceLink.GitHub` 10.0.401), but SourceLink ships with the .NET 8+ SDK, so the `PackageReference` in `Directory.Build.props` can still be removed.
 
@@ -104,11 +104,12 @@ How to use this file:
 
 - [ ] **23. Usage docs:** a `samples/` folder and package READMEs with real usage once the client API is settled (item 14).
 
-- [ ] **24. Move tests to the Microsoft.Testing.Platform runner.** `xunit.v3` 4.x no longer runs through VSTest on the .NET 10 SDK, so Dependabot's #11 fails CI.
+- [x] **24. Move tests to the Microsoft.Testing.Platform runner.** `xunit.v3` 4.x no longer runs through VSTest on the .NET 10 SDK, so Dependabot's #11 fails CI.
     * Add a `global.json` that opts in to the new `dotnet test`.
     * Update the CI workflow (`--collect:"XPlat Code Coverage"` in `build.yml` doesn't work under MTP), `integrationTest.runsettings`, coverlet and the commands in CLAUDE.md (`--filter` syntax changes), then let #11 rebase.
     * Keep the `build (<tfm>)` job names: they are required status checks (or update the ruleset, see `docs/GITHUB-SETUP.md`).
     * Best done before item 17, which adds a .NET Framework test job.
+    * Done in #35, together with the xUnit 4 and Microsoft.NET.Test.Sdk bumps from #11 (Microsoft's coverage extension needs MTP v2, which xUnit 4 uses). Coverage comes from `Microsoft.Testing.Extensions.CodeCoverage` (`--coverage`) instead of coverlet. `integrationTest.runsettings` is gone, because MTP doesn't read it: the real-API tests are explicit and run with `--explicit on`.
 
 - [ ] **25. `docs/GITHUB-SETUP.md` is out of date.** "Restrict updates" was removed from the `protected-branches` ruleset (it made every merge an admin override), and the `code_quality` rule didn't block any merge, apparently because GitHub Code Quality isn't available for the repository (the setup API returns 404). Update the file and decide whether to keep that rule.
 
