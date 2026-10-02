@@ -10,6 +10,8 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 |---|---|
 | `src/OpenUrzednik.Core` | Result pattern (`OpenUrzednikResult`, `OpenUrzednikResult<T>`), errors and exceptions, telemetry abstractions, `ValueValidator<T>` |
 | `src/OpenUrzednik.Http` | Shared REST/JSON layer for providers: `RestRequestExecutor`, `RestProviderProfile`, `OpenUrzednikTelemetry` (namespace `OpenUrzednik.Http.Infrastructure`) |
+| `src/OpenUrzednik.Extensions.Logging` | `IOpenUrzednikLogger` over `ILogger` (`OpenUrzednikLogger`, `CreateOpenUrzednikLogger<TClient>()`) |
+| `src/OpenUrzednik.Diagnostics` | `IOpenUrzednikTraceSource` over `ActivitySource` (`ActivityTraceSource`, `GetShared("OpenUrzednik.<Provider>")`) |
 | `src/OpenUrzednik.Nbp` | NBP API: currency rates (`Currency/`), rate tables (`Table/`), gold prices (`Gold/`). **Reference provider**, still being hardened |
 | `src/OpenUrzednik.Gus`, `Krs`, `Mf` | Empty skeletons. **Do not work on them** ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)) |
 | `tests/OpenUrzednik.*.Tests` | Unit tests (xUnit v3, Shouldly, NSubstitute, Bogus, `FakeTimeProvider`) |
@@ -51,7 +53,8 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 
 **Telemetry ([ADR-0003](docs/adr/0003-telemetry-abstractions.md))**
 - Use `IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` and `IOpenUrzednikSpan` from Core, with `Null*` defaults. Don't use `ILogger` or `ActivitySource` in Core or provider packages.
-- Span names: `<provider>.<area>.<operation>` (e.g. `nbp.currency.buy_sell_latest`). Tags: `<provider>.<parameter>`. Record failures with `span.RecordError(s)`.
+- Span names: `<provider>.<area>.<operation>` (e.g. `nbp.currency.buy_sell_latest`). Tags: `<provider>.<parameter>`; HTTP tags follow OpenTelemetry (`http.request.method`, `url.path`, `http.response.status_code`). Record failures with `span.RecordError(s)`.
+- Adapters: `OpenUrzednik.Extensions.Logging` (logger category = the client's full type name) and `OpenUrzednik.Diagnostics` (source `OpenUrzednik.<Provider>`, e.g. `NbpTelemetry.SourceName`; every span is `ActivityKind.Internal`).
 - Guard `Debug` logs with `IsEnabled`, use message templates (no interpolation), and never log secrets or full personal identifiers.
 
 **Target frameworks ([ADR-0005](docs/adr/0005-target-frameworks.md))**

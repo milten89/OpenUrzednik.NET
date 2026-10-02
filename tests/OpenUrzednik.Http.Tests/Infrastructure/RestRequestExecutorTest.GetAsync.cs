@@ -560,8 +560,26 @@ public partial class RestRequestExecutorTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        span.Received(1).SetTag("http.path", relativePath);
-        span.Received(1).SetTag("http.status_code", (int)HttpStatusCode.OK);
+        span.Received(1).SetTag("http.request.method", "GET");
+        span.Received(1).SetTag("url.path", httpClient.BaseAddress!.AbsolutePath.TrimEnd('/') + relativePath);
+        span.Received(1).SetTag("http.response.status_code", (int)HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetAsync_BaseAddressWithPath_SetsAbsoluteUrlPathTag()
+    {
+        // Arrange
+        var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("a", 1))))
+        {
+            BaseAddress = new Uri("https://api.example.com/api/"),
+        };
+
+        // Act
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync("/cenyzlota/last/3", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        span.Received(1).SetTag("url.path", "/api/cenyzlota/last/3");
     }
 
     [Fact]
