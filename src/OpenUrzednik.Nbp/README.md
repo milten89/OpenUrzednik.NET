@@ -41,6 +41,8 @@ var client = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions
 });
 ```
 
+Z kontenerem DI użyj pakietu [OpenUrzednik.Nbp.DependencyInjection](https://www.nuget.org/packages/OpenUrzednik.Nbp.DependencyInjection): `builder.Services.AddOpenUrzednikNbp()` rejestruje wszystkie trzy klienty, a `.AddStandardResilienceHandler()` dodaje ponowienia.
+
 Klient bierze adres API z pierwszego ustawionego miejsca: `NbpOptions.ApiUrl`, `HttpClient.BaseAddress`, a na końcu domyślny `https://api.nbp.pl/api/`. Jeśli nie ustawisz `NbpOptions.Timeout`, obowiązuje limit czasu `HttpClient` (domyślnie 100 s). `NbpOptions.Timeout` może ten limit skrócić, ale nie wydłużyć, bo `HttpClient.Timeout` nadal obowiązuje do otrzymania nagłówków odpowiedzi. Adres API nie może zawierać zapytania (`?…`) ani fragmentu (`#…`).
 
 Błędy, takie jak brak danych, przekroczony limit zapytań albo upływ limitu czasu, wracają w wyniku, a nie jako wyjątki. Jeśli wolisz wyjątki, wywołaj na wyniku `EnsureSuccess()`.

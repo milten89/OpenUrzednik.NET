@@ -29,6 +29,7 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 | [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | 🧪 Preview | Przekazuje logi klientów do `ILogger` z Microsoft.Extensions.Logging | `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP. API publiczne może się jeszcze zmienić | `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` | `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z GUS | `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z KRS | `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z Białą Listą VAT | `net8.0`, `net9.0`, `net10.0` |

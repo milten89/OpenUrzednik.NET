@@ -40,7 +40,7 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 * DI packages expose `services.AddOpenUrzednik<Provider>(...)` registering typed `HttpClient`s and validated options, and return the `IHttpClientBuilder`.
 * Resilience follows the .NET standard ([Microsoft.Extensions.Http.Resilience](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience)): the app opts in by chaining `AddStandardResilienceHandler(...)` (or `AddResilienceHandler(...)`) on that builder. DI packages don't add a resilience handler themselves, because the guidance is one handler per client, not stacked.
 * DI packages translate the exceptions a resilience handler throws when it rejects a request, so they don't escape the result ([ADR-0002](0002-result-pattern-and-error-handling.md)). They register an outermost `DelegatingHandler` (before any resilience handler) that catches Polly's `ExecutionRejectedException` types and rethrows them as exceptions the request executor ([ADR-0006](0006-shared-http-layer.md)) already handles:
-  * `TimeoutRejectedException` → `TaskCanceledException` with an inner `TimeoutException`, returned as a `RequestTimeoutError`;
+  * `TimeoutRejectedException` → `TaskCanceledException` (inner: the rejection), returned as a `RequestTimeoutError`;
   * other rejections (open circuit breaker, rate limiter) → `HttpRequestException`, returned as a `ServiceUnavailableError`.
   * Caller cancellation still throws. `OpenUrzednik.Http` itself doesn't reference Polly.
 
@@ -58,3 +58,9 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 ## More Information
 
 **2026-10-02 change.** The first version said DI packages register clients "with sensible resilience defaults". That would make the library add Polly's standard handler itself, and an app adding its own would then stack two handlers, which Microsoft's guidance advises against. The resilience is now the app's explicit choice, through the standard API, and the DI package only guarantees that the handler's rejections are returned as errors. The tracing adapter is named `OpenUrzednik.Diagnostics` ([ADR-0003](0003-telemetry-abstractions.md)).
+
+**2026-10-02 implementation note** (`OpenUrzednik.Nbp.DependencyInjection`, backlog item 15):
+
+* The DI package references `Polly.Core` (8.4.2, the version `Microsoft.Extensions.Http.Resilience` 10.8 needs) only to recognise the rejection types, not `Microsoft.Extensions.Http.Resilience` itself: apps that don't add a resilience handler don't get it.
+* A timeout rejection becomes a `TaskCanceledException` whose inner exception is the `TimeoutRejectedException`, not a `TimeoutException`. The request executor reports a limit in `RequestTimeoutError.Timeout` only when it knows that limit elapsed: its own deadline cancelled the request, or `HttpClient.Timeout` fired (an inner `TimeoutException`). A resilience handler's timeout is reported without a limit, instead of as `HttpClient.Timeout`.
+* Options are checked at startup (`ValidateOnStart`) with the clients' own rules, exposed as `NbpOptions.Validate()`.
