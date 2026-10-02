@@ -25,7 +25,8 @@ public sealed class ErrorResponseContext
     public HttpStatusCode StatusCode => Response.StatusCode;
 
     /// <summary>
-    /// Gets the response. Its body hasn't been read; prefer <see cref="ReadMessageAsync"/>, which reads it safely.
+    /// Gets the response, e.g. for its headers. Read the body only through <see cref="ReadMessageAsync"/>: the body can be read once,
+    /// and the default mapping reads it again (through the same call) when the override returns <see langword="null"/>.
     /// </summary>
     public HttpResponseMessage Response { get; }
 
@@ -45,7 +46,7 @@ public sealed class ErrorResponseContext
     public CancellationToken CancellationToken { get; }
 
     /// <summary>
-    /// Reads at most the first 500 characters of the body as text and trims them.
+    /// Reads at most the first 500 characters of the body as text and trims them. Repeated calls return the same text.
     /// Returns <see langword="null"/> when there is no body or it can't be read before the deadline.
     /// Throws <see cref="OperationCanceledException"/> only when the caller cancelled.
     /// </summary>

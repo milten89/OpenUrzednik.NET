@@ -1,10 +1,8 @@
 using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 
 using Bogus;
 
@@ -24,15 +22,6 @@ namespace OpenUrzednik.Http.Tests.Infrastructure;
 
 public partial class RestRequestExecutorTest
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
-    };
-    private static readonly JsonTypeInfo<TestDto> TypeInfo = (JsonTypeInfo<TestDto>)JsonOptions.GetTypeInfo(typeof(TestDto));
-
-    private readonly TimeProvider _timeProvider = new FakeTimeProvider();
-    private readonly OpenUrzednikTelemetry _telemetryProvider = new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
-
     [Fact]
     public async Task GetAsync_NullRelativePath_ThrowsArgumentNullException()
     {
@@ -771,69 +760,191 @@ public partial class RestRequestExecutorTest
             async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
     }
 
-    private static readonly RestProviderProfile Profile = new("test", "Test API");
-
-    // Providers resolve the base address themselves; the tests take it from the HttpClient.
-    private static RestRequestExecutor CreateConnection(HttpClient httpClient, OpenUrzednikTelemetry telemetryProvider, TimeProvider timeProvider, TimeSpan? timeout = null)
-        => new(httpClient, httpClient?.BaseAddress ?? new Uri("https://api.example.com/"), Profile, timeout, telemetryProvider, timeProvider);
-
-    private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
-        => CreateHttpClient(faker, response, out _);
-
-    private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response, out StubHttpMessageHandler handler)
+    [Fact]
+    public async Task GetAsync_OverrideReturnsError_ReturnsItAndRecordsIt()
     {
-        var baseAddress = faker.Internet.UrlWithPath("https").TrimEnd('/') + '/';
-        handler = new StubHttpMessageHandler(response);
-        return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.UnprocessableEntity) { Content = new StringContent("""{"code":"WL-115"}""") };
+        using var httpClient = CreateHttpClient(faker, response);
+        var (telemetry, _, span) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(true);
+        ErrorResponseContext? received = null;
+        string? body = null;
+        var custom = new BadRequestError("Custom.", 422);
+
+        // Act
+        var result = await CreateConnectionWithOverride(httpClient, async context =>
+        {
+            received = context;
+            body = await context.ReadMessageAsync();
+            return custom;
+        }, telemetry).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeSameAs(custom);
+        received.ShouldNotBeNull().StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+        received.RequestPath.ShouldEndWith("path");
+        body.ShouldBe("""{"code":"WL-115"}""");
+        span.Received(1).SetTag("error.code", BadRequestError.ErrorCode);
     }
 
-    private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, TestDto dto)
-        => new(statusCode) { Content = JsonContent.Create(dto, TypeInfo) };
-
-    private static (OpenUrzednikTelemetry Provider, IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span) CreateTelemetrySubstitutes()
+    [Fact]
+    public async Task GetAsync_OverrideReturnsNull_UsesDefaultMapping()
     {
-        var logger = Substitute.For<IOpenUrzednikLogger>();
-        var span = Substitute.For<IOpenUrzednikSpan>();
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        // Act
+        var result = await CreateConnectionWithOverride(httpClient, _ => Task.FromResult<OpenUrzednikError?>(null))
+            .GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
+    }
+
+    [Fact]
+    public async Task GetAsync_OverrideOn429_GetsRetryAfter()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+        response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(7));
+        using var httpClient = CreateHttpClient(faker, response);
+        TimeSpan? retryAfter = null;
+
+        // Act
+        await CreateConnectionWithOverride(httpClient, context =>
+        {
+            retryAfter = context.RetryAfter;
+            return Task.FromResult<OpenUrzednikError?>(null);
+        }).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        retryAfter.ShouldBe(TimeSpan.FromSeconds(7));
+    }
+
+    [Fact]
+    public async Task GetAsync_SuccessfulResponse_DoesNotCallOverride()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, new TestDto("name", 1)));
+        var called = false;
+
+        // Act
+        var result = await CreateConnectionWithOverride(httpClient, _ =>
+        {
+            called = true;
+            return Task.FromResult<OpenUrzednikError?>(null);
+        }).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        called.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task GetAsync_UnexpectedException_PropagatesAndMarksSpan()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var handler = new DelegatingStubHttpMessageHandler((_, _) => throw new NotSupportedException("boom"));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https").TrimEnd('/') + '/') };
+        var (telemetry, _, span) = CreateTelemetrySubstitutes();
+
+        // Act && Assert
+        await Should.ThrowAsync<NotSupportedException>(() => CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken));
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
+        span.Received(1).Dispose();
+    }
+
+    [Fact]
+    public async Task GetAsync_CallerCancels_DoesNotMarkSpanAsUnexpected()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var cts = new CancellationTokenSource();
+        var handler = new DelegatingStubHttpMessageHandler(async (_, ct) =>
+        {
+            await cts.CancelAsync();
+            ct.ThrowIfCancellationRequested();
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https").TrimEnd('/') + '/') };
+        var (telemetry, _, span) = CreateTelemetrySubstitutes();
+
+        // Act && Assert
+        await Should.ThrowAsync<OperationCanceledException>(() => CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("path", TypeInfo, cts.Token));
+        span.DidNotReceive().SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
+    }
+
+    [Fact]
+    public async Task GetAsync_Always_NamesSpanAfterProfile()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, new TestDto("name", 1)));
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
-        tracer.StartSpan(Arg.Any<string>()).Returns(span);
-        return (new OpenUrzednikTelemetry(logger, tracer), logger, span);
+        tracer.StartSpan(Arg.Any<string>()).Returns(Substitute.For<IOpenUrzednikSpan>());
+
+        // Act
+        await CreateConnection(httpClient, new OpenUrzednikTelemetry(traceSource: tracer), _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        tracer.Received(1).StartSpan("test.http.get");
     }
 
-    private sealed record TestDto(string Name, int Value);
-
-    // A response body that never finishes arriving: reads complete only when they are cancelled.
-    private sealed class NeverEndingStream : Stream
+    [Fact]
+    public async Task GetAsync_UnexpectedStatus_ReturnsUnknownErrorWithReadableMessage()
     {
-        public override bool CanRead => true;
-        public override bool CanSeek => false;
-        public override bool CanWrite => false;
-        public override long Length => throw new NotSupportedException();
-        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.Conflict));
 
-        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-        {
-            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-            return 0;
-        }
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
 
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
-
-        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-        public override void Flush() { }
-        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-        public override void SetLength(long value) => throw new NotSupportedException();
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnknownError>().Message.ShouldBe("Test API returned unexpected status 409.");
     }
 
-    private sealed class DisposeTrackingContent(string body) : StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json)
+    [Fact]
+    public async Task GetAsync_OverrideReadsBodyThenReturnsNull_DefaultMappingKeepsServerMessage()
     {
-        public bool IsDisposed { get; private set; }
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StringContent("400 BadRequest - Błędny zakres dat") };
+        using var httpClient = CreateHttpClient(faker, response);
+        string? first = null;
+        string? second = null;
 
-        protected override void Dispose(bool disposing)
+        // Act
+        var result = await CreateConnectionWithOverride(httpClient, async context =>
         {
-            IsDisposed = true;
-            base.Dispose(disposing);
-        }
+            first = await context.ReadMessageAsync();
+            second = await context.ReadMessageAsync();
+            return null;
+        }).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        first.ShouldBe("400 BadRequest - Błędny zakres dat");
+        second.ShouldBe(first);
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldEndWith(": 400 BadRequest - Błędny zakres dat");
+    }
+
+    [Fact]
+    public async Task GetAsync_OverrideThrows_PropagatesAndMarksSpan()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.BadRequest));
+        var (telemetry, _, span) = CreateTelemetrySubstitutes();
+
+        // Act && Assert
+        await Should.ThrowAsync<JsonException>(() => CreateConnectionWithOverride(httpClient, _ => throw new JsonException("bad"), telemetry)
+            .GetAsync("path", TypeInfo, TestContext.Current.CancellationToken));
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
     }
 }

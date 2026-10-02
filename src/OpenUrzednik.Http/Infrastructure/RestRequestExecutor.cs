@@ -24,10 +24,8 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// </remarks>
 public sealed class RestRequestExecutor
 {
-    /// <summary>
-    /// The number of characters <see cref="ErrorResponseContext.ReadMessageAsync"/> reads from an error response body.
-    /// </summary>
-    public const int MaxServerMessageLength = 500;
+    // The number of characters read from an error response body (ErrorResponseContext.ReadMessageAsync, 400 messages).
+    internal const int MaxServerMessageLength = 500;
 
     private readonly HttpClient _httpClient;
     private readonly TimeSpan? _timeout;
@@ -257,10 +255,13 @@ public sealed class RestRequestExecutor
         var path = response.RequestMessage?.RequestUri?.ToString() ?? relativePath;
         var delay = response.StatusCode == HttpStatusCode.TooManyRequests ? GetDelay(response, _timeProvider) : null;
 
+        // The body can be read only once, so the override and the default mapping share one read.
+        Task<string?>? messageTask = null;
+        Task<string?> ReadMessageOnceAsync() => messageTask ??= ReadServerMessageAsync(response, requestToken, cancellationToken);
+
         if (_profile.MapErrorAsync is { } mapErrorAsync)
         {
-            var context = new ErrorResponseContext(response, path, delay,
-                () => ReadServerMessageAsync(response, requestToken, cancellationToken), requestToken);
+            var context = new ErrorResponseContext(response, path, delay, ReadMessageOnceAsync, requestToken);
             if (await mapErrorAsync(context).ConfigureAwait(false) is { } customError)
             {
                 _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} returned status {status} for {path}",
@@ -270,10 +271,10 @@ public sealed class RestRequestExecutor
             }
         }
 
-        return await MapDefaultErrorAsync(response, path, delay, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+        return await MapDefaultErrorAsync(response, path, delay, traceSpan, ReadMessageOnceAsync).ConfigureAwait(false);
     }
 
-    private async Task<OpenUrzednikResult> MapDefaultErrorAsync(HttpResponseMessage response, string path, TimeSpan? delay, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
+    private async Task<OpenUrzednikResult> MapDefaultErrorAsync(HttpResponseMessage response, string path, TimeSpan? delay, IOpenUrzednikSpan traceSpan, Func<Task<string?>> readMessageAsync)
     {
         var statusCode = (int)response.StatusCode;
         var logger = _telemetry.Logger;
@@ -301,7 +302,7 @@ public sealed class RestRequestExecutor
                 }
             case HttpStatusCode.BadRequest:
                 {
-                    var serverMessage = await ReadServerMessageAsync(response, requestToken, cancellationToken).ConfigureAwait(false);
+                    var serverMessage = await readMessageAsync().ConfigureAwait(false);
                     logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} rejected the request to {path}", "provider", displayName, "path", path);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Bad request");
                     return new BadRequestError(

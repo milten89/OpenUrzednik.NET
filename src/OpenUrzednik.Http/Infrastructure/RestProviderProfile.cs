@@ -15,6 +15,8 @@ public sealed class RestProviderProfile
     /// <param name="displayName">Name used in error messages and logs, e.g. <c>NBP API</c>.</param>
     /// <param name="mapErrorAsync">
     /// Optional override for non-success responses. Return <see langword="null"/> to use the default mapping (ADR-0002).
+    /// Expected failures, e.g. an error body that isn't valid JSON, must be returned as errors or <see langword="null"/>:
+    /// anything the override throws reaches the caller of <see cref="RestRequestExecutor.GetAsync{TDto}"/>.
     /// </param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="displayName"/> is empty.</exception>
     public RestProviderProfile(string name, string displayName, Func<ErrorResponseContext, Task<OpenUrzednikError?>>? mapErrorAsync = null)
@@ -39,6 +41,7 @@ public sealed class RestProviderProfile
 
     /// <summary>
     /// Gets the optional override for non-success responses. It runs before the default mapping; a <see langword="null"/> result falls back to it.
+    /// Exceptions it throws aren't caught: they reach the caller and mark the span as failed.
     /// </summary>
     public Func<ErrorResponseContext, Task<OpenUrzednikError?>>? MapErrorAsync { get; }
 }
