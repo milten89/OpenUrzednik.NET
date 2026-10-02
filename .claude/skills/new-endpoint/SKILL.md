@@ -55,7 +55,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
   - success with the captured real body
   - 404, 400, 429 with `Retry-After`, 5xx, malformed JSON, timeout
   - Assert the request path and `Accept` header.
-- **Real API** test with `[ManualFact]` (skipped by default).
+- **Real API** test with `[ManualFact]` (explicit: runs with `--explicit on` or when `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set).
 
 ## 8. Finish
 

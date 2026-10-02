@@ -9,6 +9,7 @@ namespace OpenUrzednik.TestCommon.Attributes;
 public sealed class ManualTheoryAttribute : TheoryAttribute
 {
     public ManualTheoryAttribute([CallerFilePath] string? sourceFilePath = null, [CallerLineNumber] int sourceLineNumber = -1)
+        : base(sourceFilePath, sourceLineNumber)
     {
         // Calls the real API, so it runs only when asked for: with `--explicit on`, or when the environment variable is set.
         Explicit = Environment.GetEnvironmentVariable(TestConst.IntegrationTestsEnabledEnvVar) is null;

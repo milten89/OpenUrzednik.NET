@@ -91,7 +91,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Fake HTTP in unit tests with `StubHttpMessageHandler`; mock interfaces with NSubstitute. Pass `TestContext.Current.CancellationToken` to async calls.
 - WireMock tests must use **response bodies captured from the real API**, not hand-written JSON. Each error path in ADR-0002 (404, 400, 429 with `Retry-After`, 5xx, timeout, connection failure, malformed JSON) needs a test.
 - Tests against the real API use `[ManualFact]`/`[ManualTheory]` (explicit tests) and must never run in default CI.
-- Tests run on Microsoft.Testing.Platform (`global.json`), so filters are xUnit's (`--filter-class`, `--filter-method`, `--filter-trait`), not VSTest's `--filter`.
+- Tests run on Microsoft.Testing.Platform (`global.json`), so filters are xUnit's (`--filter-class`, `--filter-method`, `--filter-trait`), not VSTest's `--filter`. Filter one project: on the whole solution, projects with no matching test make the run exit with code 8 (add `--ignore-exit-code 8`).
 
 ## Workflow
 

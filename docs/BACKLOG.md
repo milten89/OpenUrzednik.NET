@@ -109,7 +109,7 @@ How to use this file:
     * Update the CI workflow (`--collect:"XPlat Code Coverage"` in `build.yml` doesn't work under MTP), `integrationTest.runsettings`, coverlet and the commands in CLAUDE.md (`--filter` syntax changes), then let #11 rebase.
     * Keep the `build (<tfm>)` job names: they are required status checks (or update the ruleset, see `docs/GITHUB-SETUP.md`).
     * Best done before item 17, which adds a .NET Framework test job.
-    * Done in #35, together with the xUnit 4 and Microsoft.NET.Test.Sdk bumps from #11 (Microsoft's coverage extension needs MTP v2, which xUnit 4 uses). Coverage comes from `Microsoft.Testing.Extensions.CodeCoverage` (`--coverage`) instead of coverlet. `integrationTest.runsettings` is gone, because MTP doesn't read it: the real-API tests are explicit and run with `--explicit on`.
+    * Done in #35, together with the xUnit 4 and Microsoft.NET.Test.Sdk bumps from #11 (Microsoft's coverage extension needs MTP v2, which xUnit 4 uses). #11 stays open for its NSubstitute and WireMock.Net bumps, after a rebase. Coverage comes from `Microsoft.Testing.Extensions.CodeCoverage` (`--coverage`) instead of coverlet. `integrationTest.runsettings` is gone, because MTP doesn't read it: the real-API tests are explicit and run with `--explicit on`.
 
 - [ ] **25. `docs/GITHUB-SETUP.md` is out of date.** "Restrict updates" was removed from the `protected-branches` ruleset (it made every merge an admin override), and the `code_quality` rule didn't block any merge, apparently because GitHub Code Quality isn't available for the repository (the setup API returns 404). Update the file and decide whether to keep that rule.
 
