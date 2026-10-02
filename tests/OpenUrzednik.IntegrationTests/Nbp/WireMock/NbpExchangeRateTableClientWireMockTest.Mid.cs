@@ -1,381 +1,148 @@
-using System.Net;
-
+using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Table;
 
 using Shouldly;
 
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
+// The table fixtures keep the first 3 rates (of 32 in table A and 116 in table B).
 public partial class NbpExchangeRateTableClientWireMockTest
 {
+    private static readonly ExchangeRateTable Table189A = new("189/A/NBP/2026", new DateOnly(2026, 9, 29), [
+        new TableRate("bat (Tajlandia)", "THB", 0.1147m),
+        new TableRate("dolar amerykański", "USD", 3.8537m),
+        new TableRate("dolar australijski", "AUD", 2.6941m),
+    ]);
+
+    private static readonly ExchangeRateTable Table190A = new("190/A/NBP/2026", new DateOnly(2026, 9, 30), [
+        new TableRate("bat (Tajlandia)", "THB", 0.1146m),
+        new TableRate("dolar amerykański", "USD", 3.8449m),
+        new TableRate("dolar australijski", "AUD", 2.6818m),
+    ]);
+
+    private static readonly ExchangeRateTable Table191A = new("191/A/NBP/2026", new DateOnly(2026, 10, 1), [
+        new TableRate("bat (Tajlandia)", "THB", 0.1150m),
+        new TableRate("dolar amerykański", "USD", 3.8762m),
+        new TableRate("dolar australijski", "AUD", 2.6894m),
+    ]);
+
     [Fact]
-    public async Task GetLatestAsync_Returns200WithData_MapsToCurrencyData()
+    public async Task GetLatestAsync_Returns200WithData_MapsToExchangeRateTable()
     {
         // Arrange
         var path = $"{BasePath}/a";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "A",
-                              "no": "162/A/NBP/2026",
-                              "effectiveDate": "2026-08-21",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "mid": 3.6839
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "mid": 4.3122
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-a-latest.json");
 
         // Act
         var result = await CreateSut().GetLatestAsync(TableType.A, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.TableId.ShouldBe("162/A/NBP/2026");
-        result.Value.PublicationDate.ShouldBe(new DateOnly(2026, 8, 21));
-        result.Value.Rates.Count.ShouldBe(2);
-        result.Value.Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value.Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value.Rates[0].Price.ShouldBe(3.6839m);
-        result.Value.Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value.Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value.Rates[1].Price.ShouldBe(4.3122m);
-        _server.LogEntries.ShouldContain(e =>
-            e.RequestMessage!.Method == "GET" &&
-            e.RequestMessage.Path == path &&
-            e.RequestMessage.Headers!["Accept"].Contains("application/json"));
+        result.Value.ShouldBe(Table191A);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
-    public async Task GetTopCountAsync_Returns200WithData_MapsToCurrencyData()
+    public async Task GetLatestAsync_TableB_Returns200WithData_MapsToExchangeRateTable()
     {
         // Arrange
-        const int count = 3;
-        var path = $"{BasePath}/a/last/{count}";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "A",
-                              "no": "160/A/NBP/2026",
-                              "effectiveDate": "2026-08-19",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "mid": 3.7306
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "mid": 4.3267
-                                }
-                              ]
-                            },
-                            {
-                              "table": "A",
-                              "no": "161/A/NBP/2026",
-                              "effectiveDate": "2026-08-20",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "mid": 3.6896
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "mid": 4.3165
+        var path = $"{BasePath}/b";
+        _server.GivenFixture(path, "tables-b-latest.json");
 
-                                }
-                              ]
-                            },
-                            {
-                              "table": "A",
-                              "no": "162/A/NBP/2026",
-                              "effectiveDate": "2026-08-21",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "mid": 3.6839
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "mid": 4.3122
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        // Act
+        var result = await CreateSut().GetLatestAsync(TableType.B, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(new ExchangeRateTable("039/B/NBP/2026", new DateOnly(2026, 9, 30), [
+            new TableRate("afgani (Afganistan)", "AFN", 0.058988m),
+            new TableRate("ariary (Madagaskar)", "MGA", 0.000875m),
+            new TableRate("balboa (Panama)", "PAB", 3.8449m),
+        ]));
+        _server.ShouldHaveReceivedGet(path);
+    }
+
+    [Fact]
+    public async Task GetTopCountAsync_Returns200WithData_MapsToExchangeRateTables()
+    {
+        // Arrange
+        const int count = 2;
+        var path = $"{BasePath}/a/last/{count}";
+        _server.GivenFixture(path, "tables-a-last-2.json");
 
         // Act
         var result = await CreateSut().GetTopCountAsync(TableType.A, count, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.Count.ShouldBe(count);
-        result.Value[0].TableId.ShouldBe("160/A/NBP/2026");
-        result.Value[0].PublicationDate.ShouldBe(new DateOnly(2026, 8, 19));
-        result.Value[0].Rates.Count.ShouldBe(2);
-        result.Value[0].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[0].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[0].Rates[0].Price.ShouldBe(3.7306m);
-        result.Value[0].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[0].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[0].Rates[1].Price.ShouldBe(4.3267m);
-        result.Value[1].TableId.ShouldBe("161/A/NBP/2026");
-        result.Value[1].PublicationDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value[1].Rates.Count.ShouldBe(2);
-        result.Value[1].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[1].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[1].Rates[0].Price.ShouldBe(3.6896m);
-        result.Value[1].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[1].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[1].Rates[1].Price.ShouldBe(4.3165m);
-        result.Value[2].TableId.ShouldBe("162/A/NBP/2026");
-        result.Value[2].PublicationDate.ShouldBe(new DateOnly(2026, 8, 21));
-        result.Value[2].Rates.Count.ShouldBe(2);
-        result.Value[2].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[2].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[2].Rates[0].Price.ShouldBe(3.6839m);
-        result.Value[2].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[2].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[2].Rates[1].Price.ShouldBe(4.3122m);
-        _server.LogEntries.ShouldContain(e =>
-            e.RequestMessage!.Method == "GET" &&
-            e.RequestMessage.Path == path &&
-            e.RequestMessage.Headers!["Accept"].Contains("application/json"));
+        result.Value.ShouldBe([Table190A, Table191A]);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
-    public async Task GetTodayAsync_Returns200WithData_MapsToCurrencyData()
+    public async Task GetTodayAsync_Returns200WithData_MapsToExchangeRateTable()
     {
         // Arrange
+        // The today endpoint returns the same body as the date endpoint on a publication day.
         var path = $"{BasePath}/a/today";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "A",
-                              "no": "162/A/NBP/2026",
-                              "effectiveDate": "2026-08-21",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "mid": 3.6839
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "mid": 4.3122
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-a-date.json");
 
         // Act
         var result = await CreateSut().GetTodayAsync(TableType.A, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.TableId.ShouldBe("162/A/NBP/2026");
-        result.Value.PublicationDate.ShouldBe(new DateOnly(2026, 8, 21));
-        result.Value.Rates.Count.ShouldBe(2);
-        result.Value.Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value.Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value.Rates[0].Price.ShouldBe(3.6839m);
-        result.Value.Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value.Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value.Rates[1].Price.ShouldBe(4.3122m);
-        _server.LogEntries.ShouldContain(e =>
-            e.RequestMessage!.Method == "GET" &&
-            e.RequestMessage.Path == path &&
-            e.RequestMessage.Headers!["Accept"].Contains("application/json"));
+        result.Value.ShouldBe(Table190A);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
-    public async Task GetAsync_SpecificDate_Returns200WithData_MapsToCurrencyData()
+    public async Task GetAsync_SpecificDate_Returns200WithData_MapsToExchangeRateTable()
     {
         // Arrange
-        var date = new DateOnly(2026, 8, 20);
+        var date = new DateOnly(2026, 9, 30);
         var path = $"{BasePath}/a/{date:O}";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                            "table": "A",
-                            "no": "161/A/NBP/2026",
-                            "effectiveDate": "2026-08-20",
-                            "rates": [
-                              {
-                                "currency": "dolar amerykański",
-                                "code": "USD",
-                                "mid": 3.6896
-                              },
-                              {
-                                "currency": "euro",
-                                "code": "EUR",
-                                "mid": 4.3165
-
-                              }
-                            ]
-                          }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-a-date.json");
 
         // Act
         var result = await CreateSut().GetAsync(TableType.A, date, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.TableId.ShouldBe("161/A/NBP/2026");
-        result.Value.PublicationDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value.Rates.Count.ShouldBe(2);
-        result.Value.Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value.Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value.Rates[0].Price.ShouldBe(3.6896m);
-        result.Value.Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value.Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value.Rates[1].Price.ShouldBe(4.3165m);
+        result.Value.ShouldBe(Table190A);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
-    public async Task GetAsync_DateRange_Returns200WithData_MapsToCurrencyData()
+    public async Task GetAsync_DateRange_Returns200WithData_MapsToExchangeRateTables()
     {
         // Arrange
-        var from = new DateOnly(2026, 8, 19);
-        var to = new DateOnly(2026, 8, 20);
+        var from = new DateOnly(2026, 9, 29);
+        var to = new DateOnly(2026, 9, 30);
         var path = $"{BasePath}/a/{from:O}/{to:O}";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "A",
-                              "no": "160/A/NBP/2026",
-                              "effectiveDate": "2026-08-19",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "mid": 3.7306
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "mid": 4.3267
-                                }
-                              ]
-                            },
-                            {
-                              "table": "A",
-                              "no": "161/A/NBP/2026",
-                              "effectiveDate": "2026-08-20",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "mid": 3.6896
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "mid": 4.3165
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-a-range.json");
 
         // Act
         var result = await CreateSut().GetAsync(TableType.A, from, to, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.Count.ShouldBe(2);
-        result.Value[0].TableId.ShouldBe("160/A/NBP/2026");
-        result.Value[0].PublicationDate.ShouldBe(new DateOnly(2026, 8, 19));
-        result.Value[0].Rates.Count.ShouldBe(2);
-        result.Value[0].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[0].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[0].Rates[0].Price.ShouldBe(3.7306m);
-        result.Value[0].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[0].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[0].Rates[1].Price.ShouldBe(4.3267m);
-        result.Value[1].TableId.ShouldBe("161/A/NBP/2026");
-        result.Value[1].PublicationDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value[1].Rates.Count.ShouldBe(2);
-        result.Value[1].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[1].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[1].Rates[0].Price.ShouldBe(3.6896m);
-        result.Value[1].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[1].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[1].Rates[1].Price.ShouldBe(4.3165m);
-        _server.LogEntries.ShouldContain(e =>
-            e.RequestMessage!.Method == "GET" &&
-            e.RequestMessage.Path == path &&
-            e.RequestMessage.Headers!["Accept"].Contains("application/json"));
+        result.Value.ShouldBe([Table189A, Table190A]);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
     public async Task GetLatestAsync_Returns200WithNullRates_ReturnsSerializationError()
     {
         // Arrange
-        _server.Given(Request.Create()
-                .WithPath($"{BasePath}/a")
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""[{"table":"A","no":"191/A/NBP/2026","effectiveDate":"2026-10-01","rates":null}]"""));
+        _server.GivenJson($"{BasePath}/a", """[{"table":"A","no":"191/A/NBP/2026","effectiveDate":"2026-10-01","rates":null}]""");
 
         // Act
         var result = await CreateSut().GetLatestAsync(TableType.A, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<OpenUrzednik.Core.Errors.SerializationError>()
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>()
             .Message.ShouldBe("NBP API response is missing 'rates'.");
     }
 }

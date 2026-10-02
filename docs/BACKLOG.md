@@ -39,6 +39,10 @@ How to use this file:
 
 - [ ] **27. Gold price publication hour.** The XML docs say only "business days" because the hour couldn't be confirmed from NBP's own text (one source says 8:00–8:30). Confirm it and add it to `INbpGoldPriceClient`.
 
+- [ ] **33. Table top count doesn't match the API.** `exchangerates/tables/{t}/last/{n}` accepts at most 67 results for tables A and C and 14 for table B (checked 2026-10-02: A `last/68` returns 400 "Maximum size of 67 data series has been exceeded", B `last/20` the same with 14), apparently the tables published in the 93-day window. `TopCountValidator` allows 255 for every endpoint, so the table client sends requests the API rejects; the caller gets a `BadRequestError` instead of a `ValidationError`. The rates endpoint (`rates/b/{code}/last/255`) does accept 255. Decide on per-table limits.
+
+- [ ] **34. Which side Buy and Sell are.** The table C models map the API's `ask` to `Buy` and `bid` to `Sell` (the customer's side), but NBP calls `bid` "kurs kupna" (buy rate), so a reader of the NBP docs expects the opposite. `CurrencyBuySellRate` and `TableBuySellRate` only say "Currency buy rate". Document the mapping, or rename to `Bid`/`Ask`, before 1.0.
+
 ## P2: Framework (implements accepted ADRs)
 
 - [x] **12. `OpenUrzednik.Http` package** ([ADR-0006](adr/0006-shared-http-layer.md)): move the request executor out of NBP and migrate NBP to it. Done in #30.
@@ -78,8 +82,8 @@ How to use this file:
     * Implicit conversions from a value or an error to `OpenUrzednikResult<T>` were considered and rejected (they don't apply to interface types and are ambiguous for `object`). Only `OpenUrzednikError` → non-generic `OpenUrzednikResult`.
     * The BCL name clash moved to item 32.
 
-- [ ] **26. WireMock error paths for every client.** The 400/401/403/404/429/5xx, timeout, connection-failure and malformed-JSON tests run only through the gold client. Add them for the currency and table clients after item 12.
-    * The currency and table WireMock success bodies are hand-written, and so are the gold ones (including `NbpGoldPriceClientWireMockTest.Construction.cs`). Capture fixtures with `/verify-api`.
+- [x] **26. WireMock error paths for every client.** The 400/401/403/404/429/5xx, timeout, connection-failure and malformed-JSON tests run only through the gold client. Add them for the currency and table clients after item 12. Done in #32 (`*WireMockTest.Errors.cs`, plus the empty-array case).
+    * The currency and table WireMock success bodies are hand-written, and so are the gold ones (including `NbpGoldPriceClientWireMockTest.Construction.cs`). Capture fixtures with `/verify-api`. Done in #32: every success body is a fixture captured on 2026-10-02 (`Nbp/Fixtures`, table rates trimmed to 3).
 
 ## P3: Repository and quality
 

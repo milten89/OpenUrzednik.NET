@@ -1,403 +1,118 @@
-using System.Net;
+using OpenUrzednik.Nbp.Table;
 
 using Shouldly;
 
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
+// The table fixtures keep the first 3 of the 13 table C rates. Buy is the API's 'ask' rate and Sell its 'bid' rate.
 public partial class NbpExchangeRateTableClientWireMockTest
 {
+    private static readonly BuySellExchangeRateTable Table189C = new("189/C/NBP/2026", new DateOnly(2026, 9, 28), new DateOnly(2026, 9, 29), [
+        new TableBuySellRate("dolar amerykański", "USD", Buy: 3.8814m, Sell: 3.8046m),
+        new TableBuySellRate("dolar australijski", "AUD", Buy: 2.7272m, Sell: 2.6732m),
+        new TableBuySellRate("dolar kanadyjski", "CAD", Buy: 2.7399m, Sell: 2.6857m),
+    ]);
+
+    private static readonly BuySellExchangeRateTable Table190C = new("190/C/NBP/2026", new DateOnly(2026, 9, 29), new DateOnly(2026, 9, 30), [
+        new TableBuySellRate("dolar amerykański", "USD", Buy: 3.8910m, Sell: 3.8140m),
+        new TableBuySellRate("dolar australijski", "AUD", Buy: 2.7203m, Sell: 2.6665m),
+        new TableBuySellRate("dolar kanadyjski", "CAD", Buy: 2.7418m, Sell: 2.6876m),
+    ]);
+
+    private static readonly BuySellExchangeRateTable Table191C = new("191/C/NBP/2026", new DateOnly(2026, 9, 30), new DateOnly(2026, 10, 1), [
+        new TableBuySellRate("dolar amerykański", "USD", Buy: 3.8811m, Sell: 3.8043m),
+        new TableBuySellRate("dolar australijski", "AUD", Buy: 2.7004m, Sell: 2.6470m),
+        new TableBuySellRate("dolar kanadyjski", "CAD", Buy: 2.7365m, Sell: 2.6823m),
+    ]);
+
+    private static readonly BuySellExchangeRateTable Table192C = new("192/C/NBP/2026", new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 2), [
+        new TableBuySellRate("dolar amerykański", "USD", Buy: 3.9115m, Sell: 3.8341m),
+        new TableBuySellRate("dolar australijski", "AUD", Buy: 2.7191m, Sell: 2.6653m),
+        new TableBuySellRate("dolar kanadyjski", "CAD", Buy: 2.7478m, Sell: 2.6934m),
+    ]);
+
     [Fact]
-    public async Task GetBuySellLatestAsync_Returns200WithData_MapsToCurrencyData()
+    public async Task GetBuySellLatestAsync_Returns200WithData_MapsToBuySellExchangeRateTable()
     {
         // Arrange
         var path = $"{BasePath}/c";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "C",
-                              "no": "162/C/NBP/2026",
-                              "tradingDate": "2026-08-20",
-                              "effectiveDate": "2026-08-21",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "bid": 3.6585,
-                                  "ask": 3.7325
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "bid": 4.2716,
-                                  "ask": 4.3578
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-c-latest.json");
 
         // Act
         var result = await CreateSut().GetBuySellLatestAsync(TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.TableId.ShouldBe("162/C/NBP/2026");
-        result.Value.TradingDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value.PublicationDate.ShouldBe(new DateOnly(2026, 8, 21));
-        result.Value.Rates.Count.ShouldBe(2);
-        result.Value.Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value.Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value.Rates[0].Buy.ShouldBe(3.7325m);
-        result.Value.Rates[0].Sell.ShouldBe(3.6585m);
-        result.Value.Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value.Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value.Rates[1].Buy.ShouldBe(4.3578m);
-        result.Value.Rates[1].Sell.ShouldBe(4.2716m);
-        _server.LogEntries.ShouldContain(e =>
-            e.RequestMessage!.Method == "GET" &&
-            e.RequestMessage.Path == path &&
-            e.RequestMessage.Headers!["Accept"].Contains("application/json"));
+        result.Value.ShouldBe(Table192C);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
-    public async Task GetBuySellTopCountAsync_Returns200WithData_MapsToCurrencyData()
+    public async Task GetBuySellTopCountAsync_Returns200WithData_MapsToBuySellExchangeRateTables()
     {
         // Arrange
-        const int count = 3;
+        const int count = 2;
         var path = $"{BasePath}/c/last/{count}";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "C",
-                              "no": "160/C/NBP/2026",
-                              "tradingDate": "2026-08-18",
-                              "effectiveDate": "2026-08-19",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "bid": 3.6949,
-                                  "ask": 3.7695
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "bid": 4.2789,
-                                  "ask": 4.3653
-                                }
-                              ]
-                            },
-                            {
-                              "table": "C",
-                              "no": "161/C/NBP/2026",
-                              "tradingDate": "2026-08-19",
-                              "effectiveDate": "2026-08-20",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "bid": 3.6642,
-                                  "ask": 3.7382
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "bid": 4.271,
-                                  "ask": 4.3572
-                                }
-                              ]
-                            },
-                            {
-                              "table": "C",
-                              "no": "162/C/NBP/2026",
-                              "tradingDate": "2026-08-20",
-                              "effectiveDate": "2026-08-21",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "bid": 3.6585,
-                                  "ask": 3.7325
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "bid": 4.2716,
-                                  "ask": 4.3578
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-c-last-2.json");
 
         // Act
         var result = await CreateSut().GetBuySellTopCountAsync(count, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.Count.ShouldBe(count);
-        result.Value[0].TableId.ShouldBe("160/C/NBP/2026");
-        result.Value[0].TradingDate.ShouldBe(new DateOnly(2026, 8, 18));
-        result.Value[0].PublicationDate.ShouldBe(new DateOnly(2026, 8, 19));
-        result.Value[0].Rates.Count.ShouldBe(2);
-        result.Value[0].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[0].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[0].Rates[0].Buy.ShouldBe(3.7695m);
-        result.Value[0].Rates[0].Sell.ShouldBe(3.6949m);
-        result.Value[0].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[0].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[0].Rates[1].Buy.ShouldBe(4.3653m);
-        result.Value[0].Rates[1].Sell.ShouldBe(4.2789m);
-        result.Value[1].TableId.ShouldBe("161/C/NBP/2026");
-        result.Value[1].TradingDate.ShouldBe(new DateOnly(2026, 8, 19));
-        result.Value[1].PublicationDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value[1].Rates.Count.ShouldBe(2);
-        result.Value[1].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[1].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[1].Rates[0].Buy.ShouldBe(3.7382m);
-        result.Value[1].Rates[0].Sell.ShouldBe(3.6642m);
-        result.Value[1].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[1].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[1].Rates[1].Buy.ShouldBe(4.3572m);
-        result.Value[1].Rates[1].Sell.ShouldBe(4.271m);
-        result.Value[2].TableId.ShouldBe("162/C/NBP/2026");
-        result.Value[2].TradingDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value[2].PublicationDate.ShouldBe(new DateOnly(2026, 8, 21));
-        result.Value[2].Rates.Count.ShouldBe(2);
-        result.Value[2].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[2].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[2].Rates[0].Buy.ShouldBe(3.7325m);
-        result.Value[2].Rates[0].Sell.ShouldBe(3.6585m);
-        result.Value[2].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[2].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[2].Rates[1].Buy.ShouldBe(4.3578m);
-        result.Value[2].Rates[1].Sell.ShouldBe(4.2716m);
-        _server.LogEntries.ShouldContain(e =>
-            e.RequestMessage!.Method == "GET" &&
-            e.RequestMessage.Path == path &&
-            e.RequestMessage.Headers!["Accept"].Contains("application/json"));
+        result.Value.ShouldBe([Table191C, Table192C]);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
-    public async Task GetBuySellTodayAsync_Returns200WithData_MapsToCurrencyData()
+    public async Task GetBuySellTodayAsync_Returns200WithData_MapsToBuySellExchangeRateTable()
     {
         // Arrange
+        // The today endpoint returns the same body as the date endpoint on a publication day.
         var path = $"{BasePath}/c/today";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "C",
-                              "no": "162/C/NBP/2026",
-                              "tradingDate": "2026-08-20",
-                              "effectiveDate": "2026-08-21",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "bid": 3.6585,
-                                  "ask": 3.7325
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "bid": 4.2716,
-                                  "ask": 4.3578
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-c-date.json");
 
         // Act
         var result = await CreateSut().GetBuySellTodayAsync(TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.TableId.ShouldBe("162/C/NBP/2026");
-        result.Value.TradingDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value.PublicationDate.ShouldBe(new DateOnly(2026, 8, 21));
-        result.Value.Rates.Count.ShouldBe(2);
-        result.Value.Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value.Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value.Rates[0].Buy.ShouldBe(3.7325m);
-        result.Value.Rates[0].Sell.ShouldBe(3.6585m);
-        result.Value.Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value.Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value.Rates[1].Buy.ShouldBe(4.3578m);
-        result.Value.Rates[1].Sell.ShouldBe(4.2716m);
-        _server.LogEntries.ShouldContain(e =>
-            e.RequestMessage!.Method == "GET" &&
-            e.RequestMessage.Path == path &&
-            e.RequestMessage.Headers!["Accept"].Contains("application/json"));
+        result.Value.ShouldBe(Table190C);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
-    public async Task GetBuySellAsync_SpecificDate_Returns200WithData_MapsToCurrencyData()
+    public async Task GetBuySellAsync_SpecificDate_Returns200WithData_MapsToBuySellExchangeRateTable()
     {
         // Arrange
-        var date = new DateOnly(2026, 8, 20);
+        var date = new DateOnly(2026, 9, 30);
         var path = $"{BasePath}/c/{date:O}";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "C",
-                              "no": "161/C/NBP/2026",
-                              "tradingDate": "2026-08-19",
-                              "effectiveDate": "2026-08-20",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "bid": 3.6642,
-                                  "ask": 3.7382
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "bid": 4.271,
-                                  "ask": 4.3572
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-c-date.json");
 
         // Act
         var result = await CreateSut().GetBuySellAsync(date, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Value.TableId.ShouldBe("161/C/NBP/2026");
-        result.Value.TradingDate.ShouldBe(new DateOnly(2026, 8, 19));
-        result.Value.PublicationDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value.Rates.Count.ShouldBe(2);
-        result.Value.Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value.Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value.Rates[0].Buy.ShouldBe(3.7382m);
-        result.Value.Rates[0].Sell.ShouldBe(3.6642m);
-        result.Value.Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value.Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value.Rates[1].Buy.ShouldBe(4.3572m);
-        result.Value.Rates[1].Sell.ShouldBe(4.271m);
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(Table190C);
+        _server.ShouldHaveReceivedGet(path);
     }
 
     [Fact]
-    public async Task GetBuySellAsync_DateRange_Returns200WithData_MapsToCurrencyData()
+    public async Task GetBuySellAsync_DateRange_Returns200WithData_MapsToBuySellExchangeRateTables()
     {
         // Arrange
-        var from = new DateOnly(2026, 8, 19);
-        var to = new DateOnly(2026, 8, 20);
+        var from = new DateOnly(2026, 9, 29);
+        var to = new DateOnly(2026, 9, 30);
         var path = $"{BasePath}/c/{from:O}/{to:O}";
-        _server.Given(Request.Create()
-                .WithPath(path)
-                .UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""
-                          [
-                            {
-                              "table": "C",
-                              "no": "160/C/NBP/2026",
-                              "tradingDate": "2026-08-18",
-                              "effectiveDate": "2026-08-19",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "bid": 3.6949,
-                                  "ask": 3.7695
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "bid": 4.2789,
-                                  "ask": 4.3653
-                                }
-                              ]
-                            },
-                            {
-                              "table": "C",
-                              "no": "161/C/NBP/2026",
-                              "tradingDate": "2026-08-19",
-                              "effectiveDate": "2026-08-20",
-                              "rates": [
-                                {
-                                  "currency": "dolar amerykański",
-                                  "code": "USD",
-                                  "bid": 3.6642,
-                                  "ask": 3.7382
-                                },
-                                {
-                                  "currency": "euro",
-                                  "code": "EUR",
-                                  "bid": 4.271,
-                                  "ask": 4.3572
-                                }
-                              ]
-                            }
-                          ]
-                          """));
+        _server.GivenFixture(path, "tables-c-range.json");
 
         // Act
         var result = await CreateSut().GetBuySellAsync(from, to, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.Count.ShouldBe(2);
-        result.Value[0].TableId.ShouldBe("160/C/NBP/2026");
-        result.Value[0].TradingDate.ShouldBe(new DateOnly(2026, 8, 18));
-        result.Value[0].PublicationDate.ShouldBe(new DateOnly(2026, 8, 19));
-        result.Value[0].Rates.Count.ShouldBe(2);
-        result.Value[0].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[0].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[0].Rates[0].Buy.ShouldBe(3.7695m);
-        result.Value[0].Rates[0].Sell.ShouldBe(3.6949m);
-        result.Value[0].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[0].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[0].Rates[1].Buy.ShouldBe(4.3653m);
-        result.Value[0].Rates[1].Sell.ShouldBe(4.2789m);
-        result.Value[1].TableId.ShouldBe("161/C/NBP/2026");
-        result.Value[1].TradingDate.ShouldBe(new DateOnly(2026, 8, 19));
-        result.Value[1].PublicationDate.ShouldBe(new DateOnly(2026, 8, 20));
-        result.Value[1].Rates.Count.ShouldBe(2);
-        result.Value[1].Rates[0].CurrencyName.ShouldBe("dolar amerykański");
-        result.Value[1].Rates[0].CurrencyCode.ShouldBe("USD");
-        result.Value[1].Rates[0].Buy.ShouldBe(3.7382m);
-        result.Value[1].Rates[0].Sell.ShouldBe(3.6642m);
-        result.Value[1].Rates[1].CurrencyName.ShouldBe("euro");
-        result.Value[1].Rates[1].CurrencyCode.ShouldBe("EUR");
-        result.Value[1].Rates[1].Buy.ShouldBe(4.3572m);
-        result.Value[1].Rates[1].Sell.ShouldBe(4.271m);
-        _server.LogEntries.ShouldContain(e =>
-            e.RequestMessage!.Method == "GET" &&
-            e.RequestMessage.Path == path &&
-            e.RequestMessage.Headers!["Accept"].Contains("application/json"));
+        result.Value.ShouldBe([Table189C, Table190C]);
+        _server.ShouldHaveReceivedGet(path);
     }
 }

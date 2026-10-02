@@ -4,56 +4,76 @@ using OpenUrzednik.Core.Errors;
 
 using Shouldly;
 
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
-// Status mapping lives in the shared request executor, so it is tested once, through the gold price client.
+// ADR-0002 error paths. The currency and table clients have the same set.
 public partial class NbpGoldPriceClientWireMockTest
 {
-    private const string PlainTextUtf8 = "text/plain; charset=utf-8";
-
-    private void GivenErrorResponse(HttpStatusCode statusCode, string? body = null)
-    {
-        var response = Response.Create().WithStatusCode(statusCode);
-        if (body is not null)
-            response = response.WithHeader("Content-Type", PlainTextUtf8).WithBody(body);
-
-        _server.Given(Request.Create().WithPath(BasePath).UsingGet()).RespondWith(response);
-    }
-
-    [Theory]
-    [InlineData("error-400-top-count.txt", "400 BadRequest - Przekroczony limit 255 wyników / Maximum size of 255 data series has been exceeded")]
-    [InlineData("error-400-date-range.txt", "400 BadRequest - Przekroczony limit 367 dni / Limit of 367 days has been exceeded")]
-    public async Task GetLatestAsync_Returns400_ReturnsBadRequestErrorWithServerMessage(string fixture, string expectedServerMessage)
+    [Fact]
+    public async Task GetTopCountAsync_Returns400_ReturnsBadRequestErrorWithServerMessage()
     {
         // Arrange
-        GivenErrorResponse(HttpStatusCode.BadRequest, NbpFixtures.Load(fixture));
+        // The validators stop over-limit requests, so a valid request gets the captured over-limit response.
+        _server.GivenError($"{BasePath}/last/10", HttpStatusCode.BadRequest, "error-400-top-count.txt");
 
         // Act
-        var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetTopCountAsync(10, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
-        error.Message.ShouldEndWith($": {expectedServerMessage}");
+        error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 255 wyników / Maximum size of 255 data series has been exceeded");
         error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(400);
     }
 
     [Fact]
-    public async Task GetLatestAsync_Returns404_ReturnsNotFoundError()
+    public async Task GetAsync_DateRange_Returns400_ReturnsBadRequestErrorWithServerMessage()
     {
         // Arrange
-        GivenErrorResponse(HttpStatusCode.NotFound, NbpFixtures.Load("error-404.txt"));
+        // The validators stop over-limit requests, so a valid request gets the captured over-limit response.
+        var from = new DateOnly(2026, 9, 28);
+        var to = new DateOnly(2026, 9, 30);
+        _server.GivenError($"{BasePath}/{from:O}/{to:O}", HttpStatusCode.BadRequest, "error-400-date-range.txt");
 
         // Act
-        var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetAsync(from, to, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
+        error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 367 dni / Limit of 367 days has been exceeded");
+        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(400);
+    }
+
+    [Fact]
+    public async Task GetAsync_SpecificDate_Returns404_ReturnsNotFoundError()
+    {
+        // Arrange
+        // The API returns 404 for a day without a publication (here a Sunday).
+        var date = new DateOnly(2026, 9, 27);
+        _server.GivenError($"{BasePath}/{date:O}", HttpStatusCode.NotFound, "error-404.txt");
+
+        // Act
+        var result = await CreateSut().GetAsync(date, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
         error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(404);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_Returns200WithEmptyArray_ReturnsNotFoundError()
+    {
+        // Arrange
+        _server.GivenJson(BasePath, "[]");
+
+        // Act
+        var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
     }
 
     [Theory]
@@ -62,7 +82,7 @@ public partial class NbpGoldPriceClientWireMockTest
     public async Task GetLatestAsync_Returns401Or403_ReturnsUnauthorizedError(HttpStatusCode statusCode)
     {
         // Arrange
-        GivenErrorResponse(statusCode);
+        _server.GivenError(BasePath, statusCode);
 
         // Act
         var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
@@ -77,10 +97,7 @@ public partial class NbpGoldPriceClientWireMockTest
     public async Task GetLatestAsync_Returns429WithRetryAfter_ReturnsRateLimitExceededErrorWithDelay()
     {
         // Arrange
-        _server.Given(Request.Create().WithPath(BasePath).UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.TooManyRequests)
-                .WithHeader("Retry-After", "30"));
+        _server.GivenRetryAfter(BasePath, "30");
 
         // Act
         var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
@@ -100,7 +117,7 @@ public partial class NbpGoldPriceClientWireMockTest
     public async Task GetLatestAsync_Returns5xx_ReturnsServiceUnavailableError(HttpStatusCode statusCode)
     {
         // Arrange
-        GivenErrorResponse(statusCode);
+        _server.GivenError(BasePath, statusCode);
 
         // Act
         var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
@@ -131,11 +148,7 @@ public partial class NbpGoldPriceClientWireMockTest
     public async Task GetLatestAsync_Returns200WithMalformedJson_ReturnsSerializationError()
     {
         // Arrange
-        _server.Given(Request.Create().WithPath(BasePath).UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("[{\"data\":\"2026-10-01\",\"cena\":"));
+        _server.GivenJson(BasePath, "[{\"data\":\"2026-10-01\",\"cena\":");
 
         // Act
         var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
@@ -150,11 +163,7 @@ public partial class NbpGoldPriceClientWireMockTest
     public async Task GetLatestAsync_Returns200WithNullItem_ReturnsSerializationError()
     {
         // Arrange
-        _server.Given(Request.Create().WithPath(BasePath).UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("[null]"));
+        _server.GivenJson(BasePath, "[null]");
 
         // Act
         var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);

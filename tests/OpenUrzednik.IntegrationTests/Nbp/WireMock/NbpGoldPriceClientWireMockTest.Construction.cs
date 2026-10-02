@@ -1,12 +1,7 @@
-using System.Net;
-
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Options;
 
 using Shouldly;
-
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
 
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
@@ -24,11 +19,7 @@ public partial class NbpGoldPriceClientWireMockTest
     }
 
     private void GivenGoldPrice(string path)
-        => _server.Given(Request.Create().WithPath(path).UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader("Content-Type", "application/json")
-                .WithBody("""[{"data":"2026-08-20","cena":522.32}]"""));
+        => _server.GivenFixture(path, "gold-latest.json");
 
     [Fact]
     public async Task GetLatestAsync_OneLineConstructorWithHttpClientBaseAddress_CallsBaseAddress()
