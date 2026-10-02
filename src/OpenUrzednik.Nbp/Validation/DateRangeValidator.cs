@@ -16,7 +16,7 @@ internal sealed class DateRangeValidator((DateOnly From, DateOnly To) value, int
 
     public override OpenUrzednikResult Validate()
     {
-        if (Value.From > Value.To)
+        if (Value.From.DayNumber > Value.To.DayNumber)
             return GetValidationErrorResult($"Start date '{Value.From.ToIso8601String()}' is greater than end date '{Value.To.ToIso8601String()}'.");
 
         if (Value.To.DayNumber - Value.From.DayNumber > maxDays)

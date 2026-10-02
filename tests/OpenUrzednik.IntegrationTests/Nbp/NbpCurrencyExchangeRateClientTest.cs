@@ -76,7 +76,11 @@ public class NbpCurrencyExchangeRateClientTest : IClassFixture<NbpHttpClientFixt
 
         // Act
         using var response = await httpClient.GetAsync(path, TestContext.Current.CancellationToken);
+#if NET
         var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+#else
+        var body = await response.Content.ReadAsStringAsync();
+#endif
 
         // Assert
         ((int)response.StatusCode).ShouldBe(400);

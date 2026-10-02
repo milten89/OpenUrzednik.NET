@@ -114,4 +114,21 @@ public class GoldDateValidatorTest
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
         error.Message.ShouldBe("'date' should not be later than today (2026-10-01, Europe/Warsaw).");
     }
+
+#if !NET
+    [Fact]
+    public void Validate_TodayWithTimeOfDay_ReturnsSuccess()
+    {
+        // Arrange
+        // On netstandard2.0 the date is a DateTime, which can carry a time; only the date part counts.
+        var today = new DateTime(2026, 10, 2);
+        var validator = new GoldDateValidator(PropertyName, today.AddHours(15), today);
+
+        // Act
+        var result = validator.Validate();
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+    }
+#endif
 }

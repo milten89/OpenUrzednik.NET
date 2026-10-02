@@ -46,7 +46,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 
 **Dependencies ([ADR-0004](docs/adr/0004-dependency-policy.md))**
 - Core, `OpenUrzednik.Http` and provider packages take **no package dependencies** on .NET targets.
-- On netstandard2.0, only official Microsoft BCL packages are allowed (`System.Text.Json`, `Microsoft.Bcl.TimeProvider`).
+- On netstandard2.0, only official Microsoft BCL packages are allowed (`System.Text.Json`, `System.Net.Http.Json`, `Microsoft.Bcl.TimeProvider`, `Microsoft.Bcl.HashCode`, `System.Diagnostics.DiagnosticSource`), referenced in a `Condition="'$(TargetFramework)' == 'netstandard2.0'"` item group.
 - `Microsoft.Extensions.*` is allowed only in integration packages (`*.DependencyInjection`, `OpenUrzednik.Extensions.Logging`). The tracing adapter `OpenUrzednik.Diagnostics` may depend only on `System.Diagnostics.DiagnosticSource`, and only on netstandard2.0.
 - DI packages don't add a resilience handler: they return the `IHttpClientBuilder`, the app chains `AddStandardResilienceHandler()`, and the DI package turns the handler's rejections into errors.
 - Versions live in `Directory.Packages.props` (central package management). Never put `Version=` on a `PackageReference`.
@@ -59,8 +59,10 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Guard `Debug` logs with `IsEnabled`, use message templates (no interpolation), and never log secrets or full personal identifiers.
 
 **Target frameworks ([ADR-0005](docs/adr/0005-target-frameworks.md))**
-- Currently `net8.0;net9.0;net10.0`; netstandard2.0 is planned (backlog item 17). A .NET target becomes removable 6 months after Microsoft ends its support and is removed in the next major release; netstandard2.0 stays.
-- Write code that will work with `#if NET`: dates are `DateOnly` on .NET and `DateTime` on netstandard2.0. Keep `#if` inside small helpers, not spread through business logic.
+- Libraries target `netstandard2.0;net8.0;net9.0;net10.0` (`src/Directory.Build.props`); tests add `net472`, which runs the netstandard2.0 build on .NET Framework (CI job `test (net472)`; xUnit 4 supports nothing older). A .NET target becomes removable 6 months after Microsoft ends its support and is removed in the next major release; netstandard2.0 stays.
+- Dates are `DateOnly` on .NET and `DateTime` on netstandard2.0. Write `DateOnly`: on netstandard2.0 it is a global alias for `DateTime` (`OpenUrzednik.Nbp.csproj`, `tests/Directory.Build.props`), and `Nbp/Polyfills/DateOnlyPolyfills.cs` adds the `DateOnly` members the code uses (`FromDateTime`, `DayNumber`). Compare dates by `DayNumber`, which ignores a `DateTime`'s time of day.
+- Missing BCL members are polyfilled for netstandard2.0 only: compiler and nullable attributes and the `ThrowIf*` guards (C# 14 static extension members) in `src/Polyfills`, linked into every library; HTTP reads with a cancellation token in `Http/Polyfills`. Keep `#if` inside such helpers, not spread through business logic.
+- .NET Framework differences seen so far: `HttpResponseMessage.Content` can be `null`; `HttpClient.Timeout` has no inner `TimeoutException`; time zones have Windows ids only (`Central European Standard Time`); `Activity` ids are hierarchical unless the app (or OpenTelemetry) switches to W3C.
 
 **HTTP ([ADR-0006](docs/adr/0006-shared-http-layer.md))**
 - All provider HTTP goes through `RestRequestExecutor.GetAsync` in `OpenUrzednik.Http`; providers never call `HttpClient.SendAsync`. A provider describes itself with a `RestProviderProfile` (span name `<name>.http.get`, message prefix, optional `MapErrorAsync` override). NBP creates its executor in `Nbp/Common/NbpConnection.cs`. Clients take an `HttpClient` and optional `NbpOptions`; they never change the `HttpClient`.

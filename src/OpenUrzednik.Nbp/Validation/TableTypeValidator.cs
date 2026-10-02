@@ -10,7 +10,7 @@ internal sealed class TableTypeValidator(string propertyName, TableType value) :
 
     public override OpenUrzednikResult Validate()
     {
-        return Enum.IsDefined(Value)
+        return Enum.IsDefined(typeof(TableType), Value)
             ? OpenUrzednikResult.Success()
             : GetValidationErrorResult($"'{PropertyName}' has value not defined by {nameof(TableType)}.");
     }

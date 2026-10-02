@@ -9,7 +9,6 @@ using OpenUrzednik.Nbp.Gold;
 
 using Polly;
 using Polly.CircuitBreaker;
-using Polly.Timeout;
 
 using Shouldly;
 
@@ -126,7 +125,11 @@ public sealed class NbpDependencyInjectionWireMockTest : IDisposable
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>();
         // The handler's limit isn't HttpClient.Timeout or the request deadline, so the error doesn't name one.
         error.Timeout.ShouldBeNull();
-        error.Exception.ShouldBeAssignableTo<OperationCanceledException>().ShouldNotBeNull().InnerException.ShouldBeOfType<TimeoutRejectedException>();
+        var cancelled = error.Exception.ShouldBeAssignableTo<OperationCanceledException>().ShouldNotBeNull();
+#if NET
+        // .NET Framework's HttpClient replaces a cancellation with a new exception, so the rejection is only kept on .NET.
+        cancelled.InnerException.ShouldBeOfType<Polly.Timeout.TimeoutRejectedException>();
+#endif
     }
 
     private static void AddCircuitBreaker(IHttpClientBuilder builder)

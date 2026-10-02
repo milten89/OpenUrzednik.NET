@@ -9,7 +9,9 @@
     "../OpenUrzednik.Nbp",
     "../OpenUrzednik.Extensions.Logging",
     "../OpenUrzednik.Diagnostics",
-    "../../Directory.Packages.props"
+    "../../Directory.Packages.props",
+    "../Polyfills",
+    "../Directory.Build.props"
   ],
   "release": {
     "versionIncrement": "minor"

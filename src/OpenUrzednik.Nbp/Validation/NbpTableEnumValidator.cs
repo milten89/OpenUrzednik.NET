@@ -10,7 +10,7 @@ internal sealed class NbpTableEnumValidator(string propertyName, NbpTable value)
 
     public override OpenUrzednikResult Validate()
     {
-        return Enum.IsDefined(Value)
+        return Enum.IsDefined(typeof(NbpTable), Value)
             ? OpenUrzednikResult.Success()
             : GetValidationErrorResult($"'{PropertyName}' has value not defined by {nameof(NbpTable)}.");
     }

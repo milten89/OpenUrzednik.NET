@@ -14,7 +14,7 @@ public abstract class OpenUrzednikError
     /// </summary>
     public const string StatusCodeMetadataKey = "statusCode";
 
-    private static readonly IReadOnlyDictionary<string, object?> EmptyMetadata = ReadOnlyDictionary<string, object?>.Empty;
+    private static readonly IReadOnlyDictionary<string, object?> EmptyMetadata = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>());
 
     private Dictionary<string, object?>? _metadata;
 

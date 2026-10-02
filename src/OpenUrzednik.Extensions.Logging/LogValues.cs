@@ -74,7 +74,7 @@ internal sealed class LogValues : IReadOnlyList<KeyValuePair<string, object?>>
                 }
 
                 if (valueIndex < _values.Length)
-                    AppendValue(builder, _values[valueIndex++].Value, template.AsSpan(i + 1, end - i - 1));
+                    AppendValue(builder, _values[valueIndex++].Value, template.Substring(i + 1, end - i - 1));
                 else
                     builder.Append(template, i, end - i + 1);
 
@@ -96,7 +96,7 @@ internal sealed class LogValues : IReadOnlyList<KeyValuePair<string, object?>>
         _ => item.ToString() ?? string.Empty,
     };
 
-    private static void AppendValue(StringBuilder builder, object? value, ReadOnlySpan<char> hole)
+    private static void AppendValue(StringBuilder builder, object? value, string hole)
     {
         if (value is null)
         {
@@ -107,14 +107,14 @@ internal sealed class LogValues : IReadOnlyList<KeyValuePair<string, object?>>
         if (value is IEnumerable enumerable and not string and not IFormattable)
             value = string.Join(", ", enumerable.Cast<object?>().Select(FormatItem));
 
-        var formatStart = hole.IndexOfAny(',', ':');
+        var formatStart = hole.IndexOfAny([',', ':']);
         if (formatStart < 0)
         {
             builder.Append(value is IFormattable formattable ? formattable.ToString(null, CultureInfo.InvariantCulture) : value.ToString());
             return;
         }
 
-        var compositeFormat = string.Concat("{0".AsSpan(), hole[formatStart..], "}".AsSpan());
+        var compositeFormat = "{0" + hole.Substring(formatStart) + "}";
         try
         {
             builder.AppendFormat(CultureInfo.InvariantCulture, compositeFormat, value);

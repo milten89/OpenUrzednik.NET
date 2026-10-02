@@ -31,12 +31,12 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 | Block force pushes | on |
 | Restrict updates | on (only bypass actors can merge) |
 | Require a pull request | 0 approvals, CODEOWNERS review, dismiss stale approvals, resolve all conversations, allowed merge method: squash |
-| Required status checks (strict, up to date) | `build (net8.0)`, `build (net9.0)`, `build (net10.0)`, `format` |
+| Required status checks (strict, up to date) | `build (net8.0)`, `build (net9.0)`, `build (net10.0)`, `test (net472)`, `format` |
 | Code scanning | CodeQL: alerts threshold `errors`, security alerts `high_or_higher` |
 | Code quality | severity `errors` |
 | Bypass | Repository role **Admin**, mode **pull requests only** (the maintainer can merge their own PRs, but cannot push directly) |
 
-> ⚠️ Required status checks are matched by **job name**. Job names are defined in `.github/workflows/build.yml` (`build (<tfm>)`, from the matrix) and `format.yml` (`format`). Renaming a job or changing the TFM matrix (e.g. adding netstandard2.0 or dropping net8.0) requires updating this ruleset, or every PR is blocked:
+> ⚠️ Required status checks are matched by **job name**. Job names are defined in `.github/workflows/build.yml` (`build (<tfm>)`, from the matrix, and `test (net472)`) and `format.yml` (`format`). Renaming a job or changing the TFM matrix (e.g. adding netstandard2.0 or dropping net8.0) requires updating this ruleset, or every PR is blocked:
 >
 > ```bash
 > gh api repos/milten89/OpenUrzednik.NET/rulesets/20632755 > ruleset.json   # edit required_status_checks, then:

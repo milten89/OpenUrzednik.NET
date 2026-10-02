@@ -67,3 +67,44 @@ jobs:
         path: ./TestResults/**/*.cobertura.xml
         if-no-files-found: ignore
         retention-days: 14
+
+  test-netfx:
+    # NOTE: "test (net472)" is meant to become a required status check too (see docs/GITHUB-SETUP.md).
+    # It runs the netstandard2.0 build of the libraries on .NET Framework 4.8 (ADR-0005). xUnit 4 supports net472 and later.
+    name: test (net472)
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        fetch-depth: 0   # NBGV needs full history to compute versions
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Cache NuGet packages
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj', '**/packages.lock.json') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-
+
+    - name: Restore dependencies
+      run: dotnet restore OpenUrzednik.slnx
+
+    # Built per test project: a solution build with --framework net472 would also force it on the libraries,
+    # which target netstandard2.0. Project references pick that build.
+    - name: Build (net472)
+      shell: pwsh
+      run: |
+        Get-ChildItem tests -Recurse -Filter *.csproj | Where-Object Name -ne 'OpenUrzednik.TestCommon.csproj' | ForEach-Object {
+          dotnet build $_.FullName --configuration Release --no-restore --framework net472
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        }
+
+    - name: Run Tests (net472)
+      run: dotnet test --test-modules "tests/*/bin/Release/net472/OpenUrzednik.*Tests.exe"

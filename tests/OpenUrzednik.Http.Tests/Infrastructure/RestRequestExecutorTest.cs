@@ -61,6 +61,32 @@ public partial class RestRequestExecutorTest
     private sealed record TestDto(string Name, int Value);
 
     // A response body that never finishes arriving: reads complete only when they are cancelled.
+    // Like NeverEndingStream, but its reads ignore the token, as .NET Framework's response stream does once a read has started.
+    private sealed class TokenIgnoringStream : Stream
+    {
+        private readonly TaskCompletionSource<int> _never = new();
+
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+#if NET
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            => new(_never.Task);
+#endif
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => _never.Task;
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override void Flush() { }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    }
+
     private sealed class NeverEndingStream : Stream
     {
         public override bool CanRead => true;
@@ -69,6 +95,7 @@ public partial class RestRequestExecutorTest
         public override long Length => throw new NotSupportedException();
         public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
 
+#if NET
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
@@ -77,6 +104,13 @@ public partial class RestRequestExecutorTest
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+#else
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return 0;
+        }
+#endif
 
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
         public override void Flush() { }

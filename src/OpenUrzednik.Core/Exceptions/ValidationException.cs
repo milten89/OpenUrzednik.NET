@@ -1,5 +1,3 @@
-using System.Globalization;
-
 using OpenUrzednik.Core.Errors;
 
 namespace OpenUrzednik.Core.Exceptions;
@@ -51,6 +49,6 @@ public sealed class ValidationException : OpenUrzednikException
 
         return errors.Count == 1
             ? errors[0].Message
-            : string.Create(CultureInfo.InvariantCulture, $"Validation failed with {errors.Count} errors: {string.Join("; ", errors.Select(e => e.Message))}");
+            : FormattableString.Invariant($"Validation failed with {errors.Count} errors: {string.Join("; ", errors.Select(e => e.Message))}");
     }
 }
