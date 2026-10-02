@@ -61,5 +61,5 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 
 - `dotnet build OpenUrzednik.slnx`, `dotnet test OpenUrzednik.slnx -f net10.0`, `dotnet format OpenUrzednik.slnx --verify-no-changes`.
 - Update the package README usage section (Polish and English versions, ADR-0009) if the public API changed.
-- Remove the item from `docs/BACKLOG.md` if this resolves one.
+- If this resolves a `docs/BACKLOG.md` item, tick its checkbox and add `Done in #<PR>.` (don't delete it).
 - Run the `reviewer` agent on the diff.
