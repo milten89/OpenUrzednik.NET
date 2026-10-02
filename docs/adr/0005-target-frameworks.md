@@ -26,7 +26,7 @@ Many companies integrating with Polish public APIs still run .NET Framework appl
 
 Chosen option: "netstandard2.0 + all supported .NET versions, `#if` for differences".
 
-* Target frameworks: `netstandard2.0;net8.0;net9.0;net10.0` (currently `net8.0;net9.0;net10.0`; netstandard2.0 to be added).
+* Target frameworks: `netstandard2.0;net8.0;net9.0;net10.0`.
 * Public date-only values are `DateOnly` on .NET and `DateTime` (`Kind = Unspecified`, time `00:00`) on netstandard2.0. The public API shape is therefore TFM-dependent; XML docs mention both.
 * Differences are handled with preprocessor directives (`#if NET` / `#else`) as locally as possible – prefer small internal helpers/polyfills (e.g. `ThrowHelper` for `ArgumentNullException.ThrowIfNull`) over scattering `#if` through business code.
 * netstandard2.0-only dependencies are limited to official Microsoft BCL packages (`System.Text.Json`, `Microsoft.Bcl.TimeProvider`, `System.Net.Http.Json` if needed).
@@ -47,5 +47,13 @@ Chosen option: "netstandard2.0 + all supported .NET versions, `#if` for differen
 CI matrix includes all TFMs; package validation (`EnablePackageValidation`) runs per TFM.
 
 ## More Information
+
+**2026-10-02 implementation note** (backlog item 17):
+
+* Dates: the code says `DateOnly` on every target. On netstandard2.0 a global using makes it an alias for `DateTime`, so the public API there takes and returns `DateTime`. `Nbp/Polyfills/DateOnlyPolyfills.cs` adds the `DateOnly` members the code needs as C# 14 extension members. Validators compare `DayNumber`, so a time of day is ignored rather than rejected.
+* Polyfills are internal, compiled only for netstandard2.0, one copy per assembly: compiler attributes (init, required members, `CallerArgumentExpression`), nullable attributes and the `ArgumentNullException.ThrowIfNull` family (C# 14 static extension members, so call sites don't change).
+* netstandard2.0-only packages: `System.Text.Json`, `System.Net.Http.Json`, `Microsoft.Bcl.TimeProvider`, `Microsoft.Bcl.HashCode` and `System.Diagnostics.DiagnosticSource`.
+* Tests target `net472`, the oldest .NET Framework xUnit 4 supports, and run on Windows in the `test (net472)` CI job. Running there found real differences: a `null` `HttpResponseMessage.Content` (now handled), `HttpClient.Timeout` without an inner `TimeoutException` (the executor now measures elapsed time instead), Windows-only time zone ids, and hierarchical `Activity` ids.
+* The test-only packages from dotnet/extensions 10.x (`Microsoft.Extensions.TimeProvider.Testing`, `Microsoft.Extensions.Http.Resilience`) warn on every .NET Framework target; the tests suppress that warning. The libraries don't depend on them.
 
 The support window was the open question while this ADR was `proposed`. Options were following Microsoft's lifecycle exactly (dropping `net8.0` in November 2026) or keeping a grace period. On 2026-10-02 the maintainer chose a 6-month grace period, so consumers have time to upgrade after Microsoft ends support, with the removal itself in a major release.

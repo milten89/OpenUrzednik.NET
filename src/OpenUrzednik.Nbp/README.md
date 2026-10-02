@@ -47,6 +47,10 @@ Klient bierze adres API z pierwszego ustawionego miejsca: `NbpOptions.ApiUrl`, `
 
 Błędy, takie jak brak danych, przekroczony limit zapytań albo upływ limitu czasu, wracają w wyniku, a nie jako wyjątki. Jeśli wolisz wyjątki, wywołaj na wyniku `EnsureSuccess()`.
 
+## .NET Framework
+
+Pakiet działa też na .NET Framework (przez `netstandard2.0`). Tam daty są typu `DateTime`, a nie `DateOnly`: metody przyjmują `DateTime` i zwracają go w modelach (np. `GoldPrice.Date`). Liczy się tylko data: godzinę klient pomija, a zwracane daty mają godzinę `00:00` i `DateTimeKind.Unspecified`.
+
 ## Logowanie i śledzenie
 
 Klienty przyjmują opcjonalne parametry `logger` i `traceSource`. Bez nich nic nie logują i nie tworzą spanów. Żeby korzystać z `ILogger` i OpenTelemetry, zainstaluj adaptery [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) i [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics):
