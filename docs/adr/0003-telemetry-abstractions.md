@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-01
+date: 2026-10-02
 decision-makers: milten89
 ---
 
@@ -29,7 +29,7 @@ Chosen option: "Keep custom abstractions and ship official adapter packages".
 * Core owns `IOpenUrzednikLogger`, `IOpenUrzednikTraceSource`, `IOpenUrzednikSpan` plus `Null*` implementations used when nothing is configured.
 * Official adapters are separate packages, for example:
   * `OpenUrzednik.Extensions.Logging` – `IOpenUrzednikLogger` over `ILogger`.
-  * `OpenUrzednik.Diagnostics` – `IOpenUrzednikTraceSource` over `ActivitySource`. Source names are `OpenUrzednik.<Provider>` (e.g. `OpenUrzednik.Nbp`), so OpenTelemetry users subscribe with `AddSource("OpenUrzednik.*")`. No dependency on the OpenTelemetry packages.
+  * `OpenUrzednik.Diagnostics` – `IOpenUrzednikTraceSource` over `ActivitySource`. Source names are `OpenUrzednik.<Provider>` (e.g. `OpenUrzednik.Nbp`), so OpenTelemetry users subscribe with `AddSource("OpenUrzednik.*")`. It depends only on `System.Diagnostics.DiagnosticSource`, and only on netstandard2.0; no dependency on the OpenTelemetry packages.
 * DI packages ([ADR-0004](0004-dependency-policy.md)) wire the adapters automatically when the consumer registers logging/tracing.
 
 **Conventions:**
@@ -55,4 +55,4 @@ Adapter packages have tests asserting that spans/log entries produced by a clien
 
 Adapters are not implemented yet (see `docs/BACKLOG.md`).
 
-**2026-10-02 clarification.** Using `ILogger` (`Microsoft.Extensions.Logging.Abstractions`) and `ActivitySource` directly in the provider packages, the most common pattern in .NET libraries, was reconsidered and rejected for the core packages. On .NET Framework 4.8 (via netstandard2.0, [ADR-0005](0005-target-frameworks.md)) both are extra packages (`Microsoft.Extensions.Logging.Abstractions`, `System.Diagnostics.DiagnosticSource`), and the maintainer wants the core packages to have no dependencies there. The adapter packages bring the standard behaviour to apps that want it; with DI ([ADR-0004](0004-dependency-policy.md)) they are wired automatically. The tracing adapter's name was open between `OpenUrzednik.OpenTelemetry` and `OpenUrzednik.Diagnostics`; it is `OpenUrzednik.Diagnostics`, because `ActivitySource` works with any listener, not only OpenTelemetry.
+**2026-10-02 change.** Using `ILogger` (`Microsoft.Extensions.Logging.Abstractions`) and `ActivitySource` directly in the provider packages, the most common pattern in .NET libraries, was reconsidered and rejected for the core packages. On .NET Framework 4.8 (via netstandard2.0, [ADR-0005](0005-target-frameworks.md)) both are extra packages (`Microsoft.Extensions.Logging.Abstractions`, `System.Diagnostics.DiagnosticSource`), and the maintainer doesn't want the core and provider packages to depend on them. Those packages keep to the BCL packages [ADR-0004](0004-dependency-policy.md) already allows on netstandard2.0 (`System.Text.Json`, `Microsoft.Bcl.TimeProvider`, …); `System.Diagnostics.DiagnosticSource` and `Microsoft.Extensions.Logging.Abstractions` are deliberately excluded there, even though they are official Microsoft packages. The adapter packages bring the standard behaviour to apps that want it; with DI ([ADR-0004](0004-dependency-policy.md)) they are wired automatically. The tracing adapter's name was open between `OpenUrzednik.OpenTelemetry` and `OpenUrzednik.Diagnostics`; it is `OpenUrzednik.Diagnostics`, because `ActivitySource` works with any listener, not only OpenTelemetry.

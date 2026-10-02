@@ -32,7 +32,7 @@ Chosen option: "netstandard2.0 + all supported .NET versions, `#if` for differen
 * netstandard2.0-only dependencies are limited to official Microsoft BCL packages (`System.Text.Json`, `Microsoft.Bcl.TimeProvider`, `System.Net.Http.Json` if needed).
 * Every TFM is built and tested in CI. netstandard2.0 is tested by running tests on a .NET Framework TFM (`net472`/`net48`) on a Windows runner.
 * Support window:
-  * **.NET targets** (`net8.0`, `net9.0`, …) are kept for **6 months after Microsoft ends their support**, then removed in a minor release with a release note. For example, `net8.0` (end of support November 2026) stays until about May 2027.
+  * **.NET targets** (`net8.0`, `net9.0`, …) become removable **6 months after Microsoft ends their support**, and are removed in the **next major release** after that. Removing one is a breaking change: NuGet then gives those apps the netstandard2.0 build, whose dates are `DateTime` instead of `DateOnly` ([ADR-0008](0008-branching-versioning-and-release.md) allows breaking changes only in a major version). For example, `net8.0` and `net9.0` both reach end of support on 10 November 2026 (Microsoft extended STS releases to 24 months), so both become removable in May 2027.
   * **netstandard2.0** is kept. It is a specification, not a runtime, so it has no end of support; through it the library runs on .NET Framework 4.8, which Microsoft supports as part of Windows.
 
 ### Consequences
@@ -48,4 +48,4 @@ CI matrix includes all TFMs; package validation (`EnablePackageValidation`) runs
 
 ## More Information
 
-The support window was the open question while this ADR was `proposed`. Options were following Microsoft's lifecycle exactly (dropping `net8.0` in November 2026) or keeping a grace period. On 2026-10-02 the maintainer chose a 6-month grace period, so consumers have time to upgrade after Microsoft ends support.
+The support window was the open question while this ADR was `proposed`. Options were following Microsoft's lifecycle exactly (dropping `net8.0` in November 2026) or keeping a grace period. On 2026-10-02 the maintainer chose a 6-month grace period, so consumers have time to upgrade after Microsoft ends support, with the removal itself in a major release.

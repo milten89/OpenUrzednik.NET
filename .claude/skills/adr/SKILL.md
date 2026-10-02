@@ -7,6 +7,7 @@ argument-hint: "<decision title>"
 # Create an ADR
 
 1. Read `docs/adr/README.md` and the ADRs related to the topic. If an accepted ADR already covers it, decide with the user whether this is a clarification (no ADR needed) or a change (a new ADR that supersedes the old one).
+   - Before the first stable release (1.0), a change may be made in place instead ([ADR-0001](../../../docs/adr/0001-record-architecture-decisions.md)): edit the accepted ADR, add a dated note under **More Information** saying what changed and why, and bump its `date`. From 1.0 on, always write a new ADR.
 2. Take the next free number `NNNN` (4 digits; never reuse a number). File name: `docs/adr/NNNN-kebab-case-title.md`.
 3. Copy `docs/adr/template.md`. Fill in:
    - front matter: `status: proposed`, today's date, `decision-makers: milten89`
