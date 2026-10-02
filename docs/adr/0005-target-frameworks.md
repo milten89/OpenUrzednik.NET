@@ -1,6 +1,6 @@
 ---
-status: proposed
-date: 2026-10-01
+status: accepted
+date: 2026-10-02
 decision-makers: milten89
 ---
 
@@ -31,6 +31,9 @@ Chosen option: "netstandard2.0 + all supported .NET versions, `#if` for differen
 * Differences are handled with preprocessor directives (`#if NET` / `#else`) as locally as possible – prefer small internal helpers/polyfills (e.g. `ThrowHelper` for `ArgumentNullException.ThrowIfNull`) over scattering `#if` through business code.
 * netstandard2.0-only dependencies are limited to official Microsoft BCL packages (`System.Text.Json`, `Microsoft.Bcl.TimeProvider`, `System.Net.Http.Json` if needed).
 * Every TFM is built and tested in CI. netstandard2.0 is tested by running tests on a .NET Framework TFM (`net472`/`net48`) on a Windows runner.
+* Support window:
+  * **.NET targets** (`net8.0`, `net9.0`, …) become removable **6 months after Microsoft ends their support**, and are removed in the **next major release** after that. Removing one is a breaking change: NuGet then gives those apps the netstandard2.0 build, whose dates are `DateTime` instead of `DateOnly` ([ADR-0008](0008-branching-versioning-and-release.md) allows breaking changes only in a major version). For example, `net8.0` and `net9.0` both reach end of support on 10 November 2026 (Microsoft extended STS releases to 24 months), so both become removable in May 2027.
+  * **netstandard2.0** is kept. It is a specification, not a runtime, so it has no end of support; through it the library runs on .NET Framework 4.8, which Microsoft supports as part of Windows.
 
 ### Consequences
 
@@ -45,4 +48,4 @@ CI matrix includes all TFMs; package validation (`EnablePackageValidation`) runs
 
 ## More Information
 
-**Open question (why this ADR is `proposed`):** support window for older .NET versions. Options: follow Microsoft's support lifecycle exactly (drop a TFM when it leaves support, e.g. net8.0 in November 2026), or keep it for a grace period. Decide before adding netstandard2.0 or before the first stable release, whichever comes first.
+The support window was the open question while this ADR was `proposed`. Options were following Microsoft's lifecycle exactly (dropping `net8.0` in November 2026) or keeping a grace period. On 2026-10-02 the maintainer chose a 6-month grace period, so consumers have time to upgrade after Microsoft ends support, with the removal itself in a major release.
