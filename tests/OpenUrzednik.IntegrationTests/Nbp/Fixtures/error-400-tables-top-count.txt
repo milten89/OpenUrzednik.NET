@@ -1,0 +1,1 @@
+400 BadRequest - Przekroczony limit 67 wyników / Maximum size of 67 data series has been exceeded
