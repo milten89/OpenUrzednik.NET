@@ -2,10 +2,10 @@ using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Options;
-using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
 
@@ -16,10 +16,10 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
 {
     private static readonly NbpJsonContext JsonContext = new();
 
-    private readonly NbpConnection _connection;
+    private readonly RestRequestExecutor _connection;
     private readonly TimeProvider _timeProvider;
     private readonly INbpUrlBuilder _urlBuilder;
-    private readonly NbpTelemetryProvider _telemetryProvider;
+    private readonly OpenUrzednikTelemetry _telemetryProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NbpGoldPriceClient"/> class with the default settings:
@@ -47,7 +47,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         ArgumentNullException.ThrowIfNull(httpClient);
 
         _timeProvider = timeProvider ?? TimeProvider.System;
-        _telemetryProvider = new NbpTelemetryProvider(logger, traceSource);
+        _telemetryProvider = new OpenUrzednikTelemetry(logger, traceSource);
         _connection = NbpConnection.Create(httpClient, options, _telemetryProvider, _timeProvider);
         _urlBuilder = (urlBuilderFactory ?? new NbpUrlBuilderFactory()).GetGoldBuilder();
     }
@@ -55,7 +55,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetLatestAsync(CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.latest");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.latest");
 
         var requestResult = await _connection.GetAsync(_urlBuilder.Latest(), JsonContext.GoldPriceDtoArray, cancellationToken);
 
@@ -78,7 +78,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.top_count");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.top_count");
         traceSpan.SetTag("nbp.top_count", topCount);
 
         var topCountValidation = new TopCountValidator(nameof(topCount), topCount).Validate();
@@ -102,7 +102,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetTodayAsync(CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.today");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.today");
 
         var requestResult = await _connection.GetAsync(_urlBuilder.Today(), JsonContext.GoldPriceDtoArray, cancellationToken);
 
@@ -126,7 +126,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_date");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.get_date");
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
         var dateValidation = new GoldDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
@@ -159,7 +159,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.gold.get_range");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.get_range");
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 

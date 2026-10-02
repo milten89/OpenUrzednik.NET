@@ -14,7 +14,7 @@ Klient **NBP** (Narodowy Bank Polski) dla OpenUrzednik.NET — kursy walut oraz 
 dotnet add package OpenUrzednik.Nbp
 ```
 
-Wymaga [OpenUrzednik.Core](https://www.nuget.org/packages/OpenUrzednik.Core) (instalowane automatycznie jako zależność).
+Wymaga [OpenUrzednik.Core](https://www.nuget.org/packages/OpenUrzednik.Core) i [OpenUrzednik.Http](https://www.nuget.org/packages/OpenUrzednik.Http) (instalowane automatycznie jako zależności).
 
 ## Użycie
 

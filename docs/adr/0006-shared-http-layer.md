@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-01
+date: 2026-10-02
 decision-makers: milten89
 ---
 
@@ -27,7 +27,7 @@ decision-makers: milten89
 
 Chosen option: "New package `OpenUrzednik.Http` for REST/JSON providers".
 
-* `OpenUrzednik.Http` depends on `OpenUrzednik.Core` and contains the request executor: send, status → error mapping (with provider-specific overrides, e.g. NBP's 400 messages), timeout vs caller-cancellation detection, `Retry-After` parsing with `TimeProvider`, JSON deserialization via `JsonTypeInfo<T>` (source-generated, trimming/AOT friendly), disposal of request/response, telemetry spans and logs.
+* `OpenUrzednik.Http` depends on `OpenUrzednik.Core` and contains the request executor: send, status → error mapping (with provider-specific overrides, e.g. for JSON error bodies; the bounded plain-text read of a 400 body is part of the default mapping), timeout vs caller-cancellation detection, `Retry-After` parsing with `TimeProvider`, JSON deserialization via `JsonTypeInfo<T>` (source-generated, trimming/AOT friendly), disposal of request/response, telemetry spans and logs.
 * It has a public API (needed across assemblies) and follows SemVer. Types intended only for provider authors live in a clearly named namespace (e.g. `OpenUrzednik.Http.Infrastructure`) and are documented as such.
 * `OpenUrzednik.Nbp` is migrated to it first; NBP-specific behaviour stays in NBP.
 * GUS (SOAP) builds its own stack; if real duplication appears later, a new ADR can extract a transport-only layer.
@@ -55,3 +55,7 @@ Provider packages contain no direct `HttpClient.SendAsync` calls; all HTTP goes 
 
 * Good, because there is no extra public API or package.
 * Bad, because fixes require re-releasing each provider, and code is duplicated across binaries.
+
+## More Information
+
+**2026-10-02 note (backlog item 12).** Implemented: `RestRequestExecutor`, `RestProviderProfile` and `ErrorResponseContext` in `OpenUrzednik.Http.Infrastructure`, with `OpenUrzednikTelemetry` replacing `NbpTelemetryProvider`. The bounded read of a 400 body into `BadRequestError` turned out to be provider-neutral, so it is part of the default mapping and NBP needs no override; `RestProviderProfile.MapErrorAsync` is the hook for providers whose error bodies need parsing (e.g. JSON error codes). Log templates are provider-neutral and take the provider's display name as the `{provider}` property.

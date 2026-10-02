@@ -12,6 +12,7 @@ body:
       label: Pakiet / Package
       options:
         - OpenUrzednik.Core
+        - OpenUrzednik.Http
         - OpenUrzednik.Nbp
         - Inny / Other
     validations:

@@ -14,7 +14,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellLatestAsync(CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_latest");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_latest");
 
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
@@ -39,7 +39,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellTopCountAsync(int topCount, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_top_count");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_top_count");
         traceSpan.SetTag("nbp.top_count", topCount);
 
         var topCountValidation = new TopCountValidator(nameof(topCount), topCount).Validate();
@@ -65,7 +65,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellTodayAsync(CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_today");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_today");
 
         var urlBuilder = _urlBuilderFactory.GetTableBuilder(NbpTable.C);
 
@@ -90,7 +90,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_date");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_date");
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
         var dateValidation = new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
@@ -125,7 +125,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.buy_sell_range");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_range");
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 

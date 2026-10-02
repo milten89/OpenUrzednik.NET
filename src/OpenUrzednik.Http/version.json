@@ -4,8 +4,7 @@
   "inherit": true,
   "pathFilters": [
     ".",
-    "../OpenUrzednik.Core",
-    "../OpenUrzednik.Http"
+    "../OpenUrzednik.Core"
   ],
   "release": {
     "versionIncrement": "minor"

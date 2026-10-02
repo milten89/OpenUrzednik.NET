@@ -3,9 +3,9 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Options;
-using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
 
@@ -42,9 +42,9 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(TimeProvider.System);
-        var telemetryProvider = sut.GetPrivateField<NbpTelemetryProvider>("_telemetryProvider");
+        var telemetryProvider = sut.GetPrivateField<OpenUrzednikTelemetry>("_telemetryProvider");
         telemetryProvider.Logger.ShouldBeSameAs(NullOpenUrzednikLogger.Instance);
-        telemetryProvider.Tracer.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
+        telemetryProvider.TraceSource.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
         sut.GetPrivateField<INbpUrlBuilder>("_urlBuilder").ShouldBeOfType<NbpUrlBuilder>();
     }
 
@@ -63,9 +63,9 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(timeProvider);
-        var telemetryProvider = sut.GetPrivateField<NbpTelemetryProvider>("_telemetryProvider");
+        var telemetryProvider = sut.GetPrivateField<OpenUrzednikTelemetry>("_telemetryProvider");
         telemetryProvider.Logger.ShouldBeSameAs(logger);
-        telemetryProvider.Tracer.ShouldBeSameAs(traceSource);
+        telemetryProvider.TraceSource.ShouldBeSameAs(traceSource);
         urlBuilderFactory.Received(1).GetGoldBuilder();
     }
 
