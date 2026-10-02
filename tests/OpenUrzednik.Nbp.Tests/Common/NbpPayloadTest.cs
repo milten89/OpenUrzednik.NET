@@ -2,8 +2,8 @@ using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
-using OpenUrzednik.Nbp.Telemetry;
 
 using Shouldly;
 
@@ -16,7 +16,7 @@ public class NbpPayloadTest
     {
         // Arrange
         var span = Substitute.For<IOpenUrzednikSpan>();
-        var telemetryProvider = new NbpTelemetryProvider(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
+        var telemetryProvider = new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
 
         // Act
         var result = NbpPayload.Map(21, x => x * 2, telemetryProvider, span);
@@ -34,7 +34,7 @@ public class NbpPayloadTest
         var span = Substitute.For<IOpenUrzednikSpan>();
         span.IsRecording.Returns(true);
         var logger = Substitute.For<IOpenUrzednikLogger>();
-        var telemetryProvider = new NbpTelemetryProvider(logger, NullOpenUrzednikTraceSource.Instance);
+        var telemetryProvider = new OpenUrzednikTelemetry(logger, NullOpenUrzednikTraceSource.Instance);
 
         // Act
         var result = NbpPayload.Map<object?, int>(null, dto =>

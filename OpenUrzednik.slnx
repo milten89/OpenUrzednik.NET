@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/OpenUrzednik.Core/OpenUrzednik.Core.csproj" />
     <Project Path="src/OpenUrzednik.Gus/OpenUrzednik.Gus.csproj" />
+    <Project Path="src/OpenUrzednik.Http/OpenUrzednik.Http.csproj" />
     <Project Path="src/OpenUrzednik.Krs/OpenUrzednik.Krs.csproj" />
     <Project Path="src/OpenUrzednik.Mf/OpenUrzednik.Mf.csproj" />
     <Project Path="src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />
@@ -9,6 +10,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/OpenUrzednik.Core.Tests/OpenUrzednik.Core.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Gus.Tests/OpenUrzednik.Gus.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Http.Tests/OpenUrzednik.Http.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.IntegrationTests/OpenUrzednik.IntegrationTests.csproj" Id="43a404a5-1ece-4e8a-ade7-d8f5fc3b7858"/>
     <Project Path="tests/OpenUrzednik.Krs.Tests/OpenUrzednik.Krs.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Mf.Tests/OpenUrzednik.Mf.Tests.csproj" />

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Shared HTTP layer for OpenUrzednik.NET REST providers: request execution, HTTP status to error mapping, timeouts and telemetry. Intended for provider packages, not for application code.</Description>
+    <PackageTags>HTTP;REST;ResultPattern;API;Poland;Gov</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Http.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.Http\OpenUrzednik.Http.csproj" />
   </ItemGroup>
 
   <ItemGroup>

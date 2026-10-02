@@ -13,7 +13,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetLatestAsync(string currency, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.latest");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.latest");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table);
 
@@ -42,7 +42,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetTopCountAsync(string currency, int topCount, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.top_count");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.top_count");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.top_count", topCount);
@@ -73,7 +73,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetTodayAsync(string currency, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.today");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.today");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table);
 
@@ -102,7 +102,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly date, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.get_date");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.get_date");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
@@ -133,7 +133,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly from, DateOnly to, TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.get_range");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.get_range");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.from", from.ToIso8601String());

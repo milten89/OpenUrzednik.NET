@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-01
+date: 2026-10-02
 decision-makers: milten89
 ---
 
@@ -55,3 +55,5 @@ Provider packages contain no direct `HttpClient.SendAsync` calls; all HTTP goes 
 
 * Good, because there is no extra public API or package.
 * Bad, because fixes require re-releasing each provider, and code is duplicated across binaries.
+
+**2026-10-02 note (backlog item 12).** Implemented: `RestRequestExecutor`, `RestProviderProfile` and `ErrorResponseContext` in `OpenUrzednik.Http.Infrastructure`, with `OpenUrzednikTelemetry` replacing `NbpTelemetryProvider`. The bounded read of a 400 body into `BadRequestError` turned out to be provider-neutral, so it is part of the default mapping and NBP needs no override; `RestProviderProfile.MapErrorAsync` is the hook for providers whose error bodies need parsing (e.g. JSON error codes). Log templates are provider-neutral and take the provider's display name as the `{provider}` property.

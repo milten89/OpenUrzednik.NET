@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Time.Testing;
 
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Options;
-using OpenUrzednik.Nbp.Telemetry;
 
 using Shouldly;
 
@@ -11,9 +11,9 @@ namespace OpenUrzednik.Nbp.Tests.Common;
 
 public partial class NbpConnectionTest
 {
-    private static NbpConnection Create(HttpClient httpClient, NbpOptions? options)
+    private static RestRequestExecutor Create(HttpClient httpClient, NbpOptions? options)
         => NbpConnection.Create(httpClient, options,
-            new NbpTelemetryProvider(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance), new FakeTimeProvider());
+            new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance), new FakeTimeProvider());
 
     [Fact]
     public void Create_NoOptionsAndNoBaseAddress_UsesDefaultApiUrlAndHttpClientTimeout()

@@ -13,7 +13,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetLatestAsync(TableType table, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.latest");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.latest");
         traceSpan.SetTag("nbp.table", table);
 
         var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
@@ -48,7 +48,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(TableType table, int topCount, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.top_count");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.top_count");
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.top_count", topCount);
 
@@ -77,7 +77,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetTodayAsync(TableType table, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.today");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.today");
         traceSpan.SetTag("nbp.table", table);
 
         var midTableValidation = new TableTypeValidator(nameof(table), table).Validate();
@@ -112,7 +112,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(TableType table, DateOnly date, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.get_date");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.get_date");
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
@@ -150,7 +150,7 @@ public partial class NbpExchangeRateTableClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(TableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.table.get_range");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.get_range");
         traceSpan.SetTag("nbp.table", table);
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());

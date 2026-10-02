@@ -41,7 +41,7 @@ How to use this file:
 
 ## P2: Framework (implements accepted ADRs)
 
-- [ ] **12. `OpenUrzednik.Http` package** ([ADR-0006](adr/0006-shared-http-layer.md)): move the request executor out of NBP and migrate NBP to it.
+- [x] **12. `OpenUrzednik.Http` package** ([ADR-0006](adr/0006-shared-http-layer.md)): move the request executor out of NBP and migrate NBP to it. Done in #30.
     * `NbpConnection.GetAsync` (`Nbp/Common/NbpConnection.cs`, since #28) already implements the ADR-0002 behaviour: disposal, status mapping, timeouts, network errors and a bounded read of 400 error bodies.
     * Missing: the provider-neutral package, and per-provider overrides (e.g. how a provider's error body becomes a message).
     * Unexpected exceptions no longer mark the `nbp.http.get` span as an error (#18 removed the catch-all). Fix it with try/finally, not `catch (Exception)`.

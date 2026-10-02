@@ -14,16 +14,15 @@ using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
-using OpenUrzednik.Nbp.Common;
-using OpenUrzednik.Nbp.Telemetry;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.TestCommon;
 using OpenUrzednik.TestCommon.Extensions;
 
 using Shouldly;
 
-namespace OpenUrzednik.Nbp.Tests.Common;
+namespace OpenUrzednik.Http.Tests.Infrastructure;
 
-public partial class NbpConnectionTest
+public partial class RestRequestExecutorTest
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -32,7 +31,7 @@ public partial class NbpConnectionTest
     private static readonly JsonTypeInfo<TestDto> TypeInfo = (JsonTypeInfo<TestDto>)JsonOptions.GetTypeInfo(typeof(TestDto));
 
     private readonly TimeProvider _timeProvider = new FakeTimeProvider();
-    private readonly NbpTelemetryProvider _telemetryProvider = new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
+    private readonly OpenUrzednikTelemetry _telemetryProvider = new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
 
     [Fact]
     public async Task GetAsync_NullRelativePath_ThrowsArgumentNullException()
@@ -265,7 +264,7 @@ public partial class NbpConnectionTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
-        error.Message.ShouldStartWith("NBP API rejected the request to ");
+        error.Message.ShouldStartWith("Test API rejected the request to ");
         error.Message.ShouldEndWith($"{relativePath}.");
     }
 
@@ -308,7 +307,7 @@ public partial class NbpConnectionTest
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
         error.Message.ShouldEndWith(".");
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, Arg.Any<Exception>(), "Could not read NBP error response body.");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, Arg.Any<Exception>(), "Could not read {provider} error response body.", "provider", "Test API");
     }
 
     [Fact]
@@ -372,7 +371,7 @@ public partial class NbpConnectionTest
         error.ToException().InnerException.ShouldBeSameAs(thrown);
         span.Received(1).RecordException(thrown);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, thrown, "NBP request to {path} failed", "path", Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, thrown, "{provider} request to {path} failed", "provider", "Test API", "path", Arg.Any<string>());
     }
 
     [Fact]
@@ -494,7 +493,7 @@ public partial class NbpConnectionTest
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(span);
         var logger = Substitute.For<IOpenUrzednikLogger>();
-        var telemetryProvider = new NbpTelemetryProvider(logger, tracer);
+        var telemetryProvider = new OpenUrzednikTelemetry(logger, tracer);
 
         // Act
         await Should.ThrowAsync<OperationCanceledException>(
@@ -521,7 +520,7 @@ public partial class NbpConnectionTest
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(span);
         var logger = Substitute.For<IOpenUrzednikLogger>();
-        var telemetryProvider = new NbpTelemetryProvider(logger, tracer);
+        var telemetryProvider = new OpenUrzednikTelemetry(logger, tracer);
 
         // Act
         await Should.ThrowAsync<OperationCanceledException>(
@@ -555,7 +554,7 @@ public partial class NbpConnectionTest
         (recorded == thrown || recorded.InnerException == thrown).ShouldBeTrue();
         span.Received(1).RecordException(recorded);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, recorded, "NBP request to {path} failed", "path", Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, recorded, "{provider} request to {path} failed", "provider", "Test API", "path", Arg.Any<string>());
     }
 
     [Fact]
@@ -589,7 +588,7 @@ public partial class NbpConnectionTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "NBP resource not found: {path}.", "path", Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "{provider} resource not found: {path}.", "provider", "Test API", "path", Arg.Any<string>());
     }
 
     [Fact]
@@ -608,7 +607,7 @@ public partial class NbpConnectionTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit, retry after {delay}.", "delay", retryDelay);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "{provider} rate limit hit, retry after {delay}.", "provider", "Test API", "delay", retryDelay);
     }
 
     [Fact]
@@ -624,7 +623,7 @@ public partial class NbpConnectionTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP rate limit hit.");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "{provider} rate limit hit.", "provider", "Test API");
     }
 
     [Fact]
@@ -678,7 +677,7 @@ public partial class NbpConnectionTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "NBP API is unavailable, status {status}", "status", (int)HttpStatusCode.BadGateway);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "{provider} is unavailable, status {status}", "provider", "Test API", "status", (int)HttpStatusCode.BadGateway);
     }
 
     [Fact]
@@ -698,7 +697,7 @@ public partial class NbpConnectionTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Error, Arg.Any<JsonException>(), "Failed to deserialize NBP response from {path}", "path", relativePath);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Error, Arg.Any<JsonException>(), "Failed to deserialize {provider} response from {path}", "provider", "Test API", "path", relativePath);
         span.Received(1).RecordException(Arg.Any<JsonException>());
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
     }
@@ -772,9 +771,11 @@ public partial class NbpConnectionTest
             async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
     }
 
-    // The connection resolves its base address from the HttpClient, as NbpConnection.Create does when no ApiUrl is set.
-    private static NbpConnection CreateConnection(HttpClient httpClient, NbpTelemetryProvider telemetryProvider, TimeProvider timeProvider, TimeSpan? timeout = null)
-        => new(httpClient, httpClient?.BaseAddress ?? new Uri(Options.NbpOptions.DefaultApiUrl), timeout, telemetryProvider, timeProvider);
+    private static readonly RestProviderProfile Profile = new("test", "Test API");
+
+    // Providers resolve the base address themselves; the tests take it from the HttpClient.
+    private static RestRequestExecutor CreateConnection(HttpClient httpClient, OpenUrzednikTelemetry telemetryProvider, TimeProvider timeProvider, TimeSpan? timeout = null)
+        => new(httpClient, httpClient?.BaseAddress ?? new Uri("https://api.example.com/"), Profile, timeout, telemetryProvider, timeProvider);
 
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
         => CreateHttpClient(faker, response, out _);
@@ -789,13 +790,13 @@ public partial class NbpConnectionTest
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, TestDto dto)
         => new(statusCode) { Content = JsonContent.Create(dto, TypeInfo) };
 
-    private static (NbpTelemetryProvider Provider, IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span) CreateTelemetrySubstitutes()
+    private static (OpenUrzednikTelemetry Provider, IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span) CreateTelemetrySubstitutes()
     {
         var logger = Substitute.For<IOpenUrzednikLogger>();
         var span = Substitute.For<IOpenUrzednikSpan>();
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(span);
-        return (new NbpTelemetryProvider(logger, tracer), logger, span);
+        return (new OpenUrzednikTelemetry(logger, tracer), logger, span);
     }
 
     private sealed record TestDto(string Name, int Value);

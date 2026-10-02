@@ -1,7 +1,7 @@
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Options;
-using OpenUrzednik.Nbp.Telemetry;
 using OpenUrzednik.Nbp.UrlBuilder;
 
 namespace OpenUrzednik.Nbp.Table;
@@ -11,10 +11,10 @@ public partial class NbpExchangeRateTableClient : INbpExchangeRateTableClient
 {
     private static readonly NbpJsonContext JsonContext = new();
 
-    private readonly NbpConnection _connection;
+    private readonly RestRequestExecutor _connection;
     private readonly INbpUrlBuilderFactory _urlBuilderFactory;
     private readonly TimeProvider _timeProvider;
-    private readonly NbpTelemetryProvider _telemetryProvider;
+    private readonly OpenUrzednikTelemetry _telemetryProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NbpExchangeRateTableClient"/> class with the default settings:
@@ -42,7 +42,7 @@ public partial class NbpExchangeRateTableClient : INbpExchangeRateTableClient
         ArgumentNullException.ThrowIfNull(httpClient);
 
         _timeProvider = timeProvider ?? TimeProvider.System;
-        _telemetryProvider = new NbpTelemetryProvider(logger, traceSource);
+        _telemetryProvider = new OpenUrzednikTelemetry(logger, traceSource);
         _connection = NbpConnection.Create(httpClient, options, _telemetryProvider, _timeProvider);
         _urlBuilderFactory = urlBuilderFactory ?? new NbpUrlBuilderFactory();
     }

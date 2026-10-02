@@ -13,7 +13,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLatestAsync(string currency, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_latest");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_latest");
         traceSpan.SetTag("nbp.currency", currency);
 
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
@@ -39,7 +39,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTopCountAsync(string currency, int topCount, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_top_count");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_top_count");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.top_count", topCount);
 
@@ -68,7 +68,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTodayAsync(string currency, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_today");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_today");
         traceSpan.SetTag("nbp.currency", currency);
 
         var currencyValidation = new Iso4217Validator(nameof(currency), currency).Validate();
@@ -94,7 +94,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateOnly date, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_date");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_date");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
@@ -123,7 +123,7 @@ public partial class NbpCurrencyExchangeRateClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.Tracer.StartSpan("nbp.currency.buy_sell_range");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_range");
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());

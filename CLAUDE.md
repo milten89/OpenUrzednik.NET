@@ -9,6 +9,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | Project | State |
 |---|---|
 | `src/OpenUrzednik.Core` | Result pattern (`OpenUrzednikResult`, `OpenUrzednikResult<T>`), errors and exceptions, telemetry abstractions, `ValueValidator<T>` |
+| `src/OpenUrzednik.Http` | Shared REST/JSON layer for providers: `RestRequestExecutor`, `RestProviderProfile`, `OpenUrzednikTelemetry` (namespace `OpenUrzednik.Http.Infrastructure`) |
 | `src/OpenUrzednik.Nbp` | NBP API: currency rates (`Currency/`), rate tables (`Table/`), gold prices (`Gold/`). **Reference provider**, still being hardened |
 | `src/OpenUrzednik.Gus`, `Krs`, `Mf` | Empty skeletons. **Do not work on them** ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)) |
 | `tests/OpenUrzednik.*.Tests` | Unit tests (xUnit v3, Shouldly, NSubstitute, Bogus, `FakeTimeProvider`) |
@@ -58,7 +59,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Write code that will work with `#if NET`: dates are `DateOnly` on .NET and `DateTime` on netstandard2.0. Keep `#if` inside small helpers, not spread through business logic.
 
 **HTTP ([ADR-0006](docs/adr/0006-shared-http-layer.md))**
-- Shared REST plumbing is moving to a new `OpenUrzednik.Http` package. Until then it lives in `Nbp/Common/NbpConnection.cs` (`NbpConnection.GetAsync`). Clients take an `HttpClient` and optional `NbpOptions`; they never change the `HttpClient`.
+- All provider HTTP goes through `RestRequestExecutor.GetAsync` in `OpenUrzednik.Http`; providers never call `HttpClient.SendAsync`. A provider describes itself with a `RestProviderProfile` (span name `<name>.http.get`, message prefix, optional `MapErrorAsync` override). NBP creates its executor in `Nbp/Common/NbpConnection.cs`. Clients take an `HttpClient` and optional `NbpOptions`; they never change the `HttpClient`.
 - Dispose `HttpRequestMessage` and `HttpResponseMessage`.
 - Deserialize with source-generated `JsonTypeInfo<T>` (`NbpJsonContext`); no reflection-based serialization.
 

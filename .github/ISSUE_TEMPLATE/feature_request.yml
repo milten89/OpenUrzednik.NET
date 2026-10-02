@@ -8,6 +8,7 @@ body:
       label: Pakiet / Package
       options:
         - OpenUrzednik.Core
+        - OpenUrzednik.Http
         - OpenUrzednik.Nbp
         - Nowy pakiet integracyjny (DI, logowanie, telemetria) / New integration package
         - Inny / Other

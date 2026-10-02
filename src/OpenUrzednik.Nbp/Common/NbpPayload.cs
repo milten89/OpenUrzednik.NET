@@ -2,7 +2,7 @@ using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
-using OpenUrzednik.Nbp.Telemetry;
+using OpenUrzednik.Http.Infrastructure;
 
 namespace OpenUrzednik.Nbp.Common;
 
@@ -18,7 +18,7 @@ internal static class NbpPayload
             throw new InvalidPayloadException($"NBP API response is missing '{name}'.");
     }
 
-    internal static OpenUrzednikResult<TModel> Map<TDto, TModel>(TDto dto, Func<TDto, TModel> map, NbpTelemetryProvider telemetryProvider, IOpenUrzednikSpan traceSpan)
+    internal static OpenUrzednikResult<TModel> Map<TDto, TModel>(TDto dto, Func<TDto, TModel> map, OpenUrzednikTelemetry telemetryProvider, IOpenUrzednikSpan traceSpan)
     {
         try
         {
