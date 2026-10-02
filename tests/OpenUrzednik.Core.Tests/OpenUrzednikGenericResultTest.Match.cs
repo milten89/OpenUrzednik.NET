@@ -31,7 +31,7 @@ public partial class OpenUrzednikGenericResultTest
     public void Match_Default_CallsOnFailureWithUninitializedError()
     {
         // Act
-        var error = default(OpenUrzednikResult<int>).Match(_ => null, errors => errors[0]);
+        var error = default(OpenUrzednikResult<int>).Match<OpenUrzednikError?>(_ => null, errors => errors[0]);
 
         // Assert
         error.ShouldBeOfType<UnknownError>();
