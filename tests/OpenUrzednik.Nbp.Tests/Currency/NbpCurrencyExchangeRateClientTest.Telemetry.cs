@@ -54,7 +54,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         await sut.GetTopCountAsync("US", 0, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTopCountAsync");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", "GetTopCountAsync");
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
     }
 
@@ -184,7 +184,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         await sut.GetAsync(currency, date, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        tracer.Received(1).StartSpan("nbp.currency.get_date");
+        tracer.Received(1).StartSpan("nbp.currency.date");
         span.Received(1).SetTag("nbp.currency", currency);
         span.Received(1).SetTag("nbp.table", TableType.A);
         span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
@@ -209,7 +209,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         await sut.GetAsync(currency, from, to, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        tracer.Received(1).StartSpan("nbp.currency.get_range");
+        tracer.Received(1).StartSpan("nbp.currency.range");
         span.Received(1).SetTag("nbp.currency", currency);
         span.Received(1).SetTag("nbp.table", TableType.A);
         span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));

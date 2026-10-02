@@ -50,7 +50,7 @@ public partial class NbpExchangeRateTableClientTest
         await sut.GetLatestAsync((TableType)99, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetLatestAsync");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", "GetLatestAsync");
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
     }
 
@@ -149,7 +149,7 @@ public partial class NbpExchangeRateTableClientTest
         await sut.GetAsync(TableType.A, date, TestContext.Current.CancellationToken);
 
         // Assert
-        tracer.Received(1).StartSpan("nbp.table.get_date");
+        tracer.Received(1).StartSpan("nbp.table.date");
         span.Received(1).SetTag("nbp.table", TableType.A);
         span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
@@ -171,7 +171,7 @@ public partial class NbpExchangeRateTableClientTest
         await sut.GetAsync(TableType.A, from, to, TestContext.Current.CancellationToken);
 
         // Assert
-        tracer.Received(1).StartSpan("nbp.table.get_range");
+        tracer.Received(1).StartSpan("nbp.table.range");
         span.Received(1).SetTag("nbp.table", TableType.A);
         span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));

@@ -31,7 +31,7 @@ public partial class NbpGoldPriceClientTest
         await sut.GetAsync(date, TestContext.Current.CancellationToken);
 
         // Assert
-        tracer.Received(1).StartSpan("nbp.gold.get_date");
+        tracer.Received(1).StartSpan("nbp.gold.date");
         span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
@@ -50,7 +50,7 @@ public partial class NbpGoldPriceClientTest
         await sut.GetAsync(faker.Date.BeforeGoldMinDate(), TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", "GetAsync");
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
     }
 
@@ -168,7 +168,7 @@ public partial class NbpGoldPriceClientTest
         await sut.GetAsync(from, to, TestContext.Current.CancellationToken);
 
         // Assert
-        tracer.Received(1).StartSpan("nbp.gold.get_range");
+        tracer.Received(1).StartSpan("nbp.gold.range");
         span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }

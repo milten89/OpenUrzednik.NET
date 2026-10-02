@@ -1,5 +1,4 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
@@ -16,7 +15,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
 {
     private static readonly NbpJsonContext JsonContext = new();
 
-    private readonly RestRequestExecutor _connection;
+    private readonly NbpRequestPipeline _pipeline;
     private readonly TimeProvider _timeProvider;
     private readonly INbpUrlBuilder _urlBuilder;
     private readonly OpenUrzednikTelemetry _telemetryProvider;
@@ -48,7 +47,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
 
         _timeProvider = timeProvider ?? TimeProvider.System;
         _telemetryProvider = new OpenUrzednikTelemetry(logger, traceSource);
-        _connection = NbpConnection.Create(httpClient, options, _telemetryProvider, _timeProvider);
+        _pipeline = new NbpRequestPipeline(NbpConnection.Create(httpClient, options, _telemetryProvider, _timeProvider), _telemetryProvider);
         _urlBuilder = (urlBuilderFactory ?? new NbpUrlBuilderFactory()).GetGoldBuilder();
     }
 
@@ -57,22 +56,8 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.latest");
 
-        var requestResult = await _connection.GetAsync(_urlBuilder.Latest(), JsonContext.GoldPriceDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", _urlBuilder.Latest());
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetLatestAsync), OpenUrzednikResult.Success(),
+            _urlBuilder.Latest, JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -81,22 +66,10 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.top_count");
         traceSpan.SetTag("nbp.top_count", topCount);
 
-        var topCountValidation = new TopCountValidator(nameof(topCount), topCount).Validate();
-        if (topCountValidation.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetTopCountAsync");
-            traceSpan.RecordErrors(topCountValidation.Errors);
-            return topCountValidation;
-        }
+        var validation = new TopCountValidator(nameof(topCount), topCount).Validate();
 
-        var requestResult = await _connection.GetAsync(_urlBuilder.ForTopCount(topCount), JsonContext.GoldPriceDtoArray, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure<IReadOnlyList<GoldPrice>>(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetTopCountAsync), validation,
+            () => _urlBuilder.ForTopCount(topCount), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -104,82 +77,33 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.today");
 
-        var requestResult = await _connection.GetAsync(_urlBuilder.Today(), JsonContext.GoldPriceDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", _urlBuilder.Today());
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetTodayAsync), OpenUrzednikResult.Success(),
+            _urlBuilder.Today, JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.get_date");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.date");
         traceSpan.SetTag("nbp.date", date.ToIso8601String());
 
-        var dateValidation = new GoldDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
-        if (dateValidation.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
-            traceSpan.RecordErrors(dateValidation.Errors);
-            return dateValidation;
-        }
+        var validation = new GoldDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
 
-        var requestResult = await _connection.GetAsync(_urlBuilder.ForDate(date), JsonContext.GoldPriceDtoArray, cancellationToken);
-
-        switch (requestResult.IsSuccess)
-        {
-            case true when requestResult.Value.Length != 0:
-                return NbpPayload.Map(requestResult.Value[0], Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
-            case true when requestResult.Value.Length == 0:
-                if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                    _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", _urlBuilder.ForDate(date));
-                var error = new NotFoundError("NBP API returned empty array.");
-                traceSpan.RecordError(error);
-                return OpenUrzednikResult.Failure(error);
-            default:
-                traceSpan.RecordErrors(requestResult.Errors);
-                return OpenUrzednikResult.Failure(requestResult.Errors);
-        }
+        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetAsync), validation,
+            () => _urlBuilder.ForDate(date), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.get_range");
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.range");
         traceSpan.SetTag("nbp.from", from.ToIso8601String());
         traceSpan.SetTag("nbp.to", to.ToIso8601String());
 
-        var toValidation = new GoldDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate();
-        var dateRangeValidation = new DateRangeValidator((from, to), DateRangeValidator.MaxRatesDateRange).Validate();
-        var validationResult = toValidation.And(dateRangeValidation);
-        if (validationResult.IsFailure)
-        {
-            if (_telemetryProvider.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for GetAsync");
-            traceSpan.RecordErrors(validationResult.Errors);
-            return validationResult;
-        }
+        var validation = new GoldDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate()
+            .And(new DateRangeValidator((from, to), DateRangeValidator.MaxRatesDateRange).Validate());
 
-        var requestResult = await _connection.GetAsync(_urlBuilder.ForDateRange(from, to), JsonContext.GoldPriceDtoArray, cancellationToken);
-
-        if (requestResult.IsSuccess)
-            return NbpPayload.Map(requestResult.Value, Mapper.MapToGoldPrice, _telemetryProvider, traceSpan);
-
-        traceSpan.RecordErrors(requestResult.Errors);
-        return OpenUrzednikResult.Failure<IReadOnlyList<GoldPrice>>(requestResult.Errors);
+        return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
+            () => _urlBuilder.ForDateRange(from, to), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
     }
 }

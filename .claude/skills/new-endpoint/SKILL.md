@@ -37,7 +37,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 ## 6. Client method
 
 - Add it to the interface first, with XML docs that state limits and the publication schedule. `CancellationToken cancellationToken = default` goes last, in both the interface and the class.
-- Follow the existing pipeline: start span (`<provider>.<area>.<operation>`) → set tags → validate (log at Debug with an `IsEnabled` guard, `RecordErrors`, return the failure) → build the URL via the URL builder → shared HTTP helper → map → `RecordErrors` on failure.
+- Follow the existing pattern: start the span (`<provider>.<area>.<operation>`, no `get_` prefix: `latest`, `today`, `top_count`, `date`, `range`) → set tags → combine the validators → `await _pipeline.GetAsync(...)` (whole payload) or `GetFirstAsync(...)` (first item of an array) with `.ConfigureAwait(false)`. The pipeline (`Nbp/Common/NbpRequestPipeline.cs`) logs and records validation failures, builds the path only after validation, sends the request, maps the payload and records failures.
 - No `catch (Exception)`. Failures are returned as results, only caller cancellation is thrown (ADR-0002).
 - An empty array where one item is expected → `NotFoundError`.
 

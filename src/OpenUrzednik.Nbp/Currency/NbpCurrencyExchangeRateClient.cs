@@ -11,7 +11,7 @@ public partial class NbpCurrencyExchangeRateClient : INbpCurrencyExchangeRateCli
 {
     private static readonly NbpJsonContext JsonContext = new();
 
-    private readonly RestRequestExecutor _connection;
+    private readonly NbpRequestPipeline _pipeline;
     private readonly INbpUrlBuilderFactory _urlBuilderFactory;
     private readonly TimeProvider _timeProvider;
     private readonly OpenUrzednikTelemetry _telemetryProvider;
@@ -43,7 +43,7 @@ public partial class NbpCurrencyExchangeRateClient : INbpCurrencyExchangeRateCli
 
         _timeProvider = timeProvider ?? TimeProvider.System;
         _telemetryProvider = new OpenUrzednikTelemetry(logger, traceSource);
-        _connection = NbpConnection.Create(httpClient, options, _telemetryProvider, _timeProvider);
+        _pipeline = new NbpRequestPipeline(NbpConnection.Create(httpClient, options, _telemetryProvider, _timeProvider), _telemetryProvider);
         _urlBuilderFactory = urlBuilderFactory ?? new NbpUrlBuilderFactory();
     }
 }
