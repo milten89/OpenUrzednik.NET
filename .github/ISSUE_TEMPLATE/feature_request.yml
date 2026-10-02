@@ -9,6 +9,8 @@ body:
       options:
         - OpenUrzednik.Core
         - OpenUrzednik.Http
+        - OpenUrzednik.Extensions.Logging
+        - OpenUrzednik.Diagnostics
         - OpenUrzednik.Nbp
         - Nowy pakiet integracyjny (DI, logowanie, telemetria) / New integration package
         - Inny / Other

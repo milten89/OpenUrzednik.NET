@@ -44,3 +44,22 @@ var client = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions
 Klient bierze adres API z pierwszego ustawionego miejsca: `NbpOptions.ApiUrl`, `HttpClient.BaseAddress`, a na końcu domyślny `https://api.nbp.pl/api/`. Jeśli nie ustawisz `NbpOptions.Timeout`, obowiązuje limit czasu `HttpClient` (domyślnie 100 s). `NbpOptions.Timeout` może ten limit skrócić, ale nie wydłużyć, bo `HttpClient.Timeout` nadal obowiązuje do otrzymania nagłówków odpowiedzi. Adres API nie może zawierać zapytania (`?…`) ani fragmentu (`#…`).
 
 Błędy, takie jak brak danych, przekroczony limit zapytań albo upływ limitu czasu, wracają w wyniku, a nie jako wyjątki. Jeśli wolisz wyjątki, wywołaj na wyniku `EnsureSuccess()`.
+
+## Logowanie i śledzenie
+
+Klienty przyjmują opcjonalne parametry `logger` i `traceSource`. Bez nich nic nie logują i nie tworzą spanów. Żeby korzystać z `ILogger` i OpenTelemetry, zainstaluj adaptery [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) i [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics):
+
+```csharp
+using OpenUrzednik.Diagnostics;
+using OpenUrzednik.Extensions.Logging;
+using OpenUrzednik.Nbp;
+using OpenUrzednik.Nbp.Gold;
+
+var client = new NbpGoldPriceClient(httpClient,
+    logger: loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(),
+    traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
+```
+
+Spany trafiają do źródła `OpenUrzednik.Nbp`, a logi do kategorii z pełną nazwą klienta (np. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`).
+
+Klienty używają własnych interfejsów (`IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` z OpenUrzednik.Core), a nie `ILogger` i `ActivitySource`. Dzięki temu ten pakiet nie potrzebuje `Microsoft.Extensions.Logging.Abstractions` ani innych pakietów do logowania i śledzenia. Z `ILogger` i `ActivitySource` łączą go dopiero adaptery.

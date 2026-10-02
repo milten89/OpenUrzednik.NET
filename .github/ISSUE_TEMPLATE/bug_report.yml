@@ -13,6 +13,8 @@ body:
       options:
         - OpenUrzednik.Core
         - OpenUrzednik.Http
+        - OpenUrzednik.Extensions.Logging
+        - OpenUrzednik.Diagnostics
         - OpenUrzednik.Nbp
         - Inny / Other
     validations:

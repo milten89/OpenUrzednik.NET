@@ -121,15 +121,19 @@ public sealed class RestRequestExecutor
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        var requestUri = new Uri(BaseAddress, relativePath.TrimStart('/'));
+
+        // OpenTelemetry HTTP semantic conventions (ADR-0003).
         using var traceSpan = _telemetry.TraceSource.StartSpan(_spanName);
-        traceSpan.SetTag("http.path", relativePath);
+        traceSpan.SetTag("http.request.method", "GET");
+        traceSpan.SetTag("url.path", requestUri.AbsolutePath);
 
         // Expected failures are returned as errors; this only marks the span when something unexpected escapes,
         // without catching it (ADR-0002 forbids catch (Exception)).
         var completed = false;
         try
         {
-            var result = await SendAndReadAsync(relativePath, typeInfo, traceSpan, cancellationToken).ConfigureAwait(false);
+            var result = await SendAndReadAsync(requestUri, relativePath, typeInfo, traceSpan, cancellationToken).ConfigureAwait(false);
             completed = true;
             return result;
         }
@@ -140,11 +144,11 @@ public sealed class RestRequestExecutor
         }
     }
 
-    private async Task<OpenUrzednikResult<TDto>> SendAndReadAsync<TDto>(string relativePath, JsonTypeInfo<TDto> typeInfo, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)
+    private async Task<OpenUrzednikResult<TDto>> SendAndReadAsync<TDto>(Uri requestUri, string relativePath, JsonTypeInfo<TDto> typeInfo, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)
     {
         var timeout = Timeout;
 
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(BaseAddress, relativePath.TrimStart('/')));
+        using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
         // With ResponseHeadersRead, HttpClient.Timeout stops applying once the headers arrive,
@@ -159,7 +163,7 @@ public sealed class RestRequestExecutor
             return OpenUrzednikResult.Failure<TDto>(sendResult.Errors);
 
         using var response = sentResponse;
-        traceSpan.SetTag("http.status_code", (int)response.StatusCode);
+        traceSpan.SetTag("http.response.status_code", (int)response.StatusCode);
 
         if (!response.IsSuccessStatusCode)
             return await MapErrorResponseAsync(response, relativePath, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
