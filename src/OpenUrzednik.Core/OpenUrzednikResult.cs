@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 using OpenUrzednik.Core.Errors;
@@ -13,6 +14,7 @@ public readonly struct OpenUrzednikResult
 
     /// <summary>
     /// Gets the list of errors associated with the result. If the result is successful, this will be an empty list.
+    /// The list is shared with results created from this one (e.g. by <see cref="Bind{TOut}(Func{OpenUrzednikResult{TOut}})"/>); don't cast it to modify it.
     /// </summary>
     public IReadOnlyList<OpenUrzednikError> Errors => _errors ?? [];
 
@@ -162,6 +164,10 @@ public readonly struct OpenUrzednikResult
 /// Represents the result of an operation that can either be successful with a value of type <typeparamref name="TValue"/> or failed with associated errors.
 /// </summary>
 /// <typeparam name="TValue">The type of the value contained in the result when it succeeds.</typeparam>
+/// <remarks>
+/// When <typeparamref name="TValue"/> is an error type (e.g. <see cref="OpenUrzednikError"/>), the constructors are ambiguous to read:
+/// use <see cref="OpenUrzednikResult.Success{T}(T)"/> and <see cref="OpenUrzednikResult.Failure{T}(OpenUrzednikError)"/> instead.
+/// </remarks>
 public readonly struct OpenUrzednikResult<TValue>
 {
     // The state lives in _errors so the struct stays two fields wide (16 bytes for a reference-type TValue):
@@ -176,6 +182,7 @@ public readonly struct OpenUrzednikResult<TValue>
     /// <summary>
     /// Gets the list of errors associated with the result. If the result is successful, this will be an empty list.
     /// A <see langword="default"/> instance is a failure with a single <see cref="UnknownError"/>.
+    /// The list is shared with results created from this one (e.g. by <see cref="Map{TOut}(Func{TValue, TOut})"/>); don't cast it to modify it.
     /// </summary>
     public IReadOnlyList<OpenUrzednikError> Errors => (IReadOnlyList<OpenUrzednikError>?)_errors ?? UninitializedErrors;
 
@@ -230,18 +237,18 @@ public readonly struct OpenUrzednikResult<TValue>
     /// <exception cref="ArgumentNullException">Thrown when the errors collection is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the errors collection is empty.</exception>
     public OpenUrzednikResult(IEnumerable<OpenUrzednikError> errors)
-        : this(OpenUrzednikResult.ToErrorArray(errors), owned: true) { }
+        : this(OpenUrzednikResult.ToErrorArray(errors)) { }
 
     // Takes ownership of a non-empty array without copying it; used to forward the errors of another result.
-    // The flag keeps this overload apart from OpenUrzednikResult(TValue) when TValue is an error array.
-    private OpenUrzednikResult(OpenUrzednikError[] errors, bool owned)
+    // It is private, so callers outside always get the public overloads.
+    private OpenUrzednikResult(OpenUrzednikError[] errors)
     {
-        _ = owned;
+        Debug.Assert(errors.Length > 0, "A failure needs at least one error.");
         _value = default;
         _errors = errors;
     }
 
-    internal static OpenUrzednikResult<TValue> FromErrors(OpenUrzednikError[] errors) => new(errors, owned: true);
+    internal static OpenUrzednikResult<TValue> FromErrors(OpenUrzednikError[] errors) => new(errors);
 
     // The errors of a failure; a default instance gets its UnknownError.
     private OpenUrzednikError[] FailureErrors => _errors ?? [UninitializedErrors[0]];

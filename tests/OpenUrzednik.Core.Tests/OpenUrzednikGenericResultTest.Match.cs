@@ -1,3 +1,4 @@
+using OpenUrzednik.Core.Errors;
 using OpenUrzednik.TestCommon;
 
 using Shouldly;
@@ -24,5 +25,22 @@ public partial class OpenUrzednikGenericResultTest
 
         // Assert
         message.ShouldBe("Test error");
+    }
+
+    [Fact]
+    public void Match_Default_CallsOnFailureWithUninitializedError()
+    {
+        // Act
+        var error = default(OpenUrzednikResult<int>).Match(_ => null, errors => errors[0]);
+
+        // Assert
+        error.ShouldBeOfType<UnknownError>();
+    }
+
+    [Fact]
+    public void Match_NullOnFailure_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Success(1).Match(v => v, null!));
     }
 }

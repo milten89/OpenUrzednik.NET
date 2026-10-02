@@ -178,7 +178,7 @@ public class OpenUrzednikResultExtensionsTest
         exception.Code.ShouldBe(ValidationError.ErrorCode);
         exception.Error.ShouldBeSameAs(errors[0]);
         exception.Errors.ShouldBe(errors);
-        exception.Message.ShouldBe("Validation failed with 2 errors: Date must not be in the future. Top count must be between 1 and 255.");
+        exception.Message.ShouldBe("Validation failed with 2 errors: Date must not be in the future.; Top count must be between 1 and 255.");
     }
 
     [Fact]
@@ -254,5 +254,62 @@ public class OpenUrzednikResultExtensionsTest
         // Assert
         called.ShouldBeFalse();
         result.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
+    }
+
+    [Fact]
+    public void EnsureSuccess_WhenGenericResultIsDefault_ExceptionKeepsUnknownError()
+    {
+        // Act
+        var exception = Should.Throw<UnknownException>(() => default(OpenUrzednikResult<int>).EnsureSuccess());
+
+        // Assert
+        exception.Error.ShouldBeOfType<UnknownError>();
+    }
+
+    [Fact]
+    public void EnsureSuccess_WhenResultHasMultipleErrors_ExceptionDoesNotShareResultErrorList()
+    {
+        // Arrange
+        var result = OpenUrzednikResult.Failure([new TestError("first"), new TestError("second")]);
+
+        // Act
+        var exception = Should.Throw<TestException>(() => result.EnsureSuccess());
+
+        // Assert
+        exception.Errors.ShouldNotBeSameAs(result.Errors);
+        exception.Errors.ShouldBeAssignableTo<System.Collections.ObjectModel.ReadOnlyCollection<OpenUrzednikError>>();
+    }
+
+    [Fact]
+    public async Task MapAsync_FailedTask_DoesNotCallMapAndKeepsErrors()
+    {
+        // Arrange
+        var error = new TestError("Test error");
+        var called = false;
+
+        // Act
+        var result = await Task.FromResult(OpenUrzednikResult.Failure<int>(error)).MapAsync(v =>
+        {
+            called = true;
+            return v;
+        });
+
+        // Assert
+        called.ShouldBeFalse();
+        result.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
+    }
+
+    [Fact]
+    public async Task MapAsync_NullTask_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        await Should.ThrowAsync<ArgumentNullException>(() => ((Task<OpenUrzednikResult<int>>)null!).MapAsync(v => v));
+    }
+
+    [Fact]
+    public async Task BindAsync_NullNext_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        await Should.ThrowAsync<ArgumentNullException>(() => Task.FromResult(OpenUrzednikResult.Success(1)).BindAsync((Func<int, OpenUrzednikResult<int>>)null!));
     }
 }

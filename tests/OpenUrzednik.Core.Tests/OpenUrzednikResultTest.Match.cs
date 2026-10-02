@@ -25,4 +25,11 @@ public partial class OpenUrzednikResultTest
         // Assert
         message.ShouldBe("Test error");
     }
+
+    [Fact]
+    public void Match_NullOnSuccess_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Success().Match<int>(null!, errors => errors.Count));
+    }
 }

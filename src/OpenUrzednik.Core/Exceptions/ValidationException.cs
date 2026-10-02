@@ -1,3 +1,5 @@
+using System.Globalization;
+
 using OpenUrzednik.Core.Errors;
 
 namespace OpenUrzednik.Core.Exceptions;
@@ -29,14 +31,15 @@ public sealed class ValidationException : OpenUrzednikException
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ValidationException"/> class for several validation errors.
-    /// The message lists every error; <see cref="OpenUrzednikException.Errors"/> holds them.
+    /// The message lists every error; <see cref="OpenUrzednikException.Errors"/> holds them with their details.
+    /// Unlike the single-error constructor, this one doesn't fill <see cref="Exception.Data"/>.
     /// </summary>
     /// <param name="errors">The validation errors, at least one.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="errors"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="errors"/> is empty or contains null.</exception>
     public ValidationException(IReadOnlyList<ValidationError> errors)
         : base(ValidationError.ErrorCode, CreateMessage(errors))
-        => SetErrors(errors[0], [.. errors]);
+        => SetErrors(errors[0], errors);
 
     private static string CreateMessage(IReadOnlyList<ValidationError> errors)
     {
@@ -48,6 +51,6 @@ public sealed class ValidationException : OpenUrzednikException
 
         return errors.Count == 1
             ? errors[0].Message
-            : $"Validation failed with {errors.Count} errors: {string.Join(" ", errors.Select(e => e.Message))}";
+            : string.Create(CultureInfo.InvariantCulture, $"Validation failed with {errors.Count} errors: {string.Join("; ", errors.Select(e => e.Message))}");
     }
 }

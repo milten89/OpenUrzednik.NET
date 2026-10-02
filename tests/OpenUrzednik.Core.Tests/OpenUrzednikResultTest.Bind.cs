@@ -64,4 +64,11 @@ public partial class OpenUrzednikResultTest
         called.ShouldBeFalse();
         bound.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
     }
+
+    [Fact]
+    public void Bind_NullNext_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Success().Bind<int>(null!));
+    }
 }

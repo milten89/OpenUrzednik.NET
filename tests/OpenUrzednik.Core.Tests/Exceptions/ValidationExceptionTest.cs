@@ -21,7 +21,7 @@ public class ValidationExceptionTest
         var exception = new ValidationException(errors);
 
         // Assert
-        exception.Message.ShouldBe("Validation failed with 2 errors: First. Second.");
+        exception.Message.ShouldBe("Validation failed with 2 errors: First.; Second.");
         exception.Error.ShouldBeSameAs(errors[0]);
         exception.Errors.ShouldBe(errors);
     }
@@ -64,5 +64,13 @@ public class ValidationExceptionTest
         // Assert
         exception.Error.ShouldBeNull();
         exception.Errors.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Ctor_NullElement_ThrowsArgumentException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentException>(() => new ValidationException([null!]))
+            .ParamName.ShouldBe("errors");
     }
 }

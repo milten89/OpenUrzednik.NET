@@ -242,4 +242,17 @@ public partial class OpenUrzednikGenericResultTest
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Failure<int>(errors));
     }
+
+    [Fact]
+    public void ImplicitOperator_FailedNonGenericResult_KeepsAllErrors()
+    {
+        // Arrange
+        OpenUrzednikError[] errors = [new TestError("first"), new TestError("second")];
+
+        // Act
+        OpenUrzednikResult<int> result = OpenUrzednikResult.Failure(errors);
+
+        // Assert
+        result.Errors.ShouldBe(errors);
+    }
 }

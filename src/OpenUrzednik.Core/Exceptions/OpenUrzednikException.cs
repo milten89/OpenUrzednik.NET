@@ -51,6 +51,7 @@ public abstract class OpenUrzednikException : Exception
         Code = code;
     }
 
-    internal void SetErrors(OpenUrzednikError error, IReadOnlyList<OpenUrzednikError> errors)
-        => (Error, Errors) = (error, errors);
+    // Copies the errors: a result's error array is shared with other results, and an exception may outlive them.
+    internal void SetErrors(OpenUrzednikError error, IEnumerable<OpenUrzednikError> errors)
+        => (Error, Errors) = (error, Array.AsReadOnly(errors.ToArray()));
 }

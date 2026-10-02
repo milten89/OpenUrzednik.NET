@@ -28,8 +28,8 @@ var label = result
     .Map(v => v * 2)
     .Match(v => $"Wartość: {v}", errors => $"Błąd: {errors[0].Message}");
 
-if (result.TryGetValue(out var value))
-    Console.WriteLine(value);
+if (result.TryGetValue(out var current))
+    Console.WriteLine(current);
 ```
 
 `Map` zmienia wartość udanego wyniku, `Bind` uruchamia kolejną operację, która też zwraca wynik, a `Match` obsługuje oba przypadki. Jeśli wynik zawiera błędy, przechodzą one dalej bez zmian, a przekazane funkcje nie są wywoływane.

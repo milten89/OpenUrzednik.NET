@@ -76,14 +76,16 @@ public abstract class OpenUrzednikError
     /// <returns>An exception that represents this error.</returns>
     public OpenUrzednikException ToException()
     {
-        var exception = CreateException();
+        var exception = CreateException()
+            ?? throw new InvalidOperationException($"{GetType().Name}.{nameof(CreateException)}() returned null.");
         exception.SetErrors(this, [this]);
         return exception;
     }
 
     /// <summary>
     /// Creates the exception returned by <see cref="ToException"/>. Pass the original exception, if any, as its
-    /// <see cref="System.Exception.InnerException"/>. <see cref="ToException"/> attaches this error to it.
+    /// <see cref="System.Exception.InnerException"/>. <see cref="ToException"/> attaches this error to it,
+    /// so return a new instance on every call.
     /// </summary>
     /// <returns>A new exception that represents this error.</returns>
     protected abstract OpenUrzednikException CreateException();

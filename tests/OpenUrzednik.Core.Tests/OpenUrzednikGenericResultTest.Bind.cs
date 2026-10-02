@@ -73,4 +73,28 @@ public partial class OpenUrzednikGenericResultTest
         called.ShouldBeFalse();
         bound.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
     }
+
+    [Fact]
+    public void Bind_Default_ReturnsUninitializedError()
+    {
+        // Act
+        var bound = default(OpenUrzednikResult<int>).Bind(OpenUrzednikResult.Success);
+
+        // Assert
+        bound.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnknownError>();
+    }
+
+    [Fact]
+    public void Bind_NullNext_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Success(1).Bind<int>(null!));
+    }
+
+    [Fact]
+    public async Task BindAsync_NullNext_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        await Should.ThrowAsync<ArgumentNullException>(() => OpenUrzednikResult.Success(1).BindAsync<int>(null!));
+    }
 }
