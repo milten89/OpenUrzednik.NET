@@ -13,7 +13,7 @@
 
 Większość istniejących pakietów dla polskich API została porzucona lub nie utrzymuje się w nowoczesnym modelu .NET. OpenUrzednik.NET ma dostarczać:
 
-- **Nowoczesne API:** wsparcie dla `net8.0`, `net9.0` i `net10.0`, a przez `netstandard2.0` także dla .NET Framework (testujemy na .NET Framework 4.7.2)
+- **Nowoczesne API:** wsparcie dla `net8.0`, `net9.0` i `net10.0`, a przez `netstandard2.0` także dla .NET Framework (testujemy na .NET Framework 4.8)
 - **Spójne modele błędów:** `OpenUrzednikResult` / `OpenUrzednikResult<T>` zamiast rozproszonej logiki błędów
 - **Elastyczność:** zachowanie klasycznego stylu przez `.EnsureSuccess()` / `.EnsureSuccessAsync()`
 - **Przejrzysty rozwój:** kod podzielony na `Core` i pakiety provider-specific

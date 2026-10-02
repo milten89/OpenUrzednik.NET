@@ -3,6 +3,9 @@
   "version": "1.0-preview",
   "inherit": true,
   "pathFilters": [
-    "."
+    ".",
+    "../Polyfills",
+    "../Directory.Build.props",
+    "../../Directory.Packages.props"
   ]
 }

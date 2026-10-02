@@ -39,6 +39,8 @@ builder.Services.AddOpenTelemetry()
 
 Gdy nikt nie nasłuchuje źródła, adapter nie tworzy `Activity` i niczego nie alokuje.
 
+Na .NET Framework `Activity` domyślnie dostaje identyfikatory hierarchiczne, a nie W3C. OpenTelemetry przełącza aplikację na W3C; bez niego ustaw `Activity.DefaultIdFormat = ActivityIdFormat.W3C` i `Activity.ForceDefaultIdFormat = true`.
+
 ## Zależności
 
-Na platformach .NET pakiet nie ma zależności, bo `ActivitySource` jest częścią .NET.
+Na platformach .NET pakiet nie ma zależności, bo `ActivitySource` jest częścią .NET. Na `netstandard2.0` (.NET Framework) zależy od `System.Diagnostics.DiagnosticSource`.

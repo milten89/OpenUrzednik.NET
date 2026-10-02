@@ -485,6 +485,36 @@ public partial class RestRequestExecutorTest
     }
 
     [Fact]
+    public async Task GetAsync_BodyReadIgnoresTokenAndExceedsTimeout_ReturnsRequestTimeoutError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new TokenIgnoringStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider, TimeSpan.FromMilliseconds(100))
+            .GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(TimeSpan.FromMilliseconds(100));
+    }
+
+    [Fact]
+    public async Task GetAsync_BodyReadIgnoresTokenAndCallerCancels_ThrowsOperationCanceledException()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new TokenIgnoringStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+        // Act & Assert
+        await Should.ThrowAsync<OperationCanceledException>(() => CreateConnection(httpClient, _telemetryProvider, _timeProvider)
+            .GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
+    }
+
+    [Fact]
     public async Task GetAsync_CancelledDuringSendAsync_DoesNotRecordExceptionOrLog()
     {
         // Arrange

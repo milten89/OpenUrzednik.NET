@@ -161,7 +161,11 @@ public sealed class RestRequestExecutor
         try
         {
             // .NET Framework leaves Content null when there is no body; .NET always sets one.
-            var dto = response.Content is null ? default : await response.Content.ReadFromJsonAsync(typeInfo, requestToken).ConfigureAwait(false);
+            // WaitAsync: .NET Framework's response stream checks the token only before a read starts, so a body that stalls
+            // halfway would ignore the deadline and the caller. The abandoned read ends when the response is disposed.
+            var dto = response.Content is null
+                ? default
+                : await response.Content.ReadFromJsonAsync(typeInfo, requestToken).WaitAsync(requestToken).ConfigureAwait(false);
             if (dto is not null)
                 return OpenUrzednikResult.Success(dto);
 

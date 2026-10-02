@@ -51,6 +51,8 @@ Błędy, takie jak brak danych, przekroczony limit zapytań albo upływ limitu c
 
 Pakiet działa też na .NET Framework (przez `netstandard2.0`). Tam daty są typu `DateTime`, a nie `DateOnly`: metody przyjmują `DateTime` i zwracają go w modelach (np. `GoldPrice.Date`). Liczy się tylko data: godzinę klient pomija, a zwracane daty mają godzinę `00:00` i `DateTimeKind.Unspecified`.
 
+Jeśli piszesz bibliotekę, która korzysta z tego pakietu, kompiluj ją na te same platformy (np. `netstandard2.0;net8.0`). Biblioteka tylko dla `netstandard2.0` wywołuje metody z `DateTime`, a w aplikacji .NET 8+ NuGet wybierze wersję z `DateOnly`, więc dostaniesz `MissingMethodException`.
+
 ## Logowanie i śledzenie
 
 Klienty przyjmują opcjonalne parametry `logger` i `traceSource`. Bez nich nic nie logują i nie tworzą spanów. Żeby korzystać z `ILogger` i OpenTelemetry, zainstaluj adaptery [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) i [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics):

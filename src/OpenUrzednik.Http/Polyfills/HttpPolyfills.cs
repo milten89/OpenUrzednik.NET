@@ -21,7 +21,7 @@ internal static class HttpPolyfills
         return reader.ReadAsync(segment.Array!, segment.Offset, segment.Count).WaitAsync(cancellationToken);
     }
 
-    private static async Task<T> WaitAsync<T>(this Task<T> task, CancellationToken cancellationToken)
+    internal static async Task<T> WaitAsync<T>(this Task<T> task, CancellationToken cancellationToken)
     {
         if (!cancellationToken.CanBeCanceled || task.IsCompleted)
             return await task.ConfigureAwait(false);
