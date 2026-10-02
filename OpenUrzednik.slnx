@@ -14,11 +14,8 @@
     <Project Path="tests/OpenUrzednik.Core.Tests/OpenUrzednik.Core.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Diagnostics.Tests/OpenUrzednik.Diagnostics.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Extensions.Logging.Tests/OpenUrzednik.Extensions.Logging.Tests.csproj" />
-    <Project Path="tests/OpenUrzednik.Gus.Tests/OpenUrzednik.Gus.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Http.Tests/OpenUrzednik.Http.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.IntegrationTests/OpenUrzednik.IntegrationTests.csproj" Id="43a404a5-1ece-4e8a-ade7-d8f5fc3b7858"/>
-    <Project Path="tests/OpenUrzednik.Krs.Tests/OpenUrzednik.Krs.Tests.csproj" />
-    <Project Path="tests/OpenUrzednik.Mf.Tests/OpenUrzednik.Mf.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Nbp.DependencyInjection.Tests/OpenUrzednik.Nbp.DependencyInjection.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.TestCommon/OpenUrzednik.TestCommon.csproj" />
