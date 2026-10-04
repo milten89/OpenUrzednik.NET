@@ -69,6 +69,9 @@ public class NbpCurrencyExchangeRateClientTest : IClassFixture<NbpHttpClientFixt
     [InlineData("cenyzlota/2025-01-01/2026-01-04/", "367")]
     [InlineData("exchangerates/tables/a/2026-01-01/2026-04-05/", "93")]
     [InlineData("exchangerates/rates/a/usd/last/256/", "255")]
+    [InlineData("exchangerates/tables/a/last/68/", "67")]
+    [InlineData("exchangerates/tables/c/last/68/", "67")]
+    [InlineData("exchangerates/tables/b/last/15/", "14")]
     public async Task Api_OneStepPastLimit_ReturnsBadRequest(string path, string limit)
     {
         // Arrange

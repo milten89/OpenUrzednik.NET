@@ -15,11 +15,11 @@ public partial class NbpExchangeRateTableClientWireMockTest
     public async Task GetTopCountAsync_Returns400_ReturnsBadRequestErrorWithServerMessage()
     {
         // Arrange
-        // The tables endpoint allows fewer results than the client checks for (67 for table A), so the API rejects 68.
-        _server.GivenError($"{BasePath}/a/last/68", HttpStatusCode.BadRequest, "error-400-tables-top-count.txt");
+        // The validators stop over-limit requests, so a valid request gets the captured over-limit response.
+        _server.GivenError($"{BasePath}/a/last/10", HttpStatusCode.BadRequest, "error-400-tables-top-count.txt");
 
         // Act
-        var result = await CreateSut().GetTopCountAsync(TableType.A, 68, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetTopCountAsync(TableType.A, 10, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();

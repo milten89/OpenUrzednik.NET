@@ -33,7 +33,7 @@ public partial class NbpCurrencyExchangeRateClient
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
             .And(new TableTypeValidator(nameof(table), table).Validate())
-            .And(new TopCountValidator(nameof(topCount), topCount).Validate());
+            .And(new TopCountValidator(nameof(topCount), topCount, TopCountValidator.MaxTopCount).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetTopCountAsync), validation,
             () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForTopCount(topCount), JsonContext.CurrencyExchangeRatesDto, Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);

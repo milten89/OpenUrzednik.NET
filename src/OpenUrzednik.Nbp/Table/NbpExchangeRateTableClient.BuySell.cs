@@ -24,7 +24,7 @@ public partial class NbpExchangeRateTableClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_top_count");
         traceSpan.SetTag("nbp.top_count", topCount);
 
-        var validation = new TopCountValidator(nameof(topCount), topCount).Validate();
+        var validation = new TopCountValidator(nameof(topCount), topCount, TopCountValidator.MaxDailyTablesTopCount).Validate();
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellTopCountAsync), validation,
             () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForTopCount(topCount), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);

@@ -139,16 +139,18 @@ public partial class NbpExchangeRateTableClientTest
         result.Value.ShouldBeEmpty();
     }
 
-    [Fact]
-    public async Task GetTopCountAsync_TopCountAboveApiLimit_ReturnsFailureWithoutSendingRequest()
+    [Theory]
+    [InlineData(TableType.A, NbpTable.A, TopCountValidator.MaxDailyTablesTopCount + 1)]
+    [InlineData(TableType.B, NbpTable.B, TopCountValidator.MaxTableBTopCount + 1)]
+    public async Task GetTopCountAsync_TopCountAboveTableLimit_ReturnsFailureWithoutSendingRequest(TableType table, NbpTable nbpTable, int topCount)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
-        var sut = CreateApiClient(httpClient, NbpTable.A, Substitute.For<INbpUrlBuilder>());
+        var sut = CreateApiClient(httpClient, nbpTable, Substitute.For<INbpUrlBuilder>());
 
         // Act
-        var result = await sut.GetTopCountAsync(TableType.A, TopCountValidator.MaxTopCount + 1, TestContext.Current.CancellationToken);
+        var result = await sut.GetTopCountAsync(table, topCount, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();
