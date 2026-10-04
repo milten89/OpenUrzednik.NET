@@ -6,12 +6,12 @@ body:
     attributes:
       value: |
         Nowe providery są realizowane dopiero po ukończeniu pakietu NBP ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Propozycje zbieramy już teraz.
-        New providers start only after the NBP package is finished (ADR-0010). Proposals are welcome now.
+        New providers start only after the NBP package is finished ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Proposals are welcome now.
   - type: input
     id: name
     attributes:
       label: Nazwa API / API name
-      placeholder: "np. CEIDG, VIES, KSeF"
+      placeholder: "np. / e.g. CEIDG, VIES, KSeF"
     validations:
       required: true
   - type: input

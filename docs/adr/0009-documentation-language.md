@@ -27,4 +27,4 @@ PR template checkbox "Updated both language versions of user-facing docs".
 
 ## More Information
 
-**2026-10-04 note.** English versions exist for the root and package READMEs, `CONTRIBUTING` and `SECURITY` (backlog item 22). Package READMEs link to each other with absolute GitHub URLs, because nuget.org shows the Polish README and doesn't resolve relative links. The issue forms stay Polish only for now (backlog item 40).
+**2026-10-04 note.** English versions exist for the root and package READMEs, `CONTRIBUTING` and `SECURITY` (backlog item 22). Package READMEs link to each other with absolute GitHub URLs, because nuget.org shows the Polish README and doesn't resolve relative links. The issue forms are bilingual inline instead of linking to an English version: each label and description has a Polish and an English part.

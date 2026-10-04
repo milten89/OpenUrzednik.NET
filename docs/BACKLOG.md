@@ -149,4 +149,4 @@ How to use this file:
 
 - [x] **39. Flaky WireMock timeout tests.** The timeout tests delay the response by 5 s and require the call to give up within 1–3 s; on the `test (net472)` runner a 0.1 s timeout took 2.9 s (seen in #55's CI). Done in #57: the server delays 10 s and the bound is 5 s (`NbpWireMockServerExtensions.SlowResponseDelay`/`GaveUpWithin`), shared by all five tests.
 
-- [ ] **40. English issue forms** ([ADR-0009](adr/0009-documentation-language.md)). `.github/ISSUE_TEMPLATE/bug_report.yml`, `feature_request.yml` and `provider_proposal.yml` are Polish only. Give them bilingual labels and descriptions, as `config.yml` already does.
+- [x] **40. English issue forms** ([ADR-0009](adr/0009-documentation-language.md)). Added in #58 on the assumption that `.github/ISSUE_TEMPLATE/*.yml` were Polish only; they were already bilingual. Done in #PR: the one Polish-only placeholder (`provider_proposal.yml`) got its English part, and the ADR-0009 note was corrected.
