@@ -130,10 +130,11 @@ How to use this file:
     * `CultureScope` (TestCommon) needs ICU: it fails under `InvariantGlobalization`. Note it in the class docs.
     * The client constructor tests (`*Test.ctor.cs`) read private fields with `GetPrivateField`. Test through behaviour instead (e.g. which URL builder and clock a request uses).
 
-- [ ] **31. Prose skills follow-ups** (#24).
+- [x] **31. Prose skills follow-ups** (#24). Done in #PR.
     * Say that meaning, API limits and qualifiers ("only", "never") take precedence over style rules: stop-slop removes absolutes.
     * Make `AGENTS.md` protect the same items as `CLAUDE.md` (badges, numbers, which README is Polish).
     * Record the upstream versions: miodkuj@32004e3, stop-slop@8da1f03.
+    * Done in `CLAUDE.md` and `AGENTS.md`; the vendored skill files are unchanged.
 
 - [ ] **32. Exception names clash with the BCL.** `SerializationException` (`System.Runtime.Serialization`) and `ValidationException` (`System.ComponentModel.DataAnnotations`) need an alias when both namespaces are imported. Decide before 1.0 whether to rename them (e.g. `OpenUrzednikValidationException`).
 
