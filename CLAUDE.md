@@ -17,6 +17,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | `src/OpenUrzednik.Gus`, `Krs`, `Mf` | Empty skeletons. **Do not work on them** ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)) |
 | `tests/OpenUrzednik.*.Tests` | Unit tests (xUnit v3, Shouldly, NSubstitute, Bogus, `FakeTimeProvider`) |
 | `tests/OpenUrzednik.IntegrationTests` | WireMock tests (run in CI) and tests against the real API (explicit: they run with `--explicit on` or when `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set) |
+| `samples/` | Runnable examples against the real NBP API (console, minimal Web API with DI); built in CI with the solution, not packed |
 | `tests/OpenUrzednik.TestCommon` | Shared test helpers: `StubHttpMessageHandler`, `ManualFact`/`ManualTheory`, Faker extensions |
 
 Current priorities are listed in [`docs/BACKLOG.md`](docs/BACKLOG.md). Pick work from there unless told otherwise.

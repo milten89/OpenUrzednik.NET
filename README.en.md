@@ -77,6 +77,10 @@ catch (ValidationException ex)
 
 The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient` (preview). With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.en.md). `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` are skeletons and aren't on NuGet; work on them starts after the NBP package is finished ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
 
+### Samples
+
+You'll find runnable programs using the NBP clients, with and without a DI container, in [`samples/`](samples/README.en.md).
+
 ### Tests
 
 You'll find the tests in `tests/`: unit tests, HTTP tests with WireMock, and tests against the real API (optional, run on request).

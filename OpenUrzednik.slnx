@@ -10,6 +10,10 @@
     <Project Path="src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />
     <Project Path="src/OpenUrzednik.Nbp.DependencyInjection/OpenUrzednik.Nbp.DependencyInjection.csproj" />
   </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/OpenUrzednik.Samples.Console/OpenUrzednik.Samples.Console.csproj" />
+    <Project Path="samples/OpenUrzednik.Samples.WebApi/OpenUrzednik.Samples.WebApi.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/OpenUrzednik.Core.Tests/OpenUrzednik.Core.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Diagnostics.Tests/OpenUrzednik.Diagnostics.Tests.csproj" />
