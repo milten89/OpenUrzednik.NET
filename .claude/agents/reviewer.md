@@ -32,7 +32,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - New CA18xx suppressions need a justification that holds.
 
 **Dependency versions** (CLAUDE.md "Dependencies")
-- Abstractions in `Directory.Packages.props` stay at the lowest supported version; implementations at the latest. A change that raises an abstraction is **blocking** until the maintainer has explicitly approved it.
+- Dependencies of the published (`src/`) libraries: abstractions stay at the lowest supported version, implementations at the latest. Test and tooling packages always take the latest version. A change that raises an abstraction is **blocking** until the maintainer has explicitly approved it.
 
 **Correctness**
 - DTO `required` properties match real API responses. Hand-written WireMock bodies are suspect: suggest `/verify-api`.
