@@ -147,4 +147,4 @@ How to use this file:
 
 - [x] **38. Every package ships the root README.** The root `Directory.Build.props` packs the repository `README.md` as `\README.md`, and each project packs its own README to the same path; NuGet keeps the first and warns NU5118, so nuget.org shows the repository README for every package. Done in #54: the root README is now only a fallback for a project without its own.
 
-- [x] **39. Flaky WireMock timeout tests.** The timeout tests delay the response by 5 s and require the call to give up within 1–3 s; on the `test (net472)` runner a 0.1 s timeout took 2.9 s (seen in #55's CI). Done in #PR: the server delays 10 s and the bound is 5 s (`NbpWireMockServerExtensions.SlowResponseDelay`/`GaveUpWithin`), shared by all five tests.
+- [x] **39. Flaky WireMock timeout tests.** The timeout tests delay the response by 5 s and require the call to give up within 1–3 s; on the `test (net472)` runner a 0.1 s timeout took 2.9 s (seen in #55's CI). Done in #57: the server delays 10 s and the bound is 5 s (`NbpWireMockServerExtensions.SlowResponseDelay`/`GaveUpWithin`), shared by all five tests.
