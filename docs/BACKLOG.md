@@ -42,7 +42,7 @@ How to use this file:
 - [x] **33. Table top count doesn't match the API.** `exchangerates/tables/{t}/last/{n}` accepts at most 67 results for tables A and C and 14 for table B (checked 2026-10-02: A `last/68` returns 400 "Maximum size of 67 data series has been exceeded", B `last/20` the same with 14), apparently the tables published in the 93-day window. `TopCountValidator` allows 255 for every endpoint, so the table client sends requests the API rejects; the caller gets a `BadRequestError` instead of a `ValidationError`. The rates endpoint (`rates/b/{code}/last/255`) does accept 255. Decide on per-table limits.
     * Done in #46: `TopCountValidator` takes the limit; the tables endpoints check 67 (A, C) and 14 (B), fixed caps equal to the most business days (Wednesdays) in a 93-day range, `exchangerates/rates` and `cenyzlota` keep 255. Real-API explicit tests check both sides of each limit.
 
-- [x] **34. Which side Buy and Sell are.** The table C models map the API's `ask` to `Buy` and `bid` to `Sell` (the customer's side), but NBP calls `bid` "kurs kupna" (buy rate), so a reader of the NBP docs expects the opposite. `CurrencyBuySellRate` and `TableBuySellRate` only say "Currency buy rate". Document the mapping, or rename to `Bid`/`Ask`, before 1.0. Done in #PR.
+- [x] **34. Which side Buy and Sell are.** The table C models map the API's `ask` to `Buy` and `bid` to `Sell` (the customer's side), but NBP calls `bid` "kurs kupna" (buy rate), so a reader of the NBP docs expects the opposite. `CurrencyBuySellRate` and `TableBuySellRate` only say "Currency buy rate". Document the mapping, or rename to `Bid`/`Ask`, before 1.0. Done in #47.
     * Renamed to `Ask` and `Bid`, named after the API's fields, with XML docs giving NBP's Polish names and the customer's side. Breaking (release note, item 28): `Buy` → `Ask`, `Sell` → `Bid`. The positional order is unchanged (`Ask` where `Buy` was), so constructors and deconstruction written against the old order still get the same values.
 
 ## P2: Framework (implements accepted ADRs)
@@ -117,7 +117,7 @@ How to use this file:
 
 - [ ] **25. `docs/GITHUB-SETUP.md` is out of date.** "Restrict updates" was removed from the `protected-branches` ruleset (it made every merge an admin override), and the `code_quality` rule didn't block any merge, apparently because GitHub Code Quality isn't available for the repository (the setup API returns 404). Update the file and decide whether to keep that rule.
 
-- [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21 and #22 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
+- [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22 and #47 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
 
 - [ ] **29. Docs polish.**
     * ADR-0002 L49 still says "(backlog item)" for `default(OpenUrzednikResult<T>)`.
