@@ -30,9 +30,9 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP. API publiczne może się jeszcze zmienić | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z GUS | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z KRS | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Szkielet | Pakiet przygotowany pod integrację z Białą Listą VAT | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z GUS | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z KRS | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z Białą Listą VAT | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 
 ---
 
@@ -73,7 +73,7 @@ catch (ValidationException ex)
 
 ### Uwaga o DI i klientach
 
-Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview — sposób tworzenia klientów jeszcze się zmieni, zob. [ADR-0007](docs/adr/0007-client-api-and-extensibility.md)). Rozszerzenia DI pojawią się w osobnych pakietach `*.DependencyInjection`. Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są szkieletami — prace nad nimi ruszą po ukończeniu pakietu NBP ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
+Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview — sposób tworzenia klientów jeszcze się zmieni, zob. [ADR-0007](docs/adr/0007-client-api-and-extensibility.md)). Rozszerzenia DI pojawią się w osobnych pakietach `*.DependencyInjection`. Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są szkieletami i nie ma ich w NuGet — prace nad nimi ruszą po ukończeniu pakietu NBP ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
 
 ### Testy
 

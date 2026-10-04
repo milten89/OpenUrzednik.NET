@@ -1,7 +1,7 @@
 namespace OpenUrzednik.Nbp.Table;
 
 /// <summary>
-/// Exchange rate table
+/// NBP table A or B of mid (average) exchange rates
 /// </summary>
 /// <param name="TableId">Exchange rate table number</param>
 /// <param name="PublicationDate">Publication date</param>

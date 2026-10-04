@@ -10,8 +10,4 @@ Klient **GUS** (Główny Urząd Statystyczny) dla OpenUrzednik.NET — wyszukiwa
 
 ## Instalacja
 
-```bash
-dotnet add package OpenUrzednik.Gus
-```
-
-Wymaga [OpenUrzednik.Core](https://www.nuget.org/packages/OpenUrzednik.Core) (instalowane automatycznie jako zależność).
+Pakietu nie ma jeszcze w NuGet. Opublikujemy go, gdy klient będzie gotowy do użycia ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)).
