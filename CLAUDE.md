@@ -44,6 +44,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - A timeout is an `OperationCanceledException` while `cancellationToken.IsCancellationRequested == false`. Return it as an error.
 - New error types derive from `OpenUrzednikError`, define `public const string ErrorCode`, and implement `CreateException()` returning an `OpenUrzednikException` subtype. The public `ToException()` calls it and attaches the error (`OpenUrzednikException.Error`/`Errors`).
 - Several errors (only validation produces them) are thrown by `EnsureSuccess()` as one `OpenUrzednikValidationException` listing all of them, never as `AggregateException`. Several errors of other kinds: the first error's exception, with all of them in `Errors`.
+- Results are not comparable: don't add `Equals`/`==` to `OpenUrzednikResult` (CA1815 stays suppressed); compare `IsSuccess`, the value or error codes.
 
 **Dependencies ([ADR-0004](docs/adr/0004-dependency-policy.md))**
 - Core, `OpenUrzednik.Http` and provider packages take **no package dependencies** on .NET targets.
