@@ -14,7 +14,7 @@ internal static class NbpOptionsValidator
         if (string.IsNullOrWhiteSpace(apiUrl))
             throw new ArgumentException("NBP API url must not be empty.", paramName);
 
-        var url = apiUrl.EndsWith("/", StringComparison.Ordinal) ? apiUrl : apiUrl + "/";
+        var url = apiUrl.EndsWith('/') ? apiUrl : apiUrl + "/";
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
             throw new ArgumentException($"Invalid NBP API url: {url}", paramName);

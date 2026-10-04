@@ -2,6 +2,11 @@
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   
+  <PropertyGroup>
+    <!-- Every performance rule (CA18xx) as a build warning: performance comes before convenience in library code. -->
+    <AnalysisModePerformance>All</AnalysisModePerformance>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
   </ItemGroup>

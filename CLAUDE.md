@@ -50,6 +50,8 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - `Microsoft.Extensions.*` is allowed only in integration packages (`*.DependencyInjection`, `OpenUrzednik.Extensions.Logging`). The tracing adapter `OpenUrzednik.Diagnostics` may depend only on `System.Diagnostics.DiagnosticSource`, and only on netstandard2.0.
 - DI packages don't add a resilience handler: they return the `IHttpClientBuilder`, the app chains `AddStandardResilienceHandler()`, and the DI package turns the handler's rejections into errors.
 - Versions live in `Directory.Packages.props` (central package management). Never put `Version=` on a `PackageReference`.
+- Version choice for packages the libraries depend on: **abstractions** (API contracts under semantic versioning, e.g. `Microsoft.Extensions.Logging.Abstractions`) use the **lowest** version: the first release (`x.0.0`) of the major that matches our oldest .NET target (currently 8.0.0), because it is a minimum for every app. Move to a later patch only if that version has a known vulnerability; the minimum rises when the oldest .NET target is removed (ADR-0005). **Implementations** (code that runs, e.g. `System.Text.Json`, `Microsoft.Extensions.Http`) use the **latest** version, to get bug and security fixes. `Directory.Packages.props` and the Dependabot groups (`abstractions` has its own) follow the split. Accepted consequence: the DI package brings `Microsoft.Extensions.*` 10.x into .NET 8 apps through `Microsoft.Extensions.Http`.
+- **If a change raises an abstraction above its minimum** (typically a Dependabot PR), stop and ask the maintainer explicitly what to do, naming the package, both versions and the rule. Don't merge, approve, rebase onto or build on that change until they answer explicitly.
 - Do not add a `PackageReference` to a `src/` project without an ADR or explicit approval.
 
 **Telemetry ([ADR-0003](docs/adr/0003-telemetry-abstractions.md))**
@@ -72,6 +74,14 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Parts that shape requests (e.g. `INbpUrlBuilderFactory`) are public interfaces with public defaults, passed as optional constructor parameters.
 - Cross-cutting HTTP concerns belong in `DelegatingHandler`s.
 - `CancellationToken cancellationToken = default` is the last parameter of every async method, in both interfaces and implementations.
+
+## Performance
+
+- **Strongly prefer the faster code over the more convenient one** in library code (`src/`). Readability matters, but not at the cost of performance on a path that runs per request, per log entry or per item: use spans instead of `Substring`, avoid per-call allocations (arrays built from constants, closures, boxing, LINQ, string concatenation), and prefer generic APIs to reflection.
+- **Supporting an older target must not slow down the .NET targets.** Hide the difference in a **polyfill** when possible: a member with the .NET name, compiled only for the target that lacks it (`src/Polyfills`, `Http/Polyfills`, `Nbp/Polyfills`), so the call site is the same everywhere. Only when no polyfill fits, use `#if NET` in the code, around as little code as possible. Never replace the fast .NET code with a slower shared version.
+- The performance analyzers (all CA18xx rules) are build warnings in `src/` (`AnalysisModePerformance=All` in `src/Directory.Build.props`). Fix the warning. Suppress it only with `[SuppressMessage(..., Justification = "...")]` saying why the analyzer is wrong in that place.
+- Hot paths, where this matters most: `RestRequestExecutor`, the NBP pipeline and mappers, `LogValues`/`OpenUrzednikLogger`, `ActivitySpan`, `OpenUrzednikResult`.
+- The `reviewer` agent reports performance degradations in a section of their own; treat each like any other finding. The rules come from [ADR-0005](docs/adr/0005-target-frameworks.md) (target differences) and [ADR-0004](docs/adr/0004-dependency-policy.md) (versions).
 
 ## Code conventions
 

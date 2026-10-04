@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
@@ -8,6 +9,7 @@ namespace OpenUrzednik.Core;
 /// <summary>
 /// Represents the result of an operation, which can either be successful or failed with associated errors.
 /// </summary>
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "The library never compares results; their equality semantics are undecided (backlog item 36).")]
 public readonly struct OpenUrzednikResult
 {
     private readonly OpenUrzednikError[]? _errors;
@@ -168,12 +170,13 @@ public readonly struct OpenUrzednikResult
 /// When <typeparamref name="TValue"/> is an error type (e.g. <see cref="OpenUrzednikError"/>), the constructors are ambiguous to read:
 /// use <see cref="OpenUrzednikResult.Success{T}(T)"/> and <see cref="OpenUrzednikResult.Failure{T}(OpenUrzednikError)"/> instead.
 /// </remarks>
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "The library never compares results; their equality semantics are undecided (backlog item 36).")]
 public readonly struct OpenUrzednikResult<TValue>
 {
     // The state lives in _errors so the struct stays two fields wide (16 bytes for a reference-type TValue):
     //   success -> the shared empty array, failure -> a non-empty array, default -> null (an uninitialized failure).
     // Read-only, because it is shared by every default instance of this closed type.
-    private static readonly IReadOnlyList<OpenUrzednikError> UninitializedErrors = Array.AsReadOnly<OpenUrzednikError>(
+    private static readonly ReadOnlyCollection<OpenUrzednikError> UninitializedErrors = Array.AsReadOnly<OpenUrzednikError>(
         [new UnknownError($"The result was not initialized: default({nameof(OpenUrzednikResult)}<T>) was used instead of a result created with Success or Failure.")]);
 
     private readonly TValue? _value;
