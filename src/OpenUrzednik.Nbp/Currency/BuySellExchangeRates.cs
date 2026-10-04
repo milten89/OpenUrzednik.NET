@@ -1,7 +1,7 @@
 namespace OpenUrzednik.Nbp.Currency;
 
 /// <summary>
-/// Buy and sell exchange rates
+/// Bid and ask rates of one currency from NBP table C
 /// </summary>
 /// <param name="CurrencyName">Currency name</param>
 /// <param name="CurrencyCode">ISO 4217 currency code</param>
