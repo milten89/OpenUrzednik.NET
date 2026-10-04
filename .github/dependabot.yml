@@ -23,7 +23,7 @@ updates:
       test-dependencies:
         patterns: [ "xunit*", "Microsoft.NET.Test.Sdk", "Microsoft.Testing.*", "NSubstitute*", "Shouldly", "Bogus", "WireMock.Net*" ]
       build-tooling:
-        patterns: [ "Nerdbank.GitVersioning", "Microsoft.SourceLink.*" ]
+        patterns: [ "Nerdbank.GitVersioning" ]
 
   - package-ecosystem: "github-actions"
     directory: "/"
