@@ -11,8 +11,8 @@ internal sealed class BuySellCurrencyExchangeRateDto
     public required DateOnly PublicationDate { get; init; }
 
     [JsonPropertyName("bid")]
-    public required decimal Sell { get; init; }
+    public required decimal Bid { get; init; }
 
     [JsonPropertyName("ask")]
-    public required decimal Buy { get; init; }
+    public required decimal Ask { get; init; }
 }

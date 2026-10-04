@@ -34,7 +34,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [new CurrencyBuySellRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate, dto.Rates[0].Buy, dto.Rates[0].Sell)]));
+            [new CurrencyBuySellRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate, dto.Rates[0].Ask, dto.Rates[0].Bid)]));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [.. dto.Rates.Select(x => new CurrencyBuySellRate(x.TableId, x.PublicationDate, x.Buy, x.Sell))]));
+            [.. dto.Rates.Select(x => new CurrencyBuySellRate(x.TableId, x.PublicationDate, x.Ask, x.Bid))]));
     }
 
     [Fact]

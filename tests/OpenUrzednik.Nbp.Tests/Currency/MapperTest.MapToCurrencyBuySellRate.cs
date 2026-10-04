@@ -20,7 +20,7 @@ public partial class MapperTest
         var result = Mapper.MapToCurrencyBuySellRate(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyBuySellRate(dto.TableId, dto.PublicationDate, dto.Buy, dto.Sell));
+        result.ShouldBe(new CurrencyBuySellRate(dto.TableId, dto.PublicationDate, dto.Ask, dto.Bid));
     }
 
     [Fact]
