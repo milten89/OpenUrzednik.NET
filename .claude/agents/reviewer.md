@@ -15,7 +15,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 ## Checklist
 
 **ADR compliance**
-- ADR-0002: no `catch (Exception)` or bare `catch`. Expected failures (HTTP status, payload, network, timeout) are returned as `OpenUrzednikResult` errors. Only caller cancellation, argument errors and fatal errors are thrown. Timeouts are distinguished from caller cancellation. Errors implement `CreateException()` returning `OpenUrzednikException` subtypes; exceptions keep their error in `Error`/`Errors`. Several validation errors are thrown as one `ValidationException` listing all of them, never `AggregateException`; several errors of other kinds as the first error's exception with all of them in `Errors`. Resilience-handler rejections are translated in DI packages, not caught in providers.
+- ADR-0002: no `catch (Exception)` or bare `catch`. Expected failures (HTTP status, payload, network, timeout) are returned as `OpenUrzednikResult` errors. Only caller cancellation, argument errors and fatal errors are thrown. Timeouts are distinguished from caller cancellation. Errors implement `CreateException()` returning `OpenUrzednikException` subtypes; exceptions keep their error in `Error`/`Errors`. Several validation errors are thrown as one `OpenUrzednikValidationException` listing all of them, never `AggregateException`; several errors of other kinds as the first error's exception with all of them in `Errors`. Resilience-handler rejections are translated in DI packages, not caught in providers.
 - ADR-0003: no `ILogger`/`ActivitySource` in Core or provider packages. Span and tag naming; HTTP tags use the OpenTelemetry names (`http.request.method`, `url.path`, `http.response.status_code`). Activity sources in `OpenUrzednik.Diagnostics` are named `OpenUrzednik.<Provider>`. `IsEnabled` guards. No secrets or personal identifiers in logs or tags.
 - ADR-0004: no new `PackageReference` in Core, Http or provider projects, apart from netstandard2.0-only Microsoft BCL packages. No `Version=` on package references (central package management). DI packages don't add a resilience handler themselves (the app chains `AddStandardResilienceHandler()`), and they translate its rejection exceptions into errors.
 - ADR-0005: code builds for netstandard2.0 and passes `test (net472)`. `#if` kept inside helpers (polyfills in `src/Polyfills`, `Http/Polyfills`, `Nbp/Polyfills`, `Extensions.Logging/Polyfills`). Dates written as `DateOnly` (an alias for `DateTime` on netstandard2.0) and compared by `DayNumber`. A .NET target is removed only in a major release, at least 6 months after Microsoft's end of support.
@@ -45,7 +45,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - Copy-pasted logic that should go into the shared pipeline.
 - `.editorconfig` conventions; tests follow the `partial` class / file-per-method / `Method_Condition_Expected` layout with a constant-seed Faker.
 - A new `src/` project is listed in `OpenUrzednik.Packages.slnf` (the NuGet workflows pack only that), and in `OpenUrzednik.slnx`.
-- CI: a renamed job in `build.yml` or `format.yml` means the ruleset's required checks must be updated (`docs/GITHUB-SETUP.md`).
+- CI: a renamed job in `build.yml`, `format.yml` or `dependency-review.yml` means the ruleset's required checks must be updated (`docs/GITHUB-SETUP.md`).
 
 ## Verify
 

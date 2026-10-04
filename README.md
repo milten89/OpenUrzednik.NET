@@ -67,7 +67,7 @@ try
 {
     int value = failed.EnsureSuccess();
 }
-catch (ValidationException ex)
+catch (OpenUrzednikValidationException ex)
 {
     Console.WriteLine(ex.Message);
 }
@@ -76,6 +76,10 @@ catch (ValidationException ex)
 ### Klienty i DI
 
 Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview). W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są szkieletami i nie ma ich w NuGet — prace nad nimi ruszą po ukończeniu pakietu NBP ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
+
+### Przykłady
+
+Gotowe programy z klientami NBP, z kontenerem DI i bez niego, znajdziesz w [`samples/`](samples/README.md).
 
 ### Testy
 

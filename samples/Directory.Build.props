@@ -1,0 +1,12 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Samples target the same .NET versions as the libraries, so the CI build per framework (build.yml) builds them too. -->
+    <IsPackable>false</IsPackable>
+    <!-- Samples aren't API: no XML docs required (the doc file stays on, IDE0005 needs it in the build). -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

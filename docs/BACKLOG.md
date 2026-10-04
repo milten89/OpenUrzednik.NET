@@ -107,7 +107,7 @@ How to use this file:
 
 - [x] **22. English versions of user-facing docs** ([ADR-0009](adr/0009-documentation-language.md)): `README.en.md` (root and per package), `CONTRIBUTING.en.md`, with links from the Polish versions. Edit the prose with `/miodkuj` (Polish) and `/stop-slop` (English). Done in #58: also `SECURITY.en.md`; the root README's outdated note about DI and client construction was corrected in both languages.
 
-- [ ] **23. Usage docs:** a `samples/` folder and package READMEs with real usage once the client API is settled (item 14).
+- [x] **23. Usage docs:** a `samples/` folder and package READMEs with real usage once the client API is settled (item 14). Done in #60: `samples/` has a console app and a minimal Web API, both in the solution so CI builds them for every .NET target; the package READMEs already had real usage.
 
 - [x] **24. Move tests to the Microsoft.Testing.Platform runner.** `xunit.v3` 4.x no longer runs through VSTest on the .NET 10 SDK, so Dependabot's #11 fails CI.
     * Add a `global.json` that opts in to the new `dotnet test`.
@@ -116,9 +116,9 @@ How to use this file:
     * Best done before item 17, which adds a .NET Framework test job.
     * Done in #35, together with the xUnit 4 and Microsoft.NET.Test.Sdk bumps from #11 (Microsoft's coverage extension needs MTP v2, which xUnit 4 uses). #11 stays open for its NSubstitute and WireMock.Net bumps, after a rebase. Coverage comes from `Microsoft.Testing.Extensions.CodeCoverage` (`--coverage`) instead of coverlet. `integrationTest.runsettings` is gone, because MTP doesn't read it: the real-API tests are explicit and run with `--explicit on`.
 
-- [ ] **25. `docs/GITHUB-SETUP.md` is out of date.** "Restrict updates" was removed from the `protected-branches` ruleset (it made every merge an admin override), and the `code_quality` rule didn't block any merge, apparently because GitHub Code Quality isn't available for the repository (the setup API returns 404). Update the file and decide whether to keep that rule.
+- [x] **25. `docs/GITHUB-SETUP.md` is out of date.** "Restrict updates" was removed from the `protected-branches` ruleset (it made every merge an admin override), and the `code_quality` rule didn't block any merge, apparently because GitHub Code Quality isn't available for the repository (the setup API returns 404). Update the file and decide whether to keep that rule. Done in #63: the `code_quality` rule is removed, CodeQL runs `security-and-quality`, a dependency review check and `test (net472)` are required. Secret scanning's non-provider patterns and validity checks aren't available for this account (see `GITHUB-SETUP.md`).
 
-- [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22 and #47 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
+- [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22, #47 and #62 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
 
 - [x] **29. Docs polish.** Done in #49.
     * ADR-0002 L49 still says "(backlog item)" for `default(OpenUrzednikResult<T>)`.
@@ -138,9 +138,9 @@ How to use this file:
     * Record the upstream versions: miodkuj@32004e3, stop-slop@8da1f03.
     * Done in `CLAUDE.md` and `AGENTS.md`; the vendored skill files are unchanged.
 
-- [ ] **32. Exception names clash with the BCL.** `SerializationException` (`System.Runtime.Serialization`) and `ValidationException` (`System.ComponentModel.DataAnnotations`) need an alias when both namespaces are imported. Decide before 1.0 whether to rename them (e.g. `OpenUrzednikValidationException`).
+- [x] **32. Exception names clash with the BCL.** `SerializationException` (`System.Runtime.Serialization`) and `ValidationException` (`System.ComponentModel.DataAnnotations`) need an alias when both namespaces are imported. Decide before 1.0 whether to rename them (e.g. `OpenUrzednikValidationException`). Done in #62: renamed to `OpenUrzednikValidationException` and `OpenUrzednikSerializationException` (breaking; release note). The other exception names don't clash.
 
-- [ ] **36. Equality of `OpenUrzednikResult`.** The performance analyzer CA1815 asks the result structs to override `Equals` and `==`. Without them, a caller who compares results gets the slow, reflection-based `ValueType.Equals`. The rule is suppressed for now with a justification. Decide whether results have equality (e.g. value equality on success, the same error instances on failure) or stay incomparable.
+- [x] **36. Equality of `OpenUrzednikResult`.** The performance analyzer CA1815 asks the result structs to override `Equals` and `==`. Without them, a caller who compares results gets the slow, reflection-based `ValueType.Equals`. The rule is suppressed for now with a justification. Decide whether results have equality (e.g. value equality on success, the same error instances on failure) or stay incomparable. Done in #61: they stay incomparable (ADR-0002 note); the XML docs say so and the CA1815 justification no longer calls it undecided.
 
 - [x] **37. Two real-API gold tests fail on weekends.** `NbpGoldPriceClientTest.GetTodayAsync_ReturnTodayGoldPrice` calls `GetLatestAsync`, which always succeeds, but expects the weekend failure of `GetTodayAsync`; `GetAsync_ReturnGoldPriceFromSelectedDate` asks for today's date, which has no price on a weekend or holiday. They are explicit tests, so CI never runs them. Make them independent of the day the suite runs. Done in #48.
     * `GetTodayAsync` is now the method under test. It first asks for the latest price: if that is today's, `GetTodayAsync` must return it; otherwise it must return a `NotFoundError` (before the publication, on weekends and holidays). The range test now also checks the count and the dates; the other tests are renamed to `Method_Condition_ExpectedResult`. The single-date test asks for a fixed past business day and checks its published price; a new test checks that a Saturday returns `NotFoundError`. All gold real-API tests pass on a Sunday (2026-10-04).
@@ -149,4 +149,4 @@ How to use this file:
 
 - [x] **39. Flaky WireMock timeout tests.** The timeout tests delay the response by 5 s and require the call to give up within 1–3 s; on the `test (net472)` runner a 0.1 s timeout took 2.9 s (seen in #55's CI). Done in #57: the server delays 10 s and the bound is 5 s (`NbpWireMockServerExtensions.SlowResponseDelay`/`GaveUpWithin`), shared by all five tests.
 
-- [ ] **40. English issue forms** ([ADR-0009](adr/0009-documentation-language.md)). `.github/ISSUE_TEMPLATE/bug_report.yml`, `feature_request.yml` and `provider_proposal.yml` are Polish only. Give them bilingual labels and descriptions, as `config.yml` already does.
+- [x] **40. English issue forms** ([ADR-0009](adr/0009-documentation-language.md)). Added in #58 on the assumption that `.github/ISSUE_TEMPLATE/*.yml` were Polish only; they were already bilingual. Done in #59: the one Polish-only placeholder (`provider_proposal.yml`) got its English part, and the ADR-0009 note was corrected.

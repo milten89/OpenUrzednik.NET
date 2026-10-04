@@ -49,6 +49,8 @@ builder.Services.AddOpenUrzednikNbp()
     .AddStandardResilienceHandler();
 ```
 
+`NbpOptions.Timeout` obejmuje wszystkie próby razem, więc jeśli jest krótszy niż łączny limit handlera, przerwie ponowienia. Z handlerem go nie ustawiaj albo daj mu więcej czasu niż handlerowi.
+
 Domyślnie handler ponawia zapytanie do 3 razy przy statusach 5xx, 408 i 429 (z uwzględnieniem `Retry-After`). Każda próba ma 10 s, całe zapytanie 30 s. Handler ma też circuit breaker i rate limiter. Szczegóły i zmianę ustawień (np. `options.Retry.MaxRetryAttempts = 5`) opisuje [dokumentacja Microsoftu](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience). Dodaj jeden taki handler, nie kilka. Jeśli aplikacja dodaje go już wszystkim klientom przez `ConfigureHttpClientDefaults` (jak szablon .NET Aspire), nie dodawaj drugiego. Na .NET Framework pakiety `Microsoft.Extensions.Http.Resilience` 10.x ostrzegają przy kompilacji, że nie wspierają tej platformy.
 
 Gdy handler odrzuci zapytanie, dostajesz błąd w wyniku, a nie wyjątek: przekroczony czas to `RequestTimeoutError`, a otwarty circuit breaker albo rate limiter to `ServiceUnavailableError`. Anulowanie przez wywołującego nadal rzuca `OperationCanceledException`.

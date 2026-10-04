@@ -9,7 +9,13 @@ namespace OpenUrzednik.Core;
 /// <summary>
 /// Represents the result of an operation, which can either be successful or failed with associated errors.
 /// </summary>
-[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "The library never compares results; their equality semantics are undecided (backlog item 36).")]
+/// <remarks>
+/// <para>
+/// Results are not meant to be compared: there is no <c>==</c>, and <see cref="object.Equals(object)"/> falls back to the slow,
+/// reflection-based <see cref="ValueType.Equals(object)"/>. Compare <see cref="IsSuccess"/>, the value or the errors' <see cref="OpenUrzednikError.Code"/> instead.
+/// </para>
+/// </remarks>
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Results are deliberately not comparable (ADR-0002); compare IsSuccess, the value or the error codes instead.")]
 public readonly struct OpenUrzednikResult
 {
     private readonly OpenUrzednikError[]? _errors;
@@ -167,10 +173,16 @@ public readonly struct OpenUrzednikResult
 /// </summary>
 /// <typeparam name="TValue">The type of the value contained in the result when it succeeds.</typeparam>
 /// <remarks>
+/// <para>
 /// When <typeparamref name="TValue"/> is an error type (e.g. <see cref="OpenUrzednikError"/>), the constructors are ambiguous to read:
 /// use <see cref="OpenUrzednikResult.Success{T}(T)"/> and <see cref="OpenUrzednikResult.Failure{T}(OpenUrzednikError)"/> instead.
+/// </para>
+/// <para>
+/// Results are not meant to be compared: there is no <c>==</c>, and <see cref="object.Equals(object)"/> falls back to the slow,
+/// reflection-based <see cref="ValueType.Equals(object)"/>. Compare <see cref="IsSuccess"/>, the value or the errors' <see cref="OpenUrzednikError.Code"/> instead.
+/// </para>
 /// </remarks>
-[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "The library never compares results; their equality semantics are undecided (backlog item 36).")]
+[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Results are deliberately not comparable (ADR-0002); compare IsSuccess, the value or the error codes instead.")]
 public readonly struct OpenUrzednikResult<TValue>
 {
     // The state lives in _errors so the struct stays two fields wide (16 bytes for a reference-type TValue):
