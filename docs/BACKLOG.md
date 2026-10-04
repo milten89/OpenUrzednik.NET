@@ -125,7 +125,7 @@ How to use this file:
     * The summaries of `CurrencyExchangeRates`, `BuySellExchangeRates`, `ExchangeRateTable` and `BuySellExchangeRateTable` don't name the table (A/B or C).
     * The publication-schedule sentence is repeated on every client method. Optional: keep it on the interface and the Today/Latest methods only.
 
-- [x] **30. Test conventions.** Done in #PR.
+- [x] **30. Test conventions.** Done in #50.
     * Core tests aren't `partial` or file-per-method (CLAUDE.md), and `NetworkErrorsTest` covers two production classes.
     * `CultureScope` (TestCommon) needs ICU: it fails under `InvariantGlobalization`. Note it in the class docs.
     * The client constructor tests (`*Test.ctor.cs`) read private fields with `GetPrivateField`. Test through behaviour instead (e.g. which URL builder and clock a request uses).
