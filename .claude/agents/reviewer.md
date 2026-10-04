@@ -25,6 +25,15 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - ADR-0010: no work on GUS/KRS/MF beyond what that ADR allows.
 - If a change contradicts an ADR and has no new ADR, report it as **blocking**.
 
+**Performance** (CLAUDE.md "Performance")
+- Compare the changed code with what it replaces and look for anything slower on the .NET targets: new allocations per call (`Substring`, string concatenation or interpolation, arrays built from constants, closures, boxing, LINQ, `params` arrays), reflection instead of generics, extra `Task`s or `async` state machines, extra awaits or copies, work done before an `IsEnabled` check.
+- A change made for netstandard2.0 must not make .NET slower: the difference belongs in a polyfill, or else in a narrow `#if NET`.
+- Hot paths deserve the most attention: `RestRequestExecutor`, the NBP pipeline and mappers, `LogValues`/`OpenUrzednikLogger`, `ActivitySpan`, `OpenUrzednikResult`.
+- New CA18xx suppressions need a justification that holds.
+
+**Dependency versions** (CLAUDE.md "Dependencies")
+- Abstractions in `Directory.Packages.props` stay at the lowest supported version; implementations at the latest. A change that raises an abstraction is **blocking** until the maintainer has explicitly approved it.
+
 **Correctness**
 - DTO `required` properties match real API responses. Hand-written WireMock bodies are suspect: suggest `/verify-api`.
 - Validators match the documented API limits. Messages use invariant formatting.
@@ -43,4 +52,4 @@ Run `dotnet build OpenUrzednik.slnx` and `dotnet test OpenUrzednik.slnx -f net10
 
 ## Output
 
-Group findings by **Blocking**, **Should fix** and **Nit**. Each finding: `path:line`, what is wrong, why (cite the ADR or rule), and a concrete fix. Report only findings you checked. If nothing is wrong, say so plainly. Don't edit files.
+Group findings by **Blocking**, **Should fix** and **Nit**. Then add a separate **Performance analysis** section that lists every performance degradation you found, each with `path:line`, what is slower, on which target, roughly how often it runs (per request, per log entry, once) and the faster alternative; if there is none, say "No performance degradations found". A degradation on a hot path is at least **Should fix**. Each finding: `path:line`, what is wrong, why (cite the ADR or rule), and a concrete fix. Report only findings you checked. If nothing is wrong, say so plainly. Don't edit files.

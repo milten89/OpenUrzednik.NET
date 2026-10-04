@@ -48,4 +48,6 @@ CI matrix includes all TFMs; package validation (`EnablePackageValidation`) runs
 
 ## More Information
 
+**2026-10-04 change: performance comes first.** Supporting an older target must not make the .NET targets slower. The difference goes into a polyfill when possible (a member with the .NET name, compiled only for the target that lacks it, so the call site is the same everywhere); otherwise into a narrow `#if NET`. A slower shared version of fast .NET code is not acceptable. The .NET performance analyzers (CA18xx) are build warnings in `src/`, and errors in CI.
+
 The support window was the open question while this ADR was `proposed`. Options were following Microsoft's lifecycle exactly (dropping `net8.0` in November 2026) or keeping a grace period. On 2026-10-02 the maintainer chose a 6-month grace period, so consumers have time to upgrade after Microsoft ends support, with the removal itself in a major release.

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Extensions.Logging;
 
 using OpenUrzednik.Core.Telemetry;
@@ -81,6 +83,7 @@ public sealed class OpenUrzednikLogger : IOpenUrzednikLogger
         return _logger.IsEnabled(logLevel);
     }
 
+    [SuppressMessage("Performance", "CA1873:Avoid potentially expensive logging", Justification = "Every caller checks IsEnabled (TryGetEnabledLevel) before it builds the values.")]
     private void Write(LogLevel logLevel, Exception? exception, string messageTemplate, KeyValuePair<string, object?>[] values)
         => _logger.Log(logLevel, default, new LogValues(messageTemplate, values), exception, Formatter);
 
