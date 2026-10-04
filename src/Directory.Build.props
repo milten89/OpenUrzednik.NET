@@ -1,8 +1,10 @@
 <Project>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-  
+
   <PropertyGroup>
+    <!-- netstandard2.0 for .NET Framework 4.6.2+ (ADR-0005); the .NET targets come from the root props. -->
+    <TargetFrameworks>netstandard2.0;$(TargetFrameworks)</TargetFrameworks>
     <!-- Every performance rule (CA18xx) as a build warning: performance comes before convenience in library code. -->
     <AnalysisModePerformance>All</AnalysisModePerformance>
     <!-- In CI, analyzer warnings fail the build (ContinuousIntegrationBuild is set on GitHub Actions in the root props). -->
@@ -12,4 +14,10 @@
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
   </ItemGroup>
+
+  <!-- Compiler and BCL types .NET has built in; each assembly gets its own internal copy. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Compile Include="$(MSBuildThisFileDirectory)Polyfills\*.cs" Link="Polyfills\%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

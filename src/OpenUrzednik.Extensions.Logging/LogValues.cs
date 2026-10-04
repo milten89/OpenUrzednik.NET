@@ -114,7 +114,7 @@ internal sealed class LogValues : IReadOnlyList<KeyValuePair<string, object?>>
             return;
         }
 
-        var compositeFormat = string.Concat("{0".AsSpan(), hole[formatStart..], "}".AsSpan());
+        var compositeFormat = string.Concat("{0".AsSpan(), hole.Slice(formatStart), "}".AsSpan());
         try
         {
             builder.AppendFormat(CultureInfo.InvariantCulture, compositeFormat, value);

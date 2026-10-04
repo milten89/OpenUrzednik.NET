@@ -7,8 +7,14 @@ namespace OpenUrzednik.Nbp.Currency;
 /// Represents a client for interacting with the National Bank of Poland (NBP) API to retrieve specific currency exchange rate data.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Table A (common currencies) is published on business days between 11:45 and 12:15, table B (less common currencies) on Wednesdays between 11:45 and 12:15, or on the previous business day when Wednesday is a holiday (Europe/Warsaw time).
 /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
+/// </para>
+/// <para>
+/// Dates are <c>DateOnly</c> on .NET and <see cref="System.DateTime"/> on netstandard2.0 (.NET Framework), where only the date part
+/// is used and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// </para>
 /// </remarks>
 public interface INbpCurrencyExchangeRateClient
 {

@@ -101,7 +101,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
     {
         // Arrange
         var date = new DateOnly(2026, 9, 30);
-        var path = $"{BasePath}/a/{date:O}";
+        var path = $"{BasePath}/a/{date.ToIso()}";
         _server.GivenFixture(path, "tables-a-date.json");
 
         // Act
@@ -119,7 +119,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
         // Arrange
         var from = new DateOnly(2026, 9, 29);
         var to = new DateOnly(2026, 9, 30);
-        var path = $"{BasePath}/a/{from:O}/{to:O}";
+        var path = $"{BasePath}/a/{from.ToIso()}/{to.ToIso()}";
         _server.GivenFixture(path, "tables-a-range.json");
 
         // Act

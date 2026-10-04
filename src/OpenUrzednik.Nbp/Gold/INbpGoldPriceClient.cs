@@ -6,7 +6,13 @@ namespace OpenUrzednik.Nbp.Gold;
 /// Represents a client for interacting with the National Bank of Poland (NBP) API to retrieve gold prices.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Gold prices are published on business days in Poland.
+/// </para>
+/// <para>
+/// Dates are <c>DateOnly</c> on .NET and <see cref="System.DateTime"/> on netstandard2.0 (.NET Framework), where only the date part
+/// is used and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// </para>
 /// </remarks>
 public interface INbpGoldPriceClient
 {

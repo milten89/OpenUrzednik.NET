@@ -19,6 +19,10 @@
 
   <!-- Implementations: latest version. -->
   <ItemGroup>
+    <!-- netstandard2.0 only (ADR-0005): types .NET has built in. -->
+    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="10.0.12" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.12" />
     <PackageVersion Include="System.Text.Json" Version="10.0.10" />
     <PackageVersion Include="System.Net.Http.Json" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.10" />

@@ -73,7 +73,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
     {
         // Arrange
         var date = new DateOnly(2026, 9, 30);
-        var path = $"{BasePath}/a/{CurrencyCode}/{date:O}";
+        var path = $"{BasePath}/a/{CurrencyCode}/{date.ToIso()}";
         _server.GivenFixture(path, "rates-a-date.json");
 
         // Act
@@ -93,7 +93,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Arrange
         var from = new DateOnly(2026, 9, 28);
         var to = new DateOnly(2026, 9, 30);
-        var path = $"{BasePath}/a/{CurrencyCode}/{from:O}/{to:O}";
+        var path = $"{BasePath}/a/{CurrencyCode}/{from.ToIso()}/{to.ToIso()}";
         _server.GivenFixture(path, "rates-a-range.json");
 
         // Act

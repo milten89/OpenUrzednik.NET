@@ -176,7 +176,9 @@ public sealed partial class NbpServiceCollectionExtensionsTest
 
         // Act
         ActivityTraceId traceId;
-        using (var parent = parentSource.StartActivity("test"))
+        // An explicit W3C context: on .NET Framework a parent would otherwise get a hierarchical id, without a trace id.
+        var parentContext = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
+        using (var parent = parentSource.StartActivity("test", ActivityKind.Internal, parentContext))
         {
             traceId = parent!.TraceId;
             await client.GetLatestAsync(TestContext.Current.CancellationToken);

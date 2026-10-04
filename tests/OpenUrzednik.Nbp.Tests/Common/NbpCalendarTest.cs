@@ -30,7 +30,12 @@ public class NbpCalendarTest
     {
         // Arrange
         var fallback = NbpCalendar.CreateCentralEuropeanTime();
+        // .NET Framework only knows the Windows id.
+#if NET
         var warsaw = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
+#else
+        var warsaw = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
+#endif
         var start = new DateTimeOffset(2026, 1, 1, 0, 30, 0, TimeSpan.Zero);
 
         // Act && Assert
