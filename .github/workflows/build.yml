@@ -69,7 +69,7 @@ jobs:
         retention-days: 14
 
   test-netfx:
-    # NOTE: "test (net472)" is meant to become a required status check too (see docs/GITHUB-SETUP.md).
+    # NOTE: "test (net472)" is a required status check in the "protected-branches" ruleset (see docs/GITHUB-SETUP.md).
     # It runs the netstandard2.0 build of the libraries on .NET Framework 4.8 (ADR-0005). xUnit 4 supports net472 and later.
     name: test (net472)
     runs-on: windows-latest
