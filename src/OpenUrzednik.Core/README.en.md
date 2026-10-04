@@ -36,6 +36,6 @@ if (result.TryGetValue(out var current))
 
 `Map` changes the value of a successful result, `Bind` runs another operation that also returns a result, and `Match` handles both cases. If the result holds errors, they pass through unchanged and the functions you pass aren't called.
 
-`EnsureSuccess()` throws an exception derived from `OpenUrzednikException`. Its `Error` property holds the error with its metadata (e.g. the HTTP status code), and `Errors` holds all of the result's errors. Several validation errors go into one `ValidationException`.
+`EnsureSuccess()` throws an exception derived from `OpenUrzednikException`. Its `Error` property holds the error with its metadata (e.g. the HTTP status code), and `Errors` holds all of the result's errors. Several validation errors go into one `OpenUrzednikValidationException`.
 
 Every provider package (`OpenUrzednik.Gus`, `OpenUrzednik.Krs`, `OpenUrzednik.Mf`, `OpenUrzednik.Nbp`) depends on this package. You usually don't install it on its own, unless you are building your own client in the same style.

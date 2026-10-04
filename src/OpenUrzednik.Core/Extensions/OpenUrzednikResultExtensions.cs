@@ -14,7 +14,7 @@ public static class OpenUrzednikResultExtensions
     /// </summary>
     /// <param name="result">Result to check.</param>
     /// <exception cref="OpenUrzednikException">
-    /// Thrown when the result is a failure: the exception of its error, or one <see cref="ValidationException"/> when there are several validation errors.
+    /// Thrown when the result is a failure: the exception of its error, or one <see cref="OpenUrzednikValidationException"/> when there are several validation errors.
     /// <see cref="OpenUrzednikException.Errors"/> lists every error of the result.
     /// </exception>
     public static void EnsureSuccess(this OpenUrzednikResult result)
@@ -124,7 +124,7 @@ public static class OpenUrzednikResultExtensions
             : OpenUrzednikResult.Failure(first.Errors.Concat(second.Errors));
     }
 
-    // ADR-0002: one error -> its exception; several validation errors -> one ValidationException listing them;
+    // ADR-0002: one error -> its exception; several validation errors -> one OpenUrzednikValidationException listing them;
     // several errors of other kinds -> the first error's exception. Errors always holds every error.
     private static OpenUrzednikException CreateException(IReadOnlyList<OpenUrzednikError> errors)
     {
@@ -132,7 +132,7 @@ public static class OpenUrzednikResultExtensions
             return errors[0].ToException();
 
         if (errors.All(e => e is ValidationError))
-            return new ValidationException([.. errors.Cast<ValidationError>()]);
+            return new OpenUrzednikValidationException([.. errors.Cast<ValidationError>()]);
 
         var exception = errors[0].ToException();
         exception.SetErrors(errors[0], errors);

@@ -36,6 +36,6 @@ if (result.TryGetValue(out var current))
 
 `Map` zmienia wartość udanego wyniku, `Bind` uruchamia kolejną operację, która też zwraca wynik, a `Match` obsługuje oba przypadki. Jeśli wynik zawiera błędy, przechodzą one dalej bez zmian, a przekazane funkcje nie są wywoływane.
 
-`EnsureSuccess()` rzuca wyjątek pochodny od `OpenUrzednikException`. Jego właściwość `Error` zawiera błąd razem z metadanymi (np. kodem statusu HTTP), a `Errors` wszystkie błędy wyniku. Kilka błędów walidacji trafia do jednego `ValidationException`.
+`EnsureSuccess()` rzuca wyjątek pochodny od `OpenUrzednikException`. Jego właściwość `Error` zawiera błąd razem z metadanymi (np. kodem statusu HTTP), a `Errors` wszystkie błędy wyniku. Kilka błędów walidacji trafia do jednego `OpenUrzednikValidationException`.
 
 Ten pakiet jest zależnością wszystkich pakietów provider-specific (`OpenUrzednik.Gus`, `OpenUrzednik.Krs`, `OpenUrzednik.Mf`, `OpenUrzednik.Nbp`) i zwykle nie instaluje się go samodzielnie, chyba że budujesz własnego klienta w tym samym stylu.

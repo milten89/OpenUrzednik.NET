@@ -118,7 +118,7 @@ How to use this file:
 
 - [ ] **25. `docs/GITHUB-SETUP.md` is out of date.** "Restrict updates" was removed from the `protected-branches` ruleset (it made every merge an admin override), and the `code_quality` rule didn't block any merge, apparently because GitHub Code Quality isn't available for the repository (the setup API returns 404). Update the file and decide whether to keep that rule.
 
-- [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22 and #47 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
+- [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22, #47 and #62 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
 
 - [x] **29. Docs polish.** Done in #49.
     * ADR-0002 L49 still says "(backlog item)" for `default(OpenUrzednikResult<T>)`.
@@ -138,7 +138,7 @@ How to use this file:
     * Record the upstream versions: miodkuj@32004e3, stop-slop@8da1f03.
     * Done in `CLAUDE.md` and `AGENTS.md`; the vendored skill files are unchanged.
 
-- [ ] **32. Exception names clash with the BCL.** `SerializationException` (`System.Runtime.Serialization`) and `ValidationException` (`System.ComponentModel.DataAnnotations`) need an alias when both namespaces are imported. Decide before 1.0 whether to rename them (e.g. `OpenUrzednikValidationException`).
+- [x] **32. Exception names clash with the BCL.** `SerializationException` (`System.Runtime.Serialization`) and `ValidationException` (`System.ComponentModel.DataAnnotations`) need an alias when both namespaces are imported. Decide before 1.0 whether to rename them (e.g. `OpenUrzednikValidationException`). Done in #62: renamed to `OpenUrzednikValidationException` and `OpenUrzednikSerializationException` (breaking; release note). The other exception names don't clash.
 
 - [x] **36. Equality of `OpenUrzednikResult`.** The performance analyzer CA1815 asks the result structs to override `Equals` and `==`. Without them, a caller who compares results gets the slow, reflection-based `ValueType.Equals`. The rule is suppressed for now with a justification. Decide whether results have equality (e.g. value equality on success, the same error instances on failure) or stay incomparable. Done in #61: they stay incomparable (ADR-0002 note); the XML docs say so and the CA1815 justification no longer calls it undecided.
 

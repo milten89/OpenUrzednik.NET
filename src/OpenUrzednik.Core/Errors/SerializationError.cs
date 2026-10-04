@@ -30,6 +30,6 @@ public sealed class SerializationError : OpenUrzednikError
     /// <remarks>The returned exception keeps <see cref="Exception"/> as its <see cref="System.Exception.InnerException"/>.</remarks>
     protected override OpenUrzednikException CreateException()
         => Exception is null
-            ? new SerializationException(Message)
-            : new SerializationException(Message, Exception);
+            ? new OpenUrzednikSerializationException(Message)
+            : new OpenUrzednikSerializationException(Message, Exception);
 }
