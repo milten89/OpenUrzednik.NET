@@ -21,8 +21,8 @@
   <ItemGroup>
     <PackageVersion Include="System.Text.Json" Version="10.0.10" />
     <PackageVersion Include="System.Net.Http.Json" Version="10.0.10" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.10" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.12" />
     <!-- The resilience engine the app runs (maintainer, 2026-10-04), even though we only use its exception types. -->
     <PackageVersion Include="Polly.Core" Version="8.8.0" />
   </ItemGroup>
@@ -33,7 +33,7 @@
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
     <PackageVersion Include="NSubstitute" Version="6.0.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
     <PackageVersion Include="WireMock.Net" Version="2.12.0" />
