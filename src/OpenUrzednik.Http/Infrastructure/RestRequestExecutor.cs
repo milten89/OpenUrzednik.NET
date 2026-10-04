@@ -227,7 +227,7 @@ public sealed class RestRequestExecutor
         if (requestToken.IsCancellationRequested)
             return deadline;
 
-        var elapsed = TimeSpan.FromTicks((long)((Stopwatch.GetTimestamp() - started) * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency)));
+        var elapsed = Stopwatch.GetElapsedTime(started);
         return Finite(_httpClient.Timeout) is { } clientTimeout && elapsed + TimerResolution >= clientTimeout ? clientTimeout : null;
     }
 

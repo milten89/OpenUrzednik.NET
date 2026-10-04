@@ -7,7 +7,8 @@
     "../OpenUrzednik.Core",
     "../Polyfills",
     "../Directory.Build.props",
-    "../../Directory.Packages.props"
+    "../../Directory.Packages.props",
+    "../../Directory.Build.props"
   ],
   "release": {
     "versionIncrement": "minor"

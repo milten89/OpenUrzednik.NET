@@ -23,10 +23,10 @@
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="10.0.12" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.12" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.10" />
-    <PackageVersion Include="System.Net.Http.Json" Version="10.0.10" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.10" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.10" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.12" />
+    <PackageVersion Include="System.Net.Http.Json" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.12" />
     <!-- The resilience engine the app runs (maintainer, 2026-10-04), even though we only use its exception types. -->
     <PackageVersion Include="Polly.Core" Version="8.8.0" />
   </ItemGroup>
