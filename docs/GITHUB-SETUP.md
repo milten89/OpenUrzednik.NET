@@ -32,7 +32,6 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 | Require a pull request | 0 approvals, CODEOWNERS review, dismiss stale approvals, resolve all conversations, allowed merge method: squash |
 | Required status checks (strict, up to date) | `build (net8.0)`, `build (net9.0)`, `build (net10.0)`, `test (net472)`, `format`, `dependency-review` |
 | Code scanning | CodeQL: alerts threshold `errors`, security alerts `high_or_higher` |
-| Require signed commits | on (squash merges are commits GitHub creates and signs, so PR branches need no signing) |
 | Bypass | Repository role **Admin**, mode **pull requests only** (the maintainer can merge their own PRs, but cannot push directly) |
 
 > ⚠️ Required status checks are matched by **job name**. Job names are defined in `.github/workflows/build.yml` (`build (<tfm>)`, from the matrix, and `test (net472)`) `format.yml` (`format`) and `dependency-review.yml` (`dependency-review`). Renaming a job or changing the TFM matrix (e.g. adding netstandard2.0 or dropping net8.0) requires updating this ruleset, or every PR is blocked:
@@ -47,6 +46,7 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 Not used:
 * **Restrict updates:** it made every merge an admin bypass, because only bypass actors could update the branches. The pull request rule already blocks direct pushes.
 * **Code quality rule:** GitHub Code Quality isn't available for this repository (`gh api repos/milten89/OpenUrzednik.NET/code-quality/setup` returns 404), so the rule never blocked anything. CodeQL runs the `security-and-quality` query suite instead, and the code scanning rule enforces its results.
+* **Require signed commits:** tried on 2026-10-04 and removed the same day: with it, PRs whose branch commits weren't signed couldn't be merged.
 
 ## Environments
 
