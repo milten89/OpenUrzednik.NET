@@ -105,7 +105,7 @@ How to use this file:
     * `EnablePackageValidation` with a baseline after the first stable release.
     * Done: `IsAotCompatible`/`IsTrimmable` on .NET targets.
 
-- [x] **22. English versions of user-facing docs** ([ADR-0009](adr/0009-documentation-language.md)): `README.en.md` (root and per package), `CONTRIBUTING.en.md`, with links from the Polish versions. Edit the prose with `/miodkuj` (Polish) and `/stop-slop` (English). Done in #PR: also `SECURITY.en.md`; the root README's outdated note about DI and client construction was corrected in both languages.
+- [x] **22. English versions of user-facing docs** ([ADR-0009](adr/0009-documentation-language.md)): `README.en.md` (root and per package), `CONTRIBUTING.en.md`, with links from the Polish versions. Edit the prose with `/miodkuj` (Polish) and `/stop-slop` (English). Done in #58: also `SECURITY.en.md`; the root README's outdated note about DI and client construction was corrected in both languages.
 
 - [ ] **23. Usage docs:** a `samples/` folder and package READMEs with real usage once the client API is settled (item 14).
 
