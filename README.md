@@ -67,7 +67,7 @@ try
 {
     int value = failed.EnsureSuccess();
 }
-catch (ValidationException ex)
+catch (OpenUrzednikValidationException ex)
 {
     Console.WriteLine(ex.Message);
 }
