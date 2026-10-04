@@ -3,6 +3,10 @@ using OpenUrzednik.Core.Exceptions;
 
 namespace OpenUrzednik.Core.Extensions;
 
+/// <summary>
+/// Turns failed results into exceptions (<c>EnsureSuccess</c>, <c>EnsureSuccessAsync</c>), chains operations on <see cref="Task"/>s of results
+/// (<c>MapAsync</c>, <c>BindAsync</c>) and combines results (<c>And</c>).
+/// </summary>
 public static class OpenUrzednikResultExtensions
 {
     /// <summary>
@@ -108,11 +112,11 @@ public static class OpenUrzednikResultExtensions
     }
 
     /// <summary>
-    /// Combine two results. If both are success, then result is success, else return concatenated errors.
+    /// Combines two results: successful if both are, otherwise a failure with the errors of both, first's errors first.
     /// </summary>
-    /// <param name="first"></param>
-    /// <param name="second"></param>
-    /// <returns></returns>
+    /// <param name="first">First result.</param>
+    /// <param name="second">Second result.</param>
+    /// <returns>The combined result.</returns>
     public static OpenUrzednikResult And(this OpenUrzednikResult first, OpenUrzednikResult second)
     {
         return first.IsSuccess && second.IsSuccess

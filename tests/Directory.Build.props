@@ -8,6 +8,8 @@
     <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
+    <!-- Test classes are public for xUnit but aren't API: no XML docs required. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <!-- Items are evaluated after every property, so a project that sets IsTestProject=false (TestCommon) doesn't get the runner. -->
