@@ -93,7 +93,7 @@ public partial class OpenUrzednikResultExtensionsTest
     }
 
     [Fact]
-    public void EnsureSuccess_WhenResultHasMultipleValidationErrors_ThrowsOneValidationExceptionWithAllErrors()
+    public void EnsureSuccess_WhenResultHasMultipleValidationErrors_ThrowsOneOpenUrzednikValidationExceptionWithAllErrors()
     {
         // Arrange
         ValidationError[] errors =
@@ -104,7 +104,7 @@ public partial class OpenUrzednikResultExtensionsTest
         var result = OpenUrzednikResult.Failure<int>(errors);
 
         // Act
-        var exception = Should.Throw<ValidationException>(() => result.EnsureSuccess());
+        var exception = Should.Throw<OpenUrzednikValidationException>(() => result.EnsureSuccess());
 
         // Assert
         exception.Code.ShouldBe(ValidationError.ErrorCode);

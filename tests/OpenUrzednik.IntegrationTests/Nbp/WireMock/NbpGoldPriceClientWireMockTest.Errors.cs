@@ -156,7 +156,7 @@ public partial class NbpGoldPriceClientWireMockTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>();
-        error.ToException().ShouldBeOfType<OpenUrzednik.Core.Exceptions.SerializationException>();
+        error.ToException().ShouldBeOfType<OpenUrzednik.Core.Exceptions.OpenUrzednikSerializationException>();
     }
 
     [Fact]

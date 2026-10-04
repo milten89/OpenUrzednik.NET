@@ -10,7 +10,7 @@ namespace OpenUrzednik.Core.Tests.Errors;
 public class SerializationErrorTest
 {
     [Fact]
-    public void ToException_WithException_ReturnsSerializationExceptionWrappingOriginal()
+    public void ToException_WithException_ReturnsOpenUrzednikSerializationExceptionWrappingOriginal()
     {
         // Arrange
         var original = new JsonException("Unexpected token.");
@@ -20,7 +20,7 @@ public class SerializationErrorTest
         var exception = error.ToException();
 
         // Assert
-        var serializationException = exception.ShouldBeOfType<SerializationException>();
+        var serializationException = exception.ShouldBeOfType<OpenUrzednikSerializationException>();
         serializationException.ShouldBeAssignableTo<OpenUrzednikException>();
         serializationException.Message.ShouldBe("message");
         serializationException.Code.ShouldBe(SerializationError.ErrorCode);
@@ -28,7 +28,7 @@ public class SerializationErrorTest
     }
 
     [Fact]
-    public void ToException_WithoutException_ReturnsSerializationExceptionWithoutInnerException()
+    public void ToException_WithoutException_ReturnsOpenUrzednikSerializationExceptionWithoutInnerException()
     {
         // Arrange
         var error = new SerializationError("message");
@@ -37,7 +37,7 @@ public class SerializationErrorTest
         var exception = error.ToException();
 
         // Assert
-        var serializationException = exception.ShouldBeOfType<SerializationException>();
+        var serializationException = exception.ShouldBeOfType<OpenUrzednikSerializationException>();
         serializationException.InnerException.ShouldBeNull();
         error.Exception.ShouldBeNull();
     }

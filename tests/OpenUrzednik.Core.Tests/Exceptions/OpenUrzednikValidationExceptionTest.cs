@@ -5,7 +5,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Core.Tests.Exceptions;
 
-public class ValidationExceptionTest
+public class OpenUrzednikValidationExceptionTest
 {
     [Fact]
     public void Ctor_SeveralErrors_ListsThemInMessageAndErrors()
@@ -18,7 +18,7 @@ public class ValidationExceptionTest
         ];
 
         // Act
-        var exception = new ValidationException(errors);
+        var exception = new OpenUrzednikValidationException(errors);
 
         // Assert
         exception.Message.ShouldBe("Validation failed with 2 errors: First.; Second.");
@@ -33,7 +33,7 @@ public class ValidationExceptionTest
         var error = new ValidationError("First.", "rule", "first", null);
 
         // Act
-        var exception = new ValidationException([error]);
+        var exception = new OpenUrzednikValidationException([error]);
 
         // Assert
         exception.Message.ShouldBe("First.");
@@ -44,7 +44,7 @@ public class ValidationExceptionTest
     public void Ctor_NoErrors_ThrowsArgumentException()
     {
         // Act && Assert
-        Should.Throw<ArgumentException>(() => new ValidationException(Array.Empty<ValidationError>()))
+        Should.Throw<ArgumentException>(() => new OpenUrzednikValidationException(Array.Empty<ValidationError>()))
             .ParamName.ShouldBe("errors");
     }
 
@@ -52,14 +52,14 @@ public class ValidationExceptionTest
     public void Ctor_NullErrors_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new ValidationException((IReadOnlyList<ValidationError>)null!));
+        Should.Throw<ArgumentNullException>(() => new OpenUrzednikValidationException((IReadOnlyList<ValidationError>)null!));
     }
 
     [Fact]
     public void Ctor_MessageAndRule_HasNoError()
     {
         // Act
-        var exception = new ValidationException("message", "rule", "name", 1);
+        var exception = new OpenUrzednikValidationException("message", "rule", "name", 1);
 
         // Assert
         exception.Error.ShouldBeNull();
@@ -70,7 +70,7 @@ public class ValidationExceptionTest
     public void Ctor_NullElement_ThrowsArgumentException()
     {
         // Act && Assert
-        Should.Throw<ArgumentException>(() => new ValidationException([null!]))
+        Should.Throw<ArgumentException>(() => new OpenUrzednikValidationException([null!]))
             .ParamName.ShouldBe("errors");
     }
 }
