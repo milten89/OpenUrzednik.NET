@@ -30,9 +30,6 @@ public interface INbpGoldPriceClient
     /// <summary>
     /// Gets the series of gold prices starting from the latest.
     /// </summary>
-    /// <remarks>
-    /// Gold prices are published on business days in Poland.
-    /// </remarks>
     /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the gold prices or an error</returns>
@@ -53,9 +50,6 @@ public interface INbpGoldPriceClient
     /// Gets the gold price for the specified date. If the gold price is not published yet for the given date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
     /// Date can't be lower than 2013-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
     /// </summary>
-    /// <remarks>
-    /// Gold prices are published on business days in Poland.
-    /// </remarks>
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the gold price or an error</returns>
@@ -65,9 +59,6 @@ public interface INbpGoldPriceClient
     /// Gets the gold price for the specified date range. If the gold prices are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
     /// Date range can't exceed 367 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2013-01-02, because the NBP API doesn't support it.
     /// </summary>
-    /// <remarks>
-    /// Gold prices are published on business days in Poland.
-    /// </remarks>
     /// <param name="from">Start date</param>
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
