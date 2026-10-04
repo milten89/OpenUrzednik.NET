@@ -126,10 +126,11 @@ How to use this file:
     * The publication-schedule sentence is repeated on every client method. Optional: keep it on the interface and the Today/Latest methods only.
     * Done: the ADR-0002 leftover was already gone; the four summaries name their table; the schedule sentence stays on the interfaces and the Latest/Today methods (removed from 15 others, in all three clients); the table C Latest remarks no longer mention table B.
 
-- [ ] **30. Test conventions.**
+- [x] **30. Test conventions.** Done in #50.
     * Core tests aren't `partial` or file-per-method (CLAUDE.md), and `NetworkErrorsTest` covers two production classes.
     * `CultureScope` (TestCommon) needs ICU: it fails under `InvariantGlobalization`. Note it in the class docs.
     * The client constructor tests (`*Test.ctor.cs`) read private fields with `GetPrivateField`. Test through behaviour instead (e.g. which URL builder and clock a request uses).
+    * Done: Core test classes that cover several members are `partial`, one file per member (the result types keep their layout tests in the main file); `NetworkErrorsTest` became `ServiceUnavailableErrorTest` and `RequestTimeoutErrorTest`; `CultureScope` documents the ICU requirement; the constructor tests check the requested URL, the clock used for date validation and the telemetry calls, and `GetPrivateField` is removed.
 
 - [ ] **31. Prose skills follow-ups** (#24).
     * Say that meaning, API limits and qualifiers ("only", "never") take precedence over style rules: stop-slop removes absolutes.
