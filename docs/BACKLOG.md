@@ -107,7 +107,7 @@ How to use this file:
 
 - [x] **22. English versions of user-facing docs** ([ADR-0009](adr/0009-documentation-language.md)): `README.en.md` (root and per package), `CONTRIBUTING.en.md`, with links from the Polish versions. Edit the prose with `/miodkuj` (Polish) and `/stop-slop` (English). Done in #58: also `SECURITY.en.md`; the root README's outdated note about DI and client construction was corrected in both languages.
 
-- [ ] **23. Usage docs:** a `samples/` folder and package READMEs with real usage once the client API is settled (item 14).
+- [x] **23. Usage docs:** a `samples/` folder and package READMEs with real usage once the client API is settled (item 14). Done in #60: `samples/` has a console app and a minimal Web API, both in the solution so CI builds them for every .NET target; the package READMEs already had real usage.
 
 - [x] **24. Move tests to the Microsoft.Testing.Platform runner.** `xunit.v3` 4.x no longer runs through VSTest on the .NET 10 SDK, so Dependabot's #11 fails CI.
     * Add a `global.json` that opts in to the new `dotnet test`.
