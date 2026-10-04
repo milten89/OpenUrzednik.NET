@@ -1,0 +1,16 @@
+{
+  "solution": {
+    "path": "OpenUrzednik.slnx",
+    "projects": [
+      "src/OpenUrzednik.Core/OpenUrzednik.Core.csproj",
+      "src/OpenUrzednik.Diagnostics/OpenUrzednik.Diagnostics.csproj",
+      "src/OpenUrzednik.Extensions.Logging/OpenUrzednik.Extensions.Logging.csproj",
+      "src/OpenUrzednik.Gus/OpenUrzednik.Gus.csproj",
+      "src/OpenUrzednik.Http/OpenUrzednik.Http.csproj",
+      "src/OpenUrzednik.Krs/OpenUrzednik.Krs.csproj",
+      "src/OpenUrzednik.Mf/OpenUrzednik.Mf.csproj",
+      "src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj",
+      "src/OpenUrzednik.Nbp.DependencyInjection/OpenUrzednik.Nbp.DependencyInjection.csproj"
+    ]
+  }
+}
