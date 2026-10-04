@@ -66,7 +66,7 @@ public class NbpGoldPriceClient : INbpGoldPriceClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.top_count");
         traceSpan.SetTag("nbp.top_count", topCount);
 
-        var validation = new TopCountValidator(nameof(topCount), topCount).Validate();
+        var validation = new TopCountValidator(nameof(topCount), topCount, TopCountValidator.MaxTopCount).Validate();
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetTopCountAsync), validation,
             () => _urlBuilder.ForTopCount(topCount), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);

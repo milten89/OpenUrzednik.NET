@@ -99,7 +99,7 @@ public partial class NbpExchangeRateTableClientTest
     }
 
     [Fact]
-    public async Task GetBuySellTopCountAsync_TopCountAboveApiLimit_ReturnsFailureWithoutSendingRequest()
+    public async Task GetBuySellTopCountAsync_TopCountAboveTableLimit_ReturnsFailureWithoutSendingRequest()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -107,7 +107,7 @@ public partial class NbpExchangeRateTableClientTest
         var sut = CreateApiClient(httpClient, NbpTable.C, Substitute.For<INbpUrlBuilder>());
 
         // Act
-        var result = await sut.GetBuySellTopCountAsync(TopCountValidator.MaxTopCount + 1, TestContext.Current.CancellationToken);
+        var result = await sut.GetBuySellTopCountAsync(TopCountValidator.MaxDailyTablesTopCount + 1, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailure.ShouldBeTrue();

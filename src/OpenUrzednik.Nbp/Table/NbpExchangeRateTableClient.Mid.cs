@@ -28,7 +28,7 @@ public partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.top_count", topCount);
 
         var validation = new TableTypeValidator(nameof(table), table).Validate()
-            .And(new TopCountValidator(nameof(topCount), topCount).Validate());
+            .And(new TopCountValidator(nameof(topCount), topCount, TopCountValidator.MaxForTable(table)).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetTopCountAsync), validation,
             () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForTopCount(topCount), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);

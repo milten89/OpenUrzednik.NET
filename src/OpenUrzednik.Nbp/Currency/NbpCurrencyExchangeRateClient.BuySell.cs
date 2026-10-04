@@ -29,7 +29,7 @@ public partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.top_count", topCount);
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
-            .And(new TopCountValidator(nameof(topCount), topCount).Validate());
+            .And(new TopCountValidator(nameof(topCount), topCount, TopCountValidator.MaxTopCount).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellTopCountAsync), validation,
             () => _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency).ForTopCount(topCount), JsonContext.BuySellCurrencyExchangeRatesDto, Mapper.MapToBuySellExchangeRates, cancellationToken).ConfigureAwait(false);

@@ -36,7 +36,7 @@ public interface INbpExchangeRateTableClient
     /// Table A (common currencies) is published on business days between 11:45 and 12:15, table B (less common currencies) on Wednesdays between 11:45 and 12:15, or on the previous business day when Wednesday is a holiday (Europe/Warsaw time).
     /// </remarks>
     /// <param name="table">Table type</param>
-    /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
+    /// <param name="topCount">Number of tables to retrieve: 1 to 67 for table A, 1 to 14 for table B; the API rejects larger counts.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
     Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(TableType table, int topCount, CancellationToken cancellationToken = default);
@@ -97,7 +97,7 @@ public interface INbpExchangeRateTableClient
     /// <remarks>
     /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
     /// </remarks>
-    /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
+    /// <param name="topCount">Number of tables to retrieve, from 1 to 67; the API rejects larger counts.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
     Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellTopCountAsync(int topCount, CancellationToken cancellationToken = default);
