@@ -120,10 +120,11 @@ How to use this file:
 
 - [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22 and #47 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
 
-- [ ] **29. Docs polish.**
+- [x] **29. Docs polish.** Done in #49.
     * ADR-0002 L49 still says "(backlog item)" for `default(OpenUrzednikResult<T>)`.
     * The summaries of `CurrencyExchangeRates`, `BuySellExchangeRates`, `ExchangeRateTable` and `BuySellExchangeRateTable` don't name the table (A/B or C).
     * The publication-schedule sentence is repeated on every client method. Optional: keep it on the interface and the Today/Latest methods only.
+    * Done: the ADR-0002 leftover was already gone; the four summaries name their table; the schedule sentence stays on the interfaces and the Latest/Today methods (removed from 15 others, in all three clients); the table C Latest remarks no longer mention table B.
 
 - [ ] **30. Test conventions.**
     * Core tests aren't `partial` or file-per-method (CLAUDE.md), and `NetworkErrorsTest` covers two production classes.
