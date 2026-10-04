@@ -9,6 +9,11 @@
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
   </ItemGroup>
 
+  <!-- netstandard2.0 only: these types are built into .NET (ADR-0004, ADR-0005). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>

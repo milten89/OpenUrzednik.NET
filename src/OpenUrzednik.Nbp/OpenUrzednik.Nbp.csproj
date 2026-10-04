@@ -10,6 +10,15 @@
     <ProjectReference Include="..\OpenUrzednik.Http\OpenUrzednik.Http.csproj" />
   </ItemGroup>
 
+  <!-- netstandard2.0 only: these types are built into .NET (ADR-0004, ADR-0005). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <!-- Dates are DateTime on netstandard2.0 (ADR-0005); the code says DateOnly on every target. -->
+    <Using Include="System.DateTime" Alias="DateOnly" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" />
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>

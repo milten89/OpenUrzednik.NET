@@ -7,7 +7,9 @@ namespace OpenUrzednik.Nbp.Validation;
 
 internal sealed partial class Iso4217Validator(string propertyName, string value) : ValueValidator<string>(propertyName, value)
 {
-    [GeneratedRegex(@"\A[a-zA-Z]{3}\z", RegexOptions.CultureInvariant)]
+    private const string Iso4217CurrencyCodePattern = @"\A[a-zA-Z]{3}\z";
+
+    [GeneratedRegex(Iso4217CurrencyCodePattern, RegexOptions.CultureInvariant)]
     private static partial Regex Iso4217CurrencyCodeRegex();
 
     public override string Name => "iso4217";

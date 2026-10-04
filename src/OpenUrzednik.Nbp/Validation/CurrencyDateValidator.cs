@@ -16,10 +16,11 @@ internal sealed class CurrencyDateValidator(string propertyName, DateOnly value,
 
     public override OpenUrzednikResult Validate()
     {
-        if (Value < MinDate)
+        // DayNumber ignores the time of day a DateTime can carry on netstandard2.0.
+        if (Value.DayNumber < MinDate.DayNumber)
             return GetValidationErrorResult($"'{PropertyName}' should be greater or equal {MinDate.ToIso8601String()}.");
 
-        if (Value > today)
+        if (Value.DayNumber > today.DayNumber)
             return GetValidationErrorResult($"'{PropertyName}' should not be later than today ({today.ToIso8601String()}, Europe/Warsaw).");
 
         return OpenUrzednikResult.Success();

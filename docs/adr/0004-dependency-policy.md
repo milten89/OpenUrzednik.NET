@@ -62,7 +62,7 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 **2026-10-02 implementation note** (`OpenUrzednik.Nbp.DependencyInjection`, backlog item 15):
 
 * The DI package references `Polly.Core` (8.4.2, the version `Microsoft.Extensions.Http.Resilience` 10.8 needs) only to recognise the rejection types, not `Microsoft.Extensions.Http.Resilience` itself: apps that don't add a resilience handler don't get it.
-* A timeout rejection becomes a `TaskCanceledException` whose inner exception is the `TimeoutRejectedException`, not a `TimeoutException`. The request executor reports a limit in `RequestTimeoutError.Timeout` only when it knows that limit elapsed: its own deadline cancelled the request, or `HttpClient.Timeout` fired (an inner `TimeoutException`). A resilience handler's timeout is reported without a limit, instead of as `HttpClient.Timeout`.
+* A timeout rejection becomes a `TaskCanceledException` whose inner exception is the `TimeoutRejectedException`, not a `TimeoutException`. The request executor reports a limit in `RequestTimeoutError.Timeout` only when it knows that limit elapsed: its own deadline cancelled the request, or `HttpClient.Timeout` fired. A resilience handler's timeout is reported without a limit, instead of as `HttpClient.Timeout`. (2026-10-02, backlog item 17: "`HttpClient.Timeout` fired" was first detected by an inner `TimeoutException`, which .NET Framework doesn't set; the executor now checks that at least `HttpClient.Timeout` has elapsed.)
 * Options are checked at startup (`ValidateOnStart`) with the clients' own rules, exposed as `NbpOptions.Validate()`.
 
 **2026-10-04 change: dependency versions.** The maintainer decided how to choose the version of a package the libraries depend on:

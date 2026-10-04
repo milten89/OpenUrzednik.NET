@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 
 using Shouldly;
@@ -48,6 +49,9 @@ internal static class NbpWireMockServerExtensions
                 .WithHeader("Content-Type", "application/json")
                 .WithBody("[]")
                 .WithDelay(delay));
+
+    /// <summary>The date as the NBP API writes it in paths, independent of the current culture.</summary>
+    public static string ToIso(this DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     public static void ShouldHaveReceivedGet(this WireMockServer server, string path)
         => server.LogEntries.ShouldContain(e =>

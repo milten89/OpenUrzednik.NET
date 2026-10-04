@@ -5,7 +5,10 @@
   "pathFilters": [
     ".",
     "../OpenUrzednik.Core",
-    "../../Directory.Packages.props"
+    "../../Directory.Packages.props",
+    "../Polyfills",
+    "../Directory.Build.props",
+    "../../Directory.Build.props"
   ],
   "release": {
     "versionIncrement": "minor"

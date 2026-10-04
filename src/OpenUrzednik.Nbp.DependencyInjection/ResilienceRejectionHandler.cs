@@ -19,7 +19,8 @@ internal sealed class ResilienceRejectionHandler : DelegatingHandler
         }
         catch (TimeoutRejectedException ex)
         {
-            // No inner TimeoutException: that would make the executor report HttpClient.Timeout as the limit that elapsed.
+            // Keeps the rejection as the inner exception (on .NET; .NET Framework's HttpClient replaces the exception).
+            // The executor reports no limit for it, because it fires before HttpClient.Timeout would.
             throw new TaskCanceledException(ex.Message, ex);
         }
         catch (ExecutionRejectedException ex)

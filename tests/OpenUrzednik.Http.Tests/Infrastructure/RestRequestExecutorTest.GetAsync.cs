@@ -195,7 +195,7 @@ public partial class RestRequestExecutorTest
     [InlineData(HttpStatusCode.Unauthorized, UnauthorizedError.ErrorCode)]
     [InlineData(HttpStatusCode.Forbidden, UnauthorizedError.ErrorCode)]
     [InlineData(HttpStatusCode.NotFound, NotFoundError.ErrorCode)]
-    [InlineData(HttpStatusCode.TooManyRequests, RateLimitExceededError.ErrorCode)]
+    [InlineData((HttpStatusCode)429, RateLimitExceededError.ErrorCode)]
     [InlineData(HttpStatusCode.InternalServerError, ServiceUnavailableError.ErrorCode)]
     [InlineData(HttpStatusCode.BadGateway, ServiceUnavailableError.ErrorCode)]
     [InlineData(HttpStatusCode.ServiceUnavailable, ServiceUnavailableError.ErrorCode)]
@@ -484,6 +484,39 @@ public partial class RestRequestExecutorTest
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>();
     }
 
+#if !NET
+    // .NET Framework's response stream checks the token only before a read starts; .NET's honours it (see BodyReadExceedsTimeout).
+    [Fact]
+    public async Task GetAsync_BodyReadIgnoresTokenAndExceedsTimeout_ReturnsRequestTimeoutError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new TokenIgnoringStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider, TimeSpan.FromMilliseconds(100))
+            .GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(TimeSpan.FromMilliseconds(100));
+    }
+
+    [Fact]
+    public async Task GetAsync_BodyReadIgnoresTokenAndCallerCancels_ThrowsOperationCanceledException()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new TokenIgnoringStream()) };
+        using var httpClient = CreateHttpClient(faker, response);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+        // Act & Assert
+        await Should.ThrowAsync<OperationCanceledException>(() => CreateConnection(httpClient, _telemetryProvider, _timeProvider)
+            .GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
+    }
+#endif
+
     [Fact]
     public async Task GetAsync_CancelledDuringSendAsync_DoesNotRecordExceptionOrLog()
     {
@@ -734,7 +767,7 @@ public partial class RestRequestExecutorTest
     [InlineData(HttpStatusCode.OK, "not-valid-json")]
     [InlineData(HttpStatusCode.OK, "null")]
     [InlineData(HttpStatusCode.NotFound, "")]
-    [InlineData(HttpStatusCode.TooManyRequests, "")]
+    [InlineData((HttpStatusCode)429, "")] // TooManyRequests; an attribute argument must be a constant on .NET Framework
     [InlineData(HttpStatusCode.InternalServerError, "")]
     public async Task GetAsync_AnyResponse_DisposesResponse(HttpStatusCode statusCode, string body)
     {
