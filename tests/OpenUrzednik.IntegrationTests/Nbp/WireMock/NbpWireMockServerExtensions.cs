@@ -16,6 +16,15 @@ internal static class NbpWireMockServerExtensions
 {
     private const string PlainTextUtf8 = "text/plain; charset=utf-8";
 
+    /// <summary>How long <see cref="GivenSlowResponse"/> delays the response: far longer than any timeout the tests set.</summary>
+    public static readonly TimeSpan SlowResponseDelay = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// Upper bound for a call that should give up instead of waiting for a slow response. Well below <see cref="SlowResponseDelay"/>,
+    /// so a client that waits for the response fails the check, and generous enough for a cold CI runner (net472 needed 2.9 s for a 0.1 s timeout).
+    /// </summary>
+    public static readonly TimeSpan GaveUpWithin = TimeSpan.FromSeconds(5);
+
     public static void GivenJson(this WireMockServer server, string path, string body)
         => server.Given(Request.Create().WithPath(path).UsingGet())
             .RespondWith(Response.Create()
@@ -42,13 +51,14 @@ internal static class NbpWireMockServerExtensions
                 .WithStatusCode(HttpStatusCode.TooManyRequests)
                 .WithHeader("Retry-After", retryAfter));
 
-    public static void GivenDelay(this WireMockServer server, string path, TimeSpan delay)
+    /// <summary>Answers <paramref name="path"/> with an empty array after <see cref="SlowResponseDelay"/>.</summary>
+    public static void GivenSlowResponse(this WireMockServer server, string path)
         => server.Given(Request.Create().WithPath(path).UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.OK)
                 .WithHeader("Content-Type", "application/json")
                 .WithBody("[]")
-                .WithDelay(delay));
+                .WithDelay(SlowResponseDelay));
 
     /// <summary>The date as the NBP API writes it in paths, independent of the current culture.</summary>
     public static string ToIso(this DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
