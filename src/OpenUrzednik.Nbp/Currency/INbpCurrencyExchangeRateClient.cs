@@ -34,9 +34,6 @@ public interface INbpCurrencyExchangeRateClient
     /// <summary>
     /// Gets the series of mid exchange rates of the currency starting from the latest.
     /// </summary>
-    /// <remarks>
-    /// Table A (common currencies) is published on business days between 11:45 and 12:15, table B (less common currencies) on Wednesdays between 11:45 and 12:15, or on the previous business day when Wednesday is a holiday (Europe/Warsaw time).
-    /// </remarks>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
@@ -61,9 +58,6 @@ public interface INbpCurrencyExchangeRateClient
     /// Gets the mid exchange rate of the currency for the specified date. If the exchange rate is not published for the given date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
     /// Date can't be lower than 2002-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
     /// </summary>
-    /// <remarks>
-    /// Table A (common currencies) is published on business days between 11:45 and 12:15, table B (less common currencies) on Wednesdays between 11:45 and 12:15, or on the previous business day when Wednesday is a holiday (Europe/Warsaw time).
-    /// </remarks>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="date">Date</param>
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
@@ -75,9 +69,6 @@ public interface INbpCurrencyExchangeRateClient
     /// Gets the mid exchange rates of the currency for the specified date range. If the exchange rates are not published for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
     /// Date range can't exceed 367 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2002-01-02, because the NBP API doesn't support it.
     /// </summary>
-    /// <remarks>
-    /// Table A (common currencies) is published on business days between 11:45 and 12:15, table B (less common currencies) on Wednesdays between 11:45 and 12:15, or on the previous business day when Wednesday is a holiday (Europe/Warsaw time).
-    /// </remarks>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="from">Start date</param>
     /// <param name="to">End date</param>
@@ -91,7 +82,7 @@ public interface INbpCurrencyExchangeRateClient
     /// </summary>
     /// <remarks>
     /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
-    /// Returns the most recently published value; until the next publication that is the previous one (for table B, usually last Wednesday's).
+    /// Returns the most recently published value; until the next publication that is the previous one.
     /// </remarks>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -101,9 +92,6 @@ public interface INbpCurrencyExchangeRateClient
     /// <summary>
     /// Gets the series of buy and sell exchange rates starting from the latest.
     /// </summary>
-    /// <remarks>
-    /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
-    /// </remarks>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -126,9 +114,6 @@ public interface INbpCurrencyExchangeRateClient
     /// Gets the buy and sell exchange rate for the specified date. If the exchange rate is not published yet for the given date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
     /// Date can't be lower than 2002-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
     /// </summary>
-    /// <remarks>
-    /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
-    /// </remarks>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -139,9 +124,6 @@ public interface INbpCurrencyExchangeRateClient
     /// Gets the buy and sell exchange rates for the specified date range. If the exchange rates are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
     /// Date range can't exceed 367 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2002-01-02, because the NBP API doesn't support it.
     /// </summary>
-    /// <remarks>
-    /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
-    /// </remarks>
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="from">Start date</param>
     /// <param name="to">End date</param>

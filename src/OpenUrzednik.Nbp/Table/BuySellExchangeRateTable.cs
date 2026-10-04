@@ -1,7 +1,7 @@
 namespace OpenUrzednik.Nbp.Table;
 
 /// <summary>
-/// Buy and sell exchange rate table
+/// NBP table C of bid and ask rates
 /// </summary>
 /// <param name="TableId">Exchange rate table number</param>
 /// <param name="TradingDate">Trading date</param>

@@ -5,24 +5,10 @@ using Shouldly;
 
 namespace OpenUrzednik.Core.Tests.Errors;
 
-public class NetworkErrorsTest
+public partial class RequestTimeoutErrorTest
 {
     [Fact]
-    public void ServiceUnavailableError_ToException_WithException_KeepsInnerException()
-    {
-        // Arrange
-        var original = new HttpRequestException("Connection refused");
-        var error = new ServiceUnavailableError("message", exception: original);
-
-        // Act
-        var exception = error.ToException();
-
-        // Assert
-        exception.ShouldBeOfType<ServiceUnavailableException>().InnerException.ShouldBeSameAs(original);
-    }
-
-    [Fact]
-    public void RequestTimeoutError_ToException_WithException_KeepsInnerExceptionAndCode()
+    public void ToException_WithException_KeepsInnerExceptionAndCode()
     {
         // Arrange
         var original = new TaskCanceledException();
@@ -39,7 +25,7 @@ public class NetworkErrorsTest
     }
 
     [Fact]
-    public void RequestTimeoutError_ToException_WithoutException_HasNoInnerException()
+    public void ToException_WithoutException_HasNoInnerException()
     {
         // Act
         var exception = new RequestTimeoutError("message").ToException();

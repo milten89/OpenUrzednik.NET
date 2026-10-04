@@ -95,9 +95,9 @@ How to use this file:
 
 ## P3: Repository and quality
 
-- [ ] **19. Skeleton packages are published empty.** Set `IsPackable=false` for Gus, Krs and Mf ([ADR-0010](adr/0010-provider-readiness-gate.md)), Their empty test projects were removed in #35: under Microsoft.Testing.Platform a test project with no tests fails the run (exit code 8). Add a test project together with a provider's first tests.
+- [x] **19. Skeleton packages are published empty.** Set `IsPackable=false` for Gus, Krs and Mf ([ADR-0010](adr/0010-provider-readiness-gate.md)). Their empty test projects were removed in #35: under Microsoft.Testing.Platform a test project with no tests fails the run (exit code 8). Add a test project together with a provider's first tests. Done in #52: the three projects set `IsPackable=false`; they still build, and `dotnet pack OpenUrzednik.Packages.slnf` produces only the six real packages, and the READMEs say they aren't on NuGet. The empty versions already on nuget.org can be unlisted by the maintainer. Remove the property when a provider passes the gate.
 
-- [ ] **20. Redundant SourceLink package.** The NU1902 warning is gone since #12 (`Microsoft.SourceLink.GitHub` 10.0.401), but SourceLink ships with the .NET 8+ SDK, so the `PackageReference` in `Directory.Build.props` can still be removed.
+- [x] **20. Redundant SourceLink package.** The NU1902 warning is gone since #12 (`Microsoft.SourceLink.GitHub` 10.0.401), but SourceLink ships with the .NET 8+ SDK, so the `PackageReference` in `Directory.Build.props` can still be removed. Done in #53: removed from `Directory.Build.props` and `Directory.Packages.props`; a CI-mode pack still has the `<repository … commit=…>` metadata and source links in the symbol packages.
 
 - [ ] **21. Quality gates:** Partly done in #55: XML docs required in `src/` (`CS1591` no longer suppressed there), `TreatWarningsAsErrors` in CI, `IsAotCompatible` on the .NET targets. Package validation remains, after the first stable release.
     * Done: remove the `CS1591` suppression and document the public API.
@@ -120,20 +120,23 @@ How to use this file:
 
 - [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22 and #47 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
 
-- [ ] **29. Docs polish.**
+- [x] **29. Docs polish.** Done in #49.
     * ADR-0002 L49 still says "(backlog item)" for `default(OpenUrzednikResult<T>)`.
     * The summaries of `CurrencyExchangeRates`, `BuySellExchangeRates`, `ExchangeRateTable` and `BuySellExchangeRateTable` don't name the table (A/B or C).
     * The publication-schedule sentence is repeated on every client method. Optional: keep it on the interface and the Today/Latest methods only.
+    * Done: the ADR-0002 leftover was already gone; the four summaries name their table; the schedule sentence stays on the interfaces and the Latest/Today methods (removed from 15 others, in all three clients); the table C Latest remarks no longer mention table B.
 
-- [ ] **30. Test conventions.**
+- [x] **30. Test conventions.** Done in #50.
     * Core tests aren't `partial` or file-per-method (CLAUDE.md), and `NetworkErrorsTest` covers two production classes.
     * `CultureScope` (TestCommon) needs ICU: it fails under `InvariantGlobalization`. Note it in the class docs.
     * The client constructor tests (`*Test.ctor.cs`) read private fields with `GetPrivateField`. Test through behaviour instead (e.g. which URL builder and clock a request uses).
+    * Done: Core test classes that cover several members are `partial`, one file per member (the result types keep their layout tests in the main file); `NetworkErrorsTest` became `ServiceUnavailableErrorTest` and `RequestTimeoutErrorTest`; `CultureScope` documents the ICU requirement; the constructor tests check the requested URL, the clock used for date validation and the telemetry calls, and `GetPrivateField` is removed.
 
-- [ ] **31. Prose skills follow-ups** (#24).
+- [x] **31. Prose skills follow-ups** (#24). Done in #51.
     * Say that meaning, API limits and qualifiers ("only", "never") take precedence over style rules: stop-slop removes absolutes.
     * Make `AGENTS.md` protect the same items as `CLAUDE.md` (badges, numbers, which README is Polish).
     * Record the upstream versions: miodkuj@32004e3, stop-slop@8da1f03.
+    * Done in `CLAUDE.md` and `AGENTS.md`; the vendored skill files are unchanged.
 
 - [ ] **32. Exception names clash with the BCL.** `SerializationException` (`System.Runtime.Serialization`) and `ValidationException` (`System.ComponentModel.DataAnnotations`) need an alias when both namespaces are imported. Decide before 1.0 whether to rename them (e.g. `OpenUrzednikValidationException`).
 
@@ -141,3 +144,5 @@ How to use this file:
 
 - [x] **37. Two real-API gold tests fail on weekends.** `NbpGoldPriceClientTest.GetTodayAsync_ReturnTodayGoldPrice` calls `GetLatestAsync`, which always succeeds, but expects the weekend failure of `GetTodayAsync`; `GetAsync_ReturnGoldPriceFromSelectedDate` asks for today's date, which has no price on a weekend or holiday. They are explicit tests, so CI never runs them. Make them independent of the day the suite runs. Done in #48.
     * `GetTodayAsync` is now the method under test. It first asks for the latest price: if that is today's, `GetTodayAsync` must return it; otherwise it must return a `NotFoundError` (before the publication, on weekends and holidays). The range test now also checks the count and the dates; the other tests are renamed to `Method_Condition_ExpectedResult`. The single-date test asks for a fixed past business day and checks its published price; a new test checks that a Saturday returns `NotFoundError`. All gold real-API tests pass on a Sunday (2026-10-04).
+
+- [x] **38. Every package ships the root README.** The root `Directory.Build.props` packs the repository `README.md` as `\README.md`, and each project packs its own README to the same path; NuGet keeps the first and warns NU5118, so nuget.org shows the repository README for every package. Done in #54: the root README is now only a fallback for a project without its own.
