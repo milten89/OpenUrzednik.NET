@@ -3,6 +3,8 @@
   <PropertyGroup>
     <Description>OpenUrzednik.NET client for GUS (Główny Urząd Statystyczny) — REGON/NIP company lookups against the Polish Central Statistical Office registry.</Description>
     <PackageTags>GUS;REGON;NIP;API;Poland;Gov</PackageTags>
+    <!-- Not published until the provider passes the readiness gate (ADR-0010). -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

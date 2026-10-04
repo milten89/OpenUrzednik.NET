@@ -3,6 +3,8 @@
   <PropertyGroup>
     <Description>OpenUrzednik.NET client for KRS (Krajowy Rejestr Sądowy) — Polish National Court Register lookups for companies and legal entities.</Description>
     <PackageTags>KRS;REGON;NIP;API;Poland;Gov</PackageTags>
+    <!-- Not published until the provider passes the readiness gate (ADR-0010). -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
