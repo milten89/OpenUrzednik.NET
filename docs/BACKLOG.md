@@ -120,7 +120,7 @@ How to use this file:
 
 - [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22 and #47 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
 
-- [x] **29. Docs polish.** Done in #PR.
+- [x] **29. Docs polish.** Done in #49.
     * ADR-0002 L49 still says "(backlog item)" for `default(OpenUrzednikResult<T>)`.
     * The summaries of `CurrencyExchangeRates`, `BuySellExchangeRates`, `ExchangeRateTable` and `BuySellExchangeRateTable` don't name the table (A/B or C).
     * The publication-schedule sentence is repeated on every client method. Optional: keep it on the interface and the Today/Latest methods only.
