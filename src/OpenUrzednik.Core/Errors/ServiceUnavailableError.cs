@@ -11,6 +11,7 @@ namespace OpenUrzednik.Core.Errors;
 /// <param name="exception">The exception that caused the error (e.g. an <see cref="System.Net.Http.HttpRequestException"/>), if any.</param>
 public sealed class ServiceUnavailableError(string message, int? statusCode = null, Exception? exception = null) : OpenUrzednikError(ErrorCode, message, statusCode)
 {
+    /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
     public const string ErrorCode = "serviceUnavailable";
 
     /// <summary>

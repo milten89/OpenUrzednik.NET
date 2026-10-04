@@ -99,11 +99,11 @@ How to use this file:
 
 - [x] **20. Redundant SourceLink package.** The NU1902 warning is gone since #12 (`Microsoft.SourceLink.GitHub` 10.0.401), but SourceLink ships with the .NET 8+ SDK, so the `PackageReference` in `Directory.Build.props` can still be removed. Done in #53: removed from `Directory.Build.props` and `Directory.Packages.props`; a CI-mode pack still has the `<repository … commit=…>` metadata and source links in the symbol packages.
 
-- [ ] **21. Quality gates:**
-    * Remove the `CS1591` suppression and document the public API. The NBP client interfaces and classes are documented (#23); options, URL builders, `HttpClientExtensions`, models and Core still have gaps.
-    * `TreatWarningsAsErrors` in CI.
+- [ ] **21. Quality gates:** Partly done in #55: XML docs required in `src/` (`CS1591` no longer suppressed there), `TreatWarningsAsErrors` in CI, `IsAotCompatible` on the .NET targets. Package validation remains, after the first stable release.
+    * Done: remove the `CS1591` suppression and document the public API.
+    * Done: `TreatWarningsAsErrors` in CI.
     * `EnablePackageValidation` with a baseline after the first stable release.
-    * `IsAotCompatible`/`IsTrimmable` on .NET targets.
+    * Done: `IsAotCompatible`/`IsTrimmable` on .NET targets.
 
 - [ ] **22. English versions of user-facing docs** ([ADR-0009](adr/0009-documentation-language.md)): `README.en.md` (root and per package), `CONTRIBUTING.en.md`, with links from the Polish versions. Edit the prose with `/miodkuj` (Polish) and `/stop-slop` (English).
 

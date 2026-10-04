@@ -11,6 +11,12 @@
     <CodeAnalysisTreatWarningsAsErrors Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</CodeAnalysisTreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- Trimming and Native AOT analyzers (IL2xxx/IL3xxx) on the .NET targets; IsAotCompatible implies IsTrimmable.
+       netstandard2.0 doesn't support them (NETSDK1210). -->
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
   </ItemGroup>
