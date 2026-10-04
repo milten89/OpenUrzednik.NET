@@ -45,7 +45,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - Copy-pasted logic that should go into the shared pipeline.
 - `.editorconfig` conventions; tests follow the `partial` class / file-per-method / `Method_Condition_Expected` layout with a constant-seed Faker.
 - A new `src/` project is listed in `OpenUrzednik.Packages.slnf` (the NuGet workflows pack only that), and in `OpenUrzednik.slnx`.
-- CI: a renamed job in `build.yml` or `format.yml` means the ruleset's required checks must be updated (`docs/GITHUB-SETUP.md`).
+- CI: a renamed job in `build.yml`, `format.yml` or `dependency-review.yml` means the ruleset's required checks must be updated (`docs/GITHUB-SETUP.md`).
 
 ## Verify
 

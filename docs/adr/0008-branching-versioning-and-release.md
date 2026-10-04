@@ -41,3 +41,5 @@ Chosen option: "`feature/*` → `develop` → `main`, squash merges".
 ### Confirmation
 
 Ruleset and environments are documented in `docs/GITHUB-SETUP.md` and can be compared with `gh api repos/milten89/OpenUrzednik.NET/rulesets`.
+
+**2026-10-04 note (backlog item 25).** The required status checks are now `build` for every TFM, `test (net472)`, `format` and `dependency-review`, plus the CodeQL code scanning rule (query suite `security-and-quality`). The ruleset also requires signed commits; squash merges satisfy it because GitHub signs them. The `code_quality` rule was removed: GitHub Code Quality isn't available for the repository. [`GITHUB-SETUP.md`](../GITHUB-SETUP.md) lists the full configuration.
