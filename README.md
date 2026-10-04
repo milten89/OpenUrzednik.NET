@@ -1,5 +1,7 @@
 # OpenUrzednik.NET 💼🇵🇱
 
+🇬🇧 [English version](README.en.md)
+
 [![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Core?style=flat-square)](https://www.nuget.org/)
 [![License](https://img.shields.io/github/license/milten89/OpenUrzednik.NET?style=flat-square)](LICENSE)
 
@@ -71,9 +73,9 @@ catch (ValidationException ex)
 }
 ```
 
-### Uwaga o DI i klientach
+### Klienty i DI
 
-Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview — sposób tworzenia klientów jeszcze się zmieni, zob. [ADR-0007](docs/adr/0007-client-api-and-extensibility.md)). Rozszerzenia DI pojawią się w osobnych pakietach `*.DependencyInjection`. Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są szkieletami i nie ma ich w NuGet — prace nad nimi ruszą po ukończeniu pakietu NBP ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
+Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview). W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są szkieletami i nie ma ich w NuGet — prace nad nimi ruszą po ukończeniu pakietu NBP ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
 
 ### Testy
 

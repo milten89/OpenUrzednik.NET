@@ -1,5 +1,7 @@
 # OpenUrzednik.Nbp.DependencyInjection
 
+🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp.DependencyInjection/README.en.md)
+
 Rejestracja klientów **NBP** z [OpenUrzednik.Nbp](https://www.nuget.org/packages/OpenUrzednik.Nbp) w Microsoft.Extensions.DependencyInjection: klienty typowane z `IHttpClientFactory`, sprawdzane opcje, logowanie i śledzenie.
 
 > Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.

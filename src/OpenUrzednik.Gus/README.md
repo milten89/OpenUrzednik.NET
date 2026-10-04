@@ -1,5 +1,7 @@
 # OpenUrzednik.Gus
 
+🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Gus/README.en.md)
+
 Klient **GUS** (Główny Urząd Statystyczny) dla OpenUrzednik.NET — wyszukiwanie firm po REGON/NIP w rejestrze GUS.
 
 > Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.

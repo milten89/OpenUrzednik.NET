@@ -1,5 +1,7 @@
 # OpenUrzednik.Krs
 
+🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Krs/README.en.md)
+
 Klient **KRS** (Krajowy Rejestr Sądowy) dla OpenUrzednik.NET — wyszukiwanie spółek i podmiotów prawnych w Krajowym Rejestrze Sądowym.
 
 > Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
