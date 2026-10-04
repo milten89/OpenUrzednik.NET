@@ -64,11 +64,10 @@ Both use NuGet trusted publishing (OIDC via `NuGet/login`). The secret `NUGET_US
 | Private vulnerability reporting | on (linked from `SECURITY.md` and the issue chooser) |
 | Dependabot alerts | on |
 | Dependabot security updates | on |
-| Dependabot version updates | `.github/dependabot.yml` (weekly, NuGet + GitHub Actions, target `develop`) |
+| Dependabot version updates | `.github/dependabot.yml` (weekly, NuGet + GitHub Actions, target `develop`); version updates of `*.Abstractions` are ignored (ADR-0004); a vulnerability in one always shows as a Dependabot alert |
 | Secret scanning | on |
-| Secret scanning: non-provider patterns (private keys, connection strings, …) | on |
-| Secret scanning: validity checks | on |
 | Push protection | on |
+| Secret scanning: non-provider patterns, validity checks | not available (`disabled` in `security_and_analysis`): the settings page of a personal account's public repository doesn't offer them; they need GitHub Secret Protection on an organization |
 | Code scanning | CodeQL Advanced workflow (`.github/workflows/codeql.yml`), query suite `security-and-quality` |
 | Dependency review | `.github/workflows/dependency-review.yml`: fails a PR that adds a package with a known vulnerability of moderate severity or higher |
 

@@ -12,11 +12,13 @@ updates:
     labels: [ "dependencies" ]
     commit-message:
       prefix: "chore(deps)"
+    # Abstractions stay at their lowest supported version (ADR-0004): x.0.0 of the oldest .NET target's major. A version
+    # update would break that rule except for a vulnerability fix (#41, #56), so none are opened. A vulnerability still shows as a Dependabot
+    # alert; then raise the version by hand to the first fixed patch.
+    ignore:
+      - dependency-name: "*.Abstractions"
+        update-types: [ "version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch" ]
     groups:
-      # Abstractions stay at their lowest supported version (ADR-0004). Their own group gives a raise a PR of its own,
-      # which the maintainer must answer explicitly, without holding back the implementation updates below.
-      abstractions:
-        patterns: [ "*.Abstractions" ]
       microsoft-extensions:
         patterns: [ "Microsoft.Extensions.*", "System.*" ]
         exclude-patterns: [ "*.Abstractions" ]
