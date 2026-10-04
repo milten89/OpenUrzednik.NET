@@ -91,7 +91,8 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Public models are `sealed record`s with `IReadOnlyList<T>` collections. Records holding lists override `Equals`/`GetHashCode` (see `Currency/CurrencyExchangeRates.cs`).
 - DTOs are `internal sealed class` in `Dto/`, with `[JsonPropertyName]`. Mark a property `required` **only if the real API always returns it**: check with `/verify-api`.
 - Mappers are `internal static class Mapper` per area. Validators derive from `ValueValidator<T>` in `Validation/` and are `internal sealed`.
-- Public API needs `///` XML docs. Mention API limits (date ranges, top count, publication schedule).
+- Public API needs `///` XML docs: a missing one is warning CS1591 in `src/`, and CI treats every warning as an error (`TreatWarningsAsErrors` when `ContinuousIntegrationBuild`; NuGet vulnerability warnings excepted). Mention API limits (date ranges, top count, publication schedule).
+- Library code stays trimming- and Native AOT-safe: the .NET targets set `IsAotCompatible`, so reflection-based APIs show up as IL2xxx/IL3xxx warnings.
 - Large clients are split into `partial` files by area (`NbpCurrencyExchangeRateClient.BuySell.cs`).
 - Messages and logs are in English. Format dates invariantly (`yyyy-MM-dd`).
 

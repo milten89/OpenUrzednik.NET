@@ -7,6 +7,7 @@ namespace OpenUrzednik.Core.Errors;
 /// </summary>
 public sealed class ValidationError : OpenUrzednikError
 {
+    /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
     public const string ErrorCode = "validationError";
 
     private readonly string _ruleName;

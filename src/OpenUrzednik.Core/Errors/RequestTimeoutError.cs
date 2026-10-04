@@ -11,6 +11,7 @@ namespace OpenUrzednik.Core.Errors;
 /// <param name="exception">The exception that signalled the timeout, if any.</param>
 public sealed class RequestTimeoutError(string message, TimeSpan? timeout = null, Exception? exception = null) : OpenUrzednikError(ErrorCode, message)
 {
+    /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
     public const string ErrorCode = "requestTimeout";
 
     /// <summary>

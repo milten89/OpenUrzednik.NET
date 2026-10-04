@@ -10,6 +10,7 @@ namespace OpenUrzednik.Core.Errors;
 /// <param name="statusCode">HTTP status code of the response that caused the error, if any.</param>
 public sealed class BadRequestError(string message, int? statusCode = null) : OpenUrzednikError(ErrorCode, message, statusCode)
 {
+    /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
     public const string ErrorCode = "badRequest";
 
     /// <inheritdoc />

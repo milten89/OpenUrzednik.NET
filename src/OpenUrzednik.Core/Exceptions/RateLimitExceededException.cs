@@ -7,6 +7,10 @@ namespace OpenUrzednik.Core.Exceptions;
 /// </summary>
 public sealed class RateLimitExceededException : OpenUrzednikException
 {
+    /// <summary>
+    /// How long to wait before retrying, from the response's <c>Retry-After</c> header; <see langword="null"/> when the server didn't say.
+    /// A date in the header is converted to a delay from the response's <c>Date</c> header (or now), so a past date gives a negative value.
+    /// </summary>
     public TimeSpan? RetryAfter { get; }
 
     /// <summary>
