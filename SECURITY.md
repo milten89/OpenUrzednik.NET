@@ -1,12 +1,14 @@
 # Security Policy
 
+🇬🇧 [English version](SECURITY.en.md)
+
 Jeśli znajdziesz podatność bezpieczeństwa w OpenUrzednik.NET (np. sposób na wyciek klucza API, podatność SSRF przez skonstruowany URL, albo problem z walidacją danych z odpowiedzi urzędów), **nie zgłaszaj jej przez publiczne issue**.
 
 Zamiast tego użyj zakładki **Security → Report a vulnerability** w tym repozytorium (GitHub Private Vulnerability Reporting) albo napisz bezpośrednio do opiekuna repozytorium.
 
 Postaraj się opisać:
 
-- który pakiet (Core/Gus/Krs/Mf/Nbp) i wersję,
+- który pakiet (np. Core, Http, Nbp) i wersję,
 - kroki do odtworzenia,
 - potencjalny wpływ.
 

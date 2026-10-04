@@ -1,5 +1,7 @@
 # Contributing to OpenUrzednik.NET
 
+🇬🇧 [English version](CONTRIBUTING.en.md)
+
 ## Zanim zaczniesz
 
 - Sprawdź [issues](../../issues) — może ktoś już nad tym pracuje.

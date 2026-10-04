@@ -1,5 +1,7 @@
 # OpenUrzednik.Extensions.Logging
 
+🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Extensions.Logging/README.en.md)
+
 Adapter, który przekazuje logi klientów **OpenUrzednik.NET** do `ILogger` z Microsoft.Extensions.Logging.
 
 > Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
