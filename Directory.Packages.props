@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <!--
-    Versions of packages the libraries depend on follow ADR-0004:
+    Versions of packages the published libraries (src/) depend on follow ADR-0004. Tests and tooling always take the latest version.
     * Abstractions (API contracts under semantic versioning): the LOWEST version that provides the API we use,
       i.e. x.0.0 of the major matching our oldest .NET target (currently 8.0.0); a later patch only for a known vulnerability.
       It is a minimum for every app, so a higher one would force upgrades on them.
