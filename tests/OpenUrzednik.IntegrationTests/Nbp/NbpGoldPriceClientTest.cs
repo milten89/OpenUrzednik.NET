@@ -18,7 +18,7 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     }
 
     [ManualFact]
-    public async Task GetLatestAsync_ReturnLatestGoldPrice()
+    public async Task GetLatestAsync_AnyDay_ReturnsPriceNotAfterToday()
     {
         // Arrange
 
@@ -31,32 +31,38 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
         result.Value.Price.ShouldBeGreaterThan(0m);
     }
 
+    // Today's price exists only after the publication on a business day; before it, and on weekends and holidays, the API returns 404.
+    // Asking for the latest price first tells which case applies, without relying on the publication hour.
     [ManualFact]
-    public async Task GetTodayAsync_ReturnTodayGoldPrice()
+    public async Task GetTodayAsync_AnyDay_ReturnsTodaysPriceOnlyWhenPublished()
     {
         // Arrange
+        var today = WarsawToday();
+        var latest = await _client.GetLatestAsync(TestContext.Current.CancellationToken);
+        latest.IsSuccess.ShouldBeTrue();
 
         // Act
-        var result = await _client.GetLatestAsync(TestContext.Current.CancellationToken);
+        var result = await _client.GetTodayAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        var today = WarsawToday();
-        if (today.DayOfWeek == DayOfWeek.Saturday ||
-            today.DayOfWeek == DayOfWeek.Sunday)
+        if (latest.Value.Date == today)
         {
-            result.IsFailure.ShouldBeTrue();
-            result.Errors.ShouldContain(x => x is NotFoundError, 1);
+            result.IsSuccess.ShouldBeTrue();
+            result.Value.ShouldBe(latest.Value);
+        }
+        else if (result.IsSuccess)
+        {
+            // Published between the two calls.
+            result.Value.Date.ShouldBe(today);
         }
         else
         {
-            result.IsSuccess.ShouldBeTrue();
-            result.Value.Date.ShouldBeLessThanOrEqualTo(today);
-            result.Value.Price.ShouldBeGreaterThan(0m);
+            result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
         }
     }
 
     [ManualFact]
-    public async Task GetTopCountAsync_ReturnLatestXTopCountGoldPrice()
+    public async Task GetTopCountAsync_Five_ReturnsFivePrices()
     {
         // Arrange
         const int topCount = 5;
@@ -70,22 +76,35 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     }
 
     [ManualFact]
-    public async Task GetAsync_ReturnGoldPriceFromSelectedDate()
+    public async Task GetAsync_PastBusinessDay_ReturnsThatDaysPrice()
     {
         // Arrange
-        var today = WarsawToday();
+        var date = new DateOnly(2026, 10, 2); // a Friday; published prices don't change
 
         // Act
-        var result = await _client.GetAsync(today, TestContext.Current.CancellationToken);
+        var result = await _client.GetAsync(date, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.Date.ShouldBeLessThanOrEqualTo(today);
-        result.Value.Price.ShouldBeGreaterThan(0m);
+        result.Value.Date.ShouldBe(date);
+        result.Value.Price.ShouldBe(517.55m);
     }
 
     [ManualFact]
-    public async Task GetAsync_ReturnGoldPriceFromSelectedDateRange()
+    public async Task GetAsync_Weekend_ReturnsNotFound()
+    {
+        // Arrange
+        var date = new DateOnly(2026, 10, 3); // a Saturday
+
+        // Act
+        var result = await _client.GetAsync(date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
+    }
+
+    [ManualFact]
+    public async Task GetAsync_LastTenDays_ReturnsThePricesInTheRange()
     {
         // Arrange
         var daysBefore = 10;
@@ -97,7 +116,8 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.Count.ShouldBeLessThan(daysBefore);
+        result.Value.Count.ShouldBeInRange(1, daysBefore - 1); // 11 days hold at most 9 business days
+        result.Value.ShouldAllBe(x => x.Date >= before && x.Date <= today);
     }
 
     private static DateOnly WarsawToday()
