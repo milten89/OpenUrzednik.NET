@@ -16,4 +16,4 @@ dotnet run --project samples/OpenUrzednik.Samples.Console -f net10.0
 dotnet run --project samples/OpenUrzednik.Samples.WebApi -f net10.0
 ```
 
-Web API odpowiada m.in. na `/gold/latest`, `/rates/USD?last=5` i `/tables/c/latest`. Zapytanie `/rates/USD?last=0` zwraca 400 z błędem walidacji, a brak danych 404.
+Web API słucha na `http://localhost:5000` i odpowiada m.in. na `/gold/latest`, `/rates/USD?topCount=5` i `/tables/c/latest`. Zapytanie `/rates/USD?topCount=0` zwraca 400 z błędem walidacji, a brak danych 404.

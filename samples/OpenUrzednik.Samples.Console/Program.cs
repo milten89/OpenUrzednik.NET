@@ -8,6 +8,7 @@ using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Table;
 
+// Only for this output: decimal points and ISO dates regardless of the machine's culture. The library doesn't need it.
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
 // One HttpClient for the whole app; the clients don't change it, so it can be shared.
@@ -37,6 +38,10 @@ if (tableC.TryGetValue(out var table))
     Console.WriteLine($"Table {table.TableId}, traded {table.TradingDate:yyyy-MM-dd}:");
     foreach (var rate in table.Rates.Take(3))
         Console.WriteLine($"  {rate.CurrencyCode}: bid {rate.Bid}, ask {rate.Ask}");
+}
+else
+{
+    Console.WriteLine($"Table C unavailable: {tableC.Errors[0].Message}");
 }
 
 // 4. Invalid input is checked before any request is sent: the result holds a ValidationError.

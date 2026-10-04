@@ -16,4 +16,4 @@ dotnet run --project samples/OpenUrzednik.Samples.Console -f net10.0
 dotnet run --project samples/OpenUrzednik.Samples.WebApi -f net10.0
 ```
 
-The Web API answers `/gold/latest`, `/rates/USD?last=5` and `/tables/c/latest`, among others. `/rates/USD?last=0` returns 400 with a validation error, and missing data returns 404.
+The Web API listens on `http://localhost:5000` and answers `/gold/latest`, `/rates/USD?topCount=5` and `/tables/c/latest`, among others. `/rates/USD?topCount=0` returns 400 with a validation error, and missing data returns 404.
