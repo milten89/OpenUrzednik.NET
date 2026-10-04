@@ -126,14 +126,14 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
     public async Task GetLatestAsync_Timeout_ReturnsRequestTimeoutError()
     {
         // Arrange
-        _server.GivenDelay(BasePath, TimeSpan.FromSeconds(5));
+        _server.GivenSlowResponse(BasePath);
         var stopwatch = Stopwatch.StartNew();
 
         // Act
         var result = await CreateSut(timeout: TimeSpan.FromSeconds(0.1)).GetLatestAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(2));
+        stopwatch.Elapsed.ShouldBeLessThan(NbpWireMockServerExtensions.GaveUpWithin);
         result.IsFailure.ShouldBeTrue();
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(TimeSpan.FromSeconds(0.1));
     }
@@ -142,7 +142,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
     public async Task GetLatestAsync_CancelledBeforeTimeout_ThrowsOperationCanceledException()
     {
         // Arrange
-        _server.GivenDelay(BasePath, TimeSpan.FromSeconds(5));
+        _server.GivenSlowResponse(BasePath);
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(TimeSpan.FromMilliseconds(100));
         var stopwatch = Stopwatch.StartNew();
@@ -151,7 +151,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
         await Should.ThrowAsync<OperationCanceledException>(async () => await CreateSut().GetLatestAsync(cts.Token));
 
         // Assert
-        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(1));
+        stopwatch.Elapsed.ShouldBeLessThan(NbpWireMockServerExtensions.GaveUpWithin);
     }
 
     public void Dispose()

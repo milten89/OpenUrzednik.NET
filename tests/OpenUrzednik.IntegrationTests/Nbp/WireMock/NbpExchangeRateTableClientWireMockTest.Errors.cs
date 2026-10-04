@@ -148,14 +148,14 @@ public partial class NbpExchangeRateTableClientWireMockTest
     public async Task GetLatestAsync_Timeout_ReturnsRequestTimeoutError()
     {
         // Arrange
-        _server.GivenDelay($"{BasePath}/a", TimeSpan.FromSeconds(5));
+        _server.GivenSlowResponse($"{BasePath}/a");
         var stopwatch = Stopwatch.StartNew();
 
         // Act
         var result = await CreateSut(timeout: TimeSpan.FromSeconds(0.1)).GetLatestAsync(TableType.A, TestContext.Current.CancellationToken);
 
         // Assert
-        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(2));
+        stopwatch.Elapsed.ShouldBeLessThan(NbpWireMockServerExtensions.GaveUpWithin);
         result.IsFailure.ShouldBeTrue();
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(TimeSpan.FromSeconds(0.1));
     }

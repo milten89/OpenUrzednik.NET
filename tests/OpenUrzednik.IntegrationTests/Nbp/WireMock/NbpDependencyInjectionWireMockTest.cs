@@ -108,7 +108,7 @@ public sealed class NbpDependencyInjectionWireMockTest : IDisposable
     public async Task GetLatestAsync_StandardHandlerTimesOut_ReturnsRequestTimeoutError()
     {
         // Arrange
-        _server.GivenDelay(Path, TimeSpan.FromSeconds(5));
+        _server.GivenSlowResponse(Path);
         var sut = CreateSut(builder => builder.AddStandardResilienceHandler(options =>
         {
             options.AttemptTimeout.Timeout = TimeSpan.FromMilliseconds(200);
@@ -121,7 +121,7 @@ public sealed class NbpDependencyInjectionWireMockTest : IDisposable
         var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(3));
+        stopwatch.Elapsed.ShouldBeLessThan(NbpWireMockServerExtensions.GaveUpWithin);
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>();
         // The handler's limit isn't HttpClient.Timeout or the request deadline, so the error doesn't name one.
         error.Timeout.ShouldBeNull();

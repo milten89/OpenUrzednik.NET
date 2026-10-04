@@ -134,7 +134,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
     public async Task GetLatestAsync_Timeout_ReturnsRequestTimeoutError()
     {
         // Arrange
-        _server.GivenDelay($"{BasePath}/a/{CurrencyCode}", TimeSpan.FromSeconds(5));
+        _server.GivenSlowResponse($"{BasePath}/a/{CurrencyCode}");
         var stopwatch = Stopwatch.StartNew();
 
         // Act
@@ -142,7 +142,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
             .GetLatestAsync(CurrencyCode, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(2));
+        stopwatch.Elapsed.ShouldBeLessThan(NbpWireMockServerExtensions.GaveUpWithin);
         result.IsFailure.ShouldBeTrue();
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBe(TimeSpan.FromSeconds(0.1));
     }
