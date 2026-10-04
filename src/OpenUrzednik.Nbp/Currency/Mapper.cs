@@ -40,6 +40,6 @@ internal static class Mapper
     {
         NbpPayload.EnsurePresent(dto, "item");
 
-        return new CurrencyBuySellRate(dto.TableId, dto.PublicationDate, dto.Buy, dto.Sell);
+        return new CurrencyBuySellRate(dto.TableId, dto.PublicationDate, dto.Ask, dto.Bid);
     }
 }

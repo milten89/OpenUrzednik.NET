@@ -4,31 +4,31 @@ using Shouldly;
 
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
-// The table fixtures keep the first 3 of the 13 table C rates. Buy is the API's 'ask' rate and Sell its 'bid' rate.
+// The table fixtures keep the first 3 of the 13 table C rates.
 public partial class NbpExchangeRateTableClientWireMockTest
 {
     private static readonly BuySellExchangeRateTable Table189C = new("189/C/NBP/2026", new DateOnly(2026, 9, 28), new DateOnly(2026, 9, 29), [
-        new TableBuySellRate("dolar amerykański", "USD", Buy: 3.8814m, Sell: 3.8046m),
-        new TableBuySellRate("dolar australijski", "AUD", Buy: 2.7272m, Sell: 2.6732m),
-        new TableBuySellRate("dolar kanadyjski", "CAD", Buy: 2.7399m, Sell: 2.6857m),
+        new TableBuySellRate("dolar amerykański", "USD", Ask: 3.8814m, Bid: 3.8046m),
+        new TableBuySellRate("dolar australijski", "AUD", Ask: 2.7272m, Bid: 2.6732m),
+        new TableBuySellRate("dolar kanadyjski", "CAD", Ask: 2.7399m, Bid: 2.6857m),
     ]);
 
     private static readonly BuySellExchangeRateTable Table190C = new("190/C/NBP/2026", new DateOnly(2026, 9, 29), new DateOnly(2026, 9, 30), [
-        new TableBuySellRate("dolar amerykański", "USD", Buy: 3.8910m, Sell: 3.8140m),
-        new TableBuySellRate("dolar australijski", "AUD", Buy: 2.7203m, Sell: 2.6665m),
-        new TableBuySellRate("dolar kanadyjski", "CAD", Buy: 2.7418m, Sell: 2.6876m),
+        new TableBuySellRate("dolar amerykański", "USD", Ask: 3.8910m, Bid: 3.8140m),
+        new TableBuySellRate("dolar australijski", "AUD", Ask: 2.7203m, Bid: 2.6665m),
+        new TableBuySellRate("dolar kanadyjski", "CAD", Ask: 2.7418m, Bid: 2.6876m),
     ]);
 
     private static readonly BuySellExchangeRateTable Table191C = new("191/C/NBP/2026", new DateOnly(2026, 9, 30), new DateOnly(2026, 10, 1), [
-        new TableBuySellRate("dolar amerykański", "USD", Buy: 3.8811m, Sell: 3.8043m),
-        new TableBuySellRate("dolar australijski", "AUD", Buy: 2.7004m, Sell: 2.6470m),
-        new TableBuySellRate("dolar kanadyjski", "CAD", Buy: 2.7365m, Sell: 2.6823m),
+        new TableBuySellRate("dolar amerykański", "USD", Ask: 3.8811m, Bid: 3.8043m),
+        new TableBuySellRate("dolar australijski", "AUD", Ask: 2.7004m, Bid: 2.6470m),
+        new TableBuySellRate("dolar kanadyjski", "CAD", Ask: 2.7365m, Bid: 2.6823m),
     ]);
 
     private static readonly BuySellExchangeRateTable Table192C = new("192/C/NBP/2026", new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 2), [
-        new TableBuySellRate("dolar amerykański", "USD", Buy: 3.9115m, Sell: 3.8341m),
-        new TableBuySellRate("dolar australijski", "AUD", Buy: 2.7191m, Sell: 2.6653m),
-        new TableBuySellRate("dolar kanadyjski", "CAD", Buy: 2.7478m, Sell: 2.6934m),
+        new TableBuySellRate("dolar amerykański", "USD", Ask: 3.9115m, Bid: 3.8341m),
+        new TableBuySellRate("dolar australijski", "AUD", Ask: 2.7191m, Bid: 2.6653m),
+        new TableBuySellRate("dolar kanadyjski", "CAD", Ask: 2.7478m, Bid: 2.6934m),
     ]);
 
     [Fact]
