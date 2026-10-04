@@ -27,6 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+    <!-- Fallback for a project without its own README.md; each package's own README is packed by its csproj. -->
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false"
+          Condition="!Exists('$(MSBuildProjectDirectory)\README.md')" />
   </ItemGroup>
 </Project>
