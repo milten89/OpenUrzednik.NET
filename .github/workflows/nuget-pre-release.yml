@@ -47,9 +47,10 @@ jobs:
 
       - name: Restore & Build & Pack
         run: |
-          dotnet restore OpenUrzednik.slnx
-          dotnet build OpenUrzednik.slnx --configuration Release --no-restore
-          dotnet pack OpenUrzednik.slnx --configuration Release --no-build --output ./artifacts
+          # Only the packages (src/): the test projects also target net472, which this Linux job doesn't need to build.
+          dotnet restore OpenUrzednik.Packages.slnf
+          dotnet build OpenUrzednik.Packages.slnf --configuration Release --no-restore
+          dotnet pack OpenUrzednik.Packages.slnf --configuration Release --no-build --output ./artifacts
 
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0

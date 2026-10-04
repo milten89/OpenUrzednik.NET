@@ -111,6 +111,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Commit or push only when asked. Keep one backlog item per PR.
 - If a change contradicts an accepted ADR, stop and use `/adr` instead of working around it. Until the first stable release, accepted ADRs are changed in place with a dated note (ADR-0001); from 1.0 on, a new superseding ADR.
 - Before opening a PR, run the `reviewer` agent on the diff.
+- The NuGet workflows build and pack `OpenUrzednik.Packages.slnf` (the `src/` projects only). **A new `src/` project must be added to it**, or it isn't published.
 - **CI job names are required status checks in the GitHub ruleset.** If you rename a job in `.github/workflows/build.yml` or `format.yml`, say so: the ruleset must be updated (see `docs/GITHUB-SETUP.md`).
 - Language ([ADR-0009](docs/adr/0009-documentation-language.md)): code, ADRs and technical docs are in English. User-facing docs (README, CONTRIBUTING) are in Polish and link to an English version. Update both versions together.
 - Prose style: when you write or edit a README (root or per package), run `/miodkuj` on the Polish version (`README.md`) and `/stop-slop` on the English version (`README.en.md`). Use the same skills for `CONTRIBUTING`, `SECURITY` and other user-facing prose. Edit only the prose: keep code blocks, commands, package and API names, badges, links and numbers exactly as they are.
