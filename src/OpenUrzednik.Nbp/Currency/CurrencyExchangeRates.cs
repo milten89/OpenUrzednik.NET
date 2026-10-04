@@ -1,7 +1,7 @@
 namespace OpenUrzednik.Nbp.Currency;
 
 /// <summary>
-/// Currency exchange rates
+/// Mid (NBP average) exchange rates of one currency from NBP table A or B
 /// </summary>
 /// <param name="CurrencyName">Currency name</param>
 /// <param name="CurrencyCode">ISO 4217 currency code</param>
