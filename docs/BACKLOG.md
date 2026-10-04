@@ -95,7 +95,7 @@ How to use this file:
 
 ## P3: Repository and quality
 
-- [ ] **19. Skeleton packages are published empty.** Set `IsPackable=false` for Gus, Krs and Mf ([ADR-0010](adr/0010-provider-readiness-gate.md)), Their empty test projects were removed in #35: under Microsoft.Testing.Platform a test project with no tests fails the run (exit code 8). Add a test project together with a provider's first tests.
+- [x] **19. Skeleton packages are published empty.** Set `IsPackable=false` for Gus, Krs and Mf ([ADR-0010](adr/0010-provider-readiness-gate.md)). Their empty test projects were removed in #35: under Microsoft.Testing.Platform a test project with no tests fails the run (exit code 8). Add a test project together with a provider's first tests. Done in #52: the three projects set `IsPackable=false`; they still build, and `dotnet pack OpenUrzednik.Packages.slnf` produces only the six real packages, and the READMEs say they aren't on NuGet. The empty versions already on nuget.org can be unlisted by the maintainer. Remove the property when a provider passes the gate.
 
 - [ ] **20. Redundant SourceLink package.** The NU1902 warning is gone since #12 (`Microsoft.SourceLink.GitHub` 10.0.401), but SourceLink ships with the .NET 8+ SDK, so the `PackageReference` in `Directory.Build.props` can still be removed.
 
