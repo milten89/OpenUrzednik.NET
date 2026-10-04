@@ -1,13 +1,17 @@
+using System.Net;
+
 using Microsoft.Extensions.Time.Testing;
 
 using NSubstitute;
 
+using OpenUrzednik.Core.Errors;
+
 using OpenUrzednik.Core.Telemetry;
-using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Options;
+using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
-using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
@@ -32,41 +36,93 @@ public partial class NbpCurrencyExchangeRateClientTest
     }
 
     [Fact]
-    public void Ctor_HttpClientOnly_UsesDefaults()
+    public async Task Ctor_HttpClientOnly_SendsRequestsToTheDefaultApiUrl()
     {
         // Arrange
-        using var httpClient = new HttpClient();
-
-        // Act
+        var handler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var httpClient = new HttpClient(handler);
         var sut = new NbpCurrencyExchangeRateClient(httpClient);
 
+        // Act
+        await sut.GetLatestAsync("USD", TableType.A, TestContext.Current.CancellationToken);
+
         // Assert
-        sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(TimeProvider.System);
-        var telemetryProvider = sut.GetPrivateField<OpenUrzednikTelemetry>("_telemetryProvider");
-        telemetryProvider.Logger.ShouldBeSameAs(NullOpenUrzednikLogger.Instance);
-        telemetryProvider.TraceSource.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
-        sut.GetPrivateField<INbpUrlBuilderFactory>("_urlBuilderFactory").ShouldBeOfType<NbpUrlBuilderFactory>();
+        handler.Request.ShouldNotBeNull().RequestUri.ShouldBe(new Uri("https://api.nbp.pl/api/exchangerates/rates/a/USD"));
     }
 
     [Fact]
-    public void Ctor_CustomComponents_UsesThem()
+    public async Task Ctor_HttpClientOnly_ValidatesDatesAgainstTheSystemClock()
     {
         // Arrange
-        using var httpClient = new HttpClient();
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        var timeProvider = new FakeTimeProvider();
-        var logger = Substitute.For<IOpenUrzednikLogger>();
-        var traceSource = Substitute.For<IOpenUrzednikTraceSource>();
+        // Warsaw's date is the UTC date or the next day, so yesterday (UTC) is always past and the day after tomorrow always future.
+        var utcToday = DateOnly.FromDateTime(DateTime.UtcNow);
+        var pastHandler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var pastHttpClient = new HttpClient(pastHandler);
+        var futureHandler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var futureHttpClient = new HttpClient(futureHandler);
 
         // Act
-        var sut = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions(), urlBuilderFactory, timeProvider, logger, traceSource);
+        await new NbpCurrencyExchangeRateClient(pastHttpClient).GetAsync("USD", utcToday.AddDays(-1), cancellationToken: TestContext.Current.CancellationToken);
+        var future = await new NbpCurrencyExchangeRateClient(futureHttpClient).GetAsync("USD", utcToday.AddDays(2), cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        sut.GetPrivateField<TimeProvider>("_timeProvider").ShouldBeSameAs(timeProvider);
-        var telemetryProvider = sut.GetPrivateField<OpenUrzednikTelemetry>("_telemetryProvider");
-        telemetryProvider.Logger.ShouldBeSameAs(logger);
-        telemetryProvider.TraceSource.ShouldBeSameAs(traceSource);
-        sut.GetPrivateField<INbpUrlBuilderFactory>("_urlBuilderFactory").ShouldBeSameAs(urlBuilderFactory);
+        pastHandler.Request.ShouldNotBeNull();
+        future.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        futureHandler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Ctor_CustomUrlBuilderFactory_SendsRequestsToItsUrls()
+    {
+        // Arrange
+        var handler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var httpClient = new HttpClient(handler);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.Latest().Returns("https://custom.example.com/latest");
+        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
+        urlBuilderFactory.GetCurrencyBuilder(Arg.Any<NbpTable>(), Arg.Any<string>()).Returns(urlBuilder);
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, urlBuilderFactory: urlBuilderFactory);
+
+        // Act
+        await sut.GetLatestAsync("USD", TableType.A, TestContext.Current.CancellationToken);
+
+        // Assert
+        handler.Request.ShouldNotBeNull().RequestUri.ShouldBe(new Uri("https://custom.example.com/latest"));
+    }
+
+    [Fact]
+    public async Task Ctor_CustomTimeProvider_ValidatesDatesAgainstIt()
+    {
+        // Arrange
+        var handler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var httpClient = new HttpClient(handler);
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, timeProvider: new FakeTimeProvider(new DateTimeOffset(2100, 1, 1, 12, 0, 0, TimeSpan.Zero)));
+        var futureForTheSystemClock = new DateOnly(2099, 6, 1);
+
+        // Act
+        var result = await sut.GetAsync("USD", futureForTheSystemClock, cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>(); // from the stub
+        handler.Request.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task Ctor_CustomTelemetry_LogsAndTracesThroughIt()
+    {
+        // Arrange
+        var handler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var httpClient = new HttpClient(handler);
+        var (logger, _, tracer) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, logger: logger, traceSource: tracer);
+
+        // Act
+        await sut.GetAsync("USD", new DateOnly(1990, 1, 1), cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        tracer.Received(1).StartSpan(Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", Arg.Any<string>());
     }
 
     [Fact]
