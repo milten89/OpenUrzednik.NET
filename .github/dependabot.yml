@@ -16,7 +16,7 @@ updates:
       # Abstractions stay at their lowest supported version (ADR-0004). Their own group gives a raise a PR of its own,
       # which the maintainer must answer explicitly, without holding back the implementation updates below.
       abstractions:
-        patterns: [ "*.Abstractions", "Polly.Core" ]
+        patterns: [ "*.Abstractions" ]
       microsoft-extensions:
         patterns: [ "Microsoft.Extensions.*", "System.*" ]
         exclude-patterns: [ "*.Abstractions" ]
