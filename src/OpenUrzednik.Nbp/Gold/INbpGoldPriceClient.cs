@@ -7,7 +7,7 @@ namespace OpenUrzednik.Nbp.Gold;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Gold prices are published on business days in Poland.
+/// Gold prices are published on business days in Poland, at about 8:00 (Europe/Warsaw time). NBP doesn't document the hour; it was observed on the API.
 /// </para>
 /// <para>
 /// Dates are <c>DateOnly</c> on .NET and <see cref="System.DateTime"/> on netstandard2.0 (.NET Framework), where only the date part
@@ -20,7 +20,7 @@ public interface INbpGoldPriceClient
     /// Gets the latest gold price.
     /// </summary>
     /// <remarks>
-    /// Gold prices are published on business days in Poland.
+    /// Gold prices are published on business days in Poland, at about 8:00 (Europe/Warsaw time).
     /// Returns the most recently published value; until the next publication that is the previous one.
     /// </remarks>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -39,7 +39,7 @@ public interface INbpGoldPriceClient
     /// Gets today's gold price. If the gold price is not published yet for today, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
     /// </summary>
     /// <remarks>
-    /// Gold prices are published on business days in Poland.
+    /// Gold prices are published on business days in Poland, at about 8:00 (Europe/Warsaw time).
     /// Until today's publication, and on days without one, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>; use <see cref="GetLatestAsync"/> to get the most recent published value.
     /// </remarks>
     /// <param name="cancellationToken">Cancellation token</param>
