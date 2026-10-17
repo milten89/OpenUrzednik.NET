@@ -110,7 +110,8 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 
 ## Workflow
 
-- Branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`). PRs target `develop` and are squash-merged. Releases go from a `release/X.Y` branch, made from `develop`, into `main` ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
+- Branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`). PRs target `develop` and are merged with a merge commit (squash is disabled). Releases go from a `release/X.Y` branch, made from `develop`, into `main` ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
+- A fix for a released version follows the hotfix procedure in [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md): `hotfix/…` from the `vX.Y.Z` tag, the next patch in `version.json`, a PR into `main`, then the back-merge into `develop` through a `merge/vX.Y.Z` branch.
 - Commit or push only when asked. One issue per PR (see "Issues and the project").
 - If a change contradicts an accepted ADR, stop and use `/adr` instead of working around it. Until the first stable release, accepted ADRs are changed in place with a dated note (ADR-0001); from 1.0 on, a new superseding ADR.
 - Before opening a PR, run the `reviewer` agent on the diff.

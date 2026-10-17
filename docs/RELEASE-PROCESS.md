@@ -6,7 +6,8 @@
 - **`develop`** — protected, PR-only. All feature work lands here; publishes pre-release packages.
 - **`release/X.Y`** — made from `develop` for a release; its PR goes into `main`.
 - **`hotfix/…`** — made from a release tag for a fix to the released version; its PR goes into `main`.
-- PR merge strategy: **squash**.
+- **`merge/vX.Y.Z`** — made from `main` after a release or hotfix, to bring `main` back into `develop`.
+- PR merge strategy: **merge commits** (squash and rebase are disabled).
 
 ## Versioning
 
@@ -24,7 +25,7 @@ All published packages share one version (lockstep, [ADR-0008](adr/0008-branchin
 
 ## Day-to-day flow
 
-1. Work happens on feature branches → PR (squash) into `develop`.
+1. Work happens on feature branches → PR (merge commit) into `develop`.
 2. Merge into `develop` → if the merge changes a package input, `nuget-pre-release.yml` publishes a preview of every package, all with the same, new version. Its `paths` filter is the `pathFilters` list, so merges that change only docs, tests or CI publish nothing, and each published preview sorts above the one before. A Dependabot bump of a test-only package still publishes a preview, because `Directory.Packages.props` also holds the versions of the packages' own dependencies.
 3. A release follows the steps below.
 
@@ -45,9 +46,9 @@ All published packages share one version (lockstep, [ADR-0008](adr/0008-branchin
    ```
 
    Every `.nupkg` in `artifacts/release` must have the version `1.1.0`.
-4. Open a PR from `release/X.Y` into `main`, once the release's milestone has no open issues ([`GITHUB-SETUP.md`](GITHUB-SETUP.md#milestones)).
-5. Merge → `nuget-release.yml` publishes every package as `1.1.0`, tags the repo `v1.1.0` and creates one GitHub Release. It stops before publishing if the version still has a prerelease suffix, if the packages don't share one version, or if that version was already released from another commit.
-6. Bring `main` back into `develop`, and set `develop`'s `version.json` to the next minor (`"1.2.0-preview.{height}"`).
+4. Open a PR from `release/X.Y` into `main` (label `skip-changelog`; its contents are already listed by their own PRs), once the release's milestone has no open issues ([`GITHUB-SETUP.md`](GITHUB-SETUP.md#milestones)).
+5. Merge (merge commit) → `nuget-release.yml` publishes every package as `1.1.0`, tags the repo `v1.1.0` and creates one GitHub Release. It stops before publishing if the version still has a prerelease suffix, if the packages don't share one version, or if that version was already released from another commit.
+6. Back-merge (below), setting `develop`'s `version.json` to the next minor (`"1.2.0-preview.{height}"`).
 
 ## Hotfix procedure (main = 1.0, develop = 1.1)
 
@@ -62,9 +63,30 @@ branch-naming**. The full process:
    ```
 
 2. Set the root `version.json` to the next patch, `"1.0.1"`. NBGV doesn't raise the patch by itself: a version with three parts is used as written, and the git height goes only into the assembly file version.
-3. Fix the bug, open a PR **hotfix → `main`** (required, since `main` is protected).
-4. Merge → `nuget-release.yml` publishes `1.0.1`, tags `v1.0.1`, creates the GitHub Release.
-5. Open a separate PR / cherry-pick of the same fix **into `develop`**, so the bug doesn't resurface in the upcoming `1.1` (this is not a release — it's just propagating the change; `develop` will publish another preview build containing the fix).
+3. Fix the bug, open a PR **hotfix → `main`** (required, since `main` is protected), labelled `bug`.
+4. Merge (merge commit) → `nuget-release.yml` publishes `1.0.1`, tags `v1.0.1`, creates the GitHub Release.
+5. Back-merge (below), so the fix reaches `develop`. `develop` keeps its own version (e.g. `"1.1.0-preview.{height}"`).
+
+## Back-merge after a release or hotfix
+
+After every release or hotfix, `main` goes back into `develop`, so `develop` always contains `main` and the next release PR shows only new work:
+
+```bash
+git fetch origin
+git switch -c merge/v1.1.0 origin/main
+git merge --no-commit origin/develop   # on a version.json conflict, keep develop's side (--theirs here)
+# after a release: set version.json to the next minor, e.g. "1.2.0-preview.{height}"
+#   (unless develop already carries a higher version, e.g. "2.0.0-preview.{height}")
+git diff origin/develop -- version.json   # after a hotfix: no output; after a release: only the next-minor change
+git commit
+git push -u origin merge/v1.1.0
+```
+
+Check `version.json` with that `git diff` even when git reports no conflict: after a release, git takes `main`'s stable version silently.
+
+Open a PR from `merge/v1.1.0` into `develop`, label it `skip-changelog`, and merge it with a merge commit.
+
+**Never open a PR straight from `main` into `develop`:** `develop` would get the stable version from `main`'s `version.json` and publish `1.1.0-g<commit>` previews, and resolving a conflict in GitHub's web editor would commit to `main`.
 
 > If a breaking change (`2.0`) is introduced in the future and parallel support for an older `1.x` line becomes necessary, that's the point to revisit NBGV's branch-naming mechanism (`release.branchName`). It's deliberately left out for now as unneeded complexity.
 

@@ -8,7 +8,7 @@ You are the code reviewer for OpenUrzednik.NET, a set of .NET client libraries f
 
 ## Inputs
 
-Review the changes you're given. Otherwise review `git diff origin/develop...HEAD` together with uncommitted changes (`git diff`, `git status`). Read the full changed files, not only the hunks, when context matters.
+Review the changes you're given. Otherwise review `git diff origin/<target>...HEAD`, where `<target>` is the PR's base branch: `main` for `release/*` and `hotfix/*`, `develop` for everything else, together with uncommitted changes (`git diff`, `git status`). Read the full changed files, not only the hunks, when context matters.
 
 First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to the changed area.
 

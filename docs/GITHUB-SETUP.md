@@ -15,8 +15,8 @@ gh api repos/milten89/OpenUrzednik.NET/environments
 | Setting | Value |
 |---|---|
 | Default branch | `develop` |
-| Merge methods | squash only (merge commits and rebase disabled) |
-| Squash commit title | PR title |
+| Merge methods | merge commits only (squash and rebase disabled) |
+| Default merge commit message | GitHub's default ("Merge pull request #N from …") |
 | Automatically delete head branches | on |
 | Actions: default `GITHUB_TOKEN` permissions | read |
 | Actions: allow GitHub Actions to approve PRs | off |
@@ -29,7 +29,7 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 |---|---|
 | Restrict deletions | on |
 | Block force pushes | on |
-| Require a pull request | 0 approvals, CODEOWNERS review, dismiss stale approvals, resolve all conversations, allowed merge method: squash |
+| Require a pull request | 0 approvals, CODEOWNERS review, dismiss stale approvals, resolve all conversations, allowed merge method: merge |
 | Required status checks (strict, up to date) | `build (net8.0)`, `build (net9.0)`, `build (net10.0)`, `test (net472)`, `format`, `dependency-review` |
 | Code scanning | CodeQL: alerts threshold `errors`, security alerts `high_or_higher` |
 | Bypass | Repository role **Admin**, mode **pull requests only** (the maintainer can merge their own PRs, but cannot push directly) |
@@ -46,6 +46,7 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 Not used:
 * **Restrict updates:** it made every merge an admin bypass, because only bypass actors could update the branches. The pull request rule already blocks direct pushes.
 * **Code quality rule:** GitHub Code Quality isn't available for this repository (`gh api repos/milten89/OpenUrzednik.NET/code-quality/setup` returns 404), so the rule never blocked anything. CodeQL runs the `security-and-quality` query suite instead, and the code scanning rule enforces its results.
+* **Require linear history:** it forbids merge commits, which every PR uses ([ADR-0008](adr/0008-branching-versioning-and-release.md)).
 * **Require signed commits:** tried on 2026-10-04 and removed the same day: with it, PRs whose branch commits weren't signed couldn't be merged.
 
 ## Environments
@@ -56,6 +57,19 @@ Not used:
 | `nuget-release` | `main` | required reviewer: `milten89` |
 
 Both use NuGet trusted publishing (OIDC via `NuGet/login`). The secret `NUGET_USER` holds the nuget.org user name.
+
+> ⚠️ The nuget.org policies below match the **workflow file name** and the **environment name**. Renaming `nuget-pre-release.yml`, `nuget-release.yml` or either environment breaks publishing until the policy is updated on nuget.org.
+
+## nuget.org trusted publishing
+
+Set on nuget.org → account menu → **Trusted Publishing**. All packages are owned by the nuget.org account `milten89`.
+
+| Policy | Workflow | Environment | Packages | Scope |
+|---|---|---|---|---|
+| OpenUrzednik.net pre-release | `nuget-pre-release.yml` | `nuget-pre-release` | `OpenUrzednik.*` | push new packages and package versions |
+| OpenUrzednik.net release | `nuget-release.yml` | `nuget-release` | `OpenUrzednik.*` | push new packages and package versions |
+
+Both trust publisher GitHub Actions, repository owner `milten89` (id 9992006) and repository `OpenUrzednik.NET` (id 1304343799). Neither may unlist or relist versions; unlisting is done by hand with a short-lived API key.
 
 ## Security
 
