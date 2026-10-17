@@ -75,14 +75,93 @@ Workflow hardening: all third-party actions are pinned to a commit SHA, with the
 
 ## Labels
 
-Used by release notes (`.github/release.yml`), Dependabot and issue forms:
+Release notes (`.github/release.yml`) group PRs by the **release labels**; every PR has at least one. Issues use the same labels to forecast the PR's category.
 
-| Label | Use |
+| Label | Color | Use |
+|---|---|---|
+| `breaking-change` | `#B60205` | Release label: public API or behaviour break, needs a major version |
+| `enhancement` | `#a2eeef` | Release label: new feature (GitHub default) |
+| `bug` | `#d73a4a` | Release label: something doesn't work (GitHub default) |
+| `documentation` | `#0075ca` | Release label: docs only (GitHub default) |
+| `dependencies` | `#0366D6` | Release label: dependency updates (Dependabot) |
+| `ci` | `#5319E7` | Release label: CI workflows and tooling (Dependabot's Actions updates) |
+| `skip-changelog` | `#EEEEEE` | Release label: exclude the PR from release notes |
+| `maintainer-only` | `#D93F0B` | Only the maintainer can do it; agents don't start, change or close it |
+| `area:core` | `#1D76DB` | Affects `OpenUrzednik.Core` |
+| `area:http` | `#1D76DB` | Affects `OpenUrzednik.Http` |
+| `area:release` | `#1D76DB` | Versioning, packaging, NuGet publishing, release notes |
+| `area:repo` | `#1D76DB` | GitHub settings, community files, agent instructions |
+| `area:telemetry` | `#1D76DB` | Telemetry contract, `OpenUrzednik.Diagnostics`, `OpenUrzednik.Extensions.Logging` |
+| `provider:nbp` | `#FBCA04` | Affects `OpenUrzednik.Nbp` |
+| `provider-proposal` | `#C5DEF5` | Proposal for a new provider (issue form) |
+| `question` | `#d876e3` | A question rather than a change (GitHub default) |
+| `good first issue`, `help wanted`, `duplicate`, `invalid`, `wontfix` | GitHub defaults | As GitHub describes them |
+
+## Milestones
+
+A release is a milestone named after its version (`1.0.0`). It holds only the issues that must be closed before that release PR opens, all of them Priority P0 or P1; nice-to-haves stay outside. A bug with Priority P0 or P1 goes into the next release's milestone. The release PR opens only when the milestone has no open issues:
+
+```bash
+gh api repos/milten89/OpenUrzednik.NET/milestones --jq '.[] | select(.title == "1.0.0") | .open_issues'
+```
+
+## Project
+
+Work is tracked in the public project [OpenUrzednik.NET](https://github.com/users/milten89/projects/2) (user project 2 of `milten89`, linked to the repository). The rules for agents are in `CLAUDE.md` ("Issues and the project"). Fields, items and view filters can be set through the API; view grouping, sorting and the built-in workflows only in the web UI, so they are recorded here to make the project recreatable.
+
+```bash
+gh project view 2 --owner milten89
+gh project field-list 2 --owner milten89
+gh api graphql -f query='query{user(login:"milten89"){projectV2(number:2){views(first:20){nodes{name layout filter groupByFields(first:5){nodes{... on ProjectV2FieldCommon{name}}} verticalGroupByFields(first:5){nodes{... on ProjectV2FieldCommon{name}}} sortByFields(first:5){nodes{direction field{... on ProjectV2FieldCommon{name}}}}}} workflows(first:20){nodes{name enabled}}}}}'
+```
+
+Reading or changing the project needs the `project` scope on the `gh` token (`gh auth refresh -s project`).
+
+### Fields
+
+| Field | Type | Values |
+|---|---|---|
+| Status | single select | `Triage` (new; not sorted yet), `Backlog` (accepted; blocked or not next), `Ready` (approved to start by the maintainer; no open blockers), `In progress` (branch or PR open, or waiting on an outside party), `Done` (merged, closed or completed) |
+| Priority | single select | `P0` (urgent: harm now or a calendar deadline), `P1` (needed for the next release), `P2` (should do; may slip), `P3` (later) |
+| Phase | single select | `Phase 0` … `Phase 6`: the stages of the 1.0 plan |
+| Seq | number | Execution order within the plan, in steps of 10, leaving room to insert |
+| Plan | text | The plan id (e.g. `P0-0`, `M5`) |
+| Size | single select | Maintainer effort to review or do it: `XS` (< 15 min), `S` (< 30 min), `M` (about 1 h), `L` (several hours) |
+| Due | date | Only for calendar deadlines |
+
+Ids used by the agent commands in `CLAUDE.md`: project `PVT_kwHOAJh3Rs4BnebI`, Status field `PVTSSF_lAHOAJh3Rs4BnebIzhmC35A`, option `In progress` `e0ec58a2`.
+
+Dependencies between issues use GitHub's native "blocked by" relationships, not a field.
+
+### Views
+
+| # | View | Layout | Filter | Group / columns | Sort |
+|---|---|---|---|---|---|
+| 1 | Next | Table | `is:issue is:open status:Ready,"In progress"` | Status | Priority, Seq |
+| 2 | Board | Board | `is:issue -label:provider-proposal` | columns: Status | Priority, Seq |
+| 3 | Maintainer | Table | `is:open label:maintainer-only` | Status | Due, Size |
+| 4 | Review queue | Table | `is:pr is:open` | — | Updated ↑ |
+| 5 | Release 1.0 | Table | `has:phase -phase:"Phase 6"` | Phase | Seq |
+| 6 | Deadlines | Table | `is:open has:due` | — | Due |
+| 7 | Triage | Table | `is:issue is:open status:Triage` | — | Created ↓ |
+
+### Workflows
+
+Set in the web UI (project → ⋯ → Workflows). The Free plan allows one auto-add workflow.
+
+| Workflow | Setting |
 |---|---|
-| `breaking-change` | Public API or behaviour break, needs a major version |
-| `bug`, `enhancement`, `documentation` | Default GitHub labels |
-| `dependencies`, `ci` | Dependabot and workflow changes |
-| `provider-proposal` | New provider proposals (issue form) |
-| `provider:nbp` | Affects `OpenUrzednik.Nbp` |
-| `area:core`, `area:http` | Affects `OpenUrzednik.Core` / `OpenUrzednik.Http` |
-| `skip-changelog` | Exclude the PR from release notes |
+| Auto-add to project | Repository `milten89/OpenUrzednik.NET`, filter `is:issue,pr is:open` |
+| Item added to project | Issues → Status `Triage` |
+| Item reopened | Issues → Status `Backlog` |
+| Item closed | Issues and pull requests → Status `Done` |
+| Pull request merged | Status `Done` |
+| Pull request linked to issue | The issue → Status `In progress` |
+| Auto-close issue | Status changed to `Done` → close the issue |
+| Auto-archive items | `is:pr is:closed updated:<@today-2w` |
+| Auto-add sub-issues to project | On (default) |
+| Code changes requested, Code review approved | Off |
+
+### Intake
+
+Issues (from the forms, or opened by agents) arrive through auto-add with Status `Triage`. PRs, Dependabot's included, are added without a Status and show in the Review queue view. Security reports never arrive (they stay private, see `SECURITY.md`). The maintainer sets labels and Priority, puts a P0/P1 bug into the next milestone, and moves provider proposals to `Backlog` with Priority P3. Only the maintainer moves an issue to `Ready`.

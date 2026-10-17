@@ -20,7 +20,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | `tests/OpenUrzednik.TestCommon` | Shared test helpers: `StubHttpMessageHandler`, `ManualFact`/`ManualTheory`, Faker extensions |
 | `samples/` | Runnable examples against the real NBP API (console, minimal Web API with DI); built in CI with the solution, not packed |
 
-Current priorities are listed in [`docs/BACKLOG.md`](docs/BACKLOG.md). Pick work from there unless told otherwise.
+Work is tracked in GitHub issues and the project [OpenUrzednik.NET](https://github.com/users/milten89/projects/2); see "Issues and the project" below. Pick work from there unless told otherwise. `docs/BACKLOG.md` is a closed record.
 
 ## Commands
 
@@ -111,13 +111,34 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 ## Workflow
 
 - Branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`). PRs target `develop` and are squash-merged. Releases go from a `release/X.Y` branch, made from `develop`, into `main` ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
-- Commit or push only when asked. Keep one backlog item per PR.
+- Commit or push only when asked. One issue per PR (see "Issues and the project").
 - If a change contradicts an accepted ADR, stop and use `/adr` instead of working around it. Until the first stable release, accepted ADRs are changed in place with a dated note (ADR-0001); from 1.0 on, a new superseding ADR.
 - Before opening a PR, run the `reviewer` agent on the diff.
 - The NuGet workflows build and pack `OpenUrzednik.Packages.slnf` (the `src/` projects only). **A new `src/` project must be added to it**, or it isn't published. Every package gets the version of the root `version.json` (lockstep, ADR-0008); don't add a `version.json` to a project. A new package input outside `src/` goes into both `pathFilters` in `version.json` and the `paths` filter of `nuget-pre-release.yml` (a directory is `dir` in the first and `dir/**` in the second).
 - **CI job names are required status checks in the GitHub ruleset.** If you rename a job in `.github/workflows/build.yml`, `format.yml` or `dependency-review.yml`, say so: the ruleset must be updated (see `docs/GITHUB-SETUP.md`).
 - Language ([ADR-0009](docs/adr/0009-documentation-language.md)): code, ADRs and technical docs are in English. User-facing docs (`README.md` in the root and per package, `CONTRIBUTING.md`, `SECURITY.md`, issue forms) are in Polish and link to their English version (`*.en.md`) at the top. Where an English version exists, update both together.
 - Prose style: when you write or edit a README (root or per package), run `/miodkuj` on the Polish version (`README.md`) and `/stop-slop` on the English version (`README.en.md`). Use the same skills for `CONTRIBUTING`, `SECURITY` and other user-facing prose. Edit only the prose: keep code blocks, commands, package and API names, badges, links and numbers exactly as they are. Meaning comes before style: keep API limits and qualifiers ("only", "never", "at most") even where a style rule says to cut them (stop-slop removes absolutes and adverbs).
+
+## Issues and the project
+
+Work is tracked in this repository's issues and in the public project [OpenUrzednik.NET](https://github.com/users/milten89/projects/2); its fields, views and workflows are described in [`docs/GITHUB-SETUP.md`](docs/GITHUB-SETUP.md#project). The issue body is the specification of the work.
+
+- Take open issues with Status `Ready` and without the `maintainer-only` label, by Priority, then Seq. Only the maintainer moves an issue to `Ready`.
+- Before you start, check that no open issue blocks it: `gh issue view <n> --json blockedBy --jq '[.blockedBy.nodes[] | select(.state == "OPEN") | .number]'` must print `[]`.
+- When you start, set the issue's Status to `In progress`. That is the only field you change: never set `Done`, Priority, Phase, Seq, Size, Due, or the issue's milestone and labels unless asked.
+- One issue per PR. The PR body starts with `Closes #<n>`. When you open the PR, give it at least one release label from `.github/release.yml` (`gh pr create --label <label>`), normally the one forecast on the issue.
+- Never start, change or close a `maintainer-only` issue.
+- You may open follow-up issues for problems outside the current issue. The project adds them with Status `Triage`, and the maintainer sorts them.
+- Release and hotfix PRs target `main`, where `Closes` doesn't close the issue. The maintainer moves those issues to `Done`.
+
+Project fields need the `project` scope (`gh auth refresh -s project`):
+
+```bash
+# Ready issues for agents, by Priority, then Seq (.id is the project item id)
+gh project item-list 2 --owner milten89 --format json --limit 200 --jq '[.items[] | select(.status == "Ready" and .content.type == "Issue" and ((.labels // []) | index("maintainer-only") | not))] | sort_by(.priority // "P9", .seq) | .[] | "#\(.content.number) \(.priority) \(.id) \(.title)"'
+# Set Status to In progress
+gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id PVTSSF_lAHOAJh3Rs4BnebIzhmC35A --single-select-option-id e0ec58a2
+```
 
 ## Skills and agents
 

@@ -9,7 +9,7 @@
 
 ## Konwencje w repo
 
-Wiążące decyzje architektoniczne są opisane w [`docs/adr/`](docs/adr/README.md), a aktualne priorytety w [`docs/BACKLOG.md`](docs/BACKLOG.md). Zmiana, która jest sprzeczna z zaakceptowanym ADR, wymaga nowego ADR w tym samym PR.
+Wiążące decyzje architektoniczne są opisane w [`docs/adr/`](docs/adr/README.md), a bieżąca praca i priorytety w [issues](https://github.com/milten89/OpenUrzednik.NET/issues) i w [projekcie](https://github.com/users/milten89/projects/2). Zmiana, która jest sprzeczna z zaakceptowanym ADR, wymaga nowego ADR w tym samym PR.
 
 - **`OpenUrzednikResult` / `OpenUrzednikResult<T>` zamiast rozproszonej logiki błędów** dla wszystkich błędów, które mogą wystąpić podczas normalnego działania (walidacja, statusy HTTP, błędne odpowiedzi, błędy sieci, timeouty). Wyjątki rzucamy tylko przy anulowaniu przez wywołującego, błędach programisty (np. `null` w argumencie) i błędach krytycznych. Nie używaj `catch (Exception)` ([ADR-0002](docs/adr/0002-result-pattern-and-error-handling.md)). Wyjątki (`OpenUrzednikException` i jego pochodne) są dostępne przez `.EnsureSuccess()` / `.EnsureSuccessAsync()` dla konsumentów preferujących klasyczny styl — nie dodawaj równoległych wariantów API.
 - **Zależności:** pakiety Core i providerów nie mają zależności NuGet (poza oficjalnymi pakietami BCL dla netstandard2.0); integracje z `Microsoft.Extensions.*` trafiają do osobnych pakietów ([ADR-0004](docs/adr/0004-dependency-policy.md)).

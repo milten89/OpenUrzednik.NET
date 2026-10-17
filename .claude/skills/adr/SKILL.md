@@ -15,5 +15,5 @@ argument-hint: "<decision title>"
 4. Don't invent the maintainer's preferences. If the decision isn't clear from the conversation, ask before writing the outcome.
 5. If it supersedes an ADR: in the old file set `status: superseded by ADR-NNNN` and add a link. Don't change its content otherwise.
 6. Add a row to the table in `docs/adr/README.md`.
-7. If the decision changes rules summarized in `CLAUDE.md`, update `CLAUDE.md` in the same change, and add follow-up work to `docs/BACKLOG.md`.
+7. If the decision changes rules summarized in `CLAUDE.md`, update `CLAUDE.md` in the same change, and open an issue for any follow-up work (the project adds it with Status `Triage`).
 8. Write it in English (ADR-0009).

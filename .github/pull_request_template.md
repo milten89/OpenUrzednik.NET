@@ -1,6 +1,8 @@
+Closes #<issue>
+
 ## What and why
 
-<!-- What does this PR change, and why? Link the issue or docs/BACKLOG.md item. -->
+<!-- What does this PR change, and why? -->
 
 ## Checklist
 
@@ -10,7 +12,7 @@
 - [ ] Public API has XML docs; breaking changes are called out below
 - [ ] Complies with the [ADRs](../docs/adr/README.md), or adds a new ADR for a changed decision
 - [ ] User-facing docs updated in both language versions (if applicable, ADR-0009)
-- [ ] `docs/BACKLOG.md` updated (resolved item ticked, `Done in #<PR>.`)
+- [ ] At least one release label set (`.github/release.yml`; the maintainer sets it if you can't)
 - [ ] CI job names unchanged, or the ruleset update is described below
 
 ## Breaking changes / notes for reviewers
