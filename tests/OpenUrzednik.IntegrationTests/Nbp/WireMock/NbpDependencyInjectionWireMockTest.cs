@@ -15,7 +15,6 @@ using Shouldly;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
-using WireMock.Settings;
 
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
@@ -27,7 +26,7 @@ public sealed class NbpDependencyInjectionWireMockTest : IDisposable
     private const string Scenario = "recovery";
     private const string Recovered = "recovered";
 
-    private readonly WireMockServer _server = WireMockServer.Start(new WireMockServerSettings() { UseSSL = true });
+    private readonly WireMockServer _server = LoopbackWireMockServer.StartHttps();
     private ServiceProvider? _provider;
 
     // configureServices runs before AddOpenUrzednikNbp(), configureHttpClient on the builder it returns.
