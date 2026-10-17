@@ -13,7 +13,7 @@ public sealed partial class ResilienceRejectionHandlerTest
     public async Task SendAsync_InnerSucceeds_ReturnsResponse()
     {
         // Arrange
-        var response = new HttpResponseMessage();
+        using var response = new HttpResponseMessage();
         using var sut = CreateSut((_, _) => Task.FromResult(response));
         using var request = CreateRequest();
 
