@@ -42,7 +42,10 @@ public partial class OpenUrzednikResultExtensionsTest
     [Fact]
     public async Task MapAsync_NullTask_ThrowsArgumentNullException()
     {
+        // Arrange
+        Task<OpenUrzednikResult<int>> task = null!;
+
         // Act && Assert
-        await Should.ThrowAsync<ArgumentNullException>(() => ((Task<OpenUrzednikResult<int>>)null!).MapAsync(v => v));
+        await Should.ThrowAsync<ArgumentNullException>(() => task.MapAsync(v => v));
     }
 }

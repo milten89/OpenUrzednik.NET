@@ -124,7 +124,8 @@ public sealed class NbpDependencyInjectionWireMockTest : IDisposable
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>();
         // The handler's limit isn't HttpClient.Timeout or the request deadline, so the error doesn't name one.
         error.Timeout.ShouldBeNull();
-        var cancelled = error.Exception.ShouldBeAssignableTo<OperationCanceledException>().ShouldNotBeNull();
+        var cancelled = error.Exception.ShouldBeAssignableTo<OperationCanceledException>();
+        cancelled.ShouldNotBeNull();
 #if NET
         // .NET Framework's HttpClient replaces a cancellation with a new exception, so the rejection is only kept on .NET.
         cancelled.InnerException.ShouldBeOfType<Polly.Timeout.TimeoutRejectedException>();
