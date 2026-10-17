@@ -19,8 +19,9 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - ADR-0003: no `ILogger`/`ActivitySource` in Core or provider packages. Span and tag naming; HTTP tags use the OpenTelemetry names (`http.request.method`, `url.path`, `http.response.status_code`). Activity sources in `OpenUrzednik.Diagnostics` are named `OpenUrzednik.<Provider>`. `IsEnabled` guards. No secrets or personal identifiers in logs or tags.
 - ADR-0004: no new `PackageReference` in Core, Http or provider projects, apart from netstandard2.0-only Microsoft BCL packages. No `Version=` on package references (central package management). DI packages don't add a resilience handler themselves (the app chains `AddStandardResilienceHandler()`), and they translate its rejection exceptions into errors.
 - ADR-0005: code builds for netstandard2.0 and passes `test (net472)`. `#if` kept inside helpers (polyfills in `src/Polyfills`, `Http/Polyfills`, `Nbp/Polyfills`, `Extensions.Logging/Polyfills`). Dates written as `DateOnly` (an alias for `DateTime` on netstandard2.0) and compared by `DayNumber`. A .NET target is removed only in a major release, at least 6 months after Microsoft's end of support.
-- ADR-0006: provider HTTP goes through `RestRequestExecutor` (`OpenUrzednik.Http`); providers never call `HttpClient.SendAsync`. Request and response are disposed. A REST provider's `version.json` path-filters `../OpenUrzednik.Http`.
+- ADR-0006: provider HTTP goes through `RestRequestExecutor` (`OpenUrzednik.Http`); providers never call `HttpClient.SendAsync`. Request and response are disposed.
 - ADR-0007: the default constructor stays simple; extension points are interfaces with defaults; `CancellationToken cancellationToken = default` comes last in both interface and implementation.
+- ADR-0008: all packages share the version of the root `version.json`; no project has a `version.json` of its own.
 - ADR-0009: language rules; Polish and English user docs updated together.
 - ADR-0010: no work on GUS/KRS/MF beyond what that ADR allows.
 - If a change contradicts an ADR and has no new ADR, report it as **blocking**.

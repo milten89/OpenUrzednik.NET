@@ -41,7 +41,7 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 > gh api -X PUT repos/milten89/OpenUrzednik.NET/rulesets/20632755 --input ruleset.json
 > ```
 
-`format`, `dependency-review` and CodeQL run on PRs to both `develop` and `main`, so release PRs (`develop` → `main`) can satisfy every required check.
+`format`, `dependency-review` and CodeQL run on PRs to both `develop` and `main`, so release PRs (`release/X.Y` → `main`) can satisfy every required check.
 
 Not used:
 * **Restrict updates:** it made every merge an admin bypass, because only bypass actors could update the branches. The pull request rule already blocks direct pushes.

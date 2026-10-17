@@ -24,7 +24,7 @@ body:
     id: version
     attributes:
       label: Wersja pakietu / Package version
-      placeholder: "1.0.0-preview.12"
+      placeholder: "1.0.0"
     validations:
       required: true
   - type: input

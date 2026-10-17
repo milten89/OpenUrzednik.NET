@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-02
+date: 2026-10-17
 decision-makers: milten89
 ---
 
@@ -14,7 +14,6 @@ decision-makers: milten89
 
 * One implementation of status mapping, timeout detection, disposal and telemetry.
 * Keep `OpenUrzednik.Core` small, stable and free of HTTP/JSON concerns.
-* Avoid needless version bumps: every provider's `version.json` path-filters its dependencies.
 
 ## Considered Options
 
@@ -35,13 +34,12 @@ Chosen option: "New package `OpenUrzednik.Http` for REST/JSON providers".
 ### Consequences
 
 * Good, because Core stays pure (results, errors, telemetry abstractions, validation).
-* Good, because only REST providers are re-versioned when the HTTP layer changes.
 * Bad, because one more package must be versioned and published.
 * Bad, because its public surface must be kept stable for providers built on it.
 
 ### Confirmation
 
-Provider packages contain no direct `HttpClient.SendAsync` calls; all HTTP goes through `OpenUrzednik.Http`. `version.json` of each REST provider includes `../OpenUrzednik.Http` in `pathFilters`.
+Provider packages contain no direct `HttpClient.SendAsync` calls; all HTTP goes through `OpenUrzednik.Http`.
 
 ## Pros and Cons of the Options
 
@@ -59,3 +57,5 @@ Provider packages contain no direct `HttpClient.SendAsync` calls; all HTTP goes 
 ## More Information
 
 **2026-10-02 note (backlog item 12).** Implemented: `RestRequestExecutor`, `RestProviderProfile` and `ErrorResponseContext` in `OpenUrzednik.Http.Infrastructure`, with `OpenUrzednikTelemetry` replacing `NbpTelemetryProvider`. The bounded read of a 400 body into `BadRequestError` turned out to be provider-neutral, so it is part of the default mapping and NBP needs no override; `RestProviderProfile.MapErrorAsync` is the hook for providers whose error bodies need parsing (e.g. JSON error codes). Log templates are provider-neutral and take the provider's display name as the `{provider}` property.
+
+**2026-10-17 change: one version for all packages.** All packages now share one version from the root `version.json` ([ADR-0008](0008-branching-versioning-and-release.md)), so a provider no longer path-filters `OpenUrzednik.Http`, and an HTTP change no longer re-versions only the REST providers. The driver about needless version bumps, the matching consequence and the `pathFilters` check in Confirmation were removed. The version arguments under "Pros and Cons of the Options" no longer tell the options apart.

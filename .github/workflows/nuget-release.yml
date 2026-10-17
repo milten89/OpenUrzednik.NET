@@ -50,6 +50,33 @@ jobs:
           dotnet build OpenUrzednik.Packages.slnf --configuration Release --no-restore
           dotnet pack OpenUrzednik.Packages.slnf --configuration Release --no-build --output ./artifacts
 
+      # Every package has the version of the root version.json (lockstep, ADR-0008). A release from main must be stable and
+      # not released before: a version tagged on another commit means the PR didn't change version.json, and the push
+      # would skip every package as a duplicate.
+      - name: Check the release version
+        id: version
+        run: |
+          core=$(ls ./artifacts/OpenUrzednik.Core.[0-9]*.nupkg)
+          version=${core#./artifacts/OpenUrzednik.Core.}
+          version=${version%.nupkg}
+          for package in ./artifacts/*.nupkg; do
+            if [[ "$package" != *".$version.nupkg" ]]; then
+              echo "::error::$package doesn't have the release version $version."
+              exit 1
+            fi
+          done
+          if [[ "$version" == *-* ]]; then
+            echo "::error::$version is a prerelease. A release needs a stable version in version.json (remove the -preview suffix)."
+            exit 1
+          fi
+          if tagged=$(git rev-parse -q --verify "refs/tags/v$version^{commit}"); then
+            if [ "$tagged" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::v$version was already released from $tagged. Set the next version in version.json."
+              exit 1
+            fi
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
         id: login
@@ -63,33 +90,21 @@ jobs:
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
 
-      - name: Tag and create GitHub Release per package
+      # One tag and one GitHub Release for all packages. Each part is skipped if it exists, so a failed run can be re-run.
+      - name: Tag and create the GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          dotnet tool install --global nbgv
-          export PATH="$PATH:$HOME/.dotnet/tools"
-
-          for proj in src/*/; do
-            name=$(basename "$proj")
-            version=$(nbgv get-version --project "$proj" --format json | jq -r .NuGetPackageVersion)
-            package_file="./artifacts/${name}.${version}.nupkg"
-
-            # skip if this package wasn't built in this run (no changes)
-            if [ ! -f "$package_file" ]; then
-              echo "No changes in $name — skipping tag and release."
-              continue
-            fi
-
-            tag="${name}/v${version}"
-
-            if git rev-parse "$tag" >/dev/null 2>&1; then
-              echo "Tag $tag already exists — skipping."
-              continue
-            fi
-
+          tag="v$VERSION"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Tag $tag already exists, skipping."
+          else
             git tag "$tag"
             git push origin "$tag"
-            gh release create "$tag" "$package_file" \
-              --title "${name} ${version}" --generate-notes
-          done
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists, skipping."
+          else
+            gh release create "$tag" ./artifacts/*.nupkg --verify-tag --title "$tag" --generate-notes
+          fi
