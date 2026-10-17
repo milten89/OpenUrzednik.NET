@@ -9,8 +9,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Nowe providery są realizowane dopiero po ukończeniu pakietu NBP ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Propozycje zbieramy już teraz.
-        New providers start only after the NBP package is finished ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Proposals are welcome now.
+        Prace nad nowymi providerami ruszą po pierwszym stabilnym wydaniu `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Propozycje zbieramy już teraz.
+        Work on new providers begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Proposals are welcome now.
   - type: input
     id: name
     attributes:
