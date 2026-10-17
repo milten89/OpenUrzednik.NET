@@ -2,7 +2,6 @@ using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Table;
 
 using WireMock.Server;
-using WireMock.Settings;
 
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
@@ -10,7 +9,7 @@ public partial class NbpExchangeRateTableClientWireMockTest : IDisposable
 {
     private const string BasePath = "/exchangerates/tables";
 
-    private readonly WireMockServer _server = WireMockServer.Start(new WireMockServerSettings() { UseSSL = true });
+    private readonly WireMockServer _server = LoopbackWireMockServer.StartHttps();
     private readonly List<HttpClient> _httpClients = new();
 
     private NbpExchangeRateTableClient CreateSut(TimeSpan? timeout = null)

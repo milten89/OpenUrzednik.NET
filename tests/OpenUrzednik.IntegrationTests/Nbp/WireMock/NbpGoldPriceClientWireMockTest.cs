@@ -7,7 +7,6 @@ using OpenUrzednik.Nbp.Options;
 using Shouldly;
 
 using WireMock.Server;
-using WireMock.Settings;
 
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
@@ -15,7 +14,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
 {
     private const string BasePath = "/cenyzlota";
 
-    private readonly WireMockServer _server = WireMockServer.Start(new WireMockServerSettings() { UseSSL = true });
+    private readonly WireMockServer _server = LoopbackWireMockServer.StartHttps();
     private readonly List<HttpClient> _httpClients = new();
 
     private NbpGoldPriceClient CreateSut(TimeSpan? timeout = null)
