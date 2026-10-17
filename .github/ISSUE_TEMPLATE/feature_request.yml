@@ -2,6 +2,10 @@ name: 💡 Propozycja funkcji / Feature request
 description: Zaproponuj zmianę lub nową funkcję w istniejącym pakiecie. / Propose a change or feature for an existing package.
 labels: [ "enhancement" ]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Możesz pisać po polsku lub po angielsku. / Polish or English is fine.
   - type: dropdown
     id: package
     attributes:

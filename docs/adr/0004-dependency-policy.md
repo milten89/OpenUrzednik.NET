@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-02
+date: 2026-10-17
 decision-makers: milten89
 ---
 
@@ -74,3 +74,5 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 * `Polly.Core` is an implementation: it is the resilience engine the app runs, even though the DI package only uses its exception types. It moves from 8.4.2 to the latest version (8.8.0), which replaces the earlier "version `Microsoft.Extensions.Http.Resilience` needs" choice above.
 
 **2026-10-04 change.** Dependabot opened the `Microsoft.Extensions.Logging.Abstractions` 8.0.0 → 10.x raise twice (#41, #56); both were closed under this rule. `.github/dependabot.yml` now ignores every version update of `*.Abstractions` instead of grouping them. A vulnerability still shows as a Dependabot alert, which doesn't depend on that file; the version is then raised by hand to the first fixed patch. The minimum is also raised by hand when the oldest .NET target is removed (ADR-0005).
+
+**2026-10-17 note: `System.Diagnostics.DiagnosticSource`** ([#77](https://github.com/milten89/OpenUrzednik.NET/issues/77)). Only the tracing adapter `OpenUrzednik.Diagnostics` references it, and only on netstandard2.0; Core, Http and the provider packages don't ([ADR-0003](0003-telemetry-abstractions.md)). `CLAUDE.md` had listed it among the netstandard2.0 packages allowed in Core and providers; that line, and the package list in ADR-0005, are corrected. It is classified as an implementation and takes the latest version, although [Microsoft's library guidance](https://learn.microsoft.com/dotnet/standard/library-guidance/dependencies) suggests the oldest supported version for netstandard libraries: on .NET Framework the package carries the `Activity` and `ActivitySource` code itself, so its fixes reach the app only through a newer version.

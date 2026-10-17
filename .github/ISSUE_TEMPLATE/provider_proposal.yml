@@ -5,6 +5,10 @@ body:
   - type: markdown
     attributes:
       value: |
+        Możesz pisać po polsku lub po angielsku. / Polish or English is fine.
+  - type: markdown
+    attributes:
+      value: |
         Prace nad nowymi providerami ruszą po pierwszym stabilnym wydaniu `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Propozycje zbieramy już teraz.
         Work on new providers begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Proposals are welcome now.
   - type: input
