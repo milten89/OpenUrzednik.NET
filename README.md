@@ -15,7 +15,7 @@
 
 Most existing packages for Polish APIs are abandoned or don't follow modern .NET. OpenUrzednik.NET aims to provide:
 
-- **A modern API:** support for `net8.0`, `net9.0` and `net10.0`, and through `netstandard2.0` also for .NET Framework (we test on .NET Framework 4.8)
+- **A modern API:** builds for the .NET LTS releases, and through `netstandard2.0` also for .NET Framework 4.7.2 or later (see [Supported platforms](#supported-platforms))
 - **One error model:** `OpenUrzednikResult` / `OpenUrzednikResult<T>` instead of error handling scattered across the code
 - **Flexibility:** the classic exception style is still there through `.EnsureSuccess()` / `.EnsureSuccessAsync()`
 - **A clear structure:** shared code in `Core`, one package per provider
@@ -26,15 +26,28 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 
 | Package | Status | Description | Targets |
 | :--- | :--- | :--- | :--- |
-| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Core abstractions available | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` and the `EnsureSuccess` / `EnsureSuccessAsync` extension methods | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Http**](src/OpenUrzednik.Http/README.md) | 🧪 Preview | Shared HTTP layer for REST/JSON providers (`RestRequestExecutor`). Used by provider packages, not by apps | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | 🧪 Preview | Sends the clients' logs to `ILogger` from Microsoft.Extensions.Logging | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API. The public API may still change | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Planned, not started | GUS client (company lookups by REGON/NIP) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Planned, not started | KRS client (the National Court Register) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Planned, not started | VAT white list (Biała Lista) client | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Core abstractions available | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` and the `EnsureSuccess` / `EnsureSuccessAsync` extension methods | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Http**](src/OpenUrzednik.Http/README.md) | 🧪 Preview | Shared HTTP layer for REST/JSON providers (`RestRequestExecutor`). Used by provider packages, not by apps | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | 🧪 Preview | Sends the clients' logs to `ILogger` from Microsoft.Extensions.Logging | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API. The public API may still change | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Planned, not started | GUS client (company lookups by REGON/NIP) | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Planned, not started | KRS client (the National Court Register) | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Planned, not started | VAT white list (Biała Lista) client | `netstandard2.0`, `net8.0`, `net10.0` |
+
+## Supported platforms
+
+| Your app | Build it uses |
+| :--- | :--- |
+| .NET 10 | `net10.0` |
+| .NET 8 and .NET 9 | `net8.0` (the same API) |
+| .NET Framework 4.7.2 or later | `netstandard2.0` (dates are `DateTime`, see the package READMEs) |
+
+- We build for `netstandard2.0` and the .NET LTS releases that Microsoft supports (and a newer release only when we need its APIs). CI tests every build; the `netstandard2.0` build runs its tests on .NET Framework 4.8.
+- .NET 8 and .NET 9 reach the end of Microsoft's support on 10 November 2026. Your .NET 8 or 9 app keeps working with the `net8.0` build; we'll remove it only in a major version, because it is our lowest .NET target.
+- We may remove a .NET target that isn't the lowest one in a minor version, after Microsoft ends its support; apps on that version then get the next lower build, with the same API. `netstandard2.0` stays, so .NET Framework keeps working.
+- We don't support .NET Framework 4.6.1 to 4.7.1: there, `netstandard2.0` libraries need extra facade assemblies or binding redirects (Microsoft recommends 4.7.2 or later).
 
 ---
 

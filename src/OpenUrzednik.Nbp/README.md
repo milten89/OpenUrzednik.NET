@@ -51,7 +51,7 @@ Errors such as missing data, an exceeded rate limit or a timeout come back in th
 
 ## .NET Framework
 
-The package also runs on .NET Framework (through `netstandard2.0`). There, dates are `DateTime`, not `DateOnly`: methods take a `DateTime` and the models return one (e.g. `GoldPrice.Date`). Only the date counts: the client ignores the time of day, and returned dates have the time `00:00` and `DateTimeKind.Unspecified`.
+The package also runs on .NET Framework 4.7.2 or later (through `netstandard2.0`). There, dates are `DateTime`, not `DateOnly`: methods take a `DateTime` and the models return one (e.g. `GoldPrice.Date`). Only the date counts: the client ignores the time of day, and returned dates have the time `00:00` and `DateTimeKind.Unspecified`.
 
 If you write a library that uses this package, build it for the same targets (e.g. `netstandard2.0;net8.0`). A `netstandard2.0`-only library calls the `DateTime` methods, but in a .NET 8+ app NuGet picks the `DateOnly` build, so you get a `MissingMethodException`.
 

@@ -3,7 +3,7 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <!-- netstandard2.0 for .NET Framework 4.6.2+ (ADR-0005); the .NET targets come from the root props. -->
+    <!-- netstandard2.0 for .NET Framework 4.7.2+ (ADR-0005); the .NET targets come from the root props. -->
     <TargetFrameworks>netstandard2.0;$(TargetFrameworks)</TargetFrameworks>
     <!-- Every performance rule (CA18xx) as a build warning: performance comes before convenience in library code. -->
     <AnalysisModePerformance>All</AnalysisModePerformance>

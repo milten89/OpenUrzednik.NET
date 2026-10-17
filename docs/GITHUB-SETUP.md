@@ -30,7 +30,7 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 | Restrict deletions | on |
 | Block force pushes | on |
 | Require a pull request | 0 approvals, CODEOWNERS review, dismiss stale approvals, resolve all conversations, allowed merge method: merge |
-| Required status checks (strict, up to date) | `build (net8.0)`, `build (net9.0)`, `build (net10.0)`, `test (net472)`, `format`, `dependency-review` |
+| Required status checks (strict, up to date) | `build (net8.0)`, `build (net10.0)`, `test (net472)`, `format`, `dependency-review` |
 | Code scanning | CodeQL: alerts threshold `errors`, security alerts `high_or_higher` |
 | Bypass | Repository role **Admin**, mode **pull requests only** (the maintainer can merge their own PRs, but cannot push directly) |
 
