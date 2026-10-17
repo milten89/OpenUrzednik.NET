@@ -9,7 +9,7 @@
 
 ## Repository conventions
 
-Binding architecture decisions are in [`docs/adr/`](docs/adr/README.md), and current priorities are in [`docs/BACKLOG.md`](docs/BACKLOG.md). A change that contradicts an accepted ADR needs a new ADR in the same PR.
+Binding architecture decisions are in [`docs/adr/`](docs/adr/README.md), and current work and priorities are in the [issues](https://github.com/milten89/OpenUrzednik.NET/issues) and the [project](https://github.com/users/milten89/projects/2). A change that contradicts an accepted ADR needs a new ADR in the same PR.
 
 - **`OpenUrzednikResult` / `OpenUrzednikResult<T>` for every error that can happen during normal operation** (validation, HTTP statuses, bad responses, network errors, timeouts), instead of error handling scattered across the code. We throw exceptions only when the caller cancels, for programmer errors (e.g. a `null` argument) and for fatal errors. Don't use `catch (Exception)` ([ADR-0002](docs/adr/0002-result-pattern-and-error-handling.md)). Exceptions (`OpenUrzednikException` and its subtypes) are available through `.EnsureSuccess()` / `.EnsureSuccessAsync()` for consumers who prefer the classic style; don't add parallel API variants.
 - **Dependencies:** the Core and provider packages have no NuGet dependencies (apart from official BCL packages for netstandard2.0); integrations with `Microsoft.Extensions.*` go into separate packages ([ADR-0004](docs/adr/0004-dependency-policy.md)).

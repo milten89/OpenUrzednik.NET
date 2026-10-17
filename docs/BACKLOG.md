@@ -1,15 +1,8 @@
 # Backlog
 
-Known bugs and design work, ordered by priority. Found in the repository review of 2026-10-01 and updated after the P0/P1 fixes (#12–#23). Per [ADR-0010](adr/0010-provider-readiness-gate.md), everything in P0–P2 must be done before any new provider is started.
+**This file is a closed record.** Since 2026-10-17, work is tracked in [GitHub issues](https://github.com/milten89/OpenUrzednik.NET/issues) and the project [OpenUrzednik.NET](https://github.com/users/milten89/projects/2). Don't add, tick or edit items here. The two open items moved to issues (items 21 and 28 below). The done items go into the 1.0 release notes, and the file is deleted after the 1.0.0 release ([#115](https://github.com/milten89/OpenUrzednik.NET/issues/115)).
 
-How to use this file:
-
-- Work through items one PR at a time.
-- When an item is done, tick its checkbox and add `Done in #<PR>.` in the same PR. Don't delete items: a deletion conflicts with any branch that edits a neighbouring item (resolving that conflict wrongly is how items 8, 9 and 11 came back), and the record of what was done is lost.
-- Keep a blank line between items, so two PRs that tick neighbouring items don't conflict. Two PRs that both add a new item at the end of the same section still conflict, and may pick the same number: renumber when resolving.
-- Item numbers stay stable. New items get the next free number, in the section they belong to.
-- Done items are removed only when they go into the release notes of a stable release (item 28).
-- If an item turns into a GitHub issue, replace its text with a link to the issue.
+The items below come from the repository review of 2026-10-01 and were worked through one PR at a time.
 
 ## P0: Bugs
 
@@ -100,11 +93,7 @@ How to use this file:
 
 - [x] **20. Redundant SourceLink package.** The NU1902 warning is gone since #12 (`Microsoft.SourceLink.GitHub` 10.0.401), but SourceLink ships with the .NET 8+ SDK, so the `PackageReference` in `Directory.Build.props` can still be removed. Done in #53: removed from `Directory.Build.props` and `Directory.Packages.props`; a CI-mode pack still has the `<repository … commit=…>` metadata and source links in the symbol packages.
 
-- [ ] **21. Quality gates:** Partly done in #55: XML docs required in `src/` (`CS1591` no longer suppressed there), `TreatWarningsAsErrors` in CI, `IsAotCompatible` on the .NET targets. Package validation remains, after the first stable release.
-    * Done: remove the `CS1591` suppression and document the public API.
-    * Done: `TreatWarningsAsErrors` in CI.
-    * `EnablePackageValidation` with a baseline after the first stable release.
-    * Done: `IsAotCompatible`/`IsTrimmable` on .NET targets.
+- **21. Quality gates.** Partly done in #55: XML docs required in `src/` (`CS1591` no longer suppressed there), `TreatWarningsAsErrors` in CI, `IsAotCompatible`/`IsTrimmable` on the .NET targets. Package validation moved to [#94](https://github.com/milten89/OpenUrzednik.NET/issues/94); its 1.0.0 baseline to [#117](https://github.com/milten89/OpenUrzednik.NET/issues/117).
 
 - [x] **22. English versions of user-facing docs** ([ADR-0009](adr/0009-documentation-language.md)): `README.en.md` (root and per package), `CONTRIBUTING.en.md`, with links from the Polish versions. Edit the prose with `/miodkuj` (Polish) and `/stop-slop` (English). Done in #58: also `SECURITY.en.md`; the root README's outdated note about DI and client construction was corrected in both languages.
 
@@ -119,7 +108,7 @@ How to use this file:
 
 - [x] **25. `docs/GITHUB-SETUP.md` is out of date.** "Restrict updates" was removed from the `protected-branches` ruleset (it made every merge an admin override), and the `code_quality` rule didn't block any merge, apparently because GitHub Code Quality isn't available for the repository (the setup API returns 404). Update the file and decide whether to keep that rule. Done in #63: the `code_quality` rule is removed, CodeQL runs `security-and-quality`, a dependency review check and `test (net472)` are required. Secret scanning's non-provider patterns and validity checks aren't available for this account (see `GITHUB-SETUP.md`).
 
-- [ ] **28. Release notes for 1.0.** There is no CHANGELOG, while #13, #15, #16, #17, #18, #21, #22, #47 and #62 changed the API or behaviour (`.github/release.yml` only generates notes from PR titles). Write the notes for the first stable release, and move the done items here into them.
+- **28. Release notes for 1.0.** Moved to [#95](https://github.com/milten89/OpenUrzednik.NET/issues/95) (release-notes tooling, including the "changes since the previews" section built from the done items in this file) and [#113](https://github.com/milten89/OpenUrzednik.NET/issues/113) (the 1.0.0 release notes). The PRs that changed the API or behaviour before the notes existed: #13, #15, #16, #17, #18, #21, #22, #47 and #62.
 
 - [x] **29. Docs polish.** Done in #49.
     * ADR-0002 L49 still says "(backlog item)" for `default(OpenUrzednikResult<T>)`.

@@ -45,7 +45,7 @@ All published packages share one version (lockstep, [ADR-0008](adr/0008-branchin
    ```
 
    Every `.nupkg` in `artifacts/release` must have the version `1.1.0`.
-4. Open a PR from `release/X.Y` into `main`.
+4. Open a PR from `release/X.Y` into `main`, once the release's milestone has no open issues ([`GITHUB-SETUP.md`](GITHUB-SETUP.md#milestones)).
 5. Merge → `nuget-release.yml` publishes every package as `1.1.0`, tags the repo `v1.1.0` and creates one GitHub Release. It stops before publishing if the version still has a prerelease suffix, if the packages don't share one version, or if that version was already released from another commit.
 6. Bring `main` back into `develop`, and set `develop`'s `version.json` to the next minor (`"1.2.0-preview.{height}"`).
 

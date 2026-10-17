@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This repository's agent instructions are in [`CLAUDE.md`](CLAUDE.md). They apply to every coding agent (Claude Code, GitHub Copilot, Codex, Cursor, ...). Binding architecture decisions are in [`docs/adr/`](docs/adr/README.md), and current priorities are in [`docs/BACKLOG.md`](docs/BACKLOG.md).
+This repository's agent instructions are in [`CLAUDE.md`](CLAUDE.md). They apply to every coding agent (Claude Code, GitHub Copilot, Codex, Cursor, ...). Binding architecture decisions are in [`docs/adr/`](docs/adr/README.md), and work is tracked in GitHub issues and the project [OpenUrzednik.NET](https://github.com/users/milten89/projects/2) (CLAUDE.md, "Issues and the project").
 
 Quick reference:
 
