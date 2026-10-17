@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>OpenUrzednik.NET client for the Polish Ministry of Finance "Biała Lista" VAT whitelist — verify VAT payer status and bank account numbers.</Description>
+    <Description>Planned OpenUrzednik.NET client for the Ministry of Finance VAT white list (Biała Lista). Not started and not published (ADR-0010).</Description>
     <PackageTags>BialaLista;VAT;NIP;API;Poland;Gov</PackageTags>
     <!-- Not published until the provider passes the readiness gate (ADR-0010). -->
     <IsPackable>false</IsPackable>
