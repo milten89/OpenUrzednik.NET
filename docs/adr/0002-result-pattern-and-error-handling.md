@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-02
+date: 2026-10-17
 decision-makers: milten89
 ---
 
@@ -59,7 +59,7 @@ Chosen option: "All failures that can happen during normal execution are returne
 
 ### Confirmation
 
-* Unit and WireMock tests cover each status code, timeout, connection failure and malformed payload, asserting the error type.
+* WireMock tests cover every error path for each client, asserting the error type: 400 with the server's message, 401 and 403, 404, 429 with `Retry-After`, 5xx, a 200 with an empty array (`NotFoundError`, for endpoints that return an array), malformed JSON, a timeout and a connection failure. This is the canonical list; `CLAUDE.md` and the `/new-endpoint` skill point to it. Unit tests cover the status mapping in the request executor.
 * `reviewer` agent and code review reject `catch (Exception)`.
 
 ## More Information
@@ -73,3 +73,5 @@ Supersedes the informal rule in `CONTRIBUTING.md`. Shared HTTP behaviour is impl
 **2026-10-04 decision (backlog item 36).** Results are not comparable: `OpenUrzednikResult` and `OpenUrzednikResult<T>` don't implement `IEquatable<>` or `==`, and the performance analyzer's CA1815 stays suppressed with that justification. Value equality would have to define when two failures are equal (same error instances? same codes?) and would invite comparing results instead of inspecting them. Callers compare `IsSuccess`, the value or the error codes.
 
 **2026-10-04 change (backlog item 32).** `ValidationException` and `SerializationException` are renamed to `OpenUrzednikValidationException` and `OpenUrzednikSerializationException`: the old names clashed with `System.ComponentModel.DataAnnotations.ValidationException` and `System.Runtime.Serialization.SerializationException`. The .NET types themselves were rejected: they don't derive from `OpenUrzednikException` (so they can't carry `Error`/`Errors`), their meaning is different (attribute-based model validation, the obsolete formatter serialization), and `DataAnnotations` is an extra package on netstandard2.0.
+
+**2026-10-17 change: one list of error paths** ([#77](https://github.com/milten89/OpenUrzednik.NET/issues/77)). The Confirmation, `CLAUDE.md` and the `/new-endpoint` skill listed different error paths: `CLAUDE.md` left out 401/403, and the skill also left out the connection failure. The Confirmation now lists every path the WireMock tests already cover for each NBP client, including the 200 with an empty array for endpoints that return one, and the other two documents point to it.

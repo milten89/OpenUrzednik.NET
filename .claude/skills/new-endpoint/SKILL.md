@@ -22,7 +22,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 ## 3. Public model
 
 - `public sealed record` with XML docs on every parameter. Use `IReadOnlyList<T>` for collections and override `Equals`/`GetHashCode` when the record holds a list.
-- Dates: `DateOnly` (future netstandard2.0: `DateTime`, see ADR-0005). Money and rates: `decimal`.
+- Dates: `DateOnly` (on netstandard2.0 it is an alias for `DateTime`, see ADR-0005). Money and rates: `decimal`.
 - Check for name clashes with types in other namespaces of the same package.
 
 ## 4. Mapper
@@ -53,7 +53,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 - **Mapper** tests in `MapperTest.<MapMethod>.cs`; a **validator** test per new validator.
 - **WireMock** (`tests/OpenUrzednik.IntegrationTests/<Provider>/WireMock/`):
   - success with the captured real body
-  - 404, 400, 429 with `Retry-After`, 5xx, malformed JSON, timeout
+  - every error path in the canonical list in [ADR-0002](../../../docs/adr/0002-result-pattern-and-error-handling.md)'s Confirmation
   - Assert the request path and `Accept` header.
 - **Real API** test with `[ManualFact]` (explicit: runs with `--explicit on` or when `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set).
 
