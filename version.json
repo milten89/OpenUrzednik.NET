@@ -12,6 +12,8 @@
     "version.json",
     "Directory.Build.props",
     "Directory.Packages.props",
-    "OpenUrzednik.Packages.slnf"
+    "OpenUrzednik.Packages.slnf",
+    "assets/branding/icon.png",
+    "assets/branding/icon-nbp.png"
   ]
 }

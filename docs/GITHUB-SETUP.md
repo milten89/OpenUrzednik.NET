@@ -52,7 +52,7 @@ Not used:
 
 | Environment | Deployment branches | Protection |
 |---|---|---|
-| `nuget-pre-release` | `develop` | none (every merge to `develop` publishes previews) |
+| `nuget-pre-release` | `develop` | none (a merge to `develop` that changes a package input publishes previews) |
 | `nuget-release` | `main` | required reviewer: `milten89` |
 
 Both use NuGet trusted publishing (OIDC via `NuGet/login`). The secret `NUGET_USER` holds the nuget.org user name.

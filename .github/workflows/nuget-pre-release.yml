@@ -3,11 +3,23 @@ name: NuGet - pre-release
 on:
   push:
     branches: [develop]
+    # Only merges that change a package input publish previews. The list matches pathFilters in version.json, so every
+    # published preview sorts above the one before (ADR-0008). Keep the two lists the same; a directory is `dir` in
+    # pathFilters and `dir/**` here.
+    paths:
+      - 'src/**'
+      - 'version.json'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'OpenUrzednik.Packages.slnf'
+      - 'assets/branding/icon.png'
+      - 'assets/branding/icon-nbp.png'
 
 permissions:
   contents: read
 
-# Publishing runs are queued, never cancelled, so every merged commit gets its preview package.
+# A started publishing run is never cancelled. GitHub keeps one pending run per group and replaces it with a newer one,
+# so the latest merge always publishes, and its previews contain the changes of a replaced run.
 concurrency:
   group: nuget-pre-release
   cancel-in-progress: false

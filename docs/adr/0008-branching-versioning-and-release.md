@@ -12,7 +12,7 @@ The repository publishes several NuGet packages that depend on each other. We ne
 
 ## Decision Drivers
 
-* Every merged change produces a testable preview package.
+* Merged changes to a package produce testable preview packages; changes to docs, tests or CI alone publish nothing.
 * Stable releases are deliberate.
 * One version for all packages: they reference each other and ship as one family.
 * Every release sorts above all of its previews on nuget.org.
@@ -27,7 +27,7 @@ The repository publishes several NuGet packages that depend on each other. We ne
 
 Chosen option: "`feature/*` → `develop` → `main`, squash merges".
 
-* `develop` is the default branch. Feature/fix/docs branches are created from `develop` and merged to it via squash PR. Merging to `develop` publishes preview packages (`nuget-pre-release.yml`).
+* `develop` is the default branch. Feature/fix/docs branches are created from `develop` and merged to it via squash PR. Merging to `develop` publishes preview packages when the merge changes a package input (`nuget-pre-release.yml`, whose `paths` filter matches `pathFilters` in `version.json`).
 * A release is a PR from a `release/X.Y` branch, made from `develop`, into `main` that removes the preview suffix from the root `version.json` (`"X.Y.0-preview.{height}"` → `"X.Y.0"`). Merging publishes every package, tags `v<version>` and creates one GitHub Release (`nuget-release.yml`).
 * Versioning: Nerdbank.GitVersioning with one root `version.json` for all packages (lockstep); projects have no `version.json` of their own. `develop` carries the next release's number plus `-preview.{height}`; after a release it moves to the next minor, or to the next major in the PR that adds a breaking change. Until 1.0.0, develop stays at `0.1.0-preview.{height}`, and breaking changes don't change the version. A hotfix sets the next patch in `version.json` by hand, because NBGV doesn't raise a three-part version. Only `main` is a public ref, so other branches append the commit id (`X.Y.Z-preview.N.g<commit>` on develop, `X.Y.Z-g<commit>` on release and hotfix branches). `pathFilters` limit the height to commits that change package inputs. A `ProjectReference` between packages becomes a NuGet dependency on the same version or later (`>=`). SemVer 2; breaking changes only in a major version.
 * Branch protection (ruleset `protected-branches` on `main` and `develop`): PR required, squash only, 0 required approvals (solo maintainer), CODEOWNERS review, conversation resolution, required status checks (build for every TFM, format, CodeQL), no force-push, no deletion. Admin bypass only through pull requests.
@@ -36,12 +36,13 @@ Chosen option: "`feature/*` → `develop` → `main`, squash merges".
 
 ### Consequences
 
-* Good, because every change is validated by the same checks and produces a preview.
+* Good, because every change is validated by the same checks, and changes to a package produce previews.
 * Bad, because the CI check names are referenced by the ruleset – renaming jobs requires updating the ruleset in the same change.
+* Bad, because the package inputs are listed twice, in two syntaxes: `pathFilters` in `version.json` and the `paths` filter of `nuget-pre-release.yml`. They are kept in sync by hand (CLAUDE.md and the reviewer check it).
 
 ### Confirmation
 
-Ruleset and environments are documented in `docs/GITHUB-SETUP.md` and can be compared with `gh api repos/milten89/OpenUrzednik.NET/rulesets`.
+Ruleset and environments are documented in `docs/GITHUB-SETUP.md` and can be compared with `gh api repos/milten89/OpenUrzednik.NET/rulesets`. After a docs-only merge to `develop`, `gh run list --workflow nuget-pre-release.yml` shows no new run.
 
 ## More Information
 
@@ -53,3 +54,5 @@ Ruleset and environments are documented in `docs/GITHUB-SETUP.md` and can be com
 * The packages couldn't be released one at a time: `OpenUrzednik.Nbp` references Core and Http, the DI package depends on the other five (directly or through Nbp), and a stable package with a prerelease dependency fails the pack (NU5104). The shared build files in every `pathFilters` list re-versioned all packages anyway. Now one version, one tag `v<version>` and one GitHub Release cover every package; `nuget-release.yml` stops before publishing if the packages don't share one stable version.
 * Sibling dependencies are minimums (`>=`), so within a major a newer Core must work with an older Nbp. Users should still update all OpenUrzednik packages together.
 * The removed `nbgv prepare-release` advice created branches and `-alpha` versions the process doesn't use. [`RELEASE-PROCESS.md`](../RELEASE-PROCESS.md) describes the release steps.
+
+**2026-10-17 change: previews only for package changes** ([#97](https://github.com/milten89/OpenUrzednik.NET/issues/97)). Every merge to `develop` published a preview of every package, because a non-public version carries the commit id. A docs-only merge then published a version with the same height and a different commit id, so those previews sorted in no useful order. `nuget-pre-release.yml` now runs only when a merge changes a file on the `pathFilters` list (`src`, `version.json`, `Directory.Build.props`, `Directory.Packages.props`, `OpenUrzednik.Packages.slnf`, and the packed icons `assets/branding/icon.png` and `assets/branding/icon-nbp.png`), so each published preview sorts above the one before. The two lists must stay the same (a directory is `dir` in `pathFilters` and `dir/**` in `paths`). A Dependabot bump of a test-only package in `Directory.Packages.props` still publishes; that is accepted, because the same file holds the packages' own dependency versions.

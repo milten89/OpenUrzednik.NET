@@ -21,7 +21,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - ADR-0005: code builds for netstandard2.0 and passes `test (net472)`. `#if` kept inside helpers (polyfills in `src/Polyfills`, `Http/Polyfills`, `Nbp/Polyfills`, `Extensions.Logging/Polyfills`). Dates written as `DateOnly` (an alias for `DateTime` on netstandard2.0) and compared by `DayNumber`. A .NET target is removed only in a major release, at least 6 months after Microsoft's end of support.
 - ADR-0006: provider HTTP goes through `RestRequestExecutor` (`OpenUrzednik.Http`); providers never call `HttpClient.SendAsync`. Request and response are disposed.
 - ADR-0007: the default constructor stays simple; extension points are interfaces with defaults; `CancellationToken cancellationToken = default` comes last in both interface and implementation.
-- ADR-0008: all packages share the version of the root `version.json`; no project has a `version.json` of its own.
+- ADR-0008: all packages share the version of the root `version.json`; no project has a `version.json` of its own. The `paths` filter of `nuget-pre-release.yml` and `pathFilters` in `version.json` list the same package inputs.
 - ADR-0009: language rules; Polish and English user docs updated together.
 - ADR-0010: no work on GUS/KRS/MF beyond what that ADR allows.
 - If a change contradicts an ADR and has no new ADR, report it as **blocking**.
