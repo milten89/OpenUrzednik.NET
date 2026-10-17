@@ -38,4 +38,4 @@ if (result.TryGetValue(out var current))
 
 `EnsureSuccess()` throws an exception derived from `OpenUrzednikException`. Its `Error` property holds the error with its metadata (e.g. the HTTP status code), and `Errors` holds all of the result's errors. Several validation errors go into one `OpenUrzednikValidationException`.
 
-Every provider package (`OpenUrzednik.Gus`, `OpenUrzednik.Krs`, `OpenUrzednik.Mf`, `OpenUrzednik.Nbp`) depends on this package. You usually don't install it on its own, unless you are building your own client in the same style.
+Every provider package (today `OpenUrzednik.Nbp`) depends on this package. You usually don't install it on its own, unless you are building your own client in the same style.

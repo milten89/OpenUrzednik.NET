@@ -48,7 +48,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 
 **Dependencies ([ADR-0004](docs/adr/0004-dependency-policy.md))**
 - Core, `OpenUrzednik.Http` and provider packages take **no package dependencies** on .NET targets.
-- On netstandard2.0, only official Microsoft BCL packages are allowed (`System.Text.Json`, `System.Net.Http.Json`, `Microsoft.Bcl.TimeProvider`, `Microsoft.Bcl.HashCode`, `System.Diagnostics.DiagnosticSource`), referenced in a `Condition="'$(TargetFramework)' == 'netstandard2.0'"` item group.
+- On netstandard2.0, only official Microsoft BCL packages are allowed (`System.Text.Json`, `System.Net.Http.Json`, `Microsoft.Bcl.TimeProvider`, `Microsoft.Bcl.HashCode`), referenced in a `Condition="'$(TargetFramework)' == 'netstandard2.0'"` item group.
 - `Microsoft.Extensions.*` is allowed only in integration packages (`*.DependencyInjection`, `OpenUrzednik.Extensions.Logging`). The tracing adapter `OpenUrzednik.Diagnostics` may depend only on `System.Diagnostics.DiagnosticSource`, and only on netstandard2.0.
 - DI packages don't add a resilience handler: they return the `IHttpClientBuilder`, the app chains `AddStandardResilienceHandler()`, and the DI package turns the handler's rejections into errors.
 - Versions live in `Directory.Packages.props` (central package management). Never put `Version=` on a `PackageReference`.
@@ -104,7 +104,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Test names: `Method_Condition_ExpectedResult`. Use `// Arrange / // Act / // Assert` sections.
 - Use deterministic data: `new Faker().WithConstantSeed()`, the DTO fakers in `tests/OpenUrzednik.Nbp.Tests/Fakes`, and `FakeTimeProvider`.
 - Fake HTTP in unit tests with `StubHttpMessageHandler`; mock interfaces with NSubstitute. Pass `TestContext.Current.CancellationToken` to async calls.
-- WireMock tests must use **response bodies captured from the real API**, not hand-written JSON. Each error path in ADR-0002 (404, 400, 429 with `Retry-After`, 5xx, timeout, connection failure, malformed JSON) needs a test.
+- WireMock tests must use **response bodies captured from the real API**, not hand-written JSON. Each error path in [ADR-0002](docs/adr/0002-result-pattern-and-error-handling.md)'s Confirmation needs a WireMock test for each client: 400 with the server's message, 401 and 403, 404, 429 with `Retry-After`, 5xx, a 200 with an empty array (`NotFoundError`, for endpoints that return an array), malformed JSON, a timeout and a connection failure.
 - Tests against the real API use `[ManualFact]`/`[ManualTheory]` (explicit tests) and must never run in default CI.
 - Tests run on Microsoft.Testing.Platform (`global.json`), so filters are xUnit's (`--filter-class`, `--filter-method`, `--filter-trait`), not VSTest's `--filter`. Filter one project: on the whole solution, projects with no matching test make the run exit with code 8 (add `--ignore-exit-code 8`).
 

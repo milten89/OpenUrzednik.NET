@@ -15,7 +15,7 @@ Goal: our DTOs and test payloads must match what the API really returns, so that
    - every table (`a`, `b`, `c`) for both `exchangerates/tables/{t}` and `exchangerates/rates/{t}/{code}`
    - `cenyzlota`
    - each URL shape: latest, `last/{n}`, `today`, `{date}`, `{from}/{to}`
-   - error cases: a future date, an out-of-range `last/{n}` (> 255), a date with no publication (weekend), a too-long range. Record the status code **and the body text** (NBP returns plain-text messages such as `400 BadRequest - Błędny zakres dat`).
+   - error cases: a future date, an out-of-range `last/{n}` (> 255 for rates and gold prices, > 67 for tables A and C, > 14 for table B), a date with no publication (weekend), a too-long range. Record the status code **and the body text** (NBP returns plain-text messages such as `400 BadRequest - Błędny zakres dat`).
    
    Keep the request count low: NBP is a public service, so don't loop or hammer it.
 3. **Compare with the DTOs:**
