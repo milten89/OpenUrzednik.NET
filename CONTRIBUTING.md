@@ -24,7 +24,7 @@ See [SECURITY.md](SECURITY.md). Don't report vulnerabilities in a public issue.
 ## Pull requests
 
 1. Fork, then branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`).
-2. Target `develop`; we *squash*-merge changes. The `main` branch takes only release PRs from `develop` and hotfixes (see [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md)).
+2. Target `develop`; we merge PRs with a merge commit. The `main` branch takes only release PRs (from `release/X.Y` branches) and hotfixes (see [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md)).
 3. Before opening a PR, run `dotnet test OpenUrzednik.slnx` and `dotnet format OpenUrzednik.slnx --verify-no-changes` locally.
 4. Describe *what* and *why*, not only *how*, especially for changes in `Core`. PR descriptions and commit messages are in English ([ADR-0009](docs/adr/0009-documentation-language.md)).
 5. The docs are in English. Next to the root README and the README of each published package sits a short Polish `README.pl.md` with only the informational parts: what the package is and the "unofficial" notice, installation, the quick-start example, the root package table and links to the English sections. If you change one of those parts and don't write Polish, say so in the PR; the maintainer updates the Polish file.

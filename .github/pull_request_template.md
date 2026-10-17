@@ -6,7 +6,7 @@ Closes #<issue>
 
 ## Checklist
 
-- [ ] Targets `develop` (or is a `release/X.Y` → `main` release PR / `hotfix/*` → `main`)
+- [ ] Targets `develop` (or is a `release/X.Y` → `main` release PR, a `hotfix/*` → `main` PR, or a `merge/vX.Y.Z` → `develop` back-merge)
 - [ ] `dotnet build`, `dotnet test` and `dotnet format --verify-no-changes` pass locally
 - [ ] Tests cover new or changed behaviour, including error paths (unit + WireMock with real API payloads)
 - [ ] Public API has XML docs; breaking changes are called out below
