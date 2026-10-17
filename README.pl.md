@@ -32,9 +32,9 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | 🧪 Preview | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.pl.md) | 🧪 Preview | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP. API publiczne może się jeszcze zmienić |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` |
-| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z GUS |
-| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z KRS |
-| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z Białą Listą VAT |
+| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Planowany, prace nie ruszyły | Klient GUS (wyszukiwanie firm po REGON/NIP) |
+| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Planowany, prace nie ruszyły | Klient KRS (Krajowy Rejestr Sądowy) |
+| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Planowany, prace nie ruszyły | Klient Białej Listy VAT |
 
 ---
 
@@ -75,7 +75,7 @@ catch (OpenUrzednikValidationException ex)
 
 ### Klienty i DI
 
-Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview). W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md). Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są szkieletami i nie ma ich w NuGet — prace nad nimi ruszą po ukończeniu pakietu NBP ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
+Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview). W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md). Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są dopiero planowane: prace nad nimi ruszą po pierwszym stabilnym wydaniu `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). Ich wczesne, puste wersje preview na nuget.org są oznaczone jako przestarzałe i ukryte.
 
 ### Przykłady
 
@@ -91,7 +91,7 @@ Gotowe programy z klientami NBP, z kontenerem DI i bez niego, znajdziesz w [`sam
 
 ## 🤝 Współpraca (Contributing)
 
-Chcesz dodać obsługę kolejnego źródła danych lub zgłosić błąd? Zobacz [CONTRIBUTING.md](CONTRIBUTING.md) (po angielsku) — zawiera zasady pracy nad repozytorium, konwencje API oraz instrukcje dla pull requestów.
+Chcesz zgłosić błąd albo zaproponować kolejne źródło danych? Użyj [formularzy issue](https://github.com/milten89/OpenUrzednik.NET/issues/new/choose); nowe źródło danych zgłoś formularzem dla providera. Zobacz też [CONTRIBUTING.md](CONTRIBUTING.md) (po angielsku) — zawiera zasady pracy nad repozytorium, konwencje API oraz instrukcje dla pull requestów.
 
 ## 📄 Licencja
 

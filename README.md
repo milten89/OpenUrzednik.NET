@@ -32,9 +32,9 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API. The public API may still change | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Skeleton, not published | Placeholder for the GUS integration | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Skeleton, not published | Placeholder for the KRS integration | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Skeleton, not published | Placeholder for the VAT white list (Biała Lista) integration | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Planned, not started | GUS client (company lookups by REGON/NIP) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Planned, not started | KRS client (the National Court Register) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Planned, not started | VAT white list (Biała Lista) client | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 
 ---
 
@@ -75,7 +75,7 @@ catch (OpenUrzednikValidationException ex)
 
 ### Clients and DI
 
-The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient` (preview). With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` are skeletons and aren't on NuGet; work on them starts after the NBP package is finished ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
+The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient` (preview). With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` are planned but not started: work on them begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). We deprecated and unlisted their early empty previews on nuget.org.
 
 ### Samples
 
@@ -89,7 +89,7 @@ You'll find the tests in `tests/`: unit tests, HTTP tests with WireMock, and tes
 
 ## 🤝 Contributing
 
-Want to add another data source or report a bug? See [CONTRIBUTING.md](CONTRIBUTING.md) for how we work on the repository, the API conventions and the pull request steps.
+Found a bug, or want another data source? Open an issue with one of the [issue forms](https://github.com/milten89/OpenUrzednik.NET/issues/new/choose); a new data source goes through the provider proposal form. See [CONTRIBUTING.md](CONTRIBUTING.md) for how we work on the repository, the API conventions and the pull request steps.
 
 ## 📄 License
 

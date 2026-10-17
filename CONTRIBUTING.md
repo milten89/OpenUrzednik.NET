@@ -4,6 +4,7 @@
 
 - Check the [issues](../../issues): someone may already be working on it.
 - For larger changes (a new package, a change to the public API), open an issue with a proposal before you write code. It saves time on both sides.
+- New providers wait: work on GUS, KRS, MF or any other data source begins only after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). We close PRs that change the `src/OpenUrzednik.Gus`, `Krs` or `Mf` skeletons; propose a provider with the provider proposal issue form instead.
 
 ## Repository conventions
 
