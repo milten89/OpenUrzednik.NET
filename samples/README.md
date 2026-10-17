@@ -1,19 +1,17 @@
-# Przykłady
+# Samples
 
-🇬🇧 [English version](README.en.md)
+Two programs that call the real NBP API. Both use the projects in `src/`, so they show the current code, not the version on NuGet.
 
-Dwa programy, które wywołują prawdziwe API NBP. Oba korzystają z projektów z `src/`, więc pokazują aktualny stan kodu, a nie wersję z NuGet.
-
-| Projekt | Co pokazuje |
+| Project | What it shows |
 | :--- | :--- |
-| [`OpenUrzednik.Samples.Console`](OpenUrzednik.Samples.Console/Program.cs) | Klienty NBP bez kontenera DI: sprawdzanie wyniku, `Match`, `TryGetValue`, błąd walidacji i `EnsureSuccess()` z wyjątkiem |
-| [`OpenUrzednik.Samples.WebApi`](OpenUrzednik.Samples.WebApi/Program.cs) | Minimal API z `AddOpenUrzednikNbp()` i `AddStandardResilienceHandler()`; błędy z wyniku zamienia na statusy HTTP i problem details |
+| [`OpenUrzednik.Samples.Console`](OpenUrzednik.Samples.Console/Program.cs) | The NBP clients without a DI container: checking the result, `Match`, `TryGetValue`, a validation error and `EnsureSuccess()` with an exception |
+| [`OpenUrzednik.Samples.WebApi`](OpenUrzednik.Samples.WebApi/Program.cs) | A minimal API with `AddOpenUrzednikNbp()` and `AddStandardResilienceHandler()`; it turns the result's errors into HTTP statuses and problem details |
 
-## Uruchomienie
+## Running
 
 ```bash
 dotnet run --project samples/OpenUrzednik.Samples.Console -f net10.0
 dotnet run --project samples/OpenUrzednik.Samples.WebApi -f net10.0
 ```
 
-Web API słucha na `http://localhost:5000` i odpowiada m.in. na `/gold/latest`, `/rates/USD?topCount=5` i `/tables/c/latest`. Zapytanie `/rates/USD?topCount=0` zwraca 400 z błędem walidacji, a brak danych 404.
+The Web API listens on `http://localhost:5000` and answers `/gold/latest`, `/rates/USD?topCount=5` and `/tables/c/latest`, among others. `/rates/USD?topCount=0` returns 400 with a validation error, and missing data returns 404.

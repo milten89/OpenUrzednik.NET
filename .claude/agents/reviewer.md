@@ -22,7 +22,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - ADR-0006: provider HTTP goes through `RestRequestExecutor` (`OpenUrzednik.Http`); providers never call `HttpClient.SendAsync`. Request and response are disposed.
 - ADR-0007: the default constructor stays simple; extension points are interfaces with defaults; `CancellationToken cancellationToken = default` comes last in both interface and implementation.
 - ADR-0008: all packages share the version of the root `version.json`; no project has a `version.json` of its own. The `paths` filter of `nuget-pre-release.yml` and `pathFilters` in `version.json` list the same package inputs.
-- ADR-0009: language rules; Polish and English user docs updated together.
+- ADR-0009: docs are in English, and English wins over Polish. If a PR changes an informational part of a README (description, "unofficial" notice, installation, quick start), `README.pl.md` changes too. A `*.pl.md` file gets no contract or reference content (API limits, data availability, errors, telemetry, configuration rules, dependencies, versioning, support), and no `*.en.md` file comes back. Renaming or removing a section of an English README updates the links to it in `README.pl.md`.
 - ADR-0010: no work on GUS/KRS/MF beyond what that ADR allows.
 - If a change contradicts an ADR and has no new ADR, report it as **blocking**.
 

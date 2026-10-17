@@ -11,7 +11,7 @@ Closes #<issue>
 - [ ] Tests cover new or changed behaviour, including error paths (unit + WireMock with real API payloads)
 - [ ] Public API has XML docs; breaking changes are called out below
 - [ ] Complies with the [ADRs](../docs/adr/README.md), or adds a new ADR for a changed decision
-- [ ] User-facing docs updated in both language versions (if applicable, ADR-0009)
+- [ ] If an informational part of a README changed (description, installation, quick start, package table, section names), `README.pl.md` too (ADR-0009)
 - [ ] At least one release label set (`.github/release.yml`; the maintainer sets it if you can't)
 - [ ] CI job names unchanged, or the ruleset update is described below
 

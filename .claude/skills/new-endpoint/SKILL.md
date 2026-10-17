@@ -60,6 +60,6 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 ## 8. Finish
 
 - `dotnet build OpenUrzednik.slnx`, `dotnet test OpenUrzednik.slnx -f net10.0`, `dotnet format OpenUrzednik.slnx --verify-no-changes`.
-- Update the package README usage section (Polish and English versions, ADR-0009) if the public API changed.
+- Update the package README (`README.md`, English) if the public API changed. If an informational part changed (description, installation, quick start, the list of English sections), update `README.pl.md` too (ADR-0009).
 - The PR body starts with `Closes #<issue>` for the issue this work comes from.
 - Run the `reviewer` agent on the diff.

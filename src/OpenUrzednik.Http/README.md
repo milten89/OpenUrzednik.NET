@@ -1,16 +1,16 @@
 # OpenUrzednik.Http
 
-🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Http/README.en.md)
+🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Http/README.pl.md)
 
-Wspólna warstwa HTTP dla pakietów **OpenUrzednik.NET**, które korzystają z API typu REST/JSON. Wysyła zapytania, zamienia statusy HTTP na błędy `OpenUrzednikResult`, odróżnia przekroczenie czasu od anulowania i zapisuje logi oraz spany.
+Shared HTTP layer for the **OpenUrzednik.NET** packages that use REST/JSON APIs. It sends requests, turns HTTP statuses into `OpenUrzednikResult` errors, tells a timeout apart from a cancellation, and writes logs and spans.
 
-> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
+> Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
-## Dla kogo
+## Who it's for
 
-Pakiet jest dla autorów pakietów providerów (np. `OpenUrzednik.Nbp`). W aplikacji go nie potrzebujesz: instaluje się razem z providerem, a klienty providera ukrywają go za swoim API. Jego typy są w przestrzeni nazw `OpenUrzednik.Http.Infrastructure` ([ADR-0006](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0006-shared-http-layer.md)).
+This package is for authors of provider packages (e.g. `OpenUrzednik.Nbp`). You don't add it to your app: it comes with the provider, and the provider's clients hide it behind their API. Its types are in the `OpenUrzednik.Http.Infrastructure` namespace ([ADR-0006](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0006-shared-http-layer.md)).
 
-## Przykład
+## Example
 
 ```csharp
 using OpenUrzednik.Http.Infrastructure;
@@ -22,6 +22,6 @@ var executor = new RestRequestExecutor(httpClient, new Uri("https://api.nbp.pl/a
 var result = await executor.GetAsync("cenyzlota", MyJsonContext.Default.GoldPriceDtoArray, cancellationToken);
 ```
 
-`RestRequestExecutor` nie zmienia `HttpClient`, więc jeden `HttpClient` może obsługiwać kilku providerów. Błędy, które zdarzają się w normalnym działaniu (statusy 4xx i 5xx, błędny JSON, brak połączenia, przekroczony czas), wracają w wyniku. Wyjątek dostajesz tylko wtedy, gdy wywołujący anuluje zapytanie.
+`RestRequestExecutor` doesn't change the `HttpClient`, so one `HttpClient` can serve several providers. Errors that happen during normal operation (4xx and 5xx statuses, bad JSON, no connection, a timeout) come back in the result. You get an exception only when the caller cancels the request.
 
-Jeśli API zwraca błędy w nietypowej postaci, podaj w `RestProviderProfile` funkcję `mapErrorAsync`. Dostaje ona `ErrorResponseContext` z odpowiedzią i może odczytać do 500 znaków treści przez `ReadMessageAsync()`. Gdy zwróci `null`, obowiązuje domyślne mapowanie.
+If an API reports errors in an unusual shape, pass a `mapErrorAsync` function in `RestProviderProfile`. It gets an `ErrorResponseContext` with the response and can read up to 500 characters of the body through `ReadMessageAsync()`. When it returns `null`, the default mapping applies.

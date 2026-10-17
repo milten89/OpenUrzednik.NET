@@ -1,18 +1,18 @@
 # OpenUrzednik.Core
 
-🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.en.md)
+🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.pl.md)
 
-Wspólne abstrakcje dla całego zestawu **OpenUrzednik.NET** — wzorzec Result (`OpenUrzednikResult` / `OpenUrzednikResult<T>`), typowane błędy (`OpenUrzednikError`) oraz wyjątki (`OpenUrzednikException`) dla konsumentów preferujących klasyczny styl.
+Shared abstractions for the whole **OpenUrzednik.NET** set: the Result pattern (`OpenUrzednikResult` / `OpenUrzednikResult<T>`), typed errors (`OpenUrzednikError`) and exceptions (`OpenUrzednikException`) for consumers who prefer the classic style.
 
-> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
+> Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
-## Instalacja
+## Installation
 
 ```bash
 dotnet add package OpenUrzednik.Core
 ```
 
-## Przykład użycia
+## Example
 
 ```csharp
 using OpenUrzednik.Core;
@@ -23,19 +23,19 @@ OpenUrzednikResult<int> result = OpenUrzednikResult.Success(42);
 int value = result.EnsureSuccess();
 ```
 
-## Praca z wynikiem
+## Working with a result
 
 ```csharp
 var label = result
     .Map(v => v * 2)
-    .Match(v => $"Wartość: {v}", errors => $"Błąd: {errors[0].Message}");
+    .Match(v => $"Value: {v}", errors => $"Error: {errors[0].Message}");
 
 if (result.TryGetValue(out var current))
     Console.WriteLine(current);
 ```
 
-`Map` zmienia wartość udanego wyniku, `Bind` uruchamia kolejną operację, która też zwraca wynik, a `Match` obsługuje oba przypadki. Jeśli wynik zawiera błędy, przechodzą one dalej bez zmian, a przekazane funkcje nie są wywoływane.
+`Map` changes the value of a successful result, `Bind` runs another operation that also returns a result, and `Match` handles both cases. If the result holds errors, they pass through unchanged and the functions you pass aren't called.
 
-`EnsureSuccess()` rzuca wyjątek pochodny od `OpenUrzednikException`. Jego właściwość `Error` zawiera błąd razem z metadanymi (np. kodem statusu HTTP), a `Errors` wszystkie błędy wyniku. Kilka błędów walidacji trafia do jednego `OpenUrzednikValidationException`.
+`EnsureSuccess()` throws an exception derived from `OpenUrzednikException`. Its `Error` property holds the error with its metadata (e.g. the HTTP status code), and `Errors` holds all of the result's errors. Several validation errors go into one `OpenUrzednikValidationException`.
 
-Ten pakiet jest zależnością wszystkich pakietów provider-specific (`OpenUrzednik.Gus`, `OpenUrzednik.Krs`, `OpenUrzednik.Mf`, `OpenUrzednik.Nbp`) i zwykle nie instaluje się go samodzielnie, chyba że budujesz własnego klienta w tym samym stylu.
+Every provider package (`OpenUrzednik.Gus`, `OpenUrzednik.Krs`, `OpenUrzednik.Mf`, `OpenUrzednik.Nbp`) depends on this package. You usually don't install it on its own, unless you are building your own client in the same style.

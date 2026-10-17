@@ -1,18 +1,18 @@
 # OpenUrzednik.Extensions.Logging
 
-🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Extensions.Logging/README.en.md)
+🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Extensions.Logging/README.pl.md)
 
-Adapter, który przekazuje logi klientów **OpenUrzednik.NET** do `ILogger` z Microsoft.Extensions.Logging.
+Adapter that sends the logs of **OpenUrzednik.NET** clients to `ILogger` from Microsoft.Extensions.Logging.
 
-> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
+> Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
-## Instalacja
+## Installation
 
 ```bash
 dotnet add package OpenUrzednik.Extensions.Logging
 ```
 
-## Użycie
+## Usage
 
 ```csharp
 using OpenUrzednik.Extensions.Logging;
@@ -22,7 +22,7 @@ var client = new NbpGoldPriceClient(httpClient,
     logger: loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>());
 ```
 
-Kategorią logów jest pełna nazwa typu klienta (np. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`), tak jak w `ILogger<T>`. Logi całego providera włączysz albo wyciszysz prefiksem:
+The log category is the client's full type name (e.g. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`), as with `ILogger<T>`. You can turn a whole provider's logs on or off by prefix:
 
 ```json
 {
@@ -34,10 +34,10 @@ Kategorią logów jest pełna nazwa typu klienta (np. `OpenUrzednik.Nbp.Gold.Nbp
 }
 ```
 
-Jeśli masz już `ILogger`, użyj `new OpenUrzednikLogger(logger)`.
+If you already have an `ILogger`, use `new OpenUrzednikLogger(logger)`.
 
-Wpisy są strukturalne: zawierają nazwane wartości (np. `provider`, `path`) i szablon w `{OriginalFormat}`, tak jak wpisy z `LoggerMessage`. Serilog, OpenTelemetry i inni dostawcy widzą je więc jako osobne właściwości. Treść komunikatu jest formatowana z kulturą niezmienną (invariant).
+Entries are structured: they carry named values (e.g. `provider`, `path`) and the template in `{OriginalFormat}`, like entries from `LoggerMessage`. Serilog, OpenTelemetry and other providers see them as separate properties. The message text is formatted with the invariant culture.
 
-## Zależności
+## Dependencies
 
-Pakiet zależy od `Microsoft.Extensions.Logging.Abstractions`. Pakiety rdzeniowe i providerów mają własne interfejsy logowania i tej zależności nie potrzebują ([ADR-0003](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0003-telemetry-abstractions.md)).
+The package depends on `Microsoft.Extensions.Logging.Abstractions`. The core and provider packages have their own logging interfaces and don't need this dependency ([ADR-0003](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0003-telemetry-abstractions.md)).

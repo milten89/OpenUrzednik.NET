@@ -1,34 +1,33 @@
 # Contributing to OpenUrzednik.NET
 
-🇬🇧 [English version](CONTRIBUTING.en.md)
+## Before you start
 
-## Zanim zaczniesz
+- Check the [issues](../../issues): someone may already be working on it.
+- For larger changes (a new package, a change to the public API), open an issue with a proposal before you write code. It saves time on both sides.
 
-- Sprawdź [issues](../../issues) — może ktoś już nad tym pracuje.
-- Do większych zmian (nowy pakiet, zmiana publicznego API) najpierw otwórz issue z propozycją, zanim napiszesz kod — oszczędzi to czas obu stronom.
+## Repository conventions
 
-## Konwencje w repo
+Binding architecture decisions are in [`docs/adr/`](docs/adr/README.md), and current work and priorities are in the [issues](https://github.com/milten89/OpenUrzednik.NET/issues) and the [project](https://github.com/users/milten89/projects/2). A change that contradicts an accepted ADR needs a new ADR in the same PR.
 
-Wiążące decyzje architektoniczne są opisane w [`docs/adr/`](docs/adr/README.md), a bieżąca praca i priorytety w [issues](https://github.com/milten89/OpenUrzednik.NET/issues) i w [projekcie](https://github.com/users/milten89/projects/2). Zmiana, która jest sprzeczna z zaakceptowanym ADR, wymaga nowego ADR w tym samym PR.
+- **`OpenUrzednikResult` / `OpenUrzednikResult<T>` for every error that can happen during normal operation** (validation, HTTP statuses, bad responses, network errors, timeouts), instead of error handling scattered across the code. We throw exceptions only when the caller cancels, for programmer errors (e.g. a `null` argument) and for fatal errors. Don't use `catch (Exception)` ([ADR-0002](docs/adr/0002-result-pattern-and-error-handling.md)). Exceptions (`OpenUrzednikException` and its subtypes) are available through `.EnsureSuccess()` / `.EnsureSuccessAsync()` for consumers who prefer the classic style; don't add parallel API variants.
+- **Dependencies:** the Core and provider packages have no NuGet dependencies (apart from official BCL packages for netstandard2.0); integrations with `Microsoft.Extensions.*` go into separate packages ([ADR-0004](docs/adr/0004-dependency-policy.md)).
+- **`OpenUrzednikError`** is the base type for expected errors. Each concrete error derives from it and implements `Code` and `CreateException()`, which returns an exception derived from `OpenUrzednikException`.
+- **Provider packages** follow the patterns in `OpenUrzednik.Core`: type names, error naming and the way results are returned stay consistent.
+- **Document the public API** with `///` comments. `GenerateDocumentationFile` is on, so they show up in the consumer's IntelliSense.
+- **Tests** must not depend on real government servers in the default CI run. Test HTTP scenarios with stubs (`StubHttpMessageHandler`) and WireMock, using responses captured from the real API. Mark tests that call the real API with `[ManualFact]` / `[ManualTheory]`. They run only on request: `dotnet test tests/OpenUrzednik.IntegrationTests --explicit on`, or with the `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` variable set.
 
-- **`OpenUrzednikResult` / `OpenUrzednikResult<T>` zamiast rozproszonej logiki błędów** dla wszystkich błędów, które mogą wystąpić podczas normalnego działania (walidacja, statusy HTTP, błędne odpowiedzi, błędy sieci, timeouty). Wyjątki rzucamy tylko przy anulowaniu przez wywołującego, błędach programisty (np. `null` w argumencie) i błędach krytycznych. Nie używaj `catch (Exception)` ([ADR-0002](docs/adr/0002-result-pattern-and-error-handling.md)). Wyjątki (`OpenUrzednikException` i jego pochodne) są dostępne przez `.EnsureSuccess()` / `.EnsureSuccessAsync()` dla konsumentów preferujących klasyczny styl — nie dodawaj równoległych wariantów API.
-- **Zależności:** pakiety Core i providerów nie mają zależności NuGet (poza oficjalnymi pakietami BCL dla netstandard2.0); integracje z `Microsoft.Extensions.*` trafiają do osobnych pakietów ([ADR-0004](docs/adr/0004-dependency-policy.md)).
-- **`OpenUrzednikError`** jest bazowym typem dla błędów przewidywalnych. Każdy konkretny błąd powinien dziedziczyć po nim i implementować `Code` oraz `CreateException()`, które zwraca wyjątek pochodny od `OpenUrzednikException`.
-- **Pakiety provider-specific** powinny być zgodne z ruchem przyjętym w `OpenUrzednik.Core` — nazwy typów, nazewnictwo błędów i sposób zwracania rezultatów mają być spójne.
-- **Publiczne API** dokumentuj komentarzami `///` — `GenerateDocumentationFile` jest włączone, więc trafiają do IntelliSense konsumenta.
-- **Testy** nie mogą zależeć od prawdziwych serwerów urzędów w domyślnym przebiegu CI. Scenariusze HTTP testuj stubami (`StubHttpMessageHandler`) i WireMockiem, używając odpowiedzi przechwyconych z prawdziwego API. Testy wywołujące prawdziwe API oznaczaj `[ManualFact]` / `[ManualTheory]` — uruchamiają się tylko na żądanie: `dotnet test tests/OpenUrzednik.IntegrationTests --explicit on` albo z ustawioną zmienną `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED`.
+## Reporting security vulnerabilities
 
-## Zgłaszanie luk bezpieczeństwa
+See [SECURITY.md](SECURITY.md). Don't report vulnerabilities in a public issue.
 
-Patrz [SECURITY.md](SECURITY.md) — nie zgłaszaj podatności przez publiczne issue.
+## Pull requests
 
-## Pull requesty
+1. Fork, then branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`).
+2. Target `develop`; we *squash*-merge changes. The `main` branch takes only release PRs from `develop` and hotfixes (see [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md)).
+3. Before opening a PR, run `dotnet test OpenUrzednik.slnx` and `dotnet format OpenUrzednik.slnx --verify-no-changes` locally.
+4. Describe *what* and *why*, not only *how*, especially for changes in `Core`. PR descriptions and commit messages are in English ([ADR-0009](docs/adr/0009-documentation-language.md)).
+5. The docs are in English. Next to the root README and the README of each published package sits a short Polish `README.pl.md` with only the informational parts: what the package is and the "unofficial" notice, installation, the quick-start example, the root package table and links to the English sections. If you change one of those parts and don't write Polish, say so in the PR; the maintainer updates the Polish file.
 
-1. Fork + branch od `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`).
-2. PR kieruj do `develop` — zmiany są łączone przez *squash*. Gałąź `main` przyjmuje tylko PR-y wydaniowe z `develop` oraz hotfixy (zob. [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md)).
-3. Przed otwarciem PR uruchom lokalnie `dotnet test OpenUrzednik.slnx` oraz `dotnet format OpenUrzednik.slnx --verify-no-changes`.
-4. Opisz *co* i *dlaczego*, nie tylko *jak* — szczególnie przy zmianach w `Core`. Opis PR i komunikaty commitów piszemy po angielsku ([ADR-0009](docs/adr/0009-documentation-language.md)).
+## Working with AI agents
 
-## Praca z agentami AI
-
-Instrukcje dla agentów (Claude Code, Copilot itp.) znajdują się w [`CLAUDE.md`](CLAUDE.md) / [`AGENTS.md`](AGENTS.md).
+Instructions for agents (Claude Code, Copilot and others) are in [`CLAUDE.md`](CLAUDE.md). [`AGENTS.md`](AGENTS.md) only points to it.

@@ -1,18 +1,18 @@
 # OpenUrzednik.Diagnostics
 
-🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.en.md)
+🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.pl.md)
 
-Adapter, który zamienia spany klientów **OpenUrzednik.NET** na `Activity` z `System.Diagnostics`. Zbierają je OpenTelemetry i inne narzędzia do śledzenia.
+Adapter that turns the spans of **OpenUrzednik.NET** clients into `Activity` objects from `System.Diagnostics`, which OpenTelemetry and other tracing tools collect.
 
-> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
+> Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
-## Instalacja
+## Installation
 
 ```bash
 dotnet add package OpenUrzednik.Diagnostics
 ```
 
-## Użycie
+## Usage
 
 ```csharp
 using OpenUrzednik.Diagnostics;
@@ -23,26 +23,26 @@ var client = new NbpGoldPriceClient(httpClient,
     traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
 ```
 
-Źródła nazywają się `OpenUrzednik.<Provider>` (np. `OpenUrzednik.Nbp`). W OpenTelemetry włączysz wszystkie naraz:
+Sources are named `OpenUrzednik.<Provider>` (e.g. `OpenUrzednik.Nbp`). In OpenTelemetry you can enable all of them at once:
 
 ```csharp
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing.AddSource("OpenUrzednik.*"));
 ```
 
-`GetShared` tworzy jedno `ActivitySource` na nazwę, które żyje do końca procesu. Własne źródło przekażesz przez `new ActivityTraceSource(source)`.
+`GetShared` creates one `ActivitySource` per name, which lives until the process ends. To use your own source, pass `new ActivityTraceSource(source)`.
 
-## Co trafia do śladu
+## What goes into the trace
 
-- Każda metoda klienta ma span `<provider>.<obszar>.<operacja>` (np. `nbp.gold.latest`) z parametrami w tagach (np. `nbp.top_count`).
-- Zapytanie HTTP to span podrzędny `nbp.http.get` z tagami `http.request.method`, `url.path` i `http.response.status_code`.
-- Błąd ustawia status `Error` i zapisuje kod błędu w `error.code`: jako tag spanu albo w zdarzeniu `error`. Wyjątek dodaje zdarzenie `exception`.
-- Wszystkie spany są typu `Internal`. Span typu `Client` dla samego zapytania tworzy instrumentacja `HttpClient` i zagnieżdża go pod `nbp.http.get`.
+- Each client method has a span `<provider>.<area>.<operation>` (e.g. `nbp.gold.latest`) with its parameters as tags (e.g. `nbp.top_count`).
+- The HTTP request is a child span `nbp.http.get` with the tags `http.request.method`, `url.path` and `http.response.status_code`.
+- An error sets the `Error` status and records the error code in `error.code`: as a span tag or in an `error` event. An exception adds an `exception` event.
+- All spans are of kind `Internal`. The `Client` span for the request itself comes from the `HttpClient` instrumentation, nested under `nbp.http.get`.
 
-Gdy nikt nie nasłuchuje źródła, adapter nie tworzy `Activity` i niczego nie alokuje.
+When nothing listens to the source, the adapter creates no `Activity` and allocates nothing.
 
-Na .NET Framework `Activity` domyślnie dostaje identyfikatory hierarchiczne, a nie W3C. OpenTelemetry przełącza aplikację na W3C; bez niego ustaw `Activity.DefaultIdFormat = ActivityIdFormat.W3C` i `Activity.ForceDefaultIdFormat = true`.
+On .NET Framework, `Activity` gets hierarchical ids by default, not W3C ones. OpenTelemetry switches the app to W3C; without it, set `Activity.DefaultIdFormat = ActivityIdFormat.W3C` and `Activity.ForceDefaultIdFormat = true`.
 
-## Zależności
+## Dependencies
 
-Na platformach .NET pakiet nie ma zależności, bo `ActivitySource` jest częścią .NET. Na `netstandard2.0` (.NET Framework) zależy od `System.Diagnostics.DiagnosticSource`.
+On .NET the package has no dependencies, because `ActivitySource` is part of .NET. On `netstandard2.0` (.NET Framework) it depends on `System.Diagnostics.DiagnosticSource`.

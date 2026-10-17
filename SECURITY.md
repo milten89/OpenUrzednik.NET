@@ -1,15 +1,15 @@
 # Security Policy
 
-🇬🇧 [English version](SECURITY.en.md)
+🇵🇱 [Jak zgłosić podatność (po polsku)](SECURITY.pl.md)
 
-Jeśli znajdziesz podatność bezpieczeństwa w OpenUrzednik.NET (np. sposób na wyciek klucza API, podatność SSRF przez skonstruowany URL, albo problem z walidacją danych z odpowiedzi urzędów), **nie zgłaszaj jej przez publiczne issue**.
+If you find a security vulnerability in OpenUrzednik.NET (e.g. a way to leak an API key, SSRF through a crafted URL, or a problem with validating data from government responses), **don't report it in a public issue**.
 
-Zamiast tego użyj zakładki **Security → Report a vulnerability** w tym repozytorium (GitHub Private Vulnerability Reporting) albo napisz bezpośrednio do opiekuna repozytorium.
+Use **Security → Report a vulnerability** in this repository instead (GitHub Private Vulnerability Reporting), or write to the repository maintainer.
 
-Postaraj się opisać:
+Please include:
 
-- który pakiet (np. Core, Http, Nbp) i wersję,
-- kroki do odtworzenia,
-- potencjalny wpływ.
+- the package (e.g. Core, Http, Nbp) and its version,
+- steps to reproduce,
+- the potential impact.
 
-Odpowiadamy najszybciej jak to możliwe — to projekt hobbystyczny/open source, nie firma z SLA, więc czas reakcji może wynosić kilka dni.
+We reply as soon as we can. This is a hobby open-source project, not a company with an SLA, so a reply may take a few days.
