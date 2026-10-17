@@ -15,7 +15,7 @@
 
 Większość istniejących pakietów dla polskich API została porzucona lub nie utrzymuje się w nowoczesnym modelu .NET. OpenUrzednik.NET ma dostarczać:
 
-- **Nowoczesne API:** aktualne wersje .NET, a przez `netstandard2.0` także .NET Framework ([obsługiwane platformy po angielsku](README.md#-packages))
+- **Nowoczesne API:** wersje .NET z długoterminowym wsparciem (LTS), a przez `netstandard2.0` także .NET Framework 4.7.2 lub nowszy ([obsługiwane platformy po angielsku](README.md#supported-platforms))
 - **Spójne modele błędów:** `OpenUrzednikResult` / `OpenUrzednikResult<T>` zamiast rozproszonej logiki błędów
 - **Elastyczność:** zachowanie klasycznego stylu przez `.EnsureSuccess()` / `.EnsureSuccessAsync()`
 - **Przejrzysty rozwój:** kod podzielony na `Core` i osobne pakiety providerów

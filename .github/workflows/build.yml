@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tfm: [ net8.0, net9.0, net10.0 ]
+        tfm: [ net8.0, net10.0 ]
 
     steps:
     - name: Checkout repository
@@ -37,7 +37,6 @@ jobs:
       with:
         dotnet-version: |
           8.0.x
-          9.0.x
           10.0.x
 
     - name: Cache NuGet packages
