@@ -1,15 +1,13 @@
 # OpenUrzednik.Gus
 
-🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Gus/README.en.md)
+**GUS** (Główny Urząd Statystyczny, Statistics Poland) client for OpenUrzednik.NET: company lookups by REGON/NIP in the GUS register.
 
-Klient **GUS** (Główny Urząd Statystyczny) dla OpenUrzednik.NET — wyszukiwanie firm po REGON/NIP w rejestrze GUS.
-
-> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
+> Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
 ## Status
 
-🚧 Ten pakiet jest obecnie szkieletem — integracja z API GUS jest w trakcie implementacji.
+🚧 This package is a skeleton for now; the integration with the GUS API is in progress.
 
-## Instalacja
+## Installation
 
-Pakietu nie ma jeszcze w NuGet. Opublikujemy go, gdy klient będzie gotowy do użycia ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)).
+The package isn't on NuGet yet. We'll publish it when the client is ready to use ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)).

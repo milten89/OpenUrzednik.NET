@@ -1,15 +1,13 @@
 # OpenUrzednik.Mf
 
-🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Mf/README.en.md)
+**VAT white list** (Biała Lista, Ministry of Finance) client for OpenUrzednik.NET: checks of VAT payer status and bank account numbers.
 
-Klient **Białej Listy VAT** (Ministerstwo Finansów) dla OpenUrzednik.NET — weryfikacja statusu podatnika VAT oraz numerów rachunków bankowych.
-
-> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
+> Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
 ## Status
 
-🚧 Ten pakiet jest obecnie szkieletem — integracja z API Białej Listy jest w trakcie implementacji.
+🚧 This package is a skeleton for now; the integration with the white list API is in progress.
 
-## Instalacja
+## Installation
 
-Pakietu nie ma jeszcze w NuGet. Opublikujemy go, gdy klient będzie gotowy do użycia ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)).
+The package isn't on NuGet yet. We'll publish it when the client is ready to use ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)).

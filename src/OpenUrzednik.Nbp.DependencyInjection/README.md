@@ -1,18 +1,18 @@
 # OpenUrzednik.Nbp.DependencyInjection
 
-🇬🇧 [English version](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp.DependencyInjection/README.en.md)
+🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md)
 
-Rejestracja klientów **NBP** z [OpenUrzednik.Nbp](https://www.nuget.org/packages/OpenUrzednik.Nbp) w Microsoft.Extensions.DependencyInjection: klienty typowane z `IHttpClientFactory`, sprawdzane opcje, logowanie i śledzenie.
+Registers the **NBP** clients from [OpenUrzednik.Nbp](https://www.nuget.org/packages/OpenUrzednik.Nbp) in Microsoft.Extensions.DependencyInjection: typed clients from `IHttpClientFactory`, validated options, logging and tracing.
 
-> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET) — zobacz [główne README](https://github.com/milten89/OpenUrzednik.NET#readme) po pełny przegląd projektu.
+> Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
-## Instalacja
+## Installation
 
 ```bash
 dotnet add package OpenUrzednik.Nbp.DependencyInjection
 ```
 
-## Użycie
+## Usage
 
 ```csharp
 builder.Services.AddOpenUrzednikNbp();
@@ -26,9 +26,9 @@ public sealed class RatesService(INbpCurrencyExchangeRateClient rates)
 }
 ```
 
-Rejestrowane są `INbpCurrencyExchangeRateClient`, `INbpExchangeRateTableClient` i `INbpGoldPriceClient` (oraz ich klasy). Wszystkie korzystają z jednego nazwanego `HttpClient` (`"OpenUrzednik.Nbp"`). Klienty są rejestrowane jako transient, jak zwykle przy `IHttpClientFactory`: nie wstrzykuj ich do singletonów, bo taki singleton zatrzyma jeden `HttpClient` na zawsze i nie zauważy zmian DNS.
+It registers `INbpCurrencyExchangeRateClient`, `INbpExchangeRateTableClient` and `INbpGoldPriceClient` (and their classes). All of them use one named `HttpClient` (`"OpenUrzednik.Nbp"`). The clients are transient, as usual with `IHttpClientFactory`: don't inject them into singletons, because such a singleton keeps one `HttpClient` forever and misses DNS changes.
 
-Opcje ustawiasz w lambdzie:
+Set options in a lambda:
 
 ```csharp
 builder.Services.AddOpenUrzednikNbp(options =>
@@ -38,25 +38,25 @@ builder.Services.AddOpenUrzednikNbp(options =>
 });
 ```
 
-Błędne opcje (np. adres `http://`) zatrzymują start aplikacji wyjątkiem `OptionsValidationException`.
+Invalid options (e.g. an `http://` address) stop the app at startup with an `OptionsValidationException`.
 
-## Ponowienia i limity czasu
+## Retries and timeouts
 
-Pakiet sam nie dodaje ponowień ani limitów czasu. Zwraca `IHttpClientBuilder`, więc dodajesz je standardowym API Microsoftu z pakietu `Microsoft.Extensions.Http.Resilience`:
+The package doesn't add retries or timeouts by itself. It returns the `IHttpClientBuilder`, so you add them with Microsoft's standard API from the `Microsoft.Extensions.Http.Resilience` package:
 
 ```csharp
 builder.Services.AddOpenUrzednikNbp()
     .AddStandardResilienceHandler();
 ```
 
-`NbpOptions.Timeout` obejmuje wszystkie próby razem, więc jeśli jest krótszy niż łączny limit handlera, przerwie ponowienia. Z handlerem go nie ustawiaj albo daj mu więcej czasu niż handlerowi.
+`NbpOptions.Timeout` covers all attempts together, so if it's shorter than the handler's total timeout, it cuts the retries short. With the handler, leave it unset or give it more time than the handler.
 
-Domyślnie handler ponawia zapytanie do 3 razy przy statusach 5xx, 408 i 429 (z uwzględnieniem `Retry-After`). Każda próba ma 10 s, całe zapytanie 30 s. Handler ma też circuit breaker i rate limiter. Szczegóły i zmianę ustawień (np. `options.Retry.MaxRetryAttempts = 5`) opisuje [dokumentacja Microsoftu](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience). Dodaj jeden taki handler, nie kilka. Jeśli aplikacja dodaje go już wszystkim klientom przez `ConfigureHttpClientDefaults` (jak szablon .NET Aspire), nie dodawaj drugiego. Na .NET Framework pakiety `Microsoft.Extensions.Http.Resilience` 10.x ostrzegają przy kompilacji, że nie wspierają tej platformy.
+By default the handler retries a request up to 3 times on 5xx, 408 and 429 statuses (honoring `Retry-After`). Each attempt gets 10 s, the whole request 30 s. The handler also has a circuit breaker and a rate limiter. [Microsoft's documentation](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience) describes the details and how to change the settings (e.g. `options.Retry.MaxRetryAttempts = 5`). Add one such handler, not several. If the app already adds one to every client through `ConfigureHttpClientDefaults` (like the .NET Aspire template), don't add a second one. On .NET Framework, the `Microsoft.Extensions.Http.Resilience` 10.x packages warn at build time that they don't support that platform.
 
-Gdy handler odrzuci zapytanie, dostajesz błąd w wyniku, a nie wyjątek: przekroczony czas to `RequestTimeoutError`, a otwarty circuit breaker albo rate limiter to `ServiceUnavailableError`. Anulowanie przez wywołującego nadal rzuca `OperationCanceledException`.
+When the handler rejects a request, you get an error in the result, not an exception: a timeout is a `RequestTimeoutError`, and an open circuit breaker or rate limiter is a `ServiceUnavailableError`. Cancellation by the caller still throws `OperationCanceledException`.
 
-## Logowanie i śledzenie
+## Logging and tracing
 
-Klienty logują przez zarejestrowany `ILoggerFactory`. Kategorią jest pełna nazwa klienta (np. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`). Spany trafiają do źródła `OpenUrzednik.Nbp`, które w OpenTelemetry włączysz przez `AddSource("OpenUrzednik.*")`.
+The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`.
 
-Jeśli zarejestrujesz własny `TimeProvider` albo `INbpUrlBuilderFactory`, klienty użyją ich zamiast domyślnych.
+If you register your own `TimeProvider` or `INbpUrlBuilderFactory`, the clients use them instead of the defaults.

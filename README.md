@@ -1,48 +1,48 @@
 # OpenUrzednik.NET 💼🇵🇱
 
-🇬🇧 [English version](README.en.md)
+🇵🇱 [Wersja polska (skrócona)](README.pl.md)
 
 [![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Core?style=flat-square)](https://www.nuget.org/)
 [![License](https://img.shields.io/github/license/milten89/OpenUrzednik.NET?style=flat-square)](LICENSE)
 
-**OpenUrzednik.NET** to nowoczesny, otwartoźródłowy zestaw bibliotek dla platformy .NET, służący do integracji z polskimi API oraz danymi publicznymi. W aktualnej fazie rozwoju projekt skupia się na wspólnych fundamentach (`OpenUrzednik.Core`) oraz na referencyjnym kliencie API NBP (`OpenUrzednik.Nbp`), na którego wzór powstaną kolejne pakiety.
+**OpenUrzednik.NET** is a set of open-source .NET libraries for Polish public APIs and public data. At this stage the project focuses on the shared foundations (`OpenUrzednik.Core`) and on the reference client for the NBP API (`OpenUrzednik.Nbp`), which the next packages will follow.
 
-> ⚠️ **Projekt nieoficjalny:** Ten zestaw bibliotek jest oddolną inicjatywą społecznościową i nie jest powiązany, autoryzowany ani sponsorowany przez żadne z polskich ministerstw ani urzędów państwowych.
-
----
-
-## 🚀 Dlaczego powstał ten projekt?
-
-Większość istniejących pakietów dla polskich API została porzucona lub nie utrzymuje się w nowoczesnym modelu .NET. OpenUrzednik.NET ma dostarczać:
-
-- **Nowoczesne API:** wsparcie dla `net8.0`, `net9.0` i `net10.0`, a przez `netstandard2.0` także dla .NET Framework (testujemy na .NET Framework 4.8)
-- **Spójne modele błędów:** `OpenUrzednikResult` / `OpenUrzednikResult<T>` zamiast rozproszonej logiki błędów
-- **Elastyczność:** zachowanie klasycznego stylu przez `.EnsureSuccess()` / `.EnsureSuccessAsync()`
-- **Przejrzysty rozwój:** kod podzielony na `Core` i pakiety provider-specific
+> ⚠️ **Unofficial project:** this is a community initiative. It is not affiliated with, authorized or sponsored by any Polish ministry or government office.
 
 ---
 
-## 📦 Status pakietów
+## 🚀 Why this project?
 
-| Pakiet | Status | Opis | Celowy target |
+Most existing packages for Polish APIs are abandoned or don't follow modern .NET. OpenUrzednik.NET aims to provide:
+
+- **A modern API:** support for `net8.0`, `net9.0` and `net10.0`, and through `netstandard2.0` also for .NET Framework (we test on .NET Framework 4.8)
+- **One error model:** `OpenUrzednikResult` / `OpenUrzednikResult<T>` instead of error handling scattered across the code
+- **Flexibility:** the classic exception style is still there through `.EnsureSuccess()` / `.EnsureSuccessAsync()`
+- **A clear structure:** shared code in `Core`, one package per provider
+
+---
+
+## 📦 Packages
+
+| Package | Status | Description | Targets |
 | :--- | :--- | :--- | :--- |
-| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Dostępne podstawowe abstrakcje | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz metody rozszerzeń `EnsureSuccess` / `EnsureSuccessAsync` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Http**](src/OpenUrzednik.Http/README.md) | 🧪 Preview | Wspólna warstwa HTTP dla providerów REST/JSON (`RestRequestExecutor`). Używają jej pakiety providerów, nie aplikacje | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | 🧪 Preview | Przekazuje logi klientów do `ILogger` z Microsoft.Extensions.Logging | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP. API publiczne może się jeszcze zmienić | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z GUS | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z KRS | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
-| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Szkielet, niepublikowany | Pakiet przygotowany pod integrację z Białą Listą VAT | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Core abstractions available | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` and the `EnsureSuccess` / `EnsureSuccessAsync` extension methods | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Http**](src/OpenUrzednik.Http/README.md) | 🧪 Preview | Shared HTTP layer for REST/JSON providers (`RestRequestExecutor`). Used by provider packages, not by apps | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | 🧪 Preview | Sends the clients' logs to `ILogger` from Microsoft.Extensions.Logging | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API. The public API may still change | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Skeleton, not published | Placeholder for the GUS integration | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Skeleton, not published | Placeholder for the KRS integration | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Skeleton, not published | Placeholder for the VAT white list (Biała Lista) integration | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 
 ---
 
-## 🛠️ Szybki start
+## 🛠️ Quick start
 
-Aktualnie najłatwiej zacząć od `OpenUrzednik.Core`.
+The easiest place to start right now is `OpenUrzednik.Core`.
 
-### Przykład użycia `OpenUrzednikResult`
+### Using `OpenUrzednikResult`
 
 ```csharp
 using OpenUrzednik.Core;
@@ -54,7 +54,7 @@ int value = result.EnsureSuccess();
 Console.WriteLine(value);
 ```
 
-Przykład błędu biznesowego:
+A business error:
 
 ```csharp
 using OpenUrzednik.Core;
@@ -73,24 +73,24 @@ catch (OpenUrzednikValidationException ex)
 }
 ```
 
-### Klienty i DI
+### Clients and DI
 
-Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview). W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są szkieletami i nie ma ich w NuGet — prace nad nimi ruszą po ukończeniu pakietu NBP ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
+The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient` (preview). With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` are skeletons and aren't on NuGet; work on them starts after the NBP package is finished ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)).
 
-### Przykłady
+### Samples
 
-Gotowe programy z klientami NBP, z kontenerem DI i bez niego, znajdziesz w [`samples/`](samples/README.md).
+You'll find runnable programs using the NBP clients, with and without a DI container, in [`samples/`](samples/README.md).
 
-### Testy
+### Tests
 
-Testy znajdują się w katalogu `tests/`: testy jednostkowe, testy HTTP z WireMockiem oraz (opcjonalne, uruchamiane ręcznie) testy na prawdziwym API.
+You'll find the tests in `tests/`: unit tests, HTTP tests with WireMock, and tests against the real API (optional, run on request).
 
 ---
 
-## 🤝 Współpraca (Contributing)
+## 🤝 Contributing
 
-Chcesz dodać obsługę kolejnego źródła danych lub zgłosić błąd? Zobacz [CONTRIBUTING.md](CONTRIBUTING.md) — zawiera zasady pracy nad repozytorium, konwencje API oraz instrukcje dla pull requestów.
+Want to add another data source or report a bug? See [CONTRIBUTING.md](CONTRIBUTING.md) for how we work on the repository, the API conventions and the pull request steps.
 
-## 📄 Licencja
+## 📄 License
 
-Projekt jest dostępny na warunkach licencji MIT. Szczegóły znajdziesz w pliku `LICENSE`.
+The project is available under the MIT license. See the `LICENSE` file.
