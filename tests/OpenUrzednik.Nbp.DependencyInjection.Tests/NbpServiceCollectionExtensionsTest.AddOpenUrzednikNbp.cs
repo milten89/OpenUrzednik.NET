@@ -194,8 +194,11 @@ public sealed partial class NbpServiceCollectionExtensionsTest
     [Fact]
     public void AddOpenUrzednikNbp_NullServices_ThrowsArgumentNullException()
     {
+        // Arrange
+        IServiceCollection services = null!;
+
         // Act
-        var exception = Should.Throw<ArgumentNullException>(() => ((IServiceCollection)null!).AddOpenUrzednikNbp());
+        var exception = Should.Throw<ArgumentNullException>(() => services.AddOpenUrzednikNbp());
 
         // Assert
         exception.ParamName.ShouldBe("services");

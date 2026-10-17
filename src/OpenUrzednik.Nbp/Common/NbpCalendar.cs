@@ -16,7 +16,8 @@ internal static class NbpCalendar
     private static TimeZoneInfo FindWarsaw()
     {
         // IANA id on Linux/macOS and on Windows with ICU; Windows id as a fallback.
-        foreach (var id in (string[])["Europe/Warsaw", "Central European Standard Time"])
+        string[] ids = ["Europe/Warsaw", "Central European Standard Time"];
+        foreach (var id in ids)
         {
             try
             {
@@ -24,9 +25,11 @@ internal static class NbpCalendar
             }
             catch (TimeZoneNotFoundException)
             {
+                // This id isn't on this system: try the next one.
             }
             catch (InvalidTimeZoneException)
             {
+                // The data for this id is corrupt: try the next one.
             }
             catch (SecurityException)
             {
