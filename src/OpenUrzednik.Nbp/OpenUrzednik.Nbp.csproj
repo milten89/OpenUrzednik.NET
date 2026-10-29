@@ -30,6 +30,8 @@
     <InternalsVisibleTo Include="OpenUrzednik.Nbp.Tests" />
     <!-- Tests the shared HTTP layer through Nbp's copy of it. -->
     <InternalsVisibleTo Include="OpenUrzednik.Http.Tests" />
+    <!-- NSubstitute (Castle DynamicProxy) mocks the internal URL builders in the tests. -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
 </Project>

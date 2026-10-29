@@ -5,13 +5,10 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using NSubstitute;
-
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Table;
-using OpenUrzednik.Nbp.UrlBuilder;
 
 using Shouldly;
 
@@ -115,23 +112,6 @@ public sealed partial class NbpServiceCollectionExtensionsTest
         options.ApiUrl.ShouldBe("https://proxy.example.com/nbp/");
         var factoryOptions = provider.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>().Get(NbpServiceCollectionExtensions.HttpClientName);
         factoryOptions.HttpMessageHandlerBuilderActions.Count.ShouldBe(1);
-    }
-
-    [Fact]
-    public async Task AddOpenUrzednikNbp_UrlBuilderFactoryRegistered_ClientUsesIt()
-    {
-        // Arrange
-        var urlBuilder = Substitute.For<INbpUrlBuilder>();
-        urlBuilder.Latest().Returns("custom/latest");
-        var urlBuilderFactory = Substitute.For<INbpUrlBuilderFactory>();
-        urlBuilderFactory.GetGoldBuilder().Returns(urlBuilder);
-        using var provider = BuildProvider(out var handler, services => services.AddSingleton(urlBuilderFactory));
-
-        // Act
-        await provider.GetRequiredService<INbpGoldPriceClient>().GetLatestAsync(TestContext.Current.CancellationToken);
-
-        // Assert
-        handler.Request.ShouldNotBeNull().RequestUri.ShouldBe(new Uri("https://api.nbp.pl/api/custom/latest"));
     }
 
     [Fact]

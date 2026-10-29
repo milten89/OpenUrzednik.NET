@@ -75,7 +75,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 
 **Client API ([ADR-0007](docs/adr/0007-client-api-and-extensibility.md))**
 - The default case is one line (`new NbpGoldPriceClient(httpClient)`).
-- Parts that shape requests (e.g. `INbpUrlBuilderFactory`) are public interfaces with public defaults, passed as optional constructor parameters.
+- Parts that shape requests (the URL builders, `NbpTable`) are internal; tests replace them through an internal constructor. Each client has two public constructors: `(HttpClient)` and `(HttpClient, NbpOptions?, TimeProvider?, logger, traceSource)`. Gateways use `NbpOptions.ApiUrl` and a `DelegatingHandler`.
 - Cross-cutting HTTP concerns belong in `DelegatingHandler`s.
 - `CancellationToken cancellationToken = default` is the last parameter of every async method, in both interfaces and implementations.
 

@@ -31,7 +31,7 @@ public partial class NbpCurrencyExchangeRateClientTest
     public void CtorWithOptions_NullHttpClient_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(null!, new NbpOptions(), Substitute.For<INbpUrlBuilderFactory>(), new FakeTimeProvider()))
+        Should.Throw<ArgumentNullException>(() => new NbpCurrencyExchangeRateClient(null!, new NbpOptions(), new FakeTimeProvider()))
             .ParamName.ShouldBe("httpClient");
     }
 
@@ -88,6 +88,21 @@ public partial class NbpCurrencyExchangeRateClientTest
 
         // Assert
         handler.Request.ShouldNotBeNull().RequestUri.ShouldBe(new Uri("https://custom.example.com/latest"));
+    }
+
+    [Fact]
+    public async Task Ctor_ApiUrlAndRewritingHandler_SendsRequestsToTheGatewayPaths()
+    {
+        // Arrange: the "API gateways" recipe from the NBP README.
+        var handler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var httpClient = new HttpClient(new GatewayHandler { InnerHandler = handler });
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions { ApiUrl = "https://gateway.example.com/nbp/" });
+
+        // Act
+        await sut.GetLatestAsync("USD", TableType.A, TestContext.Current.CancellationToken);
+
+        // Assert
+        handler.Request.ShouldNotBeNull().RequestUri.ShouldBe(new Uri("https://gateway.example.com/nbp/fx/rates/a/USD?api-version=1"));
     }
 
     [Fact]
@@ -149,5 +164,17 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         httpClient.BaseAddress.ShouldBeNull();
         httpClient.Timeout.ShouldBe(timeout);
+    }
+
+    private sealed class GatewayHandler : DelegatingHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var uri = new UriBuilder(request.RequestUri!);
+            uri.Path = uri.Path.Replace("/exchangerates/", "/fx/");
+            uri.Query = string.IsNullOrEmpty(uri.Query) ? "api-version=1" : uri.Query.TrimStart('?') + "&api-version=1";
+            request.RequestUri = uri.Uri;
+            return base.SendAsync(request, cancellationToken);
+        }
     }
 }

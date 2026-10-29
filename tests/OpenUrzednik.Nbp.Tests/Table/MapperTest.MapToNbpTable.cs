@@ -8,10 +8,13 @@ namespace OpenUrzednik.Nbp.Tests.Table;
 public partial class MapperTest
 {
     [Theory]
-    [InlineData(TableType.A, NbpTable.A)]
-    [InlineData(TableType.B, NbpTable.B)]
-    public void MapToNbpTable_DefinedValue_ReturnsMappedNbpTable(TableType input, NbpTable expected)
+    [InlineData(TableType.A, (int)NbpTable.A)]
+    [InlineData(TableType.B, (int)NbpTable.B)]
+    public void MapToNbpTable_DefinedValue_ReturnsMappedNbpTable(TableType input, int expectedValue)
     {
+        // Arrange
+        var expected = (NbpTable)expectedValue;
+
         // Act
         var result = Mapper.MapToNbpTable(input);
 

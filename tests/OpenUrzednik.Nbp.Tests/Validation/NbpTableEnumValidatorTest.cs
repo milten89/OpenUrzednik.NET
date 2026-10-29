@@ -20,12 +20,13 @@ public class NbpTableEnumValidatorTest
     }
 
     [Theory]
-    [InlineData(NbpTable.A)]
-    [InlineData(NbpTable.B)]
-    [InlineData(NbpTable.C)]
-    public void Validate_DefinedEnumValue_ReturnsSuccess(NbpTable table)
+    [InlineData((int)NbpTable.A)]
+    [InlineData((int)NbpTable.B)]
+    [InlineData((int)NbpTable.C)]
+    public void Validate_DefinedEnumValue_ReturnsSuccess(int tableValue)
     {
         // Arrange
+        var table = (NbpTable)tableValue;
         var validator = new NbpTableEnumValidator(PropertyName, table);
 
         // Act
@@ -36,11 +37,12 @@ public class NbpTableEnumValidatorTest
     }
 
     [Theory]
-    [InlineData((NbpTable)99)]
-    [InlineData((NbpTable)(-1))]
-    public void Validate_UndefinedEnumValue_ReturnsValidationError(NbpTable table)
+    [InlineData(99)]
+    [InlineData(-1)]
+    public void Validate_UndefinedEnumValue_ReturnsValidationError(int tableValue)
     {
         // Arrange
+        var table = (NbpTable)tableValue;
         var validator = new NbpTableEnumValidator(PropertyName, table);
 
         // Act

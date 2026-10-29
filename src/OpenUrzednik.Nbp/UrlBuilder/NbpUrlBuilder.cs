@@ -5,7 +5,7 @@ namespace OpenUrzednik.Nbp.UrlBuilder;
 /// <summary>
 /// Default <see cref="INbpUrlBuilder"/>: appends the NBP API path segments (<c>last/{n}</c>, <c>today</c>, <c>yyyy-MM-dd</c>) to a resource path.
 /// </summary>
-public class NbpUrlBuilder : INbpUrlBuilder
+internal sealed class NbpUrlBuilder : INbpUrlBuilder
 {
     private readonly string _baseUrl;
 

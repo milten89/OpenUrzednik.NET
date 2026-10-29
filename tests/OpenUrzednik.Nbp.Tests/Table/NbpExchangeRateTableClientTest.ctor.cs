@@ -30,7 +30,7 @@ public partial class NbpExchangeRateTableClientTest
     public void CtorWithOptions_NullHttpClient_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpExchangeRateTableClient(null!, new NbpOptions(), Substitute.For<INbpUrlBuilderFactory>(), new FakeTimeProvider()))
+        Should.Throw<ArgumentNullException>(() => new NbpExchangeRateTableClient(null!, new NbpOptions(), new FakeTimeProvider()))
             .ParamName.ShouldBe("httpClient");
     }
 

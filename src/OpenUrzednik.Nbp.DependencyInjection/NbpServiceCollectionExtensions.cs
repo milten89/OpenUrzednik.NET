@@ -11,7 +11,6 @@ using OpenUrzednik.Nbp.DependencyInjection;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Table;
-using OpenUrzednik.Nbp.UrlBuilder;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -30,8 +29,8 @@ public static class NbpServiceCollectionExtensions
     /// <remarks>
     /// <para>
     /// The clients log through the registered <see cref="ILoggerFactory"/> (category: the client's full type name) and trace
-    /// on the <c>ActivitySource</c> named <see cref="NbpTelemetry.SourceName"/>. A registered <see cref="TimeProvider"/> or
-    /// <see cref="INbpUrlBuilderFactory"/> replaces the default. Invalid options throw an <see cref="OptionsValidationException"/>
+    /// on the <c>ActivitySource</c> named <see cref="NbpTelemetry.SourceName"/>. A registered <see cref="TimeProvider"/>
+    /// replaces the default. Invalid options throw an <see cref="OptionsValidationException"/>
     /// at startup (or when a client is first created, without a host).
     /// </para>
     /// <para>
@@ -70,13 +69,13 @@ public static class NbpServiceCollectionExtensions
             .ConfigureAdditionalHttpMessageHandlers((handlers, _) => handlers.Insert(0, new ResilienceRejectionHandler()));
 
         builder.AddTypedClient((httpClient, provider) => new NbpCurrencyExchangeRateClient(httpClient, GetOptions(provider),
-            provider.GetService<INbpUrlBuilderFactory>(), provider.GetService<TimeProvider>(),
+            provider.GetService<TimeProvider>(),
             CreateLogger<NbpCurrencyExchangeRateClient>(provider), TraceSource));
         builder.AddTypedClient((httpClient, provider) => new NbpExchangeRateTableClient(httpClient, GetOptions(provider),
-            provider.GetService<INbpUrlBuilderFactory>(), provider.GetService<TimeProvider>(),
+            provider.GetService<TimeProvider>(),
             CreateLogger<NbpExchangeRateTableClient>(provider), TraceSource));
         builder.AddTypedClient((httpClient, provider) => new NbpGoldPriceClient(httpClient, GetOptions(provider),
-            provider.GetService<INbpUrlBuilderFactory>(), provider.GetService<TimeProvider>(),
+            provider.GetService<TimeProvider>(),
             CreateLogger<NbpGoldPriceClient>(provider), TraceSource));
 
         services.TryAddTransient<INbpCurrencyExchangeRateClient>(provider => provider.GetRequiredService<NbpCurrencyExchangeRateClient>());

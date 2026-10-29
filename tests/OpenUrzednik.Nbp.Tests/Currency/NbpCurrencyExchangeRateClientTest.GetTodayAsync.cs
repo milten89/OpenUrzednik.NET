@@ -59,11 +59,12 @@ public partial class NbpCurrencyExchangeRateClientTest
     }
 
     [Theory]
-    [InlineData(TableType.A, NbpTable.A)]
-    [InlineData(TableType.B, NbpTable.B)]
-    public async Task GetTodayAsync_SuccessfulResponse_ReturnsMappedCurrencyExchangeRates(TableType table, NbpTable nbpTable)
+    [InlineData(TableType.A, (int)NbpTable.A)]
+    [InlineData(TableType.B, (int)NbpTable.B)]
+    public async Task GetTodayAsync_SuccessfulResponse_ReturnsMappedCurrencyExchangeRates(TableType table, int nbpTableValue)
     {
         // Arrange
+        var nbpTable = (NbpTable)nbpTableValue;
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var dto = new CurrencyExchangeRatesDtoFaker().LinkRandomizerTo(faker).Generate();

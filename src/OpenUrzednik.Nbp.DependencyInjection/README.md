@@ -40,6 +40,18 @@ builder.Services.AddOpenUrzednikNbp(options =>
 
 Invalid options (e.g. an `http://` address) stop the app at startup with an `OptionsValidationException`.
 
+## Registering the clients yourself
+
+`AddOpenUrzednikNbp()` covers the usual setup. If you need a client with its own `HttpClient` configuration, create it in a factory lambda:
+
+```csharp
+builder.Services.AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>((httpClient, services) =>
+    new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = "https://proxy.example.com/nbp/" },
+        services.GetService<TimeProvider>()));
+```
+
+A bare `AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>()` isn't supported: resolving the client throws an `InvalidOperationException` ("A suitable constructor … could not be located"). A client registered this way gets no logger or trace source unless you pass them (`loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>()` and `ActivityTraceSource.GetShared(NbpTelemetry.SourceName)`), and a resilience handler's rejections aren't turned into errors (see below).
+
 ## Retries and timeouts
 
 The package doesn't add retries or timeouts by itself. It returns the `IHttpClientBuilder`, so you add them with Microsoft's standard API from the `Microsoft.Extensions.Http.Resilience` package:
@@ -59,4 +71,4 @@ When the handler rejects a request, you get an error in the result, not an excep
 
 The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`.
 
-If you register your own `TimeProvider` or `INbpUrlBuilderFactory`, the clients use them instead of the defaults.
+If you register your own `TimeProvider`, the clients use it instead of `TimeProvider.System`.
