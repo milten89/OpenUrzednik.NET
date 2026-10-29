@@ -33,7 +33,7 @@
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.14" />
     <!-- The resilience engine the app runs (maintainer, 2026-10-04), even though we only use its exception types. -->
-    <PackageVersion Include="Polly.Core" Version="8.8.0" />
+    <PackageVersion Include="Polly.Core" Version="8.8.1" />
   </ItemGroup>
 
   <!-- net8.0 only (ADR-0004): the 8.0.x line, so a .NET 8 app stays on Microsoft.Extensions 8.x. Kept apart from the rows
@@ -51,7 +51,7 @@
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.11.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
-    <PackageVersion Include="WireMock.Net" Version="2.20.0" />
+    <PackageVersion Include="WireMock.Net" Version="2.21.0" />
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
