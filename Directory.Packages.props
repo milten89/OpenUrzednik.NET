@@ -24,9 +24,9 @@
     <!-- netstandard2.0 only (ADR-0005): types .NET has built in. -->
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="10.0.13" />
-    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.13" />
-    <PackageVersion Include="System.Text.Json" Version="10.0.13" />
-    <PackageVersion Include="System.Net.Http.Json" Version="10.0.13" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.14" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.14" />
+    <PackageVersion Include="System.Net.Http.Json" Version="10.0.14" />
     <!-- Per target (ADR-0004): net8.0 gets the 8.0.x line; net10.0 and netstandard2.0 get 10.0.x, the LTS line that
          still supports .NET Framework. Patch the 8.0.x rows by hand if Dependabot doesn't, and undo any Dependabot
          change that moves a net8.0 row to 10.x. -->
