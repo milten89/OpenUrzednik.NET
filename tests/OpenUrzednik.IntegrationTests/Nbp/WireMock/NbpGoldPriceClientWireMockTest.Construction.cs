@@ -1,5 +1,4 @@
-using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.Options;
+using OpenUrzednik.Nbp;
 
 using Shouldly;
 

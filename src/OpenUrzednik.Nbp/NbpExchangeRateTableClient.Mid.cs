@@ -1,10 +1,10 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
+using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Validation;
 
-namespace OpenUrzednik.Nbp.Table;
+namespace OpenUrzednik.Nbp;
 
 public partial class NbpExchangeRateTableClient
 {

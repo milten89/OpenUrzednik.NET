@@ -7,7 +7,6 @@ using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
-using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;

@@ -1,11 +1,11 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
 
-namespace OpenUrzednik.Nbp.Currency;
+namespace OpenUrzednik.Nbp;
 
 public partial class NbpCurrencyExchangeRateClient
 {

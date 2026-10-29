@@ -1,7 +1,5 @@
 using Microsoft.Extensions.Options;
 
-using OpenUrzednik.Nbp.Options;
-
 namespace OpenUrzednik.Nbp.DependencyInjection;
 
 /// <summary>

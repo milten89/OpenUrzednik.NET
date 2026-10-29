@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
 
 using Shouldly;

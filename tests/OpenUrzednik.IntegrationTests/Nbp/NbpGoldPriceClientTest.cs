@@ -1,5 +1,5 @@
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon.Attributes;
 
 using Shouldly;

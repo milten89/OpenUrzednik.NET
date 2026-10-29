@@ -69,6 +69,6 @@ When the handler rejects a request, you get an error in the result, not an excep
 
 ## Logging and tracing
 
-The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`.
+The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`.
 
 If you register your own `TimeProvider`, the clients use it instead of `TimeProvider.System`.

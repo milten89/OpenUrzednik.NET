@@ -1,5 +1,4 @@
 using OpenUrzednik.Http.Infrastructure;
-using OpenUrzednik.Nbp.Options;
 
 namespace OpenUrzednik.Nbp.Common;
 

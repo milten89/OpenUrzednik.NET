@@ -16,7 +16,7 @@ dotnet add package OpenUrzednik.Extensions.Logging
 
 ```csharp
 using OpenUrzednik.Extensions.Logging;
-using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp;
 
 var client = new NbpGoldPriceClient(httpClient,
     logger: loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>());

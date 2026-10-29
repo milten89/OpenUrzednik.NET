@@ -3,7 +3,6 @@ using Microsoft.Extensions.Time.Testing;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
-using OpenUrzednik.Nbp.Options;
 
 using Shouldly;
 

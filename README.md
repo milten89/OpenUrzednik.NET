@@ -26,7 +26,7 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 
 | Package | Status | Description | Targets |
 | :--- | :--- | :--- | :--- |
-| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Core abstractions available | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` and the `EnsureSuccess` / `EnsureSuccessAsync` extension methods | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Core abstractions available | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` and `EnsureSuccess()` / `EnsureSuccessAsync()` | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | 🧪 Preview | Sends the clients' logs to `ILogger` from Microsoft.Extensions.Logging | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API. The public API may still change | `netstandard2.0`, `net8.0`, `net10.0` |
@@ -59,7 +59,6 @@ The easiest place to start right now is `OpenUrzednik.Core`.
 ```csharp
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Core.Extensions;
 
 OpenUrzednikResult<int> result = OpenUrzednikResult.Success(42);
 int value = result.EnsureSuccess();
@@ -71,7 +70,7 @@ A business error:
 ```csharp
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Core.Extensions;
+using OpenUrzednik.Core.Exceptions;
 
 OpenUrzednikResult<int> failed = OpenUrzednikResult.Failure<int>(new ValidationError("NIP is invalid."));
 

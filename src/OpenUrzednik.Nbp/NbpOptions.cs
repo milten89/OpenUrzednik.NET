@@ -1,4 +1,4 @@
-namespace OpenUrzednik.Nbp.Options;
+namespace OpenUrzednik.Nbp;
 
 /// <summary>
 /// Settings for the NBP clients. Every property is optional; with none set, the clients call

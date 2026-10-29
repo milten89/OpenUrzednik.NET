@@ -1,14 +1,13 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
-using OpenUrzednik.Nbp.Options;
+using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
 
-namespace OpenUrzednik.Nbp.Gold;
+namespace OpenUrzednik.Nbp;
 
 /// <inheritdoc cref="INbpGoldPriceClient"/>
 public class NbpGoldPriceClient : INbpGoldPriceClient

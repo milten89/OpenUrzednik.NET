@@ -1,11 +1,10 @@
 using System.Globalization;
 
-using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
-namespace OpenUrzednik.Core.Tests.Extensions;
+namespace OpenUrzednik.Core.Tests;
 
 public partial class OpenUrzednikResultExtensionsTest
 {

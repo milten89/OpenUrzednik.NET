@@ -1,5 +1,4 @@
-using OpenUrzednik.Nbp.Options;
-using OpenUrzednik.Nbp.Table;
+using OpenUrzednik.Nbp;
 
 using WireMock.Server;
 

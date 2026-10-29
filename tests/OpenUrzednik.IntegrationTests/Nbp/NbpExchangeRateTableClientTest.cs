@@ -1,3 +1,4 @@
+using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.TestCommon.Attributes;
 

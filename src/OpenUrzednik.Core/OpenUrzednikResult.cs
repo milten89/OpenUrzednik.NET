@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Core.Exceptions;
 
 namespace OpenUrzednik.Core;
 
@@ -125,6 +126,31 @@ public readonly struct OpenUrzednikResult
         ArgumentNullException.ThrowIfNull(onFailure);
 
         return _errors is null ? onSuccess() : onFailure(_errors);
+    }
+
+    /// <summary>
+    /// Throws when the result is a failure; does nothing when it is successful.
+    /// </summary>
+    /// <exception cref="OpenUrzednikException">
+    /// Thrown when the result is a failure: the exception of its error, or one <see cref="OpenUrzednikValidationException"/> when there are several validation errors.
+    /// <see cref="OpenUrzednikException.Errors"/> lists every error of the result.
+    /// </exception>
+    public void EnsureSuccess()
+    {
+        if (_errors is not null)
+            throw ResultExceptions.Create(_errors);
+    }
+
+    /// <summary>
+    /// Combines two results: successful if both are, otherwise a failure with the errors of both, this result's errors first.
+    /// </summary>
+    /// <param name="other">The second result.</param>
+    /// <returns>The combined result.</returns>
+    public OpenUrzednikResult And(OpenUrzednikResult other)
+    {
+        return IsSuccess && other.IsSuccess
+            ? Success()
+            : Failure(Errors.Concat(other.Errors));
     }
 
     /// <summary>
@@ -277,6 +303,19 @@ public readonly struct OpenUrzednikResult<TValue>
     {
         value = _value;
         return IsSuccess;
+    }
+
+    /// <summary>
+    /// Returns the value of a successful result, or throws when the result is a failure.
+    /// </summary>
+    /// <returns>The value of the result.</returns>
+    /// <exception cref="OpenUrzednikException">Thrown when the result is a failure, as in <see cref="OpenUrzednikResult.EnsureSuccess()"/>.</exception>
+    public TValue EnsureSuccess()
+    {
+        if (IsFailure)
+            throw ResultExceptions.Create(Errors);
+
+        return _value!;
     }
 
     /// <summary>

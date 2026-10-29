@@ -13,7 +13,7 @@ namespace OpenUrzednik.Extensions.Logging;
 /// Entries stay structured: the state lists the named values followed by <c>{OriginalFormat}</c>, as <c>LoggerMessage</c> does,
 /// so providers such as Serilog or OpenTelemetry see the template and its properties. The message is formatted with the invariant culture.
 /// Use <see cref="OpenUrzednikLoggerFactoryExtensions.CreateOpenUrzednikLogger{TClient}(ILoggerFactory)"/> to get one per client,
-/// with the client's full type name as the category (e.g. <c>OpenUrzednik.Nbp.Gold.NbpGoldPriceClient</c>).
+/// with the client's full type name as the category (e.g. <c>OpenUrzednik.Nbp.NbpGoldPriceClient</c>).
 /// </remarks>
 public sealed class OpenUrzednikLogger : IOpenUrzednikLogger
 {

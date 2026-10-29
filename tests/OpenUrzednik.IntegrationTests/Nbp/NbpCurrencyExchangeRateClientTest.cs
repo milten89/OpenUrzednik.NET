@@ -1,5 +1,4 @@
-using OpenUrzednik.Nbp.Currency;
-using OpenUrzednik.Nbp.Options;
+using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.TestCommon.Attributes;
 

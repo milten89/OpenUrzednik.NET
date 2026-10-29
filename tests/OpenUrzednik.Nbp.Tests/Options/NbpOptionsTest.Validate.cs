@@ -1,5 +1,3 @@
-using OpenUrzednik.Nbp.Options;
-
 using Shouldly;
 
 namespace OpenUrzednik.Nbp.Tests.Options;

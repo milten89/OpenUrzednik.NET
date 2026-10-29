@@ -1,10 +1,9 @@
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
-using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.UrlBuilder;
 
-namespace OpenUrzednik.Nbp.Currency;
+namespace OpenUrzednik.Nbp;
 
 /// <inheritdoc cref="INbpCurrencyExchangeRateClient"/>
 public partial class NbpCurrencyExchangeRateClient : INbpCurrencyExchangeRateClient

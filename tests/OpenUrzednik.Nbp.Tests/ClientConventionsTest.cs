@@ -1,7 +1,5 @@
 using System.Reflection;
 
-using OpenUrzednik.Nbp.Currency;
-
 using Shouldly;
 
 namespace OpenUrzednik.Nbp.Tests;

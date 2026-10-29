@@ -1,7 +1,8 @@
 using OpenUrzednik.Core;
+using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Table;
 
-namespace OpenUrzednik.Nbp.Currency;
+namespace OpenUrzednik.Nbp;
 
 /// <summary>
 /// Represents a client for interacting with the National Bank of Poland (NBP) API to retrieve specific currency exchange rate data.

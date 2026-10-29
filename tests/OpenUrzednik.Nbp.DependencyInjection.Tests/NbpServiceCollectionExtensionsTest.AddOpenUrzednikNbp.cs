@@ -5,11 +5,6 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-using OpenUrzednik.Nbp.Currency;
-using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.Options;
-using OpenUrzednik.Nbp.Table;
-
 using Shouldly;
 
 namespace OpenUrzednik.Nbp.DependencyInjection.Tests;
@@ -128,7 +123,7 @@ public sealed partial class NbpServiceCollectionExtensionsTest
 
         // Assert
         loggerProvider.Entries.ShouldContain(entry =>
-            entry.Category == "OpenUrzednik.Nbp.Gold.NbpGoldPriceClient" &&
+            entry.Category == "OpenUrzednik.Nbp.NbpGoldPriceClient" &&
             entry.Level == LogLevel.Debug &&
             entry.Message == "Validation failed for GetTopCountAsync");
     }

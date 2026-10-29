@@ -3,11 +3,10 @@ using Bogus;
 using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.TestCommon.Extensions;
 
-namespace OpenUrzednik.Core.Tests.Extensions;
+namespace OpenUrzednik.Core.Tests.Telemetry;
 
 public partial class IOpenUrzednikSpanExtensionsTest
 {
