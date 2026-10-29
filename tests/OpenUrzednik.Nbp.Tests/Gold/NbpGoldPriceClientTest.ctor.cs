@@ -30,7 +30,7 @@ public partial class NbpGoldPriceClientTest
     public void CtorWithOptions_NullHttpClient_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(null!, new NbpOptions(), Substitute.For<INbpUrlBuilderFactory>(), new FakeTimeProvider()))
+        Should.Throw<ArgumentNullException>(() => new NbpGoldPriceClient(null!, new NbpOptions(), new FakeTimeProvider()))
             .ParamName.ShouldBe("httpClient");
     }
 

@@ -10,12 +10,13 @@ namespace OpenUrzednik.Nbp.Tests.UrlBuilder;
 public class NbpUrlBuilderFactoryTest
 {
     [Theory]
-    [InlineData(NbpTable.A, "a")]
-    [InlineData(NbpTable.B, "b")]
-    [InlineData(NbpTable.C, "c")]
-    public void GetTableBuilder_ValidTable_ReturnsBuilderForExpectedPath(NbpTable table, string expectedSegment)
+    [InlineData((int)NbpTable.A, "a")]
+    [InlineData((int)NbpTable.B, "b")]
+    [InlineData((int)NbpTable.C, "c")]
+    public void GetTableBuilder_ValidTable_ReturnsBuilderForExpectedPath(int tableValue, string expectedSegment)
     {
         // Arrange
+        var table = (NbpTable)tableValue;
         var sut = new NbpUrlBuilderFactory();
 
         // Act
@@ -26,11 +27,12 @@ public class NbpUrlBuilderFactoryTest
     }
 
     [Theory]
-    [InlineData((NbpTable)99)]
-    [InlineData((NbpTable)(-1))]
-    public void GetTableBuilder_InvalidTable_ThrowsArgumentException(NbpTable table)
+    [InlineData(99)]
+    [InlineData(-1)]
+    public void GetTableBuilder_InvalidTable_ThrowsArgumentException(int tableValue)
     {
         // Arrange
+        var table = (NbpTable)tableValue;
         var sut = new NbpUrlBuilderFactory();
 
         // Act && Assert
@@ -69,12 +71,13 @@ public class NbpUrlBuilderFactoryTest
     }
 
     [Theory]
-    [InlineData(NbpTable.A, "a")]
-    [InlineData(NbpTable.B, "b")]
-    [InlineData(NbpTable.C, "c")]
-    public void GetCurrencyBuilder_ValidTableAndCurrency_ReturnsBuilderForExpectedPath(NbpTable table, string expectedSegment)
+    [InlineData((int)NbpTable.A, "a")]
+    [InlineData((int)NbpTable.B, "b")]
+    [InlineData((int)NbpTable.C, "c")]
+    public void GetCurrencyBuilder_ValidTableAndCurrency_ReturnsBuilderForExpectedPath(int tableValue, string expectedSegment)
     {
         // Arrange
+        var table = (NbpTable)tableValue;
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Random.String2(3, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         var sut = new NbpUrlBuilderFactory();
@@ -100,11 +103,12 @@ public class NbpUrlBuilderFactoryTest
     }
 
     [Theory]
-    [InlineData((NbpTable)99)]
-    [InlineData((NbpTable)(-1))]
-    public void GetCurrencyBuilder_InvalidTable_ThrowsArgumentException(NbpTable table)
+    [InlineData(99)]
+    [InlineData(-1)]
+    public void GetCurrencyBuilder_InvalidTable_ThrowsArgumentException(int tableValue)
     {
         // Arrange
+        var table = (NbpTable)tableValue;
         var sut = new NbpUrlBuilderFactory();
 
         // Act && Assert

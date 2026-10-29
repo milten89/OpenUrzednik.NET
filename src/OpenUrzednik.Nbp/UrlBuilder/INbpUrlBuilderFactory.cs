@@ -3,7 +3,7 @@ namespace OpenUrzednik.Nbp.UrlBuilder;
 /// <summary>
 /// Creates the <see cref="INbpUrlBuilder"/>s the clients use. The default is <see cref="NbpUrlBuilderFactory"/>.
 /// </summary>
-public interface INbpUrlBuilderFactory
+internal interface INbpUrlBuilderFactory
 {
     /// <summary>Gets the builder for a rate table.</summary>
     /// <param name="table">Table.</param>

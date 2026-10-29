@@ -49,6 +49,32 @@ The client takes the API address from the first place that sets one: `NbpOptions
 
 Errors such as missing data, an exceeded rate limit or a timeout come back in the result, not as exceptions. If you prefer exceptions, call `EnsureSuccess()` on the result.
 
+## API gateways
+
+For most gateways in front of the NBP API, `NbpOptions.ApiUrl` is enough: the client appends the NBP paths (e.g. `exchangerates/rates/a/USD`) to it. If the gateway renames paths or needs a query parameter, rewrite the request in a `DelegatingHandler`. The paths the client builds aren't configurable in any other way.
+
+```csharp
+sealed class NbpGatewayHandler : DelegatingHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var uri = new UriBuilder(request.RequestUri!);
+        uri.Path = uri.Path.Replace("/exchangerates/", "/fx/");
+        uri.Query = string.IsNullOrEmpty(uri.Query) ? "api-version=1" : uri.Query.TrimStart('?') + "&api-version=1";
+        request.RequestUri = uri.Uri;
+        return base.SendAsync(request, cancellationToken);
+    }
+}
+```
+
+```csharp
+using var httpClient = new HttpClient(new NbpGatewayHandler { InnerHandler = new HttpClientHandler() });
+var client = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions { ApiUrl = "https://gateway.example.com/nbp/" });
+// GetLatestAsync("USD") requests https://gateway.example.com/nbp/fx/rates/a/USD?api-version=1
+```
+
+With `AddOpenUrzednikNbp()`, add the handler with `.AddHttpMessageHandler(() => new NbpGatewayHandler())`. Spans still show the NBP path (`url.path`), because the client tags it before the handler runs; error messages show the rewritten address.
+
 ## .NET Framework
 
 The package also runs on .NET Framework 4.7.2 or later (through `netstandard2.0`). There, dates are `DateTime`, not `DateOnly`: methods take a `DateTime` and the models return one (e.g. `GoldPrice.Date`). Only the date counts: the client ignores the time of day, and returned dates have the time `00:00` and `DateTimeKind.Unspecified`.

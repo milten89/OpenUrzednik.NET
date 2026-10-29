@@ -27,7 +27,7 @@ internal static class NbpOptionsValidator
 
         if (uri.Query.Length > 0 || uri.Fragment.Length > 0)
             throw new ArgumentException(
-                $"Invalid NBP API url: {apiUrl}. It must not contain a query or fragment; add query parameters with a DelegatingHandler or a custom INbpUrlBuilderFactory.",
+                $"Invalid NBP API url: {apiUrl}. It must not contain a query or fragment; add query parameters with a DelegatingHandler.",
                 paramName);
 
         return uri;

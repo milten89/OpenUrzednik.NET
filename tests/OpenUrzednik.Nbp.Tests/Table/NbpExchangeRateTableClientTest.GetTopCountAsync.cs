@@ -140,11 +140,12 @@ public partial class NbpExchangeRateTableClientTest
     }
 
     [Theory]
-    [InlineData(TableType.A, NbpTable.A, TopCountValidator.MaxDailyTablesTopCount + 1)]
-    [InlineData(TableType.B, NbpTable.B, TopCountValidator.MaxTableBTopCount + 1)]
-    public async Task GetTopCountAsync_TopCountAboveTableLimit_ReturnsFailureWithoutSendingRequest(TableType table, NbpTable nbpTable, int topCount)
+    [InlineData(TableType.A, (int)NbpTable.A, TopCountValidator.MaxDailyTablesTopCount + 1)]
+    [InlineData(TableType.B, (int)NbpTable.B, TopCountValidator.MaxTableBTopCount + 1)]
+    public async Task GetTopCountAsync_TopCountAboveTableLimit_ReturnsFailureWithoutSendingRequest(TableType table, int nbpTableValue, int topCount)
     {
         // Arrange
+        var nbpTable = (NbpTable)nbpTableValue;
         var faker = new Faker().WithConstantSeed();
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, nbpTable, Substitute.For<INbpUrlBuilder>());

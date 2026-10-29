@@ -6,7 +6,7 @@ namespace OpenUrzednik.Nbp.UrlBuilder;
 /// Default <see cref="INbpUrlBuilderFactory"/>: builds the request paths of the public NBP API.
 /// Builders are cached per factory instance, so each client keeps its own.
 /// </summary>
-public class NbpUrlBuilderFactory : INbpUrlBuilderFactory
+internal sealed class NbpUrlBuilderFactory : INbpUrlBuilderFactory
 {
     private readonly ConcurrentDictionary<string, INbpUrlBuilder> _cache = new();
 
