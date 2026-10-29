@@ -7,8 +7,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
-    <ProjectReference Include="..\OpenUrzednik.Http\OpenUrzednik.Http.csproj" />
   </ItemGroup>
+
+  <!-- The shared HTTP layer, compiled in as internal source (ADR-0006). -->
+  <Import Project="..\Http\Http.props" />
 
   <!-- netstandard2.0 only: these types are built into .NET (ADR-0004, ADR-0005). -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
@@ -16,6 +18,7 @@
     <Using Include="System.DateTime" Alias="DateOnly" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="System.Net.Http.Json" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
@@ -25,6 +28,8 @@
   
   <ItemGroup>
     <InternalsVisibleTo Include="OpenUrzednik.Nbp.Tests" />
+    <!-- Tests the shared HTTP layer through Nbp's copy of it. -->
+    <InternalsVisibleTo Include="OpenUrzednik.Http.Tests" />
   </ItemGroup>
 
 </Project>

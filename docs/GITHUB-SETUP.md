@@ -102,7 +102,7 @@ Release notes (`.github/release.yml`) group PRs by the **release labels**; every
 | `skip-changelog` | `#EEEEEE` | Release label: exclude the PR from release notes |
 | `maintainer-only` | `#D93F0B` | Only the maintainer can do it; agents don't start, change or close it |
 | `area:core` | `#1D76DB` | Affects `OpenUrzednik.Core` |
-| `area:http` | `#1D76DB` | Affects `OpenUrzednik.Http` |
+| `area:http` | `#1D76DB` | Affects the shared HTTP layer (`src/Http`) |
 | `area:release` | `#1D76DB` | Versioning, packaging, NuGet publishing, release notes |
 | `area:repo` | `#1D76DB` | GitHub settings, community files, agent instructions |
 | `area:telemetry` | `#1D76DB` | Telemetry contract, `OpenUrzednik.Diagnostics`, `OpenUrzednik.Extensions.Logging` |

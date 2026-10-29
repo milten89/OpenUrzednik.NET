@@ -8,7 +8,7 @@ Use **Security → Report a vulnerability** in this repository instead (GitHub P
 
 Please include:
 
-- the package (e.g. Core, Http, Nbp) and its version,
+- the package (e.g. Core, Nbp) and its version,
 - steps to reproduce,
 - the potential impact.
 
