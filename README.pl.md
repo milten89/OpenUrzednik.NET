@@ -27,7 +27,6 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 | Pakiet | Status | Opis |
 | :--- | :--- | :--- |
 | [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.pl.md) | ✅ Dostępne podstawowe abstrakcje | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz metody rozszerzeń `EnsureSuccess` / `EnsureSuccessAsync` |
-| [**OpenUrzednik.Http**](src/OpenUrzednik.Http/README.pl.md) | 🧪 Preview | Wspólna warstwa HTTP dla providerów REST/JSON (`RestRequestExecutor`). Używają jej pakiety providerów, nie aplikacje |
 | [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.pl.md) | 🧪 Preview | Przekazuje logi klientów do `ILogger` z Microsoft.Extensions.Logging |
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | 🧪 Preview | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.pl.md) | 🧪 Preview | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP. API publiczne może się jeszcze zmienić |

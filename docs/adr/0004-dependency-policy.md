@@ -29,7 +29,7 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 | Package kind | Examples | Allowed dependencies |
 |---|---|---|
 | Core | `OpenUrzednik.Core` | None on .NET targets. On netstandard2.0 only official Microsoft out-of-band BCL packages (e.g. `System.Text.Json`, `Microsoft.Bcl.TimeProvider`, `System.Memory`). |
-| Shared infrastructure | `OpenUrzednik.Http` | Same as Core + `OpenUrzednik.Core`. |
+| Shared source (not a package) | `src/Http` ([ADR-0006](0006-shared-http-layer.md)) | None of its own: it is compiled into each REST provider, which references what it needs on netstandard2.0 (`System.Net.Http.Json`, `System.Text.Json`, `Microsoft.Bcl.TimeProvider`). |
 | Provider | `OpenUrzednik.Nbp` | Same as Core + other OpenUrzednik packages. |
 | Integration | `OpenUrzednik.Nbp.DependencyInjection`, `OpenUrzednik.Extensions.Logging` | `Microsoft.Extensions.*` (DI, Options, Http, Http.Resilience, Logging) and the package they integrate. DI packages may also use `Polly.Core`, which `Microsoft.Extensions.Http.Resilience` brings in, to recognise rejections (below). |
 | Tracing adapter | `OpenUrzednik.Diagnostics` | `System.Diagnostics.DiagnosticSource` on netstandard2.0 only (`ActivitySource` is built into .NET). |
@@ -42,7 +42,7 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 * DI packages translate the exceptions a resilience handler throws when it rejects a request, so they don't escape the result ([ADR-0002](0002-result-pattern-and-error-handling.md)). They register an outermost `DelegatingHandler` (before any resilience handler) that catches Polly's `ExecutionRejectedException` types and rethrows them as exceptions the request executor ([ADR-0006](0006-shared-http-layer.md)) already handles:
   * `TimeoutRejectedException` → `TaskCanceledException` (inner: the rejection), returned as a `RequestTimeoutError`;
   * other rejections (open circuit breaker, rate limiter) → `HttpRequestException`, returned as a `ServiceUnavailableError`.
-  * Caller cancellation still throws. `OpenUrzednik.Http` itself doesn't reference Polly.
+  * Caller cancellation still throws. The shared HTTP layer itself doesn't reference Polly.
 
 ### Consequences
 
@@ -83,3 +83,5 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 * Dependabot reads `Directory.Packages.props` without a target, so the two rows of one package may confuse it: a `net8.0` row it doesn't patch is patched by hand, and a Dependabot PR that moves a `net8.0` row to 10.x is corrected by hand before merging. The 8.0.x line gets no patches after .NET 8 reaches end of support on 2026-11-10; the `net8.0` rows then stay as they are and go away when `net8.0` is removed in a major version (ADR-0005).
 
 **2026-10-29 change: patch-only updates and one override row** ([#148](https://github.com/milten89/OpenUrzednik.NET/issues/148)). Dependabot skipped every package that had two conditional `PackageVersion` rows: in #140 and #145 it moved the other implementations to 10.0.14 but left `Microsoft.Extensions.Http` and `Microsoft.Extensions.Options` at 10.0.12. Each now has one normal row (10.0.x, used by `net10.0` and `netstandard2.0`) and a `net8.0`-only `PackageVersion Update` override (8.0.x) in its own item group, which Dependabot is expected to leave alone (to be confirmed on its first run after this change); the override is patched by hand until 8.0.x stops getting patches on 2026-11-10. The maintainer also narrowed "implementations take the latest version" to **the latest patch of the chosen minor**: each version is a minimum for every app, so a minor raise (e.g. `Polly.Core` 8.8 → 8.9) is now a deliberate change rather than a Dependabot PR. Dependabot proposes patches only for the published libraries' dependencies, as one grouped PR; a vulnerability fixed only in a newer minor still shows as a Dependabot alert and is raised by hand.
+
+**2026-10-29 note: `OpenUrzednik.Http` is shared source** ([#85](https://github.com/milten89/OpenUrzednik.NET/issues/85)). The HTTP layer is no longer a package but internal source compiled into each REST provider ([ADR-0006](0006-shared-http-layer.md)). The "Shared infrastructure" row of the table became "Shared source", and `OpenUrzednik.Nbp` now references `System.Net.Http.Json` on netstandard2.0 itself.

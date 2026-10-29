@@ -8,7 +8,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// </summary>
 /// <param name="logger">The logger, or <see langword="null"/> for <see cref="NullOpenUrzednikLogger"/>.</param>
 /// <param name="traceSource">The trace source, or <see langword="null"/> for <see cref="NullOpenUrzednikTraceSource"/>.</param>
-public sealed class OpenUrzednikTelemetry(IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
+internal sealed class OpenUrzednikTelemetry(IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
 {
     /// <summary>
     /// Gets the logger. Never <see langword="null"/>.

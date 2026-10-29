@@ -6,7 +6,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// A non-success response passed to <see cref="RestProviderProfile.MapErrorAsync"/>. For provider authors.
 /// It is valid only until the override's task completes: the response is disposed afterwards.
 /// </summary>
-public sealed class ErrorResponseContext
+internal sealed class ErrorResponseContext
 {
     private readonly Func<Task<string?>> _readMessageAsync;
 

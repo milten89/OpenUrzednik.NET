@@ -16,7 +16,7 @@
 dotnet add package OpenUrzednik.Nbp
 ```
 
-Requires [OpenUrzednik.Core](https://www.nuget.org/packages/OpenUrzednik.Core) and [OpenUrzednik.Http](https://www.nuget.org/packages/OpenUrzednik.Http) (NuGet installs them as dependencies).
+Requires [OpenUrzednik.Core](https://www.nuget.org/packages/OpenUrzednik.Core) (NuGet installs it as a dependency).
 
 ## Usage
 

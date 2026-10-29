@@ -12,7 +12,6 @@ body:
       label: Pakiet / Package
       options:
         - OpenUrzednik.Core
-        - OpenUrzednik.Http
         - OpenUrzednik.Extensions.Logging
         - OpenUrzednik.Diagnostics
         - OpenUrzednik.Nbp
