@@ -4,10 +4,10 @@ namespace OpenUrzednik.Nbp.Table;
 /// NBP table C of bid and ask rates
 /// </summary>
 /// <param name="TableId">Exchange rate table number</param>
-/// <param name="TradingDate">Trading date</param>
-/// <param name="PublicationDate">Publication date</param>
+/// <param name="TradingDate">Trading date, at 00:00 with <see cref="DateTimeKind.Unspecified"/></param>
+/// <param name="PublicationDate">Publication date, at 00:00 with <see cref="DateTimeKind.Unspecified"/></param>
 /// <param name="Rates">List of exchange rates</param>
-public sealed record BuySellExchangeRateTable(string TableId, DateOnly TradingDate, DateOnly PublicationDate, IReadOnlyList<TableBuySellRate> Rates)
+public sealed record BuySellExchangeRateTable(string TableId, DateTime TradingDate, DateTime PublicationDate, IReadOnlyList<TableBuySellRate> Rates)
 {
     /// <summary>Compares all members, and <c>Rates</c> item by item (a record would compare the list reference).</summary>
     /// <param name="other">Record to compare with.</param>

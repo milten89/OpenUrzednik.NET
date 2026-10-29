@@ -41,7 +41,7 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 | :--- | :--- |
 | .NET 10 | `net10.0` |
 | .NET 8 and .NET 9 | `net8.0` (the same API) |
-| .NET Framework 4.7.2 or later | `netstandard2.0` (dates are `DateTime`, see the package READMEs) |
+| .NET Framework 4.7.2 or later | `netstandard2.0` (the same API, without the `DateOnly` overloads) |
 
 - We build for `netstandard2.0` and the .NET LTS releases that Microsoft supports (and a newer release only when we need its APIs). CI tests every build; the `netstandard2.0` build runs its tests on .NET Framework 4.8.
 - .NET 8 and .NET 9 reach the end of Microsoft's support on 10 November 2026. Your .NET 8 or 9 app keeps working with the `net8.0` build; we'll remove it only in a major version, because it is our lowest .NET target.

@@ -1,5 +1,6 @@
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 
 namespace OpenUrzednik.Nbp.Table;
@@ -36,7 +37,7 @@ internal static class Mapper
         for (int i = 0; i < rates.Length; i++)
             rates[i] = MapToTableRate(dto.Rates[i]);
 
-        return new(dto.TableId, dto.PublicationDate, Array.AsReadOnly(rates));
+        return new(dto.TableId, dto.PublicationDate.ToPublicDate(), Array.AsReadOnly(rates));
     }
 
     internal static TableRate MapToTableRate(ExchangeRateDto dto)
@@ -66,7 +67,7 @@ internal static class Mapper
         for (int i = 0; i < rates.Length; i++)
             rates[i] = MapToTableBuySellRate(dto.Rates[i]);
 
-        return new(dto.TableId, dto.TradingDate, dto.PublicationDate, Array.AsReadOnly(rates));
+        return new(dto.TableId, dto.TradingDate.ToPublicDate(), dto.PublicationDate.ToPublicDate(), Array.AsReadOnly(rates));
     }
 
     internal static TableBuySellRate MapToTableBuySellRate(BuySellExchangeRateDto dto)

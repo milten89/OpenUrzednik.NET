@@ -22,7 +22,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 ## 3. Public model
 
 - `public sealed record` with XML docs on every parameter. Use `IReadOnlyList<T>` for collections and override `Equals`/`GetHashCode` when the record holds a list.
-- Dates: `DateOnly` (on netstandard2.0 it is an alias for `DateTime`, see ADR-0005). Money and rates: `decimal`.
+- Dates: public parameters and model properties are `DateTime` on every target (ADR-0005): convert arguments with `DateOnly.FromDateTime` at the start of the method, return `ToPublicDate()` from the mapper, and add the `DateOnly` overload to `NbpDateOnlyExtensions` (.NET only). DTOs, validators and URL builders use `DateOnly` (an alias for `DateTime` on netstandard2.0). Money and rates: `decimal`.
 - Check for name clashes with types in other namespaces of the same package.
 
 ## 4. Mapper

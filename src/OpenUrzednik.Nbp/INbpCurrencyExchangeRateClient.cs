@@ -13,8 +13,9 @@ namespace OpenUrzednik.Nbp;
 /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
 /// </para>
 /// <para>
-/// Dates are <c>DateOnly</c> on .NET and <see cref="System.DateTime"/> on netstandard2.0 (.NET Framework), where only the date part
-/// is used and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// Dates are <see cref="System.DateTime"/> on every target: only the date part of an argument is used (its time of day and
+/// <see cref="System.DateTime.Kind"/> are ignored), and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// On .NET 8 and later, <c>NbpDateOnlyExtensions</c> adds <c>DateOnly</c> overloads.
 /// </para>
 /// </remarks>
 public interface INbpCurrencyExchangeRateClient
@@ -64,7 +65,7 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly date, TableType table = TableType.A, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateTime date, TableType table = TableType.A, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the mid exchange rates of the currency for the specified date range. If the exchange rates are not published for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
@@ -76,7 +77,7 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the currency exchange rates or an error</returns>
-    Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateOnly from, DateOnly to, TableType table = TableType.A, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateTime from, DateTime to, TableType table = TableType.A, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the latest buy and sell exchange rate.
@@ -119,7 +120,7 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the buy and sell exchange rate or an error</returns>
-    Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateOnly date, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime date, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the buy and sell exchange rates for the specified date range. If the exchange rates are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
@@ -130,5 +131,5 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the buy and sell exchange rates or an error</returns>
-    Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime from, DateTime to, CancellationToken cancellationToken = default);
 }

@@ -8,19 +8,19 @@ namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 // The table fixtures keep the first 3 rates (of 32 in table A and 116 in table B).
 public partial class NbpExchangeRateTableClientWireMockTest
 {
-    private static readonly ExchangeRateTable Table189A = new("189/A/NBP/2026", new DateOnly(2026, 9, 29), [
+    private static readonly ExchangeRateTable Table189A = new("189/A/NBP/2026", new DateTime(2026, 9, 29), [
         new TableRate("bat (Tajlandia)", "THB", 0.1147m),
         new TableRate("dolar amerykański", "USD", 3.8537m),
         new TableRate("dolar australijski", "AUD", 2.6941m),
     ]);
 
-    private static readonly ExchangeRateTable Table190A = new("190/A/NBP/2026", new DateOnly(2026, 9, 30), [
+    private static readonly ExchangeRateTable Table190A = new("190/A/NBP/2026", new DateTime(2026, 9, 30), [
         new TableRate("bat (Tajlandia)", "THB", 0.1146m),
         new TableRate("dolar amerykański", "USD", 3.8449m),
         new TableRate("dolar australijski", "AUD", 2.6818m),
     ]);
 
-    private static readonly ExchangeRateTable Table191A = new("191/A/NBP/2026", new DateOnly(2026, 10, 1), [
+    private static readonly ExchangeRateTable Table191A = new("191/A/NBP/2026", new DateTime(2026, 10, 1), [
         new TableRate("bat (Tajlandia)", "THB", 0.1150m),
         new TableRate("dolar amerykański", "USD", 3.8762m),
         new TableRate("dolar australijski", "AUD", 2.6894m),
@@ -54,7 +54,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(new ExchangeRateTable("039/B/NBP/2026", new DateOnly(2026, 9, 30), [
+        result.Value.ShouldBe(new ExchangeRateTable("039/B/NBP/2026", new DateTime(2026, 9, 30), [
             new TableRate("afgani (Afganistan)", "AFN", 0.058988m),
             new TableRate("ariary (Madagaskar)", "MGA", 0.000875m),
             new TableRate("balboa (Panama)", "PAB", 3.8449m),
@@ -100,7 +100,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
     public async Task GetAsync_SpecificDate_Returns200WithData_MapsToExchangeRateTable()
     {
         // Arrange
-        var date = new DateOnly(2026, 9, 30);
+        var date = new DateTime(2026, 9, 30);
         var path = $"{BasePath}/a/{date.ToIso()}";
         _server.GivenFixture(path, "tables-a-date.json");
 
@@ -117,8 +117,8 @@ public partial class NbpExchangeRateTableClientWireMockTest
     public async Task GetAsync_DateRange_Returns200WithData_MapsToExchangeRateTables()
     {
         // Arrange
-        var from = new DateOnly(2026, 9, 29);
-        var to = new DateOnly(2026, 9, 30);
+        var from = new DateTime(2026, 9, 29);
+        var to = new DateTime(2026, 9, 30);
         var path = $"{BasePath}/a/{from.ToIso()}/{to.ToIso()}";
         _server.GivenFixture(path, "tables-a-range.json");
 

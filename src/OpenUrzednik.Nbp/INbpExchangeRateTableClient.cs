@@ -12,8 +12,9 @@ namespace OpenUrzednik.Nbp;
 /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
 /// </para>
 /// <para>
-/// Dates are <c>DateOnly</c> on .NET and <see cref="System.DateTime"/> on netstandard2.0 (.NET Framework), where only the date part
-/// is used and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// Dates are <see cref="System.DateTime"/> on every target: only the date part of an argument is used (its time of day and
+/// <see cref="System.DateTime.Kind"/> are ignored), and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// On .NET 8 and later, <c>NbpDateOnlyExtensions</c> adds <c>DateOnly</c> overloads.
 /// </para>
 /// </remarks>
 public interface INbpExchangeRateTableClient
@@ -59,7 +60,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(TableType table, DateOnly date, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(TableType table, DateTime date, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the table of currency exchange rate for the specified table type and date range. If the tables are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
@@ -70,7 +71,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(TableType table, DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(TableType table, DateTime from, DateTime to, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the latest table of buy and sell currency exchange rate.
@@ -109,7 +110,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateOnly date, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateTime date, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the table of buy and sell currency exchange rate for the specified date range. If the tables are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
@@ -119,5 +120,5 @@ public interface INbpExchangeRateTableClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
-    Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateTime from, DateTime to, CancellationToken cancellationToken = default);
 }

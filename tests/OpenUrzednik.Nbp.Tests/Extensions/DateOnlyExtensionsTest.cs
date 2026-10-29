@@ -24,4 +24,16 @@ public class DateOnlyExtensionsTest
         // Assert
         result.ShouldBe("2026-01-05");
     }
+
+    [Fact]
+    public void ToPublicDate_AnyDate_ReturnsMidnightWithUnspecifiedKind()
+    {
+        // Act
+        var result = new DateOnly(2026, 1, 5).ToPublicDate();
+
+        // Assert
+        result.ShouldBe(new DateTime(2026, 1, 5));
+        result.TimeOfDay.ShouldBe(TimeSpan.Zero);
+        result.Kind.ShouldBe(DateTimeKind.Unspecified);
+    }
 }

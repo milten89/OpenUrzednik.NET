@@ -4,9 +4,9 @@ namespace OpenUrzednik.Nbp.Table;
 /// NBP table A or B of mid (average) exchange rates
 /// </summary>
 /// <param name="TableId">Exchange rate table number</param>
-/// <param name="PublicationDate">Publication date</param>
+/// <param name="PublicationDate">Publication date, at 00:00 with <see cref="DateTimeKind.Unspecified"/></param>
 /// <param name="Rates">List of exchange rates</param>
-public sealed record ExchangeRateTable(string TableId, DateOnly PublicationDate, IReadOnlyList<TableRate> Rates)
+public sealed record ExchangeRateTable(string TableId, DateTime PublicationDate, IReadOnlyList<TableRate> Rates)
 {
     /// <summary>Compares all members, and <c>Rates</c> item by item (a record would compare the list reference).</summary>
     /// <param name="other">Record to compare with.</param>

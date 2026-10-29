@@ -2,6 +2,7 @@ using System.Globalization;
 
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;
@@ -22,8 +23,22 @@ public class MapperTest
         var result = Mapper.MapToGoldPrice(dto);
 
         // Assert
-        result.Date.ShouldBe(dto.Date);
+        result.Date.ShouldBe(dto.Date.ToPublicDate());
         result.Price.ShouldBe(dto.Price);
+    }
+
+    [Fact]
+    public void MapToGoldPrice_SingleDto_ReturnsDateAtMidnightWithUnspecifiedKind()
+    {
+        // Arrange
+        var dto = new GoldPriceDtoFaker().WithConstantSeed().Generate();
+
+        // Act
+        var result = Mapper.MapToGoldPrice(dto);
+
+        // Assert
+        result.Date.TimeOfDay.ShouldBe(TimeSpan.Zero);
+        result.Date.Kind.ShouldBe(DateTimeKind.Unspecified);
     }
 
     [Theory]
@@ -59,7 +74,7 @@ public class MapperTest
         var result = Mapper.MapToGoldPrice(dto);
 
         // Assert
-        result.Date.ShouldBe(date);
+        result.Date.ShouldBe(date.ToPublicDate());
     }
 
     [Fact]
@@ -86,7 +101,7 @@ public class MapperTest
 
         // Assert
         result.Count.ShouldBe(1);
-        result[0].ShouldBe(new GoldPrice(dtos[0].Date, dtos[0].Price));
+        result[0].ShouldBe(new GoldPrice(dtos[0].Date.ToPublicDate(), dtos[0].Price));
     }
 
     [Fact]
@@ -101,7 +116,7 @@ public class MapperTest
         // Assert
         result.Count.ShouldBe(dtos.Length);
         for (var i = 0; i < dtos.Length; i++)
-            result[i].ShouldBe(new GoldPrice(dtos[i].Date, dtos[i].Price));
+            result[i].ShouldBe(new GoldPrice(dtos[i].Date.ToPublicDate(), dtos[i].Price));
     }
 
     [Fact]
@@ -116,7 +131,7 @@ public class MapperTest
 
         // Assert
         result.Count.ShouldBe(3);
-        result.ShouldAllBe(x => x == new GoldPrice(dto.Date, dto.Price));
+        result.ShouldAllBe(x => x == new GoldPrice(dto.Date.ToPublicDate(), dto.Price));
     }
 
     [Fact]

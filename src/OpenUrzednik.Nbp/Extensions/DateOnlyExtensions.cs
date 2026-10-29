@@ -10,4 +10,15 @@ internal static class DateOnlyExtensions
     /// </summary>
     internal static string ToIso8601String(this DateOnly date)
         => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// The date as the public API returns it on every target (ADR-0005): a <see cref="DateTime"/> at midnight with
+    /// <see cref="DateTimeKind.Unspecified"/>.
+    /// </summary>
+    internal static DateTime ToPublicDate(this DateOnly date)
+#if NET
+        => date.ToDateTime(TimeOnly.MinValue);
+#else
+        => DateTime.SpecifyKind(date.Date, DateTimeKind.Unspecified);
+#endif
 }

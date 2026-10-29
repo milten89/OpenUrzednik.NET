@@ -11,8 +11,9 @@ namespace OpenUrzednik.Nbp;
 /// Gold prices are published on business days in Poland, at about 8:00 (Europe/Warsaw time). NBP doesn't document the hour; it was observed on the API.
 /// </para>
 /// <para>
-/// Dates are <c>DateOnly</c> on .NET and <see cref="System.DateTime"/> on netstandard2.0 (.NET Framework), where only the date part
-/// is used and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// Dates are <see cref="System.DateTime"/> on every target: only the date part of an argument is used (its time of day and
+/// <see cref="System.DateTime.Kind"/> are ignored), and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// On .NET 8 and later, <c>NbpDateOnlyExtensions</c> adds <c>DateOnly</c> overloads.
 /// </para>
 /// </remarks>
 public interface INbpGoldPriceClient
@@ -54,7 +55,7 @@ public interface INbpGoldPriceClient
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the gold price or an error</returns>
-    Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateOnly date, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateTime date, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the gold price for the specified date range. If the gold prices are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
@@ -64,5 +65,5 @@ public interface INbpGoldPriceClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the gold prices or an error</returns>
-    Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateTime from, DateTime to, CancellationToken cancellationToken = default);
 }

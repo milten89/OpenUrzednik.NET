@@ -33,8 +33,8 @@ public partial class NbpExchangeRateTableClientWireMockTest
     {
         // Arrange
         // The validators stop over-limit requests, so a valid request gets the captured over-limit response.
-        var from = new DateOnly(2026, 9, 29);
-        var to = new DateOnly(2026, 9, 30);
+        var from = new DateTime(2026, 9, 29);
+        var to = new DateTime(2026, 9, 30);
         _server.GivenError($"{BasePath}/c/{from.ToIso()}/{to.ToIso()}", HttpStatusCode.BadRequest, "error-400-tables-date-range.txt");
 
         // Act
@@ -52,7 +52,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
     {
         // Arrange
         // The API returns 404 for a day without a publication (here a Sunday).
-        var date = new DateOnly(2026, 9, 27);
+        var date = new DateTime(2026, 9, 27);
         _server.GivenError($"{BasePath}/a/{date.ToIso()}", HttpStatusCode.NotFound, "error-404.txt");
 
         // Act

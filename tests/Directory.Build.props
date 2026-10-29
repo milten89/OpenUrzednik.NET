@@ -25,7 +25,7 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <!-- On .NET Framework the libraries take DateTime where .NET has DateOnly, so the tests use the same alias as OpenUrzednik.Nbp.
+  <!-- On .NET Framework there is no DateOnly, so the tests use the same alias for DateTime as OpenUrzednik.Nbp (its internals use DateOnly).
        The compiler attributes come from src/Polyfills. A test project also sees its library's internal copy, hence CS0436. -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
     <NoWarn>$(NoWarn);CS0436</NoWarn>

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.Tests.Fakes;
@@ -56,7 +57,7 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(new GoldPrice(dto.Date, dto.Price));
+        result.Value.ShouldBe(new GoldPrice(dto.Date.ToPublicDate(), dto.Price));
     }
 
     [Fact]
@@ -114,5 +115,22 @@ public partial class NbpGoldPriceClientTest
         result.IsFailure.ShouldBeTrue();
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
         handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetAsync_DateWithTimeOfDayAndKind_UsesOnlyTheDatePart()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDate(Arg.Any<DateOnly>()).Returns(faker.Internet.UrlRootedPath());
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder);
+
+        // Act
+        await sut.GetAsync(new DateTime(2026, 10, 2, 23, 59, 59, DateTimeKind.Utc), TestContext.Current.CancellationToken);
+
+        // Assert
+        urlBuilder.Received(1).ForDate(new DateOnly(2026, 10, 2));
     }
 }

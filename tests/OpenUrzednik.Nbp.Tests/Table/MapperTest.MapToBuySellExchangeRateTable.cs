@@ -1,5 +1,6 @@
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;
@@ -20,7 +21,7 @@ public partial class MapperTest
         var result = Mapper.MapToBuySellExchangeRateTable(dto);
 
         // Assert
-        result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate, dto.PublicationDate, []));
+        result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate.ToPublicDate(), dto.PublicationDate.ToPublicDate(), []));
     }
 
     [Fact]
@@ -33,7 +34,7 @@ public partial class MapperTest
         var result = Mapper.MapToBuySellExchangeRateTable(dto);
 
         // Assert
-        result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate, dto.PublicationDate,
+        result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate.ToPublicDate(), dto.PublicationDate.ToPublicDate(),
             [new TableBuySellRate(dto.Rates[0].CurrencyName, dto.Rates[0].CurrencyCode, dto.Rates[0].Ask, dto.Rates[0].Bid)]));
     }
 
@@ -47,7 +48,7 @@ public partial class MapperTest
         var result = Mapper.MapToBuySellExchangeRateTable(dto);
 
         // Assert
-        result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate, dto.PublicationDate,
+        result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate.ToPublicDate(), dto.PublicationDate.ToPublicDate(),
             dto.Rates.Select(x => new TableBuySellRate(x.CurrencyName, x.CurrencyCode, x.Ask, x.Bid)).ToArray()));
     }
 
@@ -102,7 +103,7 @@ public partial class MapperTest
         var result = Mapper.MapToBuySellExchangeRateTable(dtos);
 
         // Assert
-        result.ShouldBe(dtos.Select(x => new BuySellExchangeRateTable(x.TableId, x.TradingDate, x.PublicationDate,
+        result.ShouldBe(dtos.Select(x => new BuySellExchangeRateTable(x.TableId, x.TradingDate.ToPublicDate(), x.PublicationDate.ToPublicDate(),
             [.. x.Rates.Select(r => new TableBuySellRate(r.CurrencyName, r.CurrencyCode, r.Ask, r.Bid))])));
     }
 
