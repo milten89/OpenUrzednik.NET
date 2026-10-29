@@ -8,9 +8,11 @@
     * Abstractions (API contracts under semantic versioning): the LOWEST version that provides the API we use,
       i.e. x.0.0 of the major matching our oldest .NET target (currently 8.0.0); a later patch only for a known vulnerability.
       It is a minimum for every app, so a higher one would force upgrades on them.
-    * Implementations (code that runs): the LATEST version, to get bug and security fixes.
+    * Implementations (code that runs): the LATEST PATCH of the chosen minor, to get bug and security fixes. Dependabot
+      proposes patches only; a minor or major raise is a deliberate change (ADR-0004, 2026-10-29 note).
     * Microsoft.Extensions.* used by OpenUrzednik.Nbp.DependencyInjection: per target, the latest patch of the major that
-      matches the target, so a .NET 8 app isn't moved to Microsoft.Extensions 10.x (ADR-0004, 2026-10-17 note).
+      matches the target, so a .NET 8 app isn't moved to Microsoft.Extensions 10.x (ADR-0004, 2026-10-17 note): a normal
+      10.0.x row plus a net8.0-only Update override (2026-10-29 note).
     Raising an abstraction above its minimum (e.g. a Dependabot PR) needs the maintainer's explicit answer first (CLAUDE.md).
   -->
 
@@ -19,7 +21,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
-  <!-- Implementations: latest version. -->
+  <!-- Implementations: latest patch of the chosen minor. -->
   <ItemGroup>
     <!-- netstandard2.0 only (ADR-0005): types .NET has built in. -->
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
@@ -27,15 +29,18 @@
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="10.0.14" />
     <PackageVersion Include="System.Text.Json" Version="10.0.14" />
     <PackageVersion Include="System.Net.Http.Json" Version="10.0.14" />
-    <!-- Per target (ADR-0004): net8.0 gets the 8.0.x line; net10.0 and netstandard2.0 get 10.0.x, the LTS line that
-         still supports .NET Framework. Patch the 8.0.x rows by hand if Dependabot doesn't, and undo any Dependabot
-         change that moves a net8.0 row to 10.x. -->
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.12" Condition="'$(TargetFramework)' != 'net8.0'" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" Condition="'$(TargetFramework)' == 'net8.0'" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.12" Condition="'$(TargetFramework)' != 'net8.0'" />
+    <!-- net10.0 and netstandard2.0 get 10.0.x, the LTS line that still supports .NET Framework; net8.0 is overridden below. -->
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.14" />
     <!-- The resilience engine the app runs (maintainer, 2026-10-04), even though we only use its exception types. -->
     <PackageVersion Include="Polly.Core" Version="8.8.0" />
+  </ItemGroup>
+
+  <!-- net8.0 only (ADR-0004): the 8.0.x line, so a .NET 8 app stays on Microsoft.Extensions 8.x. Kept apart from the rows
+       above so Dependabot updates those normally; these are patched by hand (8.0.x gets no patches after 2026-11-10). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageVersion Update="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageVersion Update="Microsoft.Extensions.Options" Version="8.0.2" />
   </ItemGroup>
 
   <!-- Build tooling and tests: latest version. -->

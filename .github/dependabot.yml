@@ -18,30 +18,32 @@ updates:
     ignore:
       - dependency-name: "*.Abstractions"
         update-types: [ "version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch" ]
-      # Dependencies of the published libraries: no major updates (ADR-0004). Most follow our targets' major, and for all of
-      # them a new major would raise the minimum for every app. Minor and patch updates still come. Test-only packages keep getting majors.
+      # Dependencies of the published libraries: patch updates only (ADR-0004). Each version is a minimum for every app, so
+      # a minor or major raise is a deliberate change made by hand. Test and tooling packages keep getting every update.
+      # The net8.0 overrides in Directory.Packages.props (PackageVersion Update) are patched by hand.
       - dependency-name: "Microsoft.Extensions.Http"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "Microsoft.Extensions.Options"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "System.Text.Json"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "System.Net.Http.Json"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "System.Diagnostics.DiagnosticSource"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "Microsoft.Bcl.TimeProvider"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "Microsoft.Bcl.HashCode"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "Polly.Core"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
     groups:
-      microsoft-extensions:
-        patterns: [ "Microsoft.Extensions.*", "System.*" ]
-        exclude-patterns: [ "*.Abstractions" ]
+      # Every dependency of the published libraries in one PR.
+      published-dependencies:
+        patterns: [ "Microsoft.Extensions.Http", "Microsoft.Extensions.Options", "System.*", "Microsoft.Bcl.*", "Polly.Core" ]
       test-dependencies:
-        patterns: [ "xunit*", "Microsoft.NET.Test.Sdk", "Microsoft.Testing.*", "NSubstitute*", "Shouldly", "Bogus", "WireMock.Net*" ]
+        patterns: [ "xunit*", "Microsoft.NET.Test.Sdk", "Microsoft.Testing.*", "NSubstitute*", "Shouldly", "Bogus", "WireMock.Net*",
+                    "Microsoft.Extensions.TimeProvider.Testing", "Microsoft.Extensions.Http.Resilience" ]
       build-tooling:
         patterns: [ "Nerdbank.GitVersioning" ]
 
