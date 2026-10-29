@@ -239,10 +239,15 @@ public readonly struct OpenUrzednikResult<TValue>
     public bool IsFailure => !IsSuccess;
 
     /// <summary>
-    /// Gets the value associated with the result. If the result is in a failed state, accessing this property will throw an <see cref="InvalidOperationException"/>.
+    /// Gets the value associated with the result. Read it only after <see cref="IsSuccess"/> or <see cref="TryGetValue"/>;
+    /// <see cref="EnsureSuccess"/> returns the value or throws the error's <see cref="OpenUrzednik.Core.Exceptions.OpenUrzednikException"/>.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the result is a failure. The message lists each error's code and message, and the first error's exception is the
+    /// <see cref="Exception.InnerException"/>.
+    /// </exception>
     public TValue Value
-        => IsSuccess ? _value! : throw new InvalidOperationException("Cannot access value of a failed result.");
+        => IsSuccess ? _value! : throw ResultExceptions.CreateValueOfFailure(Errors);
 
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> to prevent creating a generic result without explicitly providing a value.

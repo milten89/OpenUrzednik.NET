@@ -33,4 +33,15 @@ public partial class RequestTimeoutErrorTest
         // Assert
         exception.ShouldBeOfType<RequestTimeoutException>().InnerException.ShouldBeNull();
     }
+
+    [Fact]
+    public void Ctor_WithStatusCode_StoresItAsMetadata()
+    {
+        // Act
+        var error = new RequestTimeoutError("message", statusCode: 408);
+
+        // Assert
+        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(408);
+        error.Timeout.ShouldBeNull();
+    }
 }

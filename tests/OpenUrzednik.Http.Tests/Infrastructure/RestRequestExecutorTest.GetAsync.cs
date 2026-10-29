@@ -195,6 +195,7 @@ public partial class RestRequestExecutorTest
     [InlineData(HttpStatusCode.Unauthorized, UnauthorizedError.ErrorCode)]
     [InlineData(HttpStatusCode.Forbidden, UnauthorizedError.ErrorCode)]
     [InlineData(HttpStatusCode.NotFound, NotFoundError.ErrorCode)]
+    [InlineData(HttpStatusCode.RequestTimeout, RequestTimeoutError.ErrorCode)]
     [InlineData((HttpStatusCode)429, RateLimitExceededError.ErrorCode)]
     [InlineData(HttpStatusCode.InternalServerError, ServiceUnavailableError.ErrorCode)]
     [InlineData(HttpStatusCode.BadGateway, ServiceUnavailableError.ErrorCode)]
@@ -341,7 +342,7 @@ public partial class RestRequestExecutorTest
     }
 
     [Fact]
-    public async Task GetAsync_HttpClientThrowsHttpRequestException_ReturnsServiceUnavailableErrorAndRecordsException()
+    public async Task GetAsync_HttpClientThrowsHttpRequestException_ReturnsConnectionFailedErrorAndRecordsException()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -355,7 +356,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ConnectionFailedError>();
         error.Exception.ShouldBeSameAs(thrown);
         error.ToException().InnerException.ShouldBeSameAs(thrown);
         span.Received(1).RecordException(thrown);
@@ -574,7 +575,7 @@ public partial class RestRequestExecutorTest
     }
 
     [Fact]
-    public async Task GetAsync_ConnectionFailsDuringRead_ReturnsServiceUnavailableError()
+    public async Task GetAsync_ConnectionFailsDuringRead_ReturnsConnectionFailedError()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -591,7 +592,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ConnectionFailedError>();
         var recorded = error.Exception.ShouldNotBeNull();
         (recorded == thrown || recorded.InnerException == thrown).ShouldBeTrue();
         span.Received(1).RecordException(recorded);
@@ -1017,5 +1018,40 @@ public partial class RestRequestExecutorTest
         await Should.ThrowAsync<JsonException>(() => CreateConnectionWithOverride(httpClient, _ => throw new JsonException("bad"), telemetry)
             .GetAsync("path", TypeInfo, TestContext.Current.CancellationToken));
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
+    }
+
+    [Fact]
+    public async Task GetAsync_HttpClientThrowsResilienceRejection_ReturnsServiceUnavailableError()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var thrown = ResilienceRejection.Create("The circuit is now open.", new InvalidOperationException("rejected"));
+        var handler = new StubHttpMessageHandler(thrown);
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")) };
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        error.Exception.ShouldBeSameAs(thrown);
+        error.Metadata.ContainsKey(OpenUrzednikError.StatusCodeMetadataKey).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task GetAsync_HttpClientWrapsResilienceRejection_ReturnsServiceUnavailableError()
+    {
+        // Arrange: .NET Framework's HttpClient may wrap what a handler throws.
+        var faker = new Faker().WithConstantSeed();
+        var thrown = new HttpRequestException("An error occurred while sending the request.",
+            ResilienceRejection.Create("The circuit is now open.", new InvalidOperationException("rejected")));
+        var handler = new StubHttpMessageHandler(thrown);
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")) };
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>().Exception.ShouldBeSameAs(thrown);
     }
 }

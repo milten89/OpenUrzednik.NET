@@ -65,7 +65,7 @@ builder.Services.AddOpenUrzednikNbp()
 
 By default the handler retries a request up to 3 times on 5xx, 408 and 429 statuses (honoring `Retry-After`). Each attempt gets 10 s, the whole request 30 s. The handler also has a circuit breaker and a rate limiter. [Microsoft's documentation](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience) describes the details and how to change the settings (e.g. `options.Retry.MaxRetryAttempts = 5`). Add one such handler, not several. If the app already adds one to every client through `ConfigureHttpClientDefaults` (like the .NET Aspire template), don't add a second one. The package runs on .NET Framework 4.7.2 or later; there, the `Microsoft.Extensions.Http.Resilience` 10.x packages warn at build time that they don't support that platform.
 
-When the handler rejects a request, you get an error in the result, not an exception: a timeout is a `RequestTimeoutError`, and an open circuit breaker or rate limiter is a `ServiceUnavailableError`. Cancellation by the caller still throws `OperationCanceledException`.
+When the handler rejects a request, you get an error in the result, not an exception: a timeout is a `RequestTimeoutError`, and an open circuit breaker or rate limiter is a `ServiceUnavailableError` (without a `statusCode`; its `Exception` is an `HttpRequestException` whose `InnerException` is the rejection). A network failure is a `ConnectionFailedError`. Cancellation by the caller still throws `OperationCanceledException`.
 
 ## Logging and tracing
 

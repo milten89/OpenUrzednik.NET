@@ -129,7 +129,7 @@ public partial class NbpGoldPriceClientWireMockTest
     }
 
     [Fact]
-    public async Task GetLatestAsync_ConnectionFails_ReturnsServiceUnavailableError()
+    public async Task GetLatestAsync_ConnectionFails_ReturnsConnectionFailedError()
     {
         // Arrange
         var sut = CreateSut();
@@ -140,7 +140,7 @@ public partial class NbpGoldPriceClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ConnectionFailedError>();
         error.Exception.ShouldBeOfType<HttpRequestException>();
     }
 

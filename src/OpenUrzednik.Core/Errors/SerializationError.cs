@@ -8,7 +8,7 @@ namespace OpenUrzednik.Core.Errors;
 public sealed class SerializationError : OpenUrzednikError
 {
     /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
-    public const string ErrorCode = "serializationError";
+    public const string ErrorCode = "serialization";
 
     /// <summary>
     /// Gets the exception that caused the error (for example a <c>System.Text.Json.JsonException</c>), if any.
