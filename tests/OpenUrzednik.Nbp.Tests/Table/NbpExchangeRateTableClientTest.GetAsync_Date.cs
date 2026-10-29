@@ -23,7 +23,7 @@ public partial class NbpExchangeRateTableClientTest
     [Theory]
     [InlineData((TableType)99)]
     [InlineData((TableType)(-1))]
-    public async Task GetAsync_Date_InvalidTable_ReturnsFailureWithoutSendingRequest(TableType table)
+    public void GetAsync_Date_InvalidTable_ThrowsArgumentOutOfRangeExceptionWithoutSendingRequest(TableType table)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -32,13 +32,9 @@ public partial class NbpExchangeRateTableClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
 
-        // Act
-        var result = await sut.GetAsync(table, date, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-        result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetAsync(table, date, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
         handler.Request.ShouldBeNull();
     }
 
@@ -64,7 +60,7 @@ public partial class NbpExchangeRateTableClientTest
     }
 
     [Fact]
-    public async Task GetAsync_Date_InvalidTableAndDateBeforeMinDate_ReturnsCombinedValidationErrorsWithoutSendingRequest()
+    public void GetAsync_Date_UndefinedTableAndDateBeforeMinDate_ThrowsBeforeValidating()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -73,13 +69,9 @@ public partial class NbpExchangeRateTableClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
 
-        // Act
-        var result = await sut.GetAsync((TableType)99, date, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-        result.Errors.Count.ShouldBe(2);
-        result.Errors.ShouldAllBe(e => e is ValidationError);
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetAsync((TableType)99, date, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
         handler.Request.ShouldBeNull();
     }
 

@@ -10,7 +10,14 @@ namespace OpenUrzednik.Nbp;
 public partial class NbpCurrencyExchangeRateClient
 {
     /// <inheritdoc/>
-    public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLatestAsync(string currency, CancellationToken cancellationToken = default)
+    public Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLatestAsync(string currency, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(currency);
+
+        return GetBuySellLatestCoreAsync(currency, cancellationToken);
+    }
+
+    private async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLatestCoreAsync(string currency, CancellationToken cancellationToken)
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_latest");
         traceSpan.SetTag("nbp.currency", currency);
@@ -22,7 +29,14 @@ public partial class NbpCurrencyExchangeRateClient
     }
 
     /// <inheritdoc/>
-    public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTopCountAsync(string currency, int topCount, CancellationToken cancellationToken = default)
+    public Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTopCountAsync(string currency, int topCount, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(currency);
+
+        return GetBuySellTopCountCoreAsync(currency, topCount, cancellationToken);
+    }
+
+    private async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTopCountCoreAsync(string currency, int topCount, CancellationToken cancellationToken)
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_top_count");
         traceSpan.SetTag("nbp.currency", currency);
@@ -36,7 +50,14 @@ public partial class NbpCurrencyExchangeRateClient
     }
 
     /// <inheritdoc/>
-    public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTodayAsync(string currency, CancellationToken cancellationToken = default)
+    public Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTodayAsync(string currency, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(currency);
+
+        return GetBuySellTodayCoreAsync(currency, cancellationToken);
+    }
+
+    private async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTodayCoreAsync(string currency, CancellationToken cancellationToken)
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_today");
         traceSpan.SetTag("nbp.currency", currency);
@@ -48,7 +69,14 @@ public partial class NbpCurrencyExchangeRateClient
     }
 
     /// <inheritdoc/>
-    public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime date, CancellationToken cancellationToken = default)
+    public Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime date, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(currency);
+
+        return GetBuySellCoreAsync(currency, date, cancellationToken);
+    }
+
+    private async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellCoreAsync(string currency, DateTime date, CancellationToken cancellationToken)
     {
         var day = DateOnly.FromDateTime(date);
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_date");
@@ -63,7 +91,14 @@ public partial class NbpCurrencyExchangeRateClient
     }
 
     /// <inheritdoc/>
-    public async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime from, DateTime to, CancellationToken cancellationToken = default)
+    public Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime from, DateTime to, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(currency);
+
+        return GetBuySellCoreAsync(currency, from, to, cancellationToken);
+    }
+
+    private async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellCoreAsync(string currency, DateTime from, DateTime to, CancellationToken cancellationToken)
     {
         var fromDay = DateOnly.FromDateTime(from);
         var toDay = DateOnly.FromDateTime(to);

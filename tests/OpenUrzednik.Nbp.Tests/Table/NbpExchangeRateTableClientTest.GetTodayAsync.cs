@@ -20,7 +20,7 @@ public partial class NbpExchangeRateTableClientTest
     [Theory]
     [InlineData((TableType)99)]
     [InlineData((TableType)(-1))]
-    public async Task GetTodayAsync_InvalidTable_ReturnsFailureWithoutSendingRequest(TableType table)
+    public void GetTodayAsync_InvalidTable_ThrowsArgumentOutOfRangeExceptionWithoutSendingRequest(TableType table)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -28,13 +28,9 @@ public partial class NbpExchangeRateTableClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
 
-        // Act
-        var result = await sut.GetTodayAsync(table, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-        result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetTodayAsync(table, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
         handler.Request.ShouldBeNull();
     }
 

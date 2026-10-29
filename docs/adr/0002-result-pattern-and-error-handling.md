@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-17
+date: 2026-10-29
 decision-makers: milten89
 ---
 
@@ -29,7 +29,7 @@ Chosen option: "All failures that can happen during normal execution are returne
 
 **Returned as a failed `OpenUrzednikResult` (never thrown):**
 
-* Input validation failures → `ValidationError`.
+* Input validation failures → `ValidationError`: a non-null value of the right type that fails a format or range check (a currency code in the wrong format, an empty string, a date out of range, a top count out of range).
 * Every non-success HTTP status, mapped to the most specific error (404 → `NotFoundError`, 400 → validation/bad-request error carrying the server message, 401/403 → `UnauthorizedError`, 429 → `RateLimitExceededError` with `RetryAfter`, 5xx → `ServiceUnavailableError`, anything else → `UnknownError` with the status code in metadata).
 * Empty or malformed payloads, deserialization and mapping failures → `SerializationError` (or a more specific error).
 * Network failures (`HttpRequestException`, socket/IO errors).
@@ -38,7 +38,7 @@ Chosen option: "All failures that can happen during normal execution are returne
 **Thrown:**
 
 * Caller cancellation – `OperationCanceledException` when the caller's `CancellationToken` was cancelled.
-* Programmer errors – `ArgumentNullException`, `ArgumentException`, invalid configuration detected in constructors/options.
+* Programmer errors – `ArgumentNullException`, `ArgumentException`, invalid configuration detected in constructors/options. In the provider clients' public methods, a `null` argument (`ArgumentNullException`) and a value that isn't a defined enum member (`ArgumentOutOfRangeException`) are thrown **synchronously**, before the method returns its task, as the task-based asynchronous pattern says for usage errors: the method checks them, then returns the task of a private `async` method.
 * Fatal runtime conditions – `OutOfMemoryException`, `StackOverflowException`, etc. are never caught.
 
 **Rules for code:**
@@ -75,3 +75,5 @@ Supersedes the informal rule in `CONTRIBUTING.md`. Shared HTTP behaviour is impl
 **2026-10-04 change (backlog item 32).** `ValidationException` and `SerializationException` are renamed to `OpenUrzednikValidationException` and `OpenUrzednikSerializationException`: the old names clashed with `System.ComponentModel.DataAnnotations.ValidationException` and `System.Runtime.Serialization.SerializationException`. The .NET types themselves were rejected: they don't derive from `OpenUrzednikException` (so they can't carry `Error`/`Errors`), their meaning is different (attribute-based model validation, the obsolete formatter serialization), and `DataAnnotations` is an extra package on netstandard2.0.
 
 **2026-10-17 change: one list of error paths** ([#77](https://github.com/milten89/OpenUrzednik.NET/issues/77)). The Confirmation, `CLAUDE.md` and the `/new-endpoint` skill listed different error paths: `CLAUDE.md` left out 401/403, and the skill also left out the connection failure. The Confirmation now lists every path the WireMock tests already cover for each NBP client, including the 200 with an empty array for endpoints that return one, and the other two documents point to it.
+
+**2026-10-29 change: argument errors are thrown** ([#89](https://github.com/milten89/OpenUrzednik.NET/issues/89)). Before, the NBP clients returned a `ValidationError` for a `null` currency code and an undefined `TableType`, while the rules above and `CONTRIBUTING` named `ArgumentNullException` for a `null` argument, so callers couldn't tell from the docs whether to catch an exception or check the result. The maintainer drew the line where the .NET design guidelines do: a usage error (a `null` argument or an undefined enum value) throws, synchronously; a non-null value of the right type that fails a format or range check is a returned `ValidationError`. Core's extensions on `Task<…>` (`EnsureSuccessAsync`, `MapAsync`, `BindAsync`) still check their arguments inside an `async` method; that is a separate change. It affects the 15 methods that take a currency code or a `TableType`; the gold methods take neither. It is a breaking change for preview users.

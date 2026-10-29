@@ -21,7 +21,7 @@ public partial class NbpExchangeRateTableClientTest
     [Theory]
     [InlineData((TableType)99)]
     [InlineData((TableType)(-1))]
-    public async Task GetTopCountAsync_InvalidTable_ReturnsFailureWithoutSendingRequest(TableType table)
+    public void GetTopCountAsync_InvalidTable_ThrowsArgumentOutOfRangeExceptionWithoutSendingRequest(TableType table)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -30,13 +30,9 @@ public partial class NbpExchangeRateTableClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
 
-        // Act
-        var result = await sut.GetTopCountAsync(table, count, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-        result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetTopCountAsync(table, count, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
         handler.Request.ShouldBeNull();
     }
 
@@ -62,7 +58,7 @@ public partial class NbpExchangeRateTableClientTest
     }
 
     [Fact]
-    public async Task GetTopCountAsync_InvalidTableAndTopCount_ReturnsCombinedValidationErrorsWithoutSendingRequest()
+    public void GetTopCountAsync_UndefinedTableAndInvalidTopCount_ThrowsBeforeValidating()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -70,13 +66,9 @@ public partial class NbpExchangeRateTableClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
 
-        // Act
-        var result = await sut.GetTopCountAsync((TableType)99, 0, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-        result.Errors.Count.ShouldBe(2);
-        result.Errors.ShouldAllBe(e => e is ValidationError);
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetTopCountAsync((TableType)99, 0, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
         handler.Request.ShouldBeNull();
     }
 

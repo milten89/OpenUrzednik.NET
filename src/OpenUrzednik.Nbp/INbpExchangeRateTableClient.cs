@@ -29,6 +29,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="table">Table type</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<ExchangeRateTable>> GetLatestAsync(TableType table, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -38,6 +39,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="topCount">Number of tables to retrieve: 1 to 67 for table A, 1 to 14 for table B; the API rejects larger counts.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(TableType table, int topCount, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -50,6 +52,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="table">Table type</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<ExchangeRateTable>> GetTodayAsync(TableType table, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -60,6 +63,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(TableType table, DateTime date, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -71,6 +75,7 @@ public interface INbpExchangeRateTableClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(TableType table, DateTime from, DateTime to, CancellationToken cancellationToken = default);
 
     /// <summary>
