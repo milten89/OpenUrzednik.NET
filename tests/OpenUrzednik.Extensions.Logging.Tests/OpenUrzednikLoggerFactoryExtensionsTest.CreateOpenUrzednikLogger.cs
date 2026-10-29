@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp;
 
 using Shouldly;
 
@@ -23,7 +23,7 @@ public sealed partial class OpenUrzednikLoggerFactoryExtensionsTest
         sut.Log(Core.Telemetry.OpenUrzednikLogLevel.Information, null, "Message");
 
         // Assert
-        loggerFactory.Received(1).CreateLogger("OpenUrzednik.Nbp.Gold.NbpGoldPriceClient");
+        loggerFactory.Received(1).CreateLogger("OpenUrzednik.Nbp.NbpGoldPriceClient");
         logger.Entries.ShouldHaveSingleItem().Message.ShouldBe("Message");
     }
 

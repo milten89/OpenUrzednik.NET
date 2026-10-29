@@ -1,8 +1,8 @@
 using System.Diagnostics;
 
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.Options;
 
 using Shouldly;
 

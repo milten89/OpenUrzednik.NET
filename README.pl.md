@@ -26,7 +26,7 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 
 | Pakiet | Status | Opis |
 | :--- | :--- | :--- |
-| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.pl.md) | ✅ Dostępne podstawowe abstrakcje | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz metody rozszerzeń `EnsureSuccess` / `EnsureSuccessAsync` |
+| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.pl.md) | ✅ Dostępne podstawowe abstrakcje | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz `EnsureSuccess()` / `EnsureSuccessAsync()` |
 | [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.pl.md) | 🧪 Preview | Przekazuje logi klientów do `ILogger` z Microsoft.Extensions.Logging |
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | 🧪 Preview | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.pl.md) | 🧪 Preview | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP. API publiczne może się jeszcze zmienić |
@@ -46,7 +46,6 @@ Aktualnie najłatwiej zacząć od `OpenUrzednik.Core`.
 ```csharp
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Core.Extensions;
 
 OpenUrzednikResult<int> result = OpenUrzednikResult.Success(42);
 int value = result.EnsureSuccess();
@@ -58,7 +57,7 @@ Przykład błędu biznesowego:
 ```csharp
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Core.Extensions;
+using OpenUrzednik.Core.Exceptions;
 
 OpenUrzednikResult<int> failed = OpenUrzednikResult.Failure<int>(new ValidationError("NIP is invalid."));
 

@@ -6,11 +6,7 @@ using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.Nbp;
-using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.DependencyInjection;
-using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.Options;
-using OpenUrzednik.Nbp.Table;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

@@ -1,7 +1,6 @@
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Core.Telemetry;
 
-namespace OpenUrzednik.Core.Extensions;
+namespace OpenUrzednik.Core.Telemetry;
 
 /// <summary>
 /// Records <see cref="OpenUrzednikError"/>s on an <see cref="IOpenUrzednikSpan"/>.

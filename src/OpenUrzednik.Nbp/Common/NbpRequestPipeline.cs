@@ -2,7 +2,6 @@ using System.Text.Json.Serialization.Metadata;
 
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 

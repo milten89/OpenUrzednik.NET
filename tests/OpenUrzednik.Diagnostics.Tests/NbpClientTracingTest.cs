@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 
-using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
 
 using Shouldly;

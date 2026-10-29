@@ -7,7 +7,6 @@ using NSubstitute;
 using OpenUrzednik.Core.Errors;
 
 using OpenUrzednik.Core.Telemetry;
-using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon;

@@ -89,13 +89,12 @@ The clients take optional `logger` and `traceSource` parameters. Without them th
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.Nbp;
-using OpenUrzednik.Nbp.Gold;
 
 var client = new NbpGoldPriceClient(httpClient,
     logger: loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(),
     traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
 ```
 
-Spans go to the `OpenUrzednik.Nbp` source, and logs to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`).
+Spans go to the `OpenUrzednik.Nbp` source, and logs to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`).
 
 The clients use their own interfaces (`IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` from OpenUrzednik.Core), not `ILogger` and `ActivitySource`. So this package needs neither `Microsoft.Extensions.Logging.Abstractions` nor any other logging or tracing package. Only the adapters connect it to `ILogger` and `ActivitySource`.

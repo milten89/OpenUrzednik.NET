@@ -1,9 +1,7 @@
 // A minimal API over the NBP clients registered with OpenUrzednik.Nbp.DependencyInjection.
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Nbp.Currency;
-using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.Table;
+using OpenUrzednik.Nbp;
 
 var builder = WebApplication.CreateBuilder(args);
 

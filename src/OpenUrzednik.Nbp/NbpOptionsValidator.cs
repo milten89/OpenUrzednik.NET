@@ -1,4 +1,4 @@
-namespace OpenUrzednik.Nbp.Options;
+namespace OpenUrzednik.Nbp;
 
 /// <summary>
 /// Checks <see cref="NbpOptions"/> values. Invalid configuration is a programmer error, so it throws (ADR-0002).

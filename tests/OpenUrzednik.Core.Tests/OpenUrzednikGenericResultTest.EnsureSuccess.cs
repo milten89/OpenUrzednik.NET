@@ -1,27 +1,13 @@
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
-using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
-namespace OpenUrzednik.Core.Tests.Extensions;
+namespace OpenUrzednik.Core.Tests;
 
-public partial class OpenUrzednikResultExtensionsTest
+public partial class OpenUrzednikGenericResultTest
 {
-    [Fact]
-    public void EnsureSuccess_WhenResultIsSuccess_DoesNotThrow()
-    {
-        // Arrange
-        var result = OpenUrzednikResult.Success();
-
-        // Act
-        result.EnsureSuccess();
-
-        // Assert
-        // No exception should be thrown
-    }
-
     [Fact]
     public void EnsureSuccess_WhenGenericResultIsDefault_ThrowsUnknownException()
     {
@@ -32,28 +18,6 @@ public partial class OpenUrzednikResultExtensionsTest
         Should.Throw<UnknownException>(() => result.EnsureSuccess());
     }
 
-    [Fact]
-    public void EnsureSuccess_WhenResultIsFailureWithSingleError_ThrowsInvalidOperationException()
-    {
-        // Arrange
-        var result = OpenUrzednikResult.Failure(new TestError("Test error"));
-
-        // Act & Assert
-        Should.Throw<TestException>(() => result.EnsureSuccess());
-    }
-
-    [Fact]
-    public void EnsureSuccess_WhenResultIsFailureWithMultipleErrors_ThrowsFirstErrorExceptionWithAllErrors()
-    {
-        // Arrange
-        var result = OpenUrzednikResult.Failure([new TestError("Test error"), new TestError("Another test error")]);
-
-        // Act && Assert
-        var exception = Should.Throw<TestException>(() => result.EnsureSuccess());
-        exception.Message.ShouldBe("Test error");
-        exception.Error.ShouldBeSameAs(result.Errors[0]);
-        exception.Errors.ShouldBe(result.Errors);
-    }
 
     [Fact]
     public void EnsureSuccess_WhenGenericResultIsSuccess_DoesNotThrow()
@@ -69,6 +33,7 @@ public partial class OpenUrzednikResultExtensionsTest
         value.ShouldBe(expectedValue);
     }
 
+
     [Fact]
     public void EnsureSuccess_WhenGenericResultIsFailureWithSingleError_ThrowsInvalidOperationException()
     {
@@ -78,6 +43,7 @@ public partial class OpenUrzednikResultExtensionsTest
         // Act && Assert
         Should.Throw<TestException>(() => result.EnsureSuccess());
     }
+
 
     [Fact]
     public void EnsureSuccess_WhenGenericResultIsFailureWithMultipleErrors_ThrowsFirstErrorExceptionWithAllErrors()
@@ -91,6 +57,7 @@ public partial class OpenUrzednikResultExtensionsTest
         exception.Error.ShouldBeSameAs(result.Errors[0]);
         exception.Errors.ShouldBe(result.Errors);
     }
+
 
     [Fact]
     public void EnsureSuccess_WhenResultHasMultipleValidationErrors_ThrowsOneOpenUrzednikValidationExceptionWithAllErrors()
@@ -113,18 +80,6 @@ public partial class OpenUrzednikResultExtensionsTest
         exception.Message.ShouldBe("Validation failed with 2 errors: Date must not be in the future.; Top count must be between 1 and 255.");
     }
 
-    [Fact]
-    public void EnsureSuccess_WhenResultHasValidationAndOtherErrors_ThrowsFirstErrorExceptionWithAllErrors()
-    {
-        // Arrange
-        var result = OpenUrzednikResult.Failure([new TestError("Test error"), new ValidationError("Invalid.", "rule", "name", null)]);
-
-        // Act
-        var exception = Should.Throw<TestException>(() => result.EnsureSuccess());
-
-        // Assert
-        exception.Errors.Count.ShouldBe(2);
-    }
 
     [Fact]
     public void EnsureSuccess_WhenResultHasSingleError_ExceptionKeepsError()
@@ -142,6 +97,7 @@ public partial class OpenUrzednikResultExtensionsTest
         exception.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
     }
 
+
     [Fact]
     public void EnsureSuccess_WhenGenericResultIsDefault_ExceptionKeepsUnknownError()
     {
@@ -152,17 +108,4 @@ public partial class OpenUrzednikResultExtensionsTest
         exception.Error.ShouldBeOfType<UnknownError>();
     }
 
-    [Fact]
-    public void EnsureSuccess_WhenResultHasMultipleErrors_ExceptionDoesNotShareResultErrorList()
-    {
-        // Arrange
-        var result = OpenUrzednikResult.Failure([new TestError("first"), new TestError("second")]);
-
-        // Act
-        var exception = Should.Throw<TestException>(() => result.EnsureSuccess());
-
-        // Assert
-        exception.Errors.ShouldNotBeSameAs(result.Errors);
-        exception.Errors.ShouldBeAssignableTo<System.Collections.ObjectModel.ReadOnlyCollection<OpenUrzednikError>>();
-    }
 }

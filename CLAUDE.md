@@ -90,6 +90,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 ## Code conventions
 
 - C# `latest`, nullable enabled, file-scoped namespaces, `_camelCase` private fields. `.editorconfig` is authoritative.
+- Namespaces ([ADR-0007](docs/adr/0007-client-api-and-extensibility.md)): clients, their interfaces and options in the provider's root namespace (`OpenUrzednik.Nbp`, files in the project root); models in area namespaces (`.Currency`, `.Table`, `.Gold`). Core: results and their `Task<…>` extensions in `OpenUrzednik.Core`, operations on a result as instance methods, extension methods next to the type they extend. No public `.Extensions` or `.Options` namespaces in Core or providers (package names like `OpenUrzednik.Extensions.Logging` and internal namespaces are exempt).
 - Public models are `sealed record`s with `IReadOnlyList<T>` collections. Records holding lists override `Equals`/`GetHashCode` (see `Currency/CurrencyExchangeRates.cs`).
 - DTOs are `internal sealed class` in `Dto/`, with `[JsonPropertyName]`. Mark a property `required` **only if the real API always returns it**: check with `/verify-api`.
 - Mappers are `internal static class Mapper` per area. Validators derive from `ValueValidator<T>` in `Validation/` and are `internal sealed`.

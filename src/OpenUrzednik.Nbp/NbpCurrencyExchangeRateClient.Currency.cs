@@ -1,11 +1,11 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Core.Extensions;
 using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Validation;
 
-namespace OpenUrzednik.Nbp.Currency;
+namespace OpenUrzednik.Nbp;
 
 public partial class NbpCurrencyExchangeRateClient
 {
@@ -20,7 +20,7 @@ public partial class NbpCurrencyExchangeRateClient
             .And(new TableTypeValidator(nameof(table), table).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetLatestAsync), validation,
-            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).Latest(), JsonContext.CurrencyExchangeRatesDto, Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
+            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).Latest(), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -36,7 +36,7 @@ public partial class NbpCurrencyExchangeRateClient
             .And(new TopCountValidator(nameof(topCount), topCount, TopCountValidator.MaxTopCount).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetTopCountAsync), validation,
-            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForTopCount(topCount), JsonContext.CurrencyExchangeRatesDto, Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
+            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForTopCount(topCount), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -50,7 +50,7 @@ public partial class NbpCurrencyExchangeRateClient
             .And(new TableTypeValidator(nameof(table), table).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetTodayAsync), validation,
-            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).Today(), JsonContext.CurrencyExchangeRatesDto, Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
+            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).Today(), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -66,7 +66,7 @@ public partial class NbpCurrencyExchangeRateClient
             .And(new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
-            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDate(date), JsonContext.CurrencyExchangeRatesDto, Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
+            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDate(date), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -84,6 +84,6 @@ public partial class NbpCurrencyExchangeRateClient
             .And(new DateRangeValidator((from, to), DateRangeValidator.MaxRatesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
-            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDateRange(from, to), JsonContext.CurrencyExchangeRatesDto, Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
+            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDateRange(from, to), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
     }
 }

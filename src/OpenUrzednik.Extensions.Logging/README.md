@@ -16,13 +16,13 @@ dotnet add package OpenUrzednik.Extensions.Logging
 
 ```csharp
 using OpenUrzednik.Extensions.Logging;
-using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Nbp;
 
 var client = new NbpGoldPriceClient(httpClient,
     logger: loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>());
 ```
 
-The log category is the client's full type name (e.g. `OpenUrzednik.Nbp.Gold.NbpGoldPriceClient`), as with `ILogger<T>`. You can turn a whole provider's logs on or off by prefix:
+The log category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`), as with `ILogger<T>`. You can turn a whole provider's logs on or off by prefix:
 
 ```json
 {

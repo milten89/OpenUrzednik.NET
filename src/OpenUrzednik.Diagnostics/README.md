@@ -17,7 +17,6 @@ dotnet add package OpenUrzednik.Diagnostics
 ```csharp
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Nbp;
-using OpenUrzednik.Nbp.Gold;
 
 var client = new NbpGoldPriceClient(httpClient,
     traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));

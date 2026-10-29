@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Gold;
 
 using Polly;

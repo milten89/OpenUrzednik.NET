@@ -17,7 +17,6 @@ dotnet add package OpenUrzednik.Core
 ```csharp
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Core.Extensions;
 
 OpenUrzednikResult<int> result = OpenUrzednikResult.Success(42);
 int value = result.EnsureSuccess();

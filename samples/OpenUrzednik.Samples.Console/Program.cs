@@ -3,10 +3,8 @@ using System.Globalization;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
-using OpenUrzednik.Core.Extensions;
-using OpenUrzednik.Nbp.Currency;
+using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.Table;
 
 // Only for this output: decimal points and ISO dates regardless of the machine's culture. The library doesn't need it.
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;

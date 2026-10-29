@@ -5,10 +5,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
-
 using OpenUrzednik.Core.Telemetry;
-using OpenUrzednik.Nbp.Gold;
-using OpenUrzednik.Nbp.Options;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon;
 

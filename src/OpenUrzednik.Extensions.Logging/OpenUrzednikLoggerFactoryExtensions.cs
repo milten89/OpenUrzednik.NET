@@ -11,7 +11,7 @@ public static class OpenUrzednikLoggerFactoryExtensions
 {
     /// <summary>
     /// Creates a logger for <typeparamref name="TClient"/>, with the client's full type name as the category,
-    /// as <see cref="ILogger{TCategoryName}"/> does (e.g. <c>OpenUrzednik.Nbp.Gold.NbpGoldPriceClient</c>).
+    /// as <see cref="ILogger{TCategoryName}"/> does (e.g. <c>OpenUrzednik.Nbp.NbpGoldPriceClient</c>).
     /// Filter a whole provider with its namespace (e.g. <c>"OpenUrzednik.Nbp"</c>).
     /// </summary>
     /// <typeparam name="TClient">The client the logger is for.</typeparam>
