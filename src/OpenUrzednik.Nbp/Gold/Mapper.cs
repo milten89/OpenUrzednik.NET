@@ -1,5 +1,6 @@
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 
 namespace OpenUrzednik.Nbp.Gold;
 
@@ -20,6 +21,6 @@ internal static class Mapper
     {
         NbpPayload.EnsurePresent(dto, "item");
 
-        return new GoldPrice(dto.Date, dto.Price);
+        return new GoldPrice(dto.Date.ToPublicDate(), dto.Price);
     }
 }

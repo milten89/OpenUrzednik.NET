@@ -1,5 +1,6 @@
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;
@@ -20,7 +21,7 @@ public partial class MapperTest
         var result = Mapper.MapToExchangeRateTable(dto);
 
         // Assert
-        result.ShouldBe(new ExchangeRateTable(dto.TableId, dto.PublicationDate, []));
+        result.ShouldBe(new ExchangeRateTable(dto.TableId, dto.PublicationDate.ToPublicDate(), []));
     }
 
     [Fact]
@@ -33,7 +34,7 @@ public partial class MapperTest
         var result = Mapper.MapToExchangeRateTable(dto);
 
         // Assert
-        result.ShouldBe(new ExchangeRateTable(dto.TableId, dto.PublicationDate,
+        result.ShouldBe(new ExchangeRateTable(dto.TableId, dto.PublicationDate.ToPublicDate(),
             [new TableRate(dto.Rates[0].CurrencyName, dto.Rates[0].CurrencyCode, dto.Rates[0].Price)]));
     }
 
@@ -47,7 +48,7 @@ public partial class MapperTest
         var result = Mapper.MapToExchangeRateTable(dto);
 
         // Assert
-        result.ShouldBe(new ExchangeRateTable(dto.TableId, dto.PublicationDate,
+        result.ShouldBe(new ExchangeRateTable(dto.TableId, dto.PublicationDate.ToPublicDate(),
             [.. dto.Rates.Select(x => new TableRate(x.CurrencyName, x.CurrencyCode, x.Price))]));
     }
 
@@ -100,7 +101,7 @@ public partial class MapperTest
         var result = Mapper.MapToExchangeRateTable(dtos);
 
         // Assert
-        result.ShouldBe(dtos.Select(x => new ExchangeRateTable(x.TableId, x.PublicationDate,
+        result.ShouldBe(dtos.Select(x => new ExchangeRateTable(x.TableId, x.PublicationDate.ToPublicDate(),
             x.Rates.Select(r => new TableRate(r.CurrencyName, r.CurrencyCode, r.Price)).ToArray())));
     }
 

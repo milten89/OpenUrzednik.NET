@@ -168,4 +168,21 @@ public partial class NbpCurrencyExchangeRateClientTest
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>().Message.ShouldContain("later than today (2026-10-01");
         handler.Request.ShouldBeNull();
     }
+
+    [Fact]
+    public async Task GetAsync_DateWithTimeOfDayAndKind_UsesOnlyTheDatePart()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDate(Arg.Any<DateOnly>()).Returns(faker.Internet.UrlRootedPath());
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, CreateUrlBuilderFactory(NbpTable.A, "USD", urlBuilder));
+
+        // Act
+        await sut.GetAsync("USD", new DateTime(2026, 10, 2, 23, 59, 59, DateTimeKind.Utc), cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        urlBuilder.Received(1).ForDate(new DateOnly(2026, 10, 2));
+    }
 }

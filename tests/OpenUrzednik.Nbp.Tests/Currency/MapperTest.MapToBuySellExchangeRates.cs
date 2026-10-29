@@ -1,6 +1,7 @@
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;
 
@@ -34,7 +35,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [new CurrencyBuySellRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate, dto.Rates[0].Ask, dto.Rates[0].Bid)]));
+            [new CurrencyBuySellRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate.ToPublicDate(), dto.Rates[0].Ask, dto.Rates[0].Bid)]));
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [.. dto.Rates.Select(x => new CurrencyBuySellRate(x.TableId, x.PublicationDate, x.Ask, x.Bid))]));
+            [.. dto.Rates.Select(x => new CurrencyBuySellRate(x.TableId, x.PublicationDate.ToPublicDate(), x.Ask, x.Bid))]));
     }
 
     [Fact]

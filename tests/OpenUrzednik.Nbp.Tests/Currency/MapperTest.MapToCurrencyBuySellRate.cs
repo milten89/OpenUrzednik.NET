@@ -1,6 +1,7 @@
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;
 
@@ -20,7 +21,7 @@ public partial class MapperTest
         var result = Mapper.MapToCurrencyBuySellRate(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyBuySellRate(dto.TableId, dto.PublicationDate, dto.Ask, dto.Bid));
+        result.ShouldBe(new CurrencyBuySellRate(dto.TableId, dto.PublicationDate.ToPublicDate(), dto.Ask, dto.Bid));
     }
 
     [Fact]

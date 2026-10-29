@@ -5,6 +5,7 @@ using Bogus;
 using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
@@ -54,7 +55,7 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(dtos.Select(x => new GoldPrice(x.Date, x.Price)));
+        result.Value.ShouldBe(dtos.Select(x => new GoldPrice(x.Date.ToPublicDate(), x.Price)));
     }
 
     [Fact]

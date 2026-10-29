@@ -22,7 +22,7 @@ var client = new NbpGoldPriceClient(httpClient);
 
 var result = await client.GetLatestAsync();
 if (result.IsSuccess)
-    Console.WriteLine($"{result.Value.Date}: {result.Value.Price} zł");
+    Console.WriteLine($"{result.Value.Date:yyyy-MM-dd}: {result.Value.Price} zł");
 else
     Console.WriteLine(result.Errors[0].Message);
 ```
@@ -34,5 +34,5 @@ Błędy, takie jak brak danych, przekroczony limit zapytań albo upływ limitu c
 ## Więcej po angielsku
 
 - [Własny adres API, limit czasu i błędy](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#usage)
-- [.NET Framework i daty](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#net-framework)
+- [.NET Framework i daty](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#dates-and-net-framework)
 - [Logowanie i śledzenie](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#logging-and-tracing)

@@ -19,7 +19,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new BuySellExchangeRates(CurrencyName, CurrencyCode, [
-            new CurrencyBuySellRate("192/C/NBP/2026", new DateOnly(2026, 10, 2), Ask: 3.9115m, Bid: 3.8341m),
+            new CurrencyBuySellRate("192/C/NBP/2026", new DateTime(2026, 10, 2), Ask: 3.9115m, Bid: 3.8341m),
         ]));
         _server.ShouldHaveReceivedGet(path);
     }
@@ -38,9 +38,9 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new BuySellExchangeRates(CurrencyName, CurrencyCode, [
-            new CurrencyBuySellRate("190/C/NBP/2026", new DateOnly(2026, 9, 30), Ask: 3.8910m, Bid: 3.8140m),
-            new CurrencyBuySellRate("191/C/NBP/2026", new DateOnly(2026, 10, 1), Ask: 3.8811m, Bid: 3.8043m),
-            new CurrencyBuySellRate("192/C/NBP/2026", new DateOnly(2026, 10, 2), Ask: 3.9115m, Bid: 3.8341m),
+            new CurrencyBuySellRate("190/C/NBP/2026", new DateTime(2026, 9, 30), Ask: 3.8910m, Bid: 3.8140m),
+            new CurrencyBuySellRate("191/C/NBP/2026", new DateTime(2026, 10, 1), Ask: 3.8811m, Bid: 3.8043m),
+            new CurrencyBuySellRate("192/C/NBP/2026", new DateTime(2026, 10, 2), Ask: 3.9115m, Bid: 3.8341m),
         ]));
         _server.ShouldHaveReceivedGet(path);
     }
@@ -59,7 +59,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new BuySellExchangeRates(CurrencyName, CurrencyCode, [
-            new CurrencyBuySellRate("190/C/NBP/2026", new DateOnly(2026, 9, 30), Ask: 3.8910m, Bid: 3.8140m),
+            new CurrencyBuySellRate("190/C/NBP/2026", new DateTime(2026, 9, 30), Ask: 3.8910m, Bid: 3.8140m),
         ]));
         _server.ShouldHaveReceivedGet(path);
     }
@@ -68,7 +68,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
     public async Task GetBuySellAsync_SpecificDate_Returns200WithData_MapsToCurrencyData()
     {
         // Arrange
-        var date = new DateOnly(2026, 9, 30);
+        var date = new DateTime(2026, 9, 30);
         var path = $"{BasePath}/c/{CurrencyCode}/{date.ToIso()}";
         _server.GivenFixture(path, "rates-c-date.json");
 
@@ -87,8 +87,8 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
     public async Task GetBuySellAsync_DateRange_Returns200WithData_MapsToCurrencyData()
     {
         // Arrange
-        var from = new DateOnly(2026, 9, 28);
-        var to = new DateOnly(2026, 9, 30);
+        var from = new DateTime(2026, 9, 28);
+        var to = new DateTime(2026, 9, 30);
         var path = $"{BasePath}/c/{CurrencyCode}/{from.ToIso()}/{to.ToIso()}";
         _server.GivenFixture(path, "rates-c-range.json");
 
@@ -98,9 +98,9 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new BuySellExchangeRates(CurrencyName, CurrencyCode, [
-            new CurrencyBuySellRate("188/C/NBP/2026", new DateOnly(2026, 9, 28), Ask: 3.8744m, Bid: 3.7976m),
-            new CurrencyBuySellRate("189/C/NBP/2026", new DateOnly(2026, 9, 29), Ask: 3.8814m, Bid: 3.8046m),
-            new CurrencyBuySellRate("190/C/NBP/2026", new DateOnly(2026, 9, 30), Ask: 3.8910m, Bid: 3.8140m),
+            new CurrencyBuySellRate("188/C/NBP/2026", new DateTime(2026, 9, 28), Ask: 3.8744m, Bid: 3.7976m),
+            new CurrencyBuySellRate("189/C/NBP/2026", new DateTime(2026, 9, 29), Ask: 3.8814m, Bid: 3.8046m),
+            new CurrencyBuySellRate("190/C/NBP/2026", new DateTime(2026, 9, 30), Ask: 3.8910m, Bid: 3.8140m),
         ]));
         _server.ShouldHaveReceivedGet(path);
     }

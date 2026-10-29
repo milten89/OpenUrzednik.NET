@@ -159,4 +159,21 @@ public partial class NbpExchangeRateTableClientTest
         result.Errors.ShouldContain(e => e is ValidationError && e.Message.Contains("later than today (2026-10-01"));
         handler.Request.ShouldBeNull();
     }
+
+    [Fact]
+    public async Task GetAsync_DateWithTimeOfDayAndKind_UsesOnlyTheDatePart()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDate(Arg.Any<DateOnly>()).Returns(faker.Internet.UrlRootedPath());
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
+
+        // Act
+        await sut.GetAsync(TableType.A, new DateTime(2026, 10, 2, 23, 59, 59, DateTimeKind.Utc), TestContext.Current.CancellationToken);
+
+        // Assert
+        urlBuilder.Received(1).ForDate(new DateOnly(2026, 10, 2));
+    }
 }

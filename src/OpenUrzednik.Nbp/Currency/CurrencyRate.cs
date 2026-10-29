@@ -4,6 +4,6 @@ namespace OpenUrzednik.Nbp.Currency;
 /// One entry of <see cref="CurrencyExchangeRates.Rates"/>: the mid rate of the currency in one NBP table (A or B)
 /// </summary>
 /// <param name="TableId">Exchange rate table number</param>
-/// <param name="PublicationDate">Publication date</param>
+/// <param name="PublicationDate">Publication date, at 00:00 with <see cref="DateTimeKind.Unspecified"/></param>
 /// <param name="Price">Currency mid exchange rate</param>
-public sealed record CurrencyRate(string TableId, DateOnly PublicationDate, decimal Price);
+public sealed record CurrencyRate(string TableId, DateTime PublicationDate, decimal Price);

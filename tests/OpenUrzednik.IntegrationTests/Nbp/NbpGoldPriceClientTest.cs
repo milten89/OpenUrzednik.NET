@@ -79,7 +79,7 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     public async Task GetAsync_PastBusinessDay_ReturnsThatDaysPrice()
     {
         // Arrange
-        var date = new DateOnly(2026, 10, 2); // a Friday; published prices don't change
+        var date = new DateTime(2026, 10, 2); // a Friday; published prices don't change
 
         // Act
         var result = await _client.GetAsync(date, TestContext.Current.CancellationToken);
@@ -94,7 +94,7 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
     public async Task GetAsync_Weekend_ReturnsNotFound()
     {
         // Arrange
-        var date = new DateOnly(2026, 10, 3); // a Saturday
+        var date = new DateTime(2026, 10, 3); // a Saturday
 
         // Act
         var result = await _client.GetAsync(date, TestContext.Current.CancellationToken);
@@ -120,15 +120,14 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
         result.Value.ShouldAllBe(x => x.Date >= before && x.Date <= today);
     }
 
-    private static DateOnly WarsawToday()
+    private static DateTime WarsawToday()
     {
         // .NET Framework only knows the Windows time zone id.
 #if NET
         var warsaw = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
-        return DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, warsaw).DateTime);
 #else
         var warsaw = TimeZoneInfo.FindSystemTimeZoneById("Central European Standard Time");
-        return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, warsaw).DateTime.Date;
 #endif
+        return TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, warsaw).DateTime.Date;
     }
 }

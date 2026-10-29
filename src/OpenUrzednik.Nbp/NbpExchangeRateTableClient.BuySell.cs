@@ -40,28 +40,31 @@ public partial class NbpExchangeRateTableClient
     }
 
     /// <inheritdoc/>
-    public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateOnly date, CancellationToken cancellationToken = default)
+    public async Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateTime date, CancellationToken cancellationToken = default)
     {
+        var day = DateOnly.FromDateTime(date);
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_date");
-        traceSpan.SetTag("nbp.date", date.ToIso8601String());
+        traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
-        var validation = new CurrencyDateValidator(nameof(date), date, NbpCalendar.Today(_timeProvider)).Validate();
+        var validation = new CurrencyDateValidator(nameof(date), day, NbpCalendar.Today(_timeProvider)).Validate();
 
         return await _pipeline.GetFirstAsync(traceSpan, nameof(GetBuySellAsync), validation,
-            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForDate(date), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
+            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForDate(day), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
+    public async Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateTime from, DateTime to, CancellationToken cancellationToken = default)
     {
+        var fromDay = DateOnly.FromDateTime(from);
+        var toDay = DateOnly.FromDateTime(to);
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_range");
-        traceSpan.SetTag("nbp.from", from.ToIso8601String());
-        traceSpan.SetTag("nbp.to", to.ToIso8601String());
+        traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
+        traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 
-        var validation = new CurrencyDateValidator(nameof(to), to, NbpCalendar.Today(_timeProvider)).Validate()
-            .And(new DateRangeValidator((from, to), DateRangeValidator.MaxTablesDateRange).Validate());
+        var validation = new CurrencyDateValidator(nameof(to), toDay, NbpCalendar.Today(_timeProvider)).Validate()
+            .And(new DateRangeValidator((fromDay, toDay), DateRangeValidator.MaxTablesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellAsync), validation,
-            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForDateRange(from, to), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
+            () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForDateRange(fromDay, toDay), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
 }

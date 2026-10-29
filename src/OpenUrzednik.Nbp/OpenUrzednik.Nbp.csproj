@@ -14,7 +14,7 @@
 
   <!-- netstandard2.0 only: these types are built into .NET (ADR-0004, ADR-0005). -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <!-- Dates are DateTime on netstandard2.0 (ADR-0005); the code says DateOnly on every target. -->
+    <!-- Internally the code says DateOnly; on netstandard2.0 it is an alias for DateTime (ADR-0005). -->
     <Using Include="System.DateTime" Alias="DateOnly" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />

@@ -23,7 +23,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new CurrencyExchangeRates(CurrencyName, CurrencyCode, [
-            new CurrencyRate("191/A/NBP/2026", new DateOnly(2026, 10, 1), 3.8762m),
+            new CurrencyRate("191/A/NBP/2026", new DateTime(2026, 10, 1), 3.8762m),
         ]));
         _server.ShouldHaveReceivedGet(path);
     }
@@ -42,9 +42,9 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new CurrencyExchangeRates(CurrencyName, CurrencyCode, [
-            new CurrencyRate("189/A/NBP/2026", new DateOnly(2026, 9, 29), 3.8537m),
-            new CurrencyRate("190/A/NBP/2026", new DateOnly(2026, 9, 30), 3.8449m),
-            new CurrencyRate("191/A/NBP/2026", new DateOnly(2026, 10, 1), 3.8762m),
+            new CurrencyRate("189/A/NBP/2026", new DateTime(2026, 9, 29), 3.8537m),
+            new CurrencyRate("190/A/NBP/2026", new DateTime(2026, 9, 30), 3.8449m),
+            new CurrencyRate("191/A/NBP/2026", new DateTime(2026, 10, 1), 3.8762m),
         ]));
         _server.ShouldHaveReceivedGet(path);
     }
@@ -63,7 +63,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new CurrencyExchangeRates(CurrencyName, CurrencyCode, [
-            new CurrencyRate("190/A/NBP/2026", new DateOnly(2026, 9, 30), 3.8449m),
+            new CurrencyRate("190/A/NBP/2026", new DateTime(2026, 9, 30), 3.8449m),
         ]));
         _server.ShouldHaveReceivedGet(path);
     }
@@ -72,7 +72,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
     public async Task GetAsync_SpecificDate_Returns200WithData_MapsToCurrencyData()
     {
         // Arrange
-        var date = new DateOnly(2026, 9, 30);
+        var date = new DateTime(2026, 9, 30);
         var path = $"{BasePath}/a/{CurrencyCode}/{date.ToIso()}";
         _server.GivenFixture(path, "rates-a-date.json");
 
@@ -91,8 +91,8 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
     public async Task GetAsync_DateRange_Returns200WithData_MapsToCurrencyData()
     {
         // Arrange
-        var from = new DateOnly(2026, 9, 28);
-        var to = new DateOnly(2026, 9, 30);
+        var from = new DateTime(2026, 9, 28);
+        var to = new DateTime(2026, 9, 30);
         var path = $"{BasePath}/a/{CurrencyCode}/{from.ToIso()}/{to.ToIso()}";
         _server.GivenFixture(path, "rates-a-range.json");
 
@@ -102,9 +102,9 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe(new CurrencyExchangeRates(CurrencyName, CurrencyCode, [
-            new CurrencyRate("188/A/NBP/2026", new DateOnly(2026, 9, 28), 3.8478m),
-            new CurrencyRate("189/A/NBP/2026", new DateOnly(2026, 9, 29), 3.8537m),
-            new CurrencyRate("190/A/NBP/2026", new DateOnly(2026, 9, 30), 3.8449m),
+            new CurrencyRate("188/A/NBP/2026", new DateTime(2026, 9, 28), 3.8478m),
+            new CurrencyRate("189/A/NBP/2026", new DateTime(2026, 9, 29), 3.8537m),
+            new CurrencyRate("190/A/NBP/2026", new DateTime(2026, 9, 30), 3.8449m),
         ]));
         _server.ShouldHaveReceivedGet(path);
     }

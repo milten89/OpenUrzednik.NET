@@ -83,7 +83,7 @@ public sealed class NbpDependencyInjectionWireMockTest : IDisposable
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(new GoldPrice(new DateOnly(2026, 10, 2), 517.55m));
+        result.Value.ShouldBe(new GoldPrice(new DateTime(2026, 10, 2), 517.55m));
         _server.LogEntries.Count().ShouldBe(2);
     }
 

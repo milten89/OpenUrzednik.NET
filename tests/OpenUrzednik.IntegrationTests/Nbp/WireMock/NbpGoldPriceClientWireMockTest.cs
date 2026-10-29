@@ -40,7 +40,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(new GoldPrice(new DateOnly(2026, 10, 2), 517.55m));
+        result.Value.ShouldBe(new GoldPrice(new DateTime(2026, 10, 2), 517.55m));
         _server.ShouldHaveReceivedGet(BasePath);
     }
 
@@ -58,9 +58,9 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe([
-            new GoldPrice(new DateOnly(2026, 9, 30), 512.85m),
-            new GoldPrice(new DateOnly(2026, 10, 1), 518.14m),
-            new GoldPrice(new DateOnly(2026, 10, 2), 517.55m),
+            new GoldPrice(new DateTime(2026, 9, 30), 512.85m),
+            new GoldPrice(new DateTime(2026, 10, 1), 518.14m),
+            new GoldPrice(new DateTime(2026, 10, 2), 517.55m),
         ]);
         _server.ShouldHaveReceivedGet(path);
     }
@@ -78,7 +78,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        result.Value.ShouldBe(new GoldPrice(new DateOnly(2026, 9, 30), 512.85m));
+        result.Value.ShouldBe(new GoldPrice(new DateTime(2026, 9, 30), 512.85m));
         _server.ShouldHaveReceivedGet(path);
     }
 
@@ -86,7 +86,7 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
     public async Task GetAsync_SpecificDate_Returns200WithData_MapsToGoldPrice()
     {
         // Arrange
-        var date = new DateOnly(2026, 9, 30);
+        var date = new DateTime(2026, 9, 30);
         var path = $"{BasePath}/{date.ToIso()}";
         _server.GivenFixture(path, "gold-date.json");
 
@@ -103,8 +103,8 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
     public async Task GetAsync_DateRange_Returns200WithData_MapsToGoldPrice()
     {
         // Arrange
-        var from = new DateOnly(2026, 9, 28);
-        var to = new DateOnly(2026, 9, 30);
+        var from = new DateTime(2026, 9, 28);
+        var to = new DateTime(2026, 9, 30);
         var path = $"{BasePath}/{from.ToIso()}/{to.ToIso()}";
         _server.GivenFixture(path, "gold-range.json");
 
@@ -114,9 +114,9 @@ public partial class NbpGoldPriceClientWireMockTest : IDisposable
         // Assert
         result.IsSuccess.ShouldBeTrue();
         result.Value.ShouldBe([
-            new GoldPrice(new DateOnly(2026, 9, 28), 530.05m),
-            new GoldPrice(new DateOnly(2026, 9, 29), 512.64m),
-            new GoldPrice(new DateOnly(2026, 9, 30), 512.85m),
+            new GoldPrice(new DateTime(2026, 9, 28), 530.05m),
+            new GoldPrice(new DateTime(2026, 9, 29), 512.64m),
+            new GoldPrice(new DateTime(2026, 9, 30), 512.85m),
         ]);
         _server.ShouldHaveReceivedGet(path);
     }
