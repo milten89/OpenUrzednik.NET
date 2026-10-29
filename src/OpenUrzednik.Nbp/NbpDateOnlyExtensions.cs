@@ -32,7 +32,7 @@ public static class NbpDateOnlyExtensions
     }
 
     /// <inheritdoc cref="INbpCurrencyExchangeRateClient.GetAsync(string, DateTime, TableType, CancellationToken)"/>
-    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="currency"/> is <see langword="null"/>.</exception>
     public static Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(this INbpCurrencyExchangeRateClient client, string currency, DateOnly date,
         TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
@@ -42,7 +42,7 @@ public static class NbpDateOnlyExtensions
     }
 
     /// <inheritdoc cref="INbpCurrencyExchangeRateClient.GetAsync(string, DateTime, DateTime, TableType, CancellationToken)"/>
-    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="currency"/> is <see langword="null"/>.</exception>
     public static Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(this INbpCurrencyExchangeRateClient client, string currency, DateOnly from, DateOnly to,
         TableType table = TableType.A, CancellationToken cancellationToken = default)
     {
@@ -52,7 +52,7 @@ public static class NbpDateOnlyExtensions
     }
 
     /// <inheritdoc cref="INbpCurrencyExchangeRateClient.GetBuySellAsync(string, DateTime, CancellationToken)"/>
-    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="currency"/> is <see langword="null"/>.</exception>
     public static Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(this INbpCurrencyExchangeRateClient client, string currency, DateOnly date,
         CancellationToken cancellationToken = default)
     {
@@ -62,7 +62,7 @@ public static class NbpDateOnlyExtensions
     }
 
     /// <inheritdoc cref="INbpCurrencyExchangeRateClient.GetBuySellAsync(string, DateTime, DateTime, CancellationToken)"/>
-    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="currency"/> is <see langword="null"/>.</exception>
     public static Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(this INbpCurrencyExchangeRateClient client, string currency, DateOnly from, DateOnly to,
         CancellationToken cancellationToken = default)
     {

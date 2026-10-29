@@ -47,7 +47,7 @@ With a DI container, use [OpenUrzednik.Nbp.DependencyInjection](https://www.nuge
 
 The client takes the API address from the first place that sets one: `NbpOptions.ApiUrl`, `HttpClient.BaseAddress`, and finally the default `https://api.nbp.pl/api/`. If you don't set `NbpOptions.Timeout`, the `HttpClient`'s timeout applies (100 s by default). `NbpOptions.Timeout` can shorten that limit but not extend it, because `HttpClient.Timeout` still applies until the response headers arrive. The API address can't contain a query (`?…`) or a fragment (`#…`).
 
-Errors such as missing data, an exceeded rate limit or a timeout come back in the result, not as exceptions. If you prefer exceptions, call `EnsureSuccess()` on the result.
+Errors such as missing data, an exceeded rate limit, a timeout or an invalid currency code come back in the result, not as exceptions. If you prefer exceptions, call `EnsureSuccess()` on the result. A `null` currency code or an undefined `TableType` is a programming error: the method throws `ArgumentNullException` or `ArgumentOutOfRangeException` right away, before it returns a task. A resilience handler's rejections (timeout, open circuit breaker, rate limiter) become errors only when the clients are registered with `AddOpenUrzednikNbp()`; with your own `HttpClient` setup they come out as Polly exceptions.
 
 ## API gateways
 

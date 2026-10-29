@@ -31,6 +31,8 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<CurrencyExchangeRates>> GetLatestAsync(string currency, TableType table = TableType.A, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -41,6 +43,8 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the currency exchange rates or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<CurrencyExchangeRates>> GetTopCountAsync(string currency, int topCount, TableType table = TableType.A, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -54,6 +58,8 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<CurrencyExchangeRates>> GetTodayAsync(string currency, TableType table = TableType.A, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -65,6 +71,8 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateTime date, TableType table = TableType.A, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -77,6 +85,8 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the currency exchange rates or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateTime from, DateTime to, TableType table = TableType.A, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -89,6 +99,7 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the buy and sell exchange rate or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLatestAsync(string currency, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -98,6 +109,7 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the buy and sell exchange rates or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTopCountAsync(string currency, int topCount, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -110,6 +122,7 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="currency">ISO 4217 currency code</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the buy and sell exchange rate or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellTodayAsync(string currency, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -120,6 +133,7 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="date">Date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the buy and sell exchange rate or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime date, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -131,5 +145,6 @@ public interface INbpCurrencyExchangeRateClient
     /// <param name="to">End date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Result containing the buy and sell exchange rates or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime from, DateTime to, CancellationToken cancellationToken = default);
 }

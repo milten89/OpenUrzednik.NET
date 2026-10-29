@@ -17,7 +17,7 @@ internal sealed partial class Iso4217Validator(string propertyName, string value
     public override OpenUrzednikResult Validate()
     {
         if (string.IsNullOrWhiteSpace(Value))
-            return GetValidationErrorResult($"'{PropertyName}' is null, empty or whitespace.");
+            return GetValidationErrorResult($"'{PropertyName}' is empty or whitespace.");
 
         if (!Iso4217CurrencyCodeRegex().IsMatch(Value))
             return GetValidationErrorResult($"'{Value}' is not proper ISO 4217 currency code.");

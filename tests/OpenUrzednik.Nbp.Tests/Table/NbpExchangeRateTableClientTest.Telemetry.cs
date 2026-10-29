@@ -36,7 +36,7 @@ public partial class NbpExchangeRateTableClientTest
     }
 
     [Fact]
-    public async Task GetLatestAsync_InvalidTable_LogsDebugAndRecordsErrorsOnSpan()
+    public async Task GetTopCountAsync_InvalidTopCount_LogsDebugAndRecordsErrorsOnSpan()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -47,10 +47,10 @@ public partial class NbpExchangeRateTableClientTest
         var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder, logger: logger, tracer: tracer);
 
         // Act
-        await sut.GetLatestAsync((TableType)99, TestContext.Current.CancellationToken);
+        await sut.GetTopCountAsync(TableType.A, 0, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", "GetLatestAsync");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", "GetTopCountAsync");
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
     }
 

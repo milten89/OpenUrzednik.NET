@@ -67,7 +67,7 @@ public class Iso4217ValidatorTest
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
         error.Metadata["ruleName"].ShouldBe(RuleName);
-        error.Message.ShouldContain("null, empty or whitespace");
+        error.Message.ShouldContain("empty or whitespace");
     }
 
     [Theory]

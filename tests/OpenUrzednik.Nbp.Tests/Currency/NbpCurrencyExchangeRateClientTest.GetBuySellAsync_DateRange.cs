@@ -21,7 +21,6 @@ namespace OpenUrzednik.Nbp.Tests.Currency;
 public partial class NbpCurrencyExchangeRateClientTest
 {
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("US")]
     public async Task GetBuySellAsync_DateRange_InvalidCurrency_ReturnsFailureWithoutSendingRequest(string? currency)
@@ -41,6 +40,22 @@ public partial class NbpCurrencyExchangeRateClientTest
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetBuySellAsync_DateRange_NullCurrency_ThrowsArgumentNullExceptionWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var from = faker.Date.AfterCurrencyMinDate();
+        var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = sut.GetBuySellAsync(null!, from, to, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("currency");
         handler.Request.ShouldBeNull();
     }
 

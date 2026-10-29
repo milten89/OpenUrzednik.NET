@@ -20,7 +20,6 @@ namespace OpenUrzednik.Nbp.Tests.Currency;
 public partial class NbpCurrencyExchangeRateClientTest
 {
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("US")]
     public async Task GetTopCountAsync_InvalidCurrency_ReturnsFailureWithoutSendingRequest(string? currency)
@@ -42,7 +41,22 @@ public partial class NbpCurrencyExchangeRateClientTest
     }
 
     [Fact]
-    public async Task GetTopCountAsync_UndefinedTable_ReturnsFailureWithoutSendingRequest()
+    public void GetTopCountAsync_NullCurrency_ThrowsArgumentNullExceptionWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        int count = faker.Random.Int(3, 10);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = sut.GetTopCountAsync(null!, count, cancellationToken: TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("currency");
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetTopCountAsync_UndefinedTable_ThrowsArgumentOutOfRangeExceptionWithoutSendingRequest()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -51,13 +65,9 @@ public partial class NbpCurrencyExchangeRateClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
-        // Act
-        var result = await sut.GetTopCountAsync(currency, count, (TableType)42, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-        result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetTopCountAsync(currency, count, (TableType)42, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
         handler.Request.ShouldBeNull();
     }
 

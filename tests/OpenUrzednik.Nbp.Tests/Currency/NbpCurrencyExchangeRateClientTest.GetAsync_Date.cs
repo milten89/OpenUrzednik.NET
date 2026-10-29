@@ -22,7 +22,6 @@ namespace OpenUrzednik.Nbp.Tests.Currency;
 public partial class NbpCurrencyExchangeRateClientTest
 {
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("US")]
     public async Task GetAsync_Date_InvalidCurrency_ReturnsFailureWithoutSendingRequest(string? currency)
@@ -44,7 +43,22 @@ public partial class NbpCurrencyExchangeRateClientTest
     }
 
     [Fact]
-    public async Task GetAsync_Date_UndefinedTable_ReturnsFailureWithoutSendingRequest()
+    public void GetAsync_Date_NullCurrency_ThrowsArgumentNullExceptionWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var date = faker.Date.AfterCurrencyMinDate();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = sut.GetAsync(null!, date, cancellationToken: TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("currency");
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetAsync_Date_UndefinedTable_ThrowsArgumentOutOfRangeExceptionWithoutSendingRequest()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -53,13 +67,9 @@ public partial class NbpCurrencyExchangeRateClientTest
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
         var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
 
-        // Act
-        var result = await sut.GetAsync(currency, date, (TableType)42, TestContext.Current.CancellationToken);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-        result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetAsync(currency, date, (TableType)42, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
         handler.Request.ShouldBeNull();
     }
 
