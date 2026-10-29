@@ -6,7 +6,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// Describes a REST provider to <see cref="RestRequestExecutor"/>: its names in telemetry and messages, and an optional
 /// override of how error responses become errors. For provider authors.
 /// </summary>
-public sealed class RestProviderProfile
+internal sealed class RestProviderProfile
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="RestProviderProfile"/> class.

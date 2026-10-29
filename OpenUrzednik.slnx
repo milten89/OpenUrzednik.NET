@@ -4,7 +4,6 @@
     <Project Path="src/OpenUrzednik.Diagnostics/OpenUrzednik.Diagnostics.csproj" />
     <Project Path="src/OpenUrzednik.Extensions.Logging/OpenUrzednik.Extensions.Logging.csproj" />
     <Project Path="src/OpenUrzednik.Gus/OpenUrzednik.Gus.csproj" />
-    <Project Path="src/OpenUrzednik.Http/OpenUrzednik.Http.csproj" />
     <Project Path="src/OpenUrzednik.Krs/OpenUrzednik.Krs.csproj" />
     <Project Path="src/OpenUrzednik.Mf/OpenUrzednik.Mf.csproj" />
     <Project Path="src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />

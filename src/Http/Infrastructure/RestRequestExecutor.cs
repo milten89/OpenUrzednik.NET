@@ -21,7 +21,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// Failures during normal execution are returned: non-success statuses, empty or malformed JSON, network errors and timeouts.
 /// Only caller cancellation throws <see cref="OperationCanceledException"/>.
 /// </remarks>
-public sealed class RestRequestExecutor
+internal sealed class RestRequestExecutor
 {
     // The number of characters read from an error response body (ErrorResponseContext.ReadMessageAsync, 400 messages).
     internal const int MaxServerMessageLength = 500;

@@ -8,7 +8,7 @@ Zamiast tego użyj zakładki **Security → Report a vulnerability** w tym repoz
 
 Postaraj się opisać:
 
-- który pakiet (np. Core, Http, Nbp) i wersję,
+- który pakiet (np. Core, Nbp) i wersję,
 - kroki do odtworzenia,
 - potencjalny wpływ.
 
