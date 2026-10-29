@@ -8,7 +8,16 @@ namespace OpenUrzednik.Core.Errors;
 public sealed class ValidationError : OpenUrzednikError
 {
     /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
-    public const string ErrorCode = "validationError";
+    public const string ErrorCode = "validation";
+
+    /// <summary>The <see cref="OpenUrzednikError.Metadata"/> key of the name of the rule that failed (always present).</summary>
+    public const string RuleNameMetadataKey = "ruleName";
+
+    /// <summary>The <see cref="OpenUrzednikError.Metadata"/> key of the name of the checked parameter or property, when known.</summary>
+    public const string NameMetadataKey = "name";
+
+    /// <summary>The <see cref="OpenUrzednikError.Metadata"/> key of the rejected value, when it isn't <see langword="null"/>.</summary>
+    public const string ValueMetadataKey = "value";
 
     private readonly string _ruleName;
     private readonly string? _name;
@@ -30,11 +39,11 @@ public sealed class ValidationError : OpenUrzednikError
         _name = name;
         _value = value;
 
-        AddMetadata("ruleName", ruleName);
+        AddMetadata(RuleNameMetadataKey, ruleName);
         if (name is not null)
-            AddMetadata("name", name);
+            AddMetadata(NameMetadataKey, name);
         if (value is not null)
-            AddMetadata("value", value);
+            AddMetadata(ValueMetadataKey, value);
     }
 
     /// <inheritdoc />

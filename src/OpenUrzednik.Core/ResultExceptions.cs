@@ -1,3 +1,5 @@
+using System.Text;
+
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
 
@@ -21,5 +23,19 @@ internal static class ResultExceptions
         var exception = errors[0].ToException();
         exception.SetErrors(errors[0], errors);
         return exception;
+    }
+
+    // OpenUrzednikResult<T>.Value on a failure: an InvalidOperationException, as Nullable<T>.Value throws, naming the errors.
+    internal static InvalidOperationException CreateValueOfFailure(IReadOnlyList<OpenUrzednikError> errors)
+    {
+        var message = new StringBuilder("Cannot access the value of a failed result: ");
+        for (var i = 0; i < errors.Count; i++)
+        {
+            if (i > 0)
+                message.Append("; ");
+            message.Append(errors[i].Code).Append(": ").Append(errors[i].Message);
+        }
+
+        return new InvalidOperationException(message.ToString(), errors[0].ToException());
     }
 }

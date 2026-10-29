@@ -10,7 +10,7 @@ namespace OpenUrzednik.Core.Errors;
 public sealed class UnknownError(string message, int? statusCode = null) : OpenUrzednikError(ErrorCode, message, statusCode)
 {
     /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
-    public const string ErrorCode = "unknownError";
+    public const string ErrorCode = "unknown";
 
     /// <inheritdoc />
     protected override OpenUrzednikException CreateException()

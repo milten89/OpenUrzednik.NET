@@ -3,13 +3,16 @@ using OpenUrzednik.Core.Exceptions;
 namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
-/// Represents an error indicating that the service did not respond within the configured timeout.
+/// Represents an error indicating that the service did not respond within the configured timeout, or answered
+/// <c>408 Request Timeout</c> (then <see cref="OpenUrzednikError.StatusCodeMetadataKey"/> holds 408).
 /// Cancellation requested by the caller is not an error; it throws <see cref="OperationCanceledException"/>.
 /// </summary>
 /// <param name="message">The message associated with the error.</param>
 /// <param name="timeout">The timeout that elapsed, if known.</param>
 /// <param name="exception">The exception that signalled the timeout, if any.</param>
-public sealed class RequestTimeoutError(string message, TimeSpan? timeout = null, Exception? exception = null) : OpenUrzednikError(ErrorCode, message)
+/// <param name="statusCode">HTTP status code of the response that caused the error (408), if any.</param>
+public sealed class RequestTimeoutError(string message, TimeSpan? timeout = null, Exception? exception = null, int? statusCode = null)
+    : OpenUrzednikError(ErrorCode, message, statusCode)
 {
     /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
     public const string ErrorCode = "requestTimeout";

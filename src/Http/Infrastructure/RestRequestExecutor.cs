@@ -17,7 +17,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// </summary>
 /// <remarks>
 /// Requests use absolute URIs built from <see cref="BaseAddress"/>, so the <see cref="HttpClient"/> is never changed and can be shared.
-/// Failures during normal execution are returned: non-success statuses, empty or malformed JSON, network errors and timeouts.
+/// Failures during normal execution are returned: non-success statuses, empty or malformed JSON, connection failures and timeouts.
 /// Only caller cancellation throws <see cref="OperationCanceledException"/>.
 /// </remarks>
 internal sealed class RestRequestExecutor
@@ -251,14 +251,18 @@ internal sealed class RestRequestExecutor
         return error;
     }
 
+    // A DNS, TLS or connection failure, or a broken body read, is a ConnectionFailedError. A resilience handler's rejection (open circuit
+    // breaker, rate limiter) also arrives as an HttpRequestException, marked by the DI package, and stays a ServiceUnavailableError.
     private OpenUrzednikResult NetworkFailure(string relativePath, IOpenUrzednikSpan traceSpan, Exception exception)
     {
         _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "{provider} request to {path} failed", "provider", _profile.DisplayName, "path", relativePath);
-        var error = new ServiceUnavailableError(
-            $"{_profile.DisplayName} could not be reached for {relativePath}: {exception.Message}", exception: exception);
+        var rejected = ResilienceRejection.IsRejection(exception);
+        OpenUrzednikError error = rejected
+            ? new ServiceUnavailableError($"{_profile.DisplayName} request to {relativePath} was rejected: {exception.Message}", exception: exception)
+            : new ConnectionFailedError($"{_profile.DisplayName} could not be reached for {relativePath}: {exception.Message}", exception);
         traceSpan.RecordException(exception);
         traceSpan.SetTag("error.code", error.Code);
-        traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
+        traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, rejected ? "Rejected" : "Network failure");
         return error;
     }
 
@@ -322,6 +326,12 @@ internal sealed class RestRequestExecutor
                             ? $"{displayName} rejected the request to {path}."
                             : $"{displayName} rejected the request to {path}: {serverMessage}",
                         statusCode);
+                }
+            case HttpStatusCode.RequestTimeout:
+                {
+                    logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} timed out on {path} with status {status}", "provider", displayName, "path", path, "status", statusCode);
+                    traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
+                    return new RequestTimeoutError($"{displayName} timed out on {path} with status {statusCode}.", statusCode: statusCode);
                 }
             case HttpStatusCode.Unauthorized:
             case HttpStatusCode.Forbidden:

@@ -32,7 +32,8 @@ public static class NbpServiceCollectionExtensions
     /// <para>
     /// No resilience is added. Chain Microsoft's handler on the returned builder, e.g.
     /// <c>services.AddOpenUrzednikNbp().AddStandardResilienceHandler()</c>: its rejections (timeout, open circuit breaker, rate limiter)
-    /// are returned as <c>RequestTimeoutError</c> and <c>ServiceUnavailableError</c>, not thrown. Add one resilience handler, not several.
+    /// are returned as <c>RequestTimeoutError</c> and <c>ServiceUnavailableError</c> (without a status code), not thrown; a network failure is a
+    /// <c>ConnectionFailedError</c>. Add one resilience handler, not several.
     /// </para>
     /// <para>
     /// Startup validation covers <see cref="NbpOptions"/> only: an invalid <see cref="HttpClient.BaseAddress"/> set on the returned builder

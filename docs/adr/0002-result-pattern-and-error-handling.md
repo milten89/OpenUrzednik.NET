@@ -29,11 +29,30 @@ Chosen option: "All failures that can happen during normal execution are returne
 
 **Returned as a failed `OpenUrzednikResult` (never thrown):**
 
-* Input validation failures → `ValidationError`: a non-null value of the right type that fails a format or range check (a currency code in the wrong format, an empty string, a date out of range, a top count out of range).
-* Every non-success HTTP status, mapped to the most specific error (404 → `NotFoundError`, 400 → validation/bad-request error carrying the server message, 401/403 → `UnauthorizedError`, 429 → `RateLimitExceededError` with `RetryAfter`, 5xx → `ServiceUnavailableError`, anything else → `UnknownError` with the status code in metadata).
-* Empty or malformed payloads, deserialization and mapping failures → `SerializationError` (or a more specific error).
-* Network failures (`HttpRequestException`, socket/IO errors).
-* Timeouts – detected as `OperationCanceledException` while the **caller's** token is not cancelled.
+| Condition | Error | `Code` | Metadata |
+|---|---|---|---|
+| An argument fails a format or range check (a currency code in the wrong format, an empty string, a date or top count out of range) | `ValidationError` | `validation` | `ruleName`; `name` and `value` when known |
+| 400 | `BadRequestError`; the message includes up to 500 characters of the server's message | `badRequest` | `statusCode` |
+| 401, 403 | `UnauthorizedError` | `unauthorized` | `statusCode` |
+| 404 | `NotFoundError` | `notFound` | `statusCode` |
+| 200 with an empty array, for endpoints that return an array (no data for the date or range) | `NotFoundError` | `notFound` | none: no `statusCode` |
+| 408 | `RequestTimeoutError` | `requestTimeout` | `statusCode` |
+| 429 | `RateLimitExceededError` with `RetryAfter` | `rateLimitExceeded` | `statusCode`, `retryAfter` |
+| 5xx (504 included) | `ServiceUnavailableError` | `serviceUnavailable` | `statusCode` |
+| A resilience handler's open circuit breaker or rate limiter (through the DI package, [ADR-0004](0004-dependency-policy.md)) | `ServiceUnavailableError`; `Exception` is an `HttpRequestException` whose `InnerException` is the rejection | `serviceUnavailable` | none |
+| Any other non-success status | `UnknownError` | `unknown` | `statusCode` |
+| Empty or malformed payload, deserialization or mapping failure | `SerializationError` (or a more specific error) | `serialization` | none |
+| DNS, TLS or connection failure while sending (`HttpRequestException`); network failure while reading the body (`HttpRequestException`, `IOException`) | `ConnectionFailedError` with the cause in `Exception` | `connectionFailed` | none |
+| Timeout: an `OperationCanceledException` while the **caller's** token is not cancelled (the request deadline, `HttpClient.Timeout`, a resilience handler's timeout) | `RequestTimeoutError`, with `Timeout` when the limit is known | `requestTimeout` | none |
+| `default(OpenUrzednikResult<T>)` | `UnknownError` | `unknown` | none |
+
+The metadata keys are public constants next to the errors that set them: `OpenUrzednikError.StatusCodeMetadataKey`, `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`. Other metadata, if any appears, is informational.
+
+**Compatibility of the error contract** (from the first stable release):
+
+* Within a major version, the error type and `Code` of a documented condition don't change, and neither do the documented metadata keys.
+* The set of errors is open: callers always handle a default case (e.g. treat any unknown error like `UnknownError`).
+* A minor version may turn an `UnknownError` case into a more specific error, and may return a subclass of today's error type that keeps the parent's `Code` (unsealing a type is additive).
 
 **Thrown:**
 
@@ -49,6 +68,8 @@ Chosen option: "All failures that can happen during normal execution are returne
 * The exception keeps the error it was created from (`OpenUrzednikException.Error`, with its metadata) and, when there were several, all of them (`Errors`).
 * Several errors are produced only by validation. `EnsureSuccess()` then throws **one `OpenUrzednikValidationException` whose `Errors` lists every failure**, the pattern used by FluentValidation, never an `AggregateException`. If a result ever holds several errors of other kinds, the first error's exception is thrown, with all of them in `Errors`.
 * `default(OpenUrzednikResult<T>)` must not be observable as a successful result: it is a failure with an `UnknownError`.
+* `default(OpenUrzednikResult)` (the non-generic result) is a success on purpose: it has no value that could be uninitialized, and it is the same as `new OpenUrzednikResult()` and `OpenUrzednikResult.Success()`.
+* `OpenUrzednikResult<T>.Value` on a failure throws `InvalidOperationException`, as `Nullable<T>.Value` does; the message lists each error's code and message, and the first error's exception is the `InnerException`. Callers read `Value` after `IsSuccess` or `TryGetValue`, or call `EnsureSuccess()` for a typed exception.
 
 ### Consequences
 
@@ -56,6 +77,9 @@ Chosen option: "All failures that can happen during normal execution are returne
 * Good, because `EnsureSuccess()` users get a consistent exception hierarchy.
 * Bad, because the HTTP layer must carefully distinguish timeout from caller cancellation.
 * Bad, because new expected exception types must be added deliberately.
+* Bad, because it departs from the .NET Framework Design Guidelines, which report failures with exceptions. The departure is deliberate: for a public API these failures (a holiday without data, a rate limit, an outage) are normal flow, and a result works like the Try pattern the guidelines recommend for common failures, without a `try/catch` per call.
+* Bad, because callers must check `IsFailure` (or call `EnsureSuccess()`); a forgotten check surfaces only when they read `Value`.
+* A dual surface (a throwing and a result-returning method for each operation) was rejected: it doubles the API and its documentation; `EnsureSuccess()`/`EnsureSuccessAsync()` give the exception style on top of one API.
 
 ### Confirmation
 
@@ -77,3 +101,13 @@ Supersedes the informal rule in `CONTRIBUTING.md`. Shared HTTP behaviour is impl
 **2026-10-17 change: one list of error paths** ([#77](https://github.com/milten89/OpenUrzednik.NET/issues/77)). The Confirmation, `CLAUDE.md` and the `/new-endpoint` skill listed different error paths: `CLAUDE.md` left out 401/403, and the skill also left out the connection failure. The Confirmation now lists every path the WireMock tests already cover for each NBP client, including the 200 with an empty array for endpoints that return one, and the other two documents point to it.
 
 **2026-10-29 change: argument errors are thrown** ([#89](https://github.com/milten89/OpenUrzednik.NET/issues/89)). Before, the NBP clients returned a `ValidationError` for a `null` currency code and an undefined `TableType`, while the rules above and `CONTRIBUTING` named `ArgumentNullException` for a `null` argument, so callers couldn't tell from the docs whether to catch an exception or check the result. The maintainer drew the line where the .NET design guidelines do: a usage error (a `null` argument or an undefined enum value) throws, synchronously; a non-null value of the right type that fails a format or range check is a returned `ValidationError`. Core's extensions on `Task<…>` (`EnsureSuccessAsync`, `MapAsync`, `BindAsync`) still check their arguments inside an `async` method; that is a separate change. It affects the 15 methods that take a currency code or a `TableType`; the gold methods take neither. It is a breaking change for preview users.
+
+**2026-10-29 change: the 1.0 error contract** ([#90](https://github.com/milten89/OpenUrzednik.NET/issues/90)). The "Returned" list became the mapping table above, and the compatibility rule, the reasons for departing from the design guidelines, the `default(OpenUrzednikResult)` rule and the `Value` rule were added. Changes made with it:
+
+* Network failures were a `ServiceUnavailableError` without a status, the same type as a 5xx and a resilience handler's rejection. They are now a `ConnectionFailedError` (`connectionFailed`, `ConnectionFailedException`). The rejections stay a `ServiceUnavailableError`: the DI package marks them, and the executor tells them apart ([ADR-0004](0004-dependency-policy.md)).
+* 408 was an `UnknownError`; it is now a `RequestTimeoutError` with `statusCode`. 504 stays a `ServiceUnavailableError`, because it is the gateway, not the client, that timed out.
+* The codes with an `Error` suffix were renamed: `validationError` → `validation`, `serializationError` → `serialization`, `unknownError` → `unknown`.
+* The metadata keys became public constants.
+* `Value` on a failure named no error; its message now lists them.
+
+These are breaking changes for preview users.

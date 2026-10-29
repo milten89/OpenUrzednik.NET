@@ -1,3 +1,5 @@
+using OpenUrzednik.Http.Infrastructure;
+
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.RateLimiting;
@@ -49,7 +51,7 @@ public sealed partial class ResilienceRejectionHandlerTest
 
     [Theory]
     [MemberData(nameof(OtherRejections))]
-    public async Task SendAsync_OtherRejection_ThrowsHttpRequestException(ExecutionRejectedException rejected)
+    public async Task SendAsync_OtherRejection_ThrowsMarkedHttpRequestException(ExecutionRejectedException rejected)
     {
         // Arrange
         using var sut = CreateSut((_, _) => throw rejected);
@@ -60,6 +62,7 @@ public sealed partial class ResilienceRejectionHandlerTest
 
         // Assert
         exception.InnerException.ShouldBeSameAs(rejected);
+        ResilienceRejection.IsRejection(exception).ShouldBeTrue();
     }
 
     [Fact]

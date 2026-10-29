@@ -9,7 +9,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | Project | State |
 |---|---|
 | `src/OpenUrzednik.Core` | Result pattern (`OpenUrzednikResult`, `OpenUrzednikResult<T>`), errors and exceptions, telemetry abstractions, `ValueValidator<T>` |
-| `src/Http` | Shared REST/JSON layer, not a package: internal source compiled into each REST provider through `Http.props` (`RestRequestExecutor`, `RestProviderProfile`, `OpenUrzednikTelemetry`; namespace `OpenUrzednik.Http.Infrastructure`) |
+| `src/Http` | Shared REST/JSON layer, not a package: internal source compiled into each REST provider through `Http.props` (a DI package links `Infrastructure/ResilienceRejection.cs` to mark resilience rejections) (`RestRequestExecutor`, `RestProviderProfile`, `OpenUrzednikTelemetry`; namespace `OpenUrzednik.Http.Infrastructure`) |
 | `src/OpenUrzednik.Extensions.Logging` | `IOpenUrzednikLogger` over `ILogger` (`OpenUrzednikLogger`, `CreateOpenUrzednikLogger<TClient>()`) |
 | `src/OpenUrzednik.Diagnostics` | `IOpenUrzednikTraceSource` over `ActivitySource` (`ActivityTraceSource`, `GetShared("OpenUrzednik.<Provider>")`) |
 | `src/OpenUrzednik.Nbp` | NBP API: currency rates (`Currency/`), rate tables (`Table/`), gold prices (`Gold/`). **Reference provider**, still being hardened |

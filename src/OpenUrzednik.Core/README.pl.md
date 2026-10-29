@@ -25,3 +25,4 @@ int value = result.EnsureSuccess();
 ## Więcej po angielsku
 
 - [Praca z wynikiem: `Map`, `Bind`, `Match`, wyjątki](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.md#working-with-a-result)
+- [Błędy: typy, kody i metadane](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.md#errors)

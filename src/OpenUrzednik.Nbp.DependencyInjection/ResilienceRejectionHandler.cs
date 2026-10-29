@@ -1,3 +1,5 @@
+using OpenUrzednik.Http.Infrastructure;
+
 using Polly;
 using Polly.Timeout;
 
@@ -6,7 +8,8 @@ namespace OpenUrzednik.Nbp.DependencyInjection;
 /// <summary>
 /// Turns the exceptions a resilience handler throws when it rejects a request into the ones the request executor
 /// returns as errors (ADR-0004): a timeout becomes a <see cref="TaskCanceledException"/> (a <c>RequestTimeoutError</c>),
-/// an open circuit breaker or a rate limiter an <see cref="HttpRequestException"/> (a <c>ServiceUnavailableError</c>).
+/// an open circuit breaker or a rate limiter a marked <see cref="HttpRequestException"/> (<see cref="ResilienceRejection.Create"/>, a <c>ServiceUnavailableError</c>; an unmarked
+/// <see cref="HttpRequestException"/> would be a <c>ConnectionFailedError</c>).
 /// It must be the outermost handler, so it sees what the resilience handler throws.
 /// </summary>
 internal sealed class ResilienceRejectionHandler : DelegatingHandler
@@ -25,7 +28,7 @@ internal sealed class ResilienceRejectionHandler : DelegatingHandler
         }
         catch (ExecutionRejectedException ex)
         {
-            throw new HttpRequestException(ex.Message, ex);
+            throw ResilienceRejection.Create(ex.Message, ex);
         }
     }
 }
