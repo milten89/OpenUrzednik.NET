@@ -30,11 +30,11 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 | Restrict deletions | on |
 | Block force pushes | on |
 | Require a pull request | 0 approvals, CODEOWNERS review, dismiss stale approvals, resolve all conversations, allowed merge method: merge |
-| Required status checks (strict, up to date) | `build (net8.0)`, `build (net10.0)`, `test (net472)`, `format`, `dependency-review` |
+| Required status checks (strict, up to date) | `build (net8.0)`, `build (net10.0)`, `test (net472)`, `format`, `dependency-review`, `release-label` (once [#96](https://github.com/milten89/OpenUrzednik.NET/issues/96) is done) |
 | Code scanning | CodeQL: alerts threshold `errors`, security alerts `high_or_higher` |
 | Bypass | Repository role **Admin**, mode **pull requests only** (the maintainer can merge their own PRs, but cannot push directly) |
 
-> ⚠️ Required status checks are matched by **job name**. Job names are defined in `.github/workflows/build.yml` (`build (<tfm>)`, from the matrix, and `test (net472)`) `format.yml` (`format`) and `dependency-review.yml` (`dependency-review`). Renaming a job or changing the TFM matrix (e.g. adding netstandard2.0 or dropping net8.0) requires updating this ruleset, or every PR is blocked:
+> ⚠️ Required status checks are matched by **job name**. Job names are defined in `.github/workflows/build.yml` (`build (<tfm>)`, from the matrix, and `test (net472)`) `format.yml` (`format`), `dependency-review.yml` (`dependency-review`) and `release-label.yml` (`release-label`). Renaming a job or changing the TFM matrix (e.g. adding netstandard2.0 or dropping net8.0) requires updating this ruleset, or every PR is blocked:
 >
 > ```bash
 > gh api repos/milten89/OpenUrzednik.NET/rulesets/20632755 > ruleset.json   # edit required_status_checks, then:
@@ -89,7 +89,7 @@ Workflow hardening: all third-party actions are pinned to a commit SHA, with the
 
 ## Labels
 
-Release notes (`.github/release.yml`) group PRs by the **release labels**; every PR has at least one. Issues use the same labels to forecast the PR's category.
+Release notes (`.github/release.yml`) group PRs by the **release labels**; every PR has at least one, which the `release-label` workflow (`.github/workflows/release-label.yml`) checks. It reads the labels from `.github/release.yml`, so a new release label goes only there. Issues use the same labels to forecast the PR's category.
 
 | Label | Color | Use |
 |---|---|---|

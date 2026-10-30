@@ -46,9 +46,10 @@ All published packages share one version (lockstep, [ADR-0008](adr/0008-branchin
    ```
 
    Every `.nupkg` in `artifacts/release` must have the version `1.1.0`.
-4. Open a PR from `release/X.Y` into `main` (label `skip-changelog`; its contents are already listed by their own PRs), once the release's milestone has no open issues ([`GITHUB-SETUP.md`](GITHUB-SETUP.md#milestones)).
-5. Merge (merge commit) → `nuget-release.yml` publishes every package as `1.1.0`, tags the repo `v1.1.0` and creates one GitHub Release. It stops before publishing if the version still has a prerelease suffix, if the packages don't share one version, or if that version was already released from another commit.
-6. Back-merge (below), setting `develop`'s `version.json` to the next minor (`"1.2.0-preview.{height}"`).
+4. Push the branch, then write the release notes: run `/release-notes 1.1.0`, review `docs/release-notes/v1.1.0.md`, commit and push it. They come from the release labels of the PRs since the last release; the packages' `releaseNotes` link to the GitHub Release made from this file.
+5. Open a PR from `release/X.Y` into `main` (label `skip-changelog`; its contents are already listed by their own PRs), once the release's milestone has no open issues ([`GITHUB-SETUP.md`](GITHUB-SETUP.md#milestones)). The `build (net10.0)` job fails the PR if `version.json` has a prerelease suffix or the notes file is missing.
+6. Merge (merge commit) → `nuget-release.yml` publishes every package as `1.1.0`, tags the repo `v1.1.0` and creates one GitHub Release with the notes file as its body. It stops before publishing if the version still has a prerelease suffix, if the packages don't share one version, if that version was already released from another commit, or if the notes file is missing.
+7. Back-merge (below), setting `develop`'s `version.json` to the next minor (`"1.2.0-preview.{height}"`).
 
 ## Hotfix procedure (main = 1.0, develop = 1.1)
 
@@ -63,7 +64,7 @@ branch-naming**. The full process:
    ```
 
 2. Set the root `version.json` to the next patch, `"1.0.1"`. NBGV doesn't raise the patch by itself: a version with three parts is used as written, and the git height goes only into the assembly file version.
-3. Fix the bug, open a PR **hotfix → `main`** (required, since `main` is protected), labelled `bug`.
+3. Fix the bug and open a PR **hotfix → `main`** (required, since `main` is protected), labelled `bug`. Then run `/release-notes 1.0.1`, and commit and push `docs/release-notes/v1.0.1.md`: the notes list the hotfix PR itself, so it must exist first, and the PR's `build (net10.0)` job fails until the file is there.
 4. Merge (merge commit) → `nuget-release.yml` publishes `1.0.1`, tags `v1.0.1`, creates the GitHub Release.
 5. Back-merge (below), so the fix reaches `develop`. `develop` keeps its own version (e.g. `"1.1.0-preview.{height}"`).
 

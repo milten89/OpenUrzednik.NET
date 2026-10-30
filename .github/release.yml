@@ -1,4 +1,5 @@
-# Categories for automatically generated release notes (gh release create --generate-notes).
+# Categories of the generated release notes: /release-notes drafts docs/release-notes/v<version>.md from them, and the
+# release-label workflow reads the release labels from this file (every category's labels plus the excluded ones).
 changelog:
   exclude:
     labels: [ "skip-changelog" ]

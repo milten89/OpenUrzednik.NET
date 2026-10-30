@@ -77,6 +77,17 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+      # Nothing is published without release notes: /release-notes writes them on the release branch (docs/RELEASE-PROCESS.md).
+      - name: Check the release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          notes="docs/release-notes/v$VERSION.md"
+          if [ ! -s "$notes" ]; then
+            echo "::error::$notes is missing or empty. Run /release-notes on the release branch and commit the file."
+            exit 1
+          fi
+
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
         id: login
@@ -106,5 +117,5 @@ jobs:
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag already exists, skipping."
           else
-            gh release create "$tag" ./artifacts/*.nupkg --verify-tag --title "$tag" --generate-notes
+            gh release create "$tag" ./artifacts/*.nupkg --verify-tag --title "$tag" --notes-file "docs/release-notes/$tag.md"
           fi
