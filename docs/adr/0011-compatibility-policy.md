@@ -69,7 +69,7 @@ Chosen option: "An explicit scope, with client interfaces that may grow and seal
 
 ### Confirmation
 
-* Package validation compares the public API with the last release on every build and fails on breaking changes ([#94](https://github.com/milten89/OpenUrzednik.NET/issues/94); baseline 1.0.0 after the release, [#117](https://github.com/milten89/OpenUrzednik.NET/issues/117)). It also reports a method added to a client interface (CP0006); a minor version that adds one suppresses exactly that diagnostic, naming this ADR in the PR. Any other suppression outside a major version is a policy violation.
+* Package validation runs on every pack ([#94](https://github.com/milten89/OpenUrzednik.NET/issues/94)). From 1.0.0 it also compares the public API with the last release and fails on breaking changes (the baseline is set after the release, [#117](https://github.com/milten89/OpenUrzednik.NET/issues/117)). Against that baseline it also reports a method added to a client interface (CP0006); a minor version that adds one suppresses exactly that diagnostic, naming this ADR in the PR. Any other suppression outside a major version is a policy violation.
 * The `reviewer` agent flags: an in-scope break in a PR that isn't for a major version; a new public class that isn't `sealed` and isn't designed for inheritance (already before 1.0, because sealing later is breaking); new public API in a `hotfix/*` PR; a positional or `required` property added to a model; an abstract member added to an extension point; a removal without a prior `[Obsolete]`.
 
 ## Pros and Cons of the Options

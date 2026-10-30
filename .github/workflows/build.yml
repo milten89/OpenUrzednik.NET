@@ -58,6 +58,12 @@ jobs:
         dotnet test OpenUrzednik.slnx --configuration Release --no-build --framework ${{ matrix.tfm }}
         --coverage --coverage-output-format cobertura --results-directory ./TestResults
 
+    # Package validation (EnablePackageValidation in src/Directory.Build.props) runs on pack. It needs every target of the
+    # packages, so this builds the netstandard2.0 and net8.0 builds too; once is enough, so only in the net10.0 job.
+    - name: Pack and validate packages
+      if: ${{ matrix.tfm == 'net10.0' }}
+      run: dotnet pack OpenUrzednik.Packages.slnf --configuration Release --no-restore --output ./artifacts/packages
+
     - name: Upload coverage
       if: ${{ matrix.tfm == 'net10.0' && always() }}
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
