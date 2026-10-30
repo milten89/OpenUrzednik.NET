@@ -111,7 +111,7 @@ public partial class NbpDateOnlyExtensionsTest
     public void GetAsync_NullClient_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => ((INbpGoldPriceClient)null!).GetAsync(new DateOnly(2026, 10, 2)))
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpGoldPriceClient)null!).GetAsync(new DateOnly(2026, 10, 2)); })
             .ParamName.ShouldBe("client");
     }
 }
