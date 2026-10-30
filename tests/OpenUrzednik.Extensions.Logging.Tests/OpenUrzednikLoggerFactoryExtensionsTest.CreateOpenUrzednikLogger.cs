@@ -20,7 +20,7 @@ public sealed partial class OpenUrzednikLoggerFactoryExtensionsTest
 
         // Act
         var sut = loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>();
-        sut.Log(Core.Telemetry.OpenUrzednikLogLevel.Information, null, "Message");
+        sut.Log(Core.Telemetry.OpenUrzednikLogLevel.Information, default, null, "Message");
 
         // Assert
         loggerFactory.Received(1).CreateLogger("OpenUrzednik.Nbp.NbpGoldPriceClient");

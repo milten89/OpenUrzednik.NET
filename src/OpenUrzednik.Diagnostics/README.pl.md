@@ -14,6 +14,15 @@ dotnet add package OpenUrzednik.Diagnostics
 
 ## Użycie
 
+Źródła nazywają się `OpenUrzednik.<Provider>` (np. `OpenUrzednik.Nbp`). W OpenTelemetry włączysz wszystkie naraz:
+
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing.AddSource("OpenUrzednik.*"));
+```
+
+Na .NET 8 i nowszym to wystarczy: klient bez `traceSource` sam zapisuje spany w źródle swojego dostawcy. Na .NET Framework (`netstandard2.0`) klient zapisuje spany tylko wtedy, gdy podasz mu `traceSource`:
+
 ```csharp
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Nbp;
@@ -22,15 +31,9 @@ var client = new NbpGoldPriceClient(httpClient,
     traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
 ```
 
-Źródła nazywają się `OpenUrzednik.<Provider>` (np. `OpenUrzednik.Nbp`). W OpenTelemetry włączysz wszystkie naraz:
-
-```csharp
-builder.Services.AddOpenTelemetry()
-    .WithTracing(tracing => tracing.AddSource("OpenUrzednik.*"));
-```
-
 ## Więcej po angielsku
 
 - [Własne `ActivitySource`](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#usage)
-- [Co trafia do śladu (spany, tagi, błędy, .NET Framework)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#what-goes-into-the-trace)
+- [Spany żądań `HttpClient`](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#http-client-spans)
+- [Co trafia do śladu (spany, tagi, błędy, stabilność, .NET Framework)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#what-goes-into-the-trace)
 - [Zależności](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#dependencies)

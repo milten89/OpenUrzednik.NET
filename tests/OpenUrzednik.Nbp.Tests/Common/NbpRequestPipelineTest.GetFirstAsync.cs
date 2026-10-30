@@ -62,8 +62,8 @@ public sealed partial class NbpRequestPipelineTest
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
         error.Metadata.ContainsKey(OpenUrzednikError.StatusCodeMetadataKey).ShouldBeFalse();
-        // RecordError (one error) sets the error.code tag; RecordErrors adds events instead.
-        span.Received(1).SetTag("error.code", NotFoundError.ErrorCode);
+        // RecordError (one error) sets only the error.type tag; RecordErrors also adds events.
+        span.Received(1).SetTag("error.type", NotFoundError.ErrorCode);
     }
 
     [Fact]
@@ -84,6 +84,6 @@ public sealed partial class NbpRequestPipelineTest
         // Assert
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
         mapped.ShouldBeFalse();
-        span.Received(1).AddEvent("error", "error.code", ServiceUnavailableError.ErrorCode);
+        span.Received(1).AddEvent("error", "error.type", ServiceUnavailableError.ErrorCode);
     }
 }

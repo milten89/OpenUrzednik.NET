@@ -6,6 +6,7 @@ using Bogus;
 using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
@@ -36,7 +37,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.top_count");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.table", TableType.A);
+        span.Received(1).SetTag("nbp.table", "A");
         span.Received(1).SetTag("nbp.top_count", count);
     }
 
@@ -54,7 +55,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         await sut.GetTopCountAsync("US", 0, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", "GetTopCountAsync");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, NbpEvents.ValidationFailed, null, "Validation failed for {operation}", "operation", "GetTopCountAsync");
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
     }
 
@@ -120,7 +121,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.latest");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.table", TableType.A);
+        span.Received(1).SetTag("nbp.table", "A");
     }
 
     [Fact]
@@ -141,7 +142,7 @@ public partial class NbpCurrencyExchangeRateClientTest
 
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.latest");
-        span.Received(1).SetTag("nbp.table", TableType.B);
+        span.Received(1).SetTag("nbp.table", "B");
     }
 
     [Fact]
@@ -163,7 +164,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.today");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.table", TableType.A);
+        span.Received(1).SetTag("nbp.table", "A");
     }
 
     [Fact]
@@ -186,7 +187,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.date");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.table", TableType.A);
+        span.Received(1).SetTag("nbp.table", "A");
         span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
@@ -211,7 +212,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.range");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.table", TableType.A);
+        span.Received(1).SetTag("nbp.table", "A");
         span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }

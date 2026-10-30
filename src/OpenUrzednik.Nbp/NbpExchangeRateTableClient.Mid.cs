@@ -19,7 +19,7 @@ public partial class NbpExchangeRateTableClient
     private async Task<OpenUrzednikResult<ExchangeRateTable>> GetLatestCoreAsync(TableType table, CancellationToken cancellationToken)
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.latest");
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
 
         return await _pipeline.GetFirstAsync(traceSpan, nameof(GetLatestAsync), OpenUrzednikResult.Success(),
             () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).Latest(), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
@@ -36,7 +36,7 @@ public partial class NbpExchangeRateTableClient
     private async Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountCoreAsync(TableType table, int topCount, CancellationToken cancellationToken)
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.top_count");
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
         traceSpan.SetTag("nbp.top_count", topCount);
 
         var validation = new TopCountValidator(nameof(topCount), topCount, TopCountValidator.MaxForTable(table)).Validate();
@@ -56,7 +56,7 @@ public partial class NbpExchangeRateTableClient
     private async Task<OpenUrzednikResult<ExchangeRateTable>> GetTodayCoreAsync(TableType table, CancellationToken cancellationToken)
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.today");
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
 
         return await _pipeline.GetFirstAsync(traceSpan, nameof(GetTodayAsync), OpenUrzednikResult.Success(),
             () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).Today(), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
@@ -74,7 +74,7 @@ public partial class NbpExchangeRateTableClient
     {
         var day = DateOnly.FromDateTime(date);
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.date");
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
         var validation = new CurrencyDateValidator(nameof(date), day, NbpCalendar.Today(_timeProvider)).Validate();
@@ -96,7 +96,7 @@ public partial class NbpExchangeRateTableClient
         var fromDay = DateOnly.FromDateTime(from);
         var toDay = DateOnly.FromDateTime(to);
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.range");
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
         traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 

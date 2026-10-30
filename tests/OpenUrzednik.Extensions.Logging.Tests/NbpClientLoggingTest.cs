@@ -25,6 +25,7 @@ public sealed class NbpClientLoggingTest
         // Assert
         var entry = logger.Entries.ShouldHaveSingleItem();
         entry.Level.ShouldBe(LogLevel.Debug);
+        entry.EventId.ShouldBe(new EventId(NbpLogEvents.ValidationFailed, nameof(NbpLogEvents.ValidationFailed)));
         entry.Message.ShouldBe("Validation failed for GetTopCountAsync");
         entry.State.ShouldBe([new("operation", "GetTopCountAsync"), new("{OriginalFormat}", "Validation failed for {operation}")]);
     }
@@ -43,7 +44,9 @@ public sealed class NbpClientLoggingTest
 
         // Assert
         var entry = logger.Entries.Where(e => e.Level == LogLevel.Warning).ShouldHaveSingleItem();
-        entry.Message.ShouldBe("NBP API request to cenyzlota failed");
+        entry.EventId.ShouldBe(new EventId(NbpLogEvents.ConnectionFailed, nameof(NbpLogEvents.ConnectionFailed)));
+        entry.Message.ShouldBe("nbp could not be reached for cenyzlota");
+        entry.State[0].ShouldBe(new("provider", "nbp"));
         entry.Exception.ShouldBeSameAs(thrown);
     }
 }

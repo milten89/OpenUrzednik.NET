@@ -36,6 +36,8 @@ The log category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldP
 
 If you already have an `ILogger`, use `new OpenUrzednikLogger(logger)`.
 
+Every entry has an event id (`EventId` with an id and a name, e.g. `1001 RequestTimedOut`), fixed by the library and the same in every client of a provider; NBP lists them in `NbpLogEvents` and the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#telemetry-reference). Filter by event id rather than message text, which may change.
+
 Entries are structured: they carry named values (e.g. `provider`, `path`) and the template in `{OriginalFormat}`, like entries from `LoggerMessage`. Serilog, OpenTelemetry and other providers see them as separate properties. The message text is formatted with the invariant culture.
 
 ## Dependencies

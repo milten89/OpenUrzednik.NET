@@ -297,7 +297,7 @@ public partial class RestRequestExecutorTest
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
         error.Message.ShouldEndWith(".");
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, Arg.Any<Exception>(), "Could not read {provider} error response body.", "provider", "Test API");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, RestLogEvents.ErrorBodyUnreadable, Arg.Any<Exception>(), "Could not read {provider} error response body.", "provider", "test");
     }
 
     [Fact]
@@ -361,7 +361,7 @@ public partial class RestRequestExecutorTest
         error.ToException().InnerException.ShouldBeSameAs(thrown);
         span.Received(1).RecordException(thrown);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, thrown, "{provider} request to {path} failed", "provider", "Test API", "path", Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ConnectionFailed, thrown, "{provider} could not be reached for {path}", "provider", "test", "path", Arg.Any<string>());
     }
 
     [Fact]
@@ -544,7 +544,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         span.DidNotReceive().RecordException(Arg.Any<Exception>());
-        logger.DidNotReceive().Log(Arg.Any<OpenUrzednikLogLevel>(), Arg.Any<Exception>(), Arg.Any<string>());
+        logger.DidNotReceive().Log(Arg.Any<OpenUrzednikLogLevel>(), Arg.Any<OpenUrzednikEventId>(), Arg.Any<Exception>(), Arg.Any<string>());
     }
 
     [Fact]
@@ -571,7 +571,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         span.DidNotReceive().RecordException(Arg.Any<Exception>());
-        logger.DidNotReceive().Log(Arg.Any<OpenUrzednikLogLevel>(), Arg.Any<Exception>(), Arg.Any<string>());
+        logger.DidNotReceive().Log(Arg.Any<OpenUrzednikLogLevel>(), Arg.Any<OpenUrzednikEventId>(), Arg.Any<Exception>(), Arg.Any<string>());
     }
 
     [Fact]
@@ -597,7 +597,7 @@ public partial class RestRequestExecutorTest
         (recorded == thrown || recorded.InnerException == thrown).ShouldBeTrue();
         span.Received(1).RecordException(recorded);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Network failure");
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, recorded, "{provider} request to {path} failed", "provider", "Test API", "path", Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ConnectionFailed, recorded, "{provider} could not be reached for {path}", "provider", "test", "path", Arg.Any<string>());
     }
 
     [Fact]
@@ -649,7 +649,23 @@ public partial class RestRequestExecutorTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "{provider} resource not found: {path}.", "provider", "Test API", "path", Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, RestLogEvents.NotFound, null, "{provider} resource not found: {path}.", "provider", "test", "path", Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task GetAsync_NotFoundStatusCode_MarksSpanFailedWithErrorType()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound));
+
+        // Act
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Not found");
+        span.Received(1).SetTag("error.type", NotFoundError.ErrorCode);
     }
 
     [Fact]
@@ -668,7 +684,7 @@ public partial class RestRequestExecutorTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "{provider} rate limit hit, retry after {delay}.", "provider", "Test API", "delay", retryDelay);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RateLimited, null, "{provider} rate limit hit, retry after {delay}.", "provider", "test", "delay", retryDelay);
     }
 
     [Fact]
@@ -684,7 +700,7 @@ public partial class RestRequestExecutorTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "{provider} rate limit hit.", "provider", "Test API");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RateLimited, null, "{provider} rate limit hit.", "provider", "test");
     }
 
     [Fact]
@@ -738,7 +754,7 @@ public partial class RestRequestExecutorTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, null, "{provider} is unavailable, status {status}", "provider", "Test API", "status", (int)HttpStatusCode.BadGateway);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ServiceUnavailable, null, "{provider} is unavailable, status {status}", "provider", "test", "status", (int)HttpStatusCode.BadGateway);
     }
 
     [Fact]
@@ -758,8 +774,9 @@ public partial class RestRequestExecutorTest
         await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Error, Arg.Any<JsonException>(), "Failed to deserialize {provider} response from {path}", "provider", "Test API", "path", relativePath);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Error, RestLogEvents.DeserializationFailed, Arg.Any<JsonException>(), "Failed to deserialize {provider} response from {path}", "provider", "test", "path", relativePath);
         span.Received(1).RecordException(Arg.Any<JsonException>());
+        span.Received(1).SetTag("error.type", SerializationError.ErrorCode);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
     }
 
@@ -858,7 +875,7 @@ public partial class RestRequestExecutorTest
         received.ShouldNotBeNull().StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
         received.RequestPath.ShouldEndWith("path");
         body.ShouldBe("""{"code":"WL-115"}""");
-        span.Received(1).SetTag("error.code", BadRequestError.ErrorCode);
+        span.Received(1).SetTag("error.type", BadRequestError.ErrorCode);
     }
 
     [Fact]
@@ -1028,14 +1045,17 @@ public partial class RestRequestExecutorTest
         var thrown = ResilienceRejection.Create("The circuit is now open.", new InvalidOperationException("rejected"));
         var handler = new StubHttpMessageHandler(thrown);
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(faker.Internet.UrlWithPath("https")) };
+        var (telemetryProvider, logger, span) = CreateTelemetrySubstitutes();
 
         // Act
-        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+        var result = await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
         error.Exception.ShouldBeSameAs(thrown);
         error.Metadata.ContainsKey(OpenUrzednikError.StatusCodeMetadataKey).ShouldBeFalse();
+        span.Received(1).SetTag("error.type", ServiceUnavailableError.ErrorCode);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestRejected, thrown, "{provider} request to {path} was rejected", "provider", "test", "path", Arg.Any<string>());
     }
 
     [Fact]

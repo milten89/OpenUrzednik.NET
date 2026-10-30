@@ -165,7 +165,8 @@ internal sealed class RestRequestExecutor
             if (dto is not null)
                 return OpenUrzednikResult.Success(dto);
 
-            logger.Log(OpenUrzednikLogLevel.Error, null, "{provider} returned an empty response for {path}", "provider", _profile.DisplayName, "path", relativePath);
+            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.EmptyResponse, null, "{provider} returned an empty response for {path}", "provider", _profile.Name, "path", relativePath);
+            traceSpan.SetTag("error.type", SerializationError.ErrorCode);
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Empty response");
             return OpenUrzednikResult.Failure<TDto>(new SerializationError($"{_profile.DisplayName} returned an empty response for {relativePath}."));
         }
@@ -175,8 +176,9 @@ internal sealed class RestRequestExecutor
         }
         catch (JsonException ex)
         {
-            logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to deserialize {provider} response from {path}", "provider", _profile.DisplayName, "path", relativePath);
+            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DeserializationFailed, ex, "Failed to deserialize {provider} response from {path}", "provider", _profile.Name, "path", relativePath);
             traceSpan.RecordException(ex);
+            traceSpan.SetTag("error.type", SerializationError.ErrorCode);
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
             return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when deserializing response from {relativePath}", ex));
         }
@@ -191,8 +193,9 @@ internal sealed class RestRequestExecutor
         catch (InvalidOperationException ex)
         {
             // ReadFromJsonAsync throws this when the response declares a charset it can't decode.
-            logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to decode {provider} response from {path}", "provider", _profile.DisplayName, "path", relativePath);
+            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, ex, "Failed to decode {provider} response from {path}", "provider", _profile.Name, "path", relativePath);
             traceSpan.RecordException(ex);
+            traceSpan.SetTag("error.type", SerializationError.ErrorCode);
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
             return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when decoding response from {relativePath}", ex));
         }
@@ -235,18 +238,18 @@ internal sealed class RestRequestExecutor
     private OpenUrzednikResult TimeoutFailure(TimeSpan? timeout, string relativePath, IOpenUrzednikSpan traceSpan, OperationCanceledException exception)
     {
         if (timeout is null)
-            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "{provider} request to {path} timed out",
-                "provider", _profile.DisplayName, "path", relativePath);
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestTimedOut, exception, "{provider} request to {path} timed out",
+                "provider", _profile.Name, "path", relativePath);
         else
-            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "{provider} request to {path} timed out after {timeout}",
-                "provider", _profile.DisplayName, "path", relativePath, "timeout", timeout);
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestTimedOut, exception, "{provider} request to {path} timed out after {timeout}",
+                "provider", _profile.Name, "path", relativePath, "timeout", timeout);
         var error = new RequestTimeoutError(
             timeout is null
                 ? $"{_profile.DisplayName} request to {relativePath} timed out."
                 : $"{_profile.DisplayName} did not respond to {relativePath} within {timeout}.",
             timeout, exception);
         traceSpan.RecordException(exception);
-        traceSpan.SetTag("error.code", error.Code);
+        traceSpan.SetTag("error.type", error.Code);
         traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
         return error;
     }
@@ -255,13 +258,16 @@ internal sealed class RestRequestExecutor
     // breaker, rate limiter) also arrives as an HttpRequestException, marked by the DI package, and stays a ServiceUnavailableError.
     private OpenUrzednikResult NetworkFailure(string relativePath, IOpenUrzednikSpan traceSpan, Exception exception)
     {
-        _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, exception, "{provider} request to {path} failed", "provider", _profile.DisplayName, "path", relativePath);
         var rejected = ResilienceRejection.IsRejection(exception);
+        if (rejected)
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestRejected, exception, "{provider} request to {path} was rejected", "provider", _profile.Name, "path", relativePath);
+        else
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ConnectionFailed, exception, "{provider} could not be reached for {path}", "provider", _profile.Name, "path", relativePath);
         OpenUrzednikError error = rejected
             ? new ServiceUnavailableError($"{_profile.DisplayName} request to {relativePath} was rejected: {exception.Message}", exception: exception)
             : new ConnectionFailedError($"{_profile.DisplayName} could not be reached for {relativePath}: {exception.Message}", exception);
         traceSpan.RecordException(exception);
-        traceSpan.SetTag("error.code", error.Code);
+        traceSpan.SetTag("error.type", error.Code);
         traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, rejected ? "Rejected" : "Network failure");
         return error;
     }
@@ -280,14 +286,16 @@ internal sealed class RestRequestExecutor
             var context = new ErrorResponseContext(response, path, delay, ReadMessageOnceAsync, requestToken);
             if (await mapErrorAsync(context).ConfigureAwait(false) is { } customError)
             {
-                _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} returned status {status} for {path}",
-                    "provider", _profile.DisplayName, "status", (int)response.StatusCode, "path", path);
+                _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ErrorResponse, null, "{provider} returned status {status} for {path}",
+                    "provider", _profile.Name, "status", (int)response.StatusCode, "path", path);
                 traceSpan.RecordError(customError);
                 return customError;
             }
         }
 
-        return await MapDefaultErrorAsync(response, path, delay, traceSpan, ReadMessageOnceAsync).ConfigureAwait(false);
+        var result = await MapDefaultErrorAsync(response, path, delay, traceSpan, ReadMessageOnceAsync).ConfigureAwait(false);
+        traceSpan.SetTag("error.type", result.Errors[0].Code);
+        return result;
     }
 
     private async Task<OpenUrzednikResult> MapDefaultErrorAsync(HttpResponseMessage response, string path, TimeSpan? delay, IOpenUrzednikSpan traceSpan, Func<Task<string?>> readMessageAsync)
@@ -295,13 +303,15 @@ internal sealed class RestRequestExecutor
         var statusCode = (int)response.StatusCode;
         var logger = _telemetry.Logger;
         var displayName = _profile.DisplayName;
+        var name = _profile.Name;
 
         switch (response.StatusCode)
         {
             case HttpStatusCode.NotFound:
                 {
                     if (logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                        logger.Log(OpenUrzednikLogLevel.Debug, null, "{provider} resource not found: {path}.", "provider", displayName, "path", path);
+                        logger.Log(OpenUrzednikLogLevel.Debug, RestLogEvents.NotFound, null, "{provider} resource not found: {path}.", "provider", name, "path", path);
+                    traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Not found");
                     return new NotFoundError($"Resource at {path} was not found.", statusCode);
                 }
             case TooManyRequests:
@@ -309,9 +319,9 @@ internal sealed class RestRequestExecutor
                     if (logger.IsEnabled(OpenUrzednikLogLevel.Warning))
                     {
                         if (delay.HasValue)
-                            logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} rate limit hit, retry after {delay}.", "provider", displayName, "delay", delay);
+                            logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RateLimited, null, "{provider} rate limit hit, retry after {delay}.", "provider", name, "delay", delay);
                         else
-                            logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} rate limit hit.", "provider", displayName);
+                            logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RateLimited, null, "{provider} rate limit hit.", "provider", name);
                     }
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
                     return new RateLimitExceededError("Too many requests.", delay, statusCode);
@@ -319,7 +329,7 @@ internal sealed class RestRequestExecutor
             case HttpStatusCode.BadRequest:
                 {
                     var serverMessage = await readMessageAsync().ConfigureAwait(false);
-                    logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} rejected the request to {path}", "provider", displayName, "path", path);
+                    logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.BadRequest, null, "{provider} rejected the request to {path}", "provider", name, "path", path);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Bad request");
                     return new BadRequestError(
                         serverMessage is null
@@ -329,26 +339,26 @@ internal sealed class RestRequestExecutor
                 }
             case HttpStatusCode.RequestTimeout:
                 {
-                    logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} timed out on {path} with status {status}", "provider", displayName, "path", path, "status", statusCode);
+                    logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestTimeoutStatus, null, "{provider} timed out on {path} with status {status}", "provider", name, "path", path, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
                     return new RequestTimeoutError($"{displayName} timed out on {path} with status {statusCode}.", statusCode: statusCode);
                 }
             case HttpStatusCode.Unauthorized:
             case HttpStatusCode.Forbidden:
                 {
-                    logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} denied access to {path} with status {status}", "provider", displayName, "path", path, "status", statusCode);
+                    logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.Unauthorized, null, "{provider} denied access to {path} with status {status}", "provider", name, "path", path, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unauthorized");
                     return new UnauthorizedError($"{displayName} denied access to {path} with status {statusCode}.", statusCode);
                 }
             case >= HttpStatusCode.InternalServerError:
                 {
-                    logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} is unavailable, status {status}", "provider", displayName, "status", statusCode);
+                    logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ServiceUnavailable, null, "{provider} is unavailable, status {status}", "provider", name, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Service unavailable");
                     return new ServiceUnavailableError($"{displayName} is unavailable, status {statusCode}.", statusCode);
                 }
             default:
                 {
-                    logger.Log(OpenUrzednikLogLevel.Warning, null, "{provider} returned unexpected status {status}", "provider", displayName, "status", statusCode);
+                    logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.UnexpectedStatus, null, "{provider} returned unexpected status {status}", "provider", name, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected status");
                     return new UnknownError($"{displayName} returned unexpected status {statusCode}.", statusCode);
                 }
@@ -400,7 +410,7 @@ internal sealed class RestRequestExecutor
     private void LogUnreadableBody(Exception exception)
     {
         if (_telemetry.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-            _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, exception, "Could not read {provider} error response body.", "provider", _profile.DisplayName);
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, RestLogEvents.ErrorBodyUnreadable, exception, "Could not read {provider} error response body.", "provider", _profile.Name);
     }
 
     private static TimeSpan? GetDelay(HttpResponseMessage response, TimeProvider timeProvider)

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
@@ -63,6 +64,48 @@ public sealed class NbpClientTracingTest : IDisposable
         http.Status.ShouldBe(ActivityStatusCode.Error);
         http.GetTagItem("http.response.status_code").ShouldBe(503);
         operation.Status.ShouldBe(ActivityStatusCode.Error);
+        operation.GetTagItem("error.type").ShouldBe("serviceUnavailable");
         operation.Events.ShouldContain(e => e.Name == "error");
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_NoTraceSource_RecordsOnSharedNbpSourceOnDotNet()
+    {
+        // Arrange
+        // Other tests may use the shared source at the same time, so only this test's trace is sampled and kept.
+        // An explicit W3C context: on .NET Framework the root would otherwise get a hierarchical id, without a trace id.
+        var rootContext = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
+        using var root = _recorder.Source.StartActivity("test.root", ActivityKind.Internal, rootContext)!;
+        var stopped = new ConcurrentQueue<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == NbpTelemetry.SourceName,
+            Sample = (ref ActivityCreationOptions<ActivityContext> options)
+                => options.Parent.TraceId == root.TraceId ? ActivitySamplingResult.AllDataAndRecorded : ActivitySamplingResult.None,
+            ActivityStopped = activity =>
+            {
+                if (activity.TraceId == root.TraceId)
+                    stopped.Enqueue(activity);
+            },
+        };
+        ActivitySource.AddActivityListener(listener);
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""[{"data":"2026-10-02","cena":517.55}]""", Encoding.UTF8, "application/json"),
+        };
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(response));
+
+        // Act
+        var result = await new NbpGoldPriceClient(httpClient).GetLatestAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+#if NET
+        stopped.Select(a => a.OperationName).ShouldBe(["nbp.http.get", "nbp.gold.latest"]);
+        stopped.First().Source.ShouldBeSameAs(ActivityTraceSource.GetShared(NbpTelemetry.SourceName).Source);
+#else
+        // netstandard2.0 has no fallback: without a trace source the client records nothing.
+        stopped.ShouldBeEmpty();
+#endif
     }
 }

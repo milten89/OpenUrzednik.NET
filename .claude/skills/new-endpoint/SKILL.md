@@ -48,7 +48,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
   - each validation rule (boundary values)
   - HTTP failure passthrough
   - empty response
-  - telemetry: span name, tags, recorded errors
+  - telemetry: span name, tags, recorded errors (`error.type`); a new log call gets a new event id (`RestLogEvents` for the HTTP layer, `NbpEvents` + `NbpLogEvents` for NBP), never a reused one
   - Use `Faker().WithConstantSeed()`, the DTO fakers, `StubHttpMessageHandler`, `FakeTimeProvider`.
 - **Mapper** tests in `MapperTest.<MapMethod>.cs`; a **validator** test per new validator.
 - **WireMock** (`tests/OpenUrzednik.IntegrationTests/<Provider>/WireMock/`):
@@ -60,6 +60,6 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 ## 8. Finish
 
 - `dotnet build OpenUrzednik.slnx`, `dotnet test OpenUrzednik.slnx -f net10.0`, `dotnet format OpenUrzednik.slnx --verify-no-changes`.
-- Update the package README (`README.md`, English) if the public API changed. If an informational part changed (description, installation, quick start, the list of English sections), update `README.pl.md` too (ADR-0009).
+- Update the package README (`README.md`, English) if the public API changed. Add a new span, tag or log event to its telemetry reference. If an informational part changed (description, installation, quick start, the list of English sections), update `README.pl.md` too (ADR-0009).
 - The PR body starts with `Closes #<issue>` for the issue this work comes from.
 - Run the `reviewer` agent on the diff.

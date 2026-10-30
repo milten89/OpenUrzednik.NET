@@ -83,7 +83,7 @@ The package also runs on .NET Framework 4.7.2 or later (through `netstandard2.0`
 
 ## Logging and tracing
 
-The clients take optional `logger` and `traceSource` parameters. Without them they log nothing and create no spans. To use `ILogger` and OpenTelemetry, install the [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) and [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics) adapters:
+The clients take optional `logger` and `traceSource` parameters. Without a logger they log nothing. Without a trace source, on .NET 8 and later they record spans on the `OpenUrzednik.Nbp` `ActivitySource` (`NbpTelemetry.SourceName`), which costs nothing while no one listens to it; on .NET Framework they record none. To use `ILogger` and OpenTelemetry, install the [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) and [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics) adapters:
 
 ```csharp
 using OpenUrzednik.Diagnostics;
@@ -95,6 +95,65 @@ var client = new NbpGoldPriceClient(httpClient,
     traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
 ```
 
-Spans go to the `OpenUrzednik.Nbp` source, and logs to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`).
+On .NET 8 and later the `traceSource` line is optional; to turn spans off, pass `NullOpenUrzednikTraceSource.Instance`. Subscribe with `AddSource("OpenUrzednik.*")` or `AddSource(NbpTelemetry.SourceName)`. Logs go to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`).
 
 The clients use their own interfaces (`IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` from OpenUrzednik.Core), not `ILogger` and `ActivitySource`. So this package needs neither `Microsoft.Extensions.Logging.Abstractions` nor any other logging or tracing package. Only the adapters connect it to `ILogger` and `ActivitySource`.
+
+## Telemetry reference
+
+Within a major version, the names below don't change: the source, span names, tags, `error.type` values, logger categories and event ids. Minor versions may add spans, tags and events. Log message text and properties may change in any version, so filter logs by event id, not by text.
+
+### Spans
+
+Each client method starts one span on the `OpenUrzednik.Nbp` source, with the HTTP request as its child `nbp.http.get`. All spans are of kind `Internal`.
+
+| Span | Client and methods | Tags |
+|---|---|---|
+| `nbp.currency.latest`, `.today` | `NbpCurrencyExchangeRateClient.GetLatestAsync`, `GetTodayAsync` | `nbp.currency`, `nbp.table` |
+| `nbp.currency.top_count` | `GetTopCountAsync` | `nbp.currency`, `nbp.table`, `nbp.top_count` |
+| `nbp.currency.date` | `GetAsync(currency, date)` | `nbp.currency`, `nbp.table`, `nbp.date` |
+| `nbp.currency.range` | `GetAsync(currency, from, to)` | `nbp.currency`, `nbp.table`, `nbp.from`, `nbp.to` |
+| `nbp.currency.buy_sell_latest`, `.buy_sell_today` | `GetBuySellLatestAsync`, `GetBuySellTodayAsync` | `nbp.currency` |
+| `nbp.currency.buy_sell_top_count` | `GetBuySellTopCountAsync` | `nbp.currency`, `nbp.top_count` |
+| `nbp.currency.buy_sell_date` | `GetBuySellAsync(currency, date)` | `nbp.currency`, `nbp.date` |
+| `nbp.currency.buy_sell_range` | `GetBuySellAsync(currency, from, to)` | `nbp.currency`, `nbp.from`, `nbp.to` |
+| `nbp.table.latest`, `.today` | `NbpExchangeRateTableClient.GetLatestAsync`, `GetTodayAsync` | `nbp.table` |
+| `nbp.table.top_count` | `GetTopCountAsync` | `nbp.table`, `nbp.top_count` |
+| `nbp.table.date` | `GetAsync(table, date)` | `nbp.table`, `nbp.date` |
+| `nbp.table.range` | `GetAsync(table, from, to)` | `nbp.table`, `nbp.from`, `nbp.to` |
+| `nbp.table.buy_sell_latest`, `.buy_sell_today` | `GetBuySellLatestAsync`, `GetBuySellTodayAsync` | none |
+| `nbp.table.buy_sell_top_count` | `GetBuySellTopCountAsync` | `nbp.top_count` |
+| `nbp.table.buy_sell_date` | `GetBuySellAsync(date)` | `nbp.date` |
+| `nbp.table.buy_sell_range` | `GetBuySellAsync(from, to)` | `nbp.from`, `nbp.to` |
+| `nbp.gold.latest`, `.today` | `NbpGoldPriceClient.GetLatestAsync`, `GetTodayAsync` | none |
+| `nbp.gold.top_count` | `GetTopCountAsync` | `nbp.top_count` |
+| `nbp.gold.date` | `GetAsync(date)` | `nbp.date` |
+| `nbp.gold.range` | `GetAsync(from, to)` | `nbp.from`, `nbp.to` |
+| `nbp.http.get` | the request of any method | `http.request.method`, `url.path` (e.g. `/api/cenyzlota`), `http.response.status_code` |
+
+Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.md#errors)).
+
+### Log events
+
+Every entry has an event id; `NbpLogEvents` lists them as constants, and the event name is the constant's name (`EventId(1001, "RequestTimedOut")`). The ids are the same in every client. The `{provider}` property is `nbp`.
+
+| Id | Name | Level | When |
+|---|---|---|---|
+| 1001 | `RequestTimedOut` | Warning | A request timed out (`NbpOptions.Timeout`, `HttpClient.Timeout` or a resilience handler's timeout). |
+| 1002 | `ConnectionFailed` | Warning | The API couldn't be reached (DNS, TLS, connection) or the body read broke. |
+| 1003 | `RequestRejected` | Warning | A resilience handler rejected the request (open circuit breaker, rate limiter). |
+| 1101 | `NotFound` | Debug | The API returned 404. |
+| 1102 | `BadRequest` | Warning | The API returned 400. |
+| 1103 | `Unauthorized` | Warning | The API returned 401 or 403. |
+| 1104 | `RequestTimeoutStatus` | Warning | The API returned 408. |
+| 1105 | `RateLimited` | Warning | The API returned 429. |
+| 1106 | `ServiceUnavailable` | Warning | The API returned a 5xx status. |
+| 1107 | `UnexpectedStatus` | Warning | The API returned another non-success status. |
+| 1108 | `ErrorResponse` | Warning | Reserved for providers that map error bodies themselves; NBP doesn't. |
+| 1109 | `ErrorBodyUnreadable` | Debug | The body of an error response couldn't be read. |
+| 1201 | `EmptyResponse` | Error | A success response had no payload. |
+| 1202 | `DeserializationFailed` | Error | A success response wasn't the expected JSON. |
+| 1203 | `DecodingFailed` | Error | A success response declared a charset that can't be decoded. |
+| 2001 | `ValidationFailed` | Debug | The arguments failed validation; no request was sent. |
+| 2002 | `NoData` | Debug | The API returned an empty array: no data for the date or range. |
+| 2003 | `MappingFailed` | Error | A response lacked data the model needs. |

@@ -15,6 +15,10 @@ namespace OpenUrzednik.Diagnostics;
 /// <see cref="StartSpan"/> returns a no-op span and allocates nothing.
 /// </para>
 /// <para>
+/// On .NET 8 and later a client without a trace source already uses the shared source of its provider, the one
+/// <see cref="GetShared"/> returns. On netstandard2.0 (.NET Framework) pass it explicitly.
+/// </para>
+/// <para>
 /// Every span is <see cref="ActivityKind.Internal"/>, including <c>&lt;provider&gt;.http.get</c>: the client span of the
 /// request itself comes from <see cref="HttpClient"/>'s own instrumentation, nested under it.
 /// </para>
@@ -48,13 +52,10 @@ public sealed class ActivityTraceSource : IOpenUrzednikTraceSource
     public static ActivityTraceSource GetShared(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        return Shared.GetOrAdd(name, static key => new Lazy<ActivityTraceSource>(() => new ActivityTraceSource(new ActivitySource(key)))).Value;
+        // The source itself comes from SharedActivityTraceSource, so a client's fallback (.NET) and this adapter share it.
+        return Shared.GetOrAdd(name, static key => new Lazy<ActivityTraceSource>(() => new ActivityTraceSource(SharedActivityTraceSource.Get(key).Source))).Value;
     }
 
     /// <inheritdoc/>
-    public IOpenUrzednikSpan StartSpan(string operationName)
-    {
-        var activity = _source.StartActivity(operationName, ActivityKind.Internal);
-        return activity is null ? NullOpenUrzednikTraceSource.Instance.StartSpan(operationName) : new ActivitySpan(activity);
-    }
+    public IOpenUrzednikSpan StartSpan(string operationName) => ActivitySpan.Start(_source, operationName);
 }

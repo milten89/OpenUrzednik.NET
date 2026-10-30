@@ -50,7 +50,7 @@ builder.Services.AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>((httpCli
         services.GetService<TimeProvider>()));
 ```
 
-A bare `AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>()` isn't supported: resolving the client throws an `InvalidOperationException` ("A suitable constructor … could not be located"). A client registered this way gets no logger or trace source unless you pass them (`loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>()` and `ActivityTraceSource.GetShared(NbpTelemetry.SourceName)`), and a resilience handler's rejections aren't turned into errors (see below).
+A bare `AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>()` isn't supported: resolving the client throws an `InvalidOperationException` ("A suitable constructor … could not be located"). A client registered this way gets no logger unless you pass one (`loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>()`), records spans only on .NET 8 and later unless you pass `ActivityTraceSource.GetShared(NbpTelemetry.SourceName)`, and a resilience handler's rejections aren't turned into errors (see below).
 
 ## Retries and timeouts
 
@@ -69,6 +69,6 @@ When the handler rejects a request, you get an error in the result, not an excep
 
 ## Logging and tracing
 
-The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`.
+The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`. Every log entry has an event id from `NbpLogEvents`; the span names, tags and event ids are listed in the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#telemetry-reference).
 
 If you register your own `TimeProvider`, the clients use it instead of `TimeProvider.System`.

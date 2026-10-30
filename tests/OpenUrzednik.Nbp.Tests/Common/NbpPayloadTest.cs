@@ -48,6 +48,6 @@ public class NbpPayloadTest
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>();
         error.Message.ShouldBe("NBP API response is missing 'rates'.");
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, error.Message);
-        logger.Received(1).Log(OpenUrzednikLogLevel.Error, Arg.Any<InvalidPayloadException>(), "Failed to map NBP response: {reason}", "reason", error.Message);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Error, NbpEvents.MappingFailed, Arg.Any<InvalidPayloadException>(), "Failed to map NBP response: {reason}", "reason", error.Message);
     }
 }

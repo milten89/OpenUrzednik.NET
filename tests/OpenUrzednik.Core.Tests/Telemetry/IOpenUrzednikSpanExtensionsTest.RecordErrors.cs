@@ -22,11 +22,12 @@ public partial class IOpenUrzednikSpanExtensionsTest
 
         // Assert
         span.DidNotReceive().AddEvent(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        span.DidNotReceive().SetTag(Arg.Any<string>(), Arg.Any<string>());
         span.DidNotReceive().SetStatus(Arg.Any<OpenUrzednikSpanStatus>(), Arg.Any<string>());
     }
 
     [Fact]
-    public void RecordErrors_MultipleErrors_AddsEventPerErrorAndAggregateMessage()
+    public void RecordErrors_MultipleErrors_TagsFirstCodeAddsEventPerErrorAndAggregateMessage()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -41,6 +42,8 @@ public partial class IOpenUrzednikSpanExtensionsTest
         span.RecordErrors(errors);
 
         // Assert
+        span.Received(1).SetTag(Arg.Any<string>(), Arg.Any<string>());
+        span.Received(1).SetTag("error.type", errors[0].Code);
         span.Received(errorCount).AddEvent(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, $"{errorCount} errors occurred");
         foreach (var error in errors)
@@ -67,7 +70,8 @@ public partial class IOpenUrzednikSpanExtensionsTest
         // Assert
         _ = error.Received(1).Code;
         _ = error.Received(1).Message;
-        span.Received(1).AddEvent("error", "error.code", code);
+        span.Received(1).SetTag("error.type", code);
+        span.Received(1).AddEvent("error", "error.type", code);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, message);
     }
 }
