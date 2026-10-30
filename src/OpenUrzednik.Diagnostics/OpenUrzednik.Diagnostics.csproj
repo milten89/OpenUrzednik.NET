@@ -5,6 +5,11 @@
     <PackageTags>Tracing;ActivitySource;OpenTelemetry;API;Poland;Gov</PackageTags>
   </PropertyGroup>
 
+  <!-- The only package ADR-0004 allows the tracing adapter, on netstandard2.0 only; src/Directory.Build.targets checks it. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <OpenUrzednikAllowedPackageReferences>System.Diagnostics.DiagnosticSource</OpenUrzednikAllowedPackageReferences>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
   </ItemGroup>

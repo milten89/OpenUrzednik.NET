@@ -10,4 +10,23 @@
     </PropertyGroup>
   </Target>
 
+  <!-- The dependency policy (ADR-0004): a PackageReference a project's list doesn't name fails the build. The default is the
+       Core and provider list: nothing on the .NET targets, Microsoft BCL packages on netstandard2.0. The Diagnostics adapter
+       and the integration packages set their own list in their csproj. SDK-implied references and build-only ones
+       (PrivateAssets="all", e.g. NBGV) aren't dependencies of the package, so they aren't checked. -->
+  <PropertyGroup Condition="'$(OpenUrzednikAllowedPackageReferences)' == '' and '$(TargetFramework)' == 'netstandard2.0'">
+    <OpenUrzednikAllowedPackageReferences>System.Text.Json;System.Net.Http.Json;Microsoft.Bcl.TimeProvider;Microsoft.Bcl.HashCode</OpenUrzednikAllowedPackageReferences>
+  </PropertyGroup>
+
+  <Target Name="CheckPackageReferenceAllowList" BeforeTargets="CoreCompile" Condition="'$(TargetFramework)' != ''">
+    <ItemGroup>
+      <_OpenUrzednikAllowedPackage Include="$(OpenUrzednikAllowedPackageReferences)" />
+      <_OpenUrzednikPackageDependency Include="@(PackageReference)"
+                                      Condition="'%(PackageReference.IsImplicitlyDefined)' != 'true' and '%(PackageReference.PrivateAssets)' != 'all'" />
+      <_OpenUrzednikDisallowedPackage Include="@(_OpenUrzednikPackageDependency)" Exclude="@(_OpenUrzednikAllowedPackage)" />
+    </ItemGroup>
+    <Error Condition="'@(_OpenUrzednikDisallowedPackage)' != ''"
+           Text="$(MSBuildProjectName) ($(TargetFramework)) references @(_OpenUrzednikDisallowedPackage, ', '), which its allowed package list doesn't name (ADR-0004, docs/adr/0004-dependency-policy.md). A new dependency needs an ADR or the maintainer's approval; then add it to OpenUrzednikAllowedPackageReferences." />
+  </Target>
+
 </Project>
