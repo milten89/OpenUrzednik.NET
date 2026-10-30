@@ -12,7 +12,7 @@ The repository contains skeletons for GUS, KRS and MF, but the shared framework 
 
 ## Decision Outcome
 
-* No work on new providers (including the existing GUS/KRS/MF skeletons) until the gate opens: the first stable release of `OpenUrzednik.Nbp`, with no open P0 or P1 bug. An open P0 or P1 bug is an open issue labelled `bug` with Priority P0 or P1 in the [project](https://github.com/users/milten89/projects/2).
+* No work on new providers (including the existing GUS/KRS/MF skeletons) until the gate opens: the first stable release of `OpenUrzednik.Nbp`, with no open Urgent or High bug. An open Urgent or High bug is an open issue labelled `bug` with Priority Urgent or High in the [project](https://github.com/users/milten89/projects/2).
 * NBP is the reference implementation. New providers copy its structure, conventions and test approach.
 * The choice and order of the next providers is decided afterwards, in a separate ADR.
 * Every provider ADR answers this readiness checklist:
@@ -36,10 +36,12 @@ The repository contains skeletons for GUS, KRS and MF, but the shared framework 
 
 ### Confirmation
 
-PRs touching `src/OpenUrzednik.Gus|Krs|Mf` are rejected unless they implement this ADR's follow-ups (e.g. `IsPackable=false`). Whether the gate is open is checked against nuget.org (a stable `OpenUrzednik.Nbp`) and the project (no open issue labelled `bug` with Priority P0 or P1).
+PRs touching `src/OpenUrzednik.Gus|Krs|Mf` are rejected unless they implement this ADR's follow-ups (e.g. `IsPackable=false`). Whether the gate is open is checked against nuget.org (a stable `OpenUrzednik.Nbp`) and the project (no open issue labelled `bug` with Priority Urgent or High).
 
 ## More Information
 
 **2026-10-17 change: an objective gate** ([#75](https://github.com/milten89/OpenUrzednik.NET/issues/75)). The gate said "until `OpenUrzednik.Nbp` is complete", measured by the design issues in `docs/BACKLOG.md`. That file is now a closed record (work is tracked in issues), and its last open P0–P2 item was a documentation sentence, so the condition no longer said anything. The maintainer replaced it with an event anyone can check: the first stable release of `OpenUrzednik.Nbp`, with no open P0 or P1 bug. The skeletons' empty previews (52 versions each, published before `IsPackable=false`) were deprecated and unlisted, and the READMEs, the Core README and CONTRIBUTING now say the providers are planned, not started.
 
 **2026-10-30 change: readiness checklist and naming** ([#109](https://github.com/milten89/OpenUrzednik.NET/issues/109)). The audit of the documentation found that the first real providers would hit questions no ADR answers. The checklist above makes each provider ADR answer them before any code. The MF White List shows what the checklist surfaces (to verify in its provider ADR): a daily quota that blocks the caller until midnight, not a throttle; `requestId` and `requestDateTime` in the answer as the proof of a check; partial results in batch calls; a flat file in 7z format; a test host (`wl-test.mf.gov.pl`). Each of these touches the error model, the executor, the fixtures or the dependencies. The naming rule was decided at the same time, because the skeleton `Mf` breaks the .NET acronym rule and a rename after release would change the `ActivitySource` name.
+
+**2026-10-30 change: priority names** ([#178](https://github.com/milten89/OpenUrzednik.NET/issues/178)). The project's Priority options were renamed: P0 is now Urgent and P1 is High (P2 Medium, P3 Low). The gate's bug condition is unchanged; it now reads "no open Urgent or High bug".

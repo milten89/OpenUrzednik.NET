@@ -113,7 +113,7 @@ Release notes (`.github/release.yml`) group PRs by the **release labels**; every
 
 ## Milestones
 
-A release is a milestone named after its version (`1.0.0`). It holds only the issues that must be closed before that release PR opens, all of them Priority P0 or P1; nice-to-haves stay outside. A bug with Priority P0 or P1 goes into the next release's milestone. The release PR opens only when the milestone has no open issues:
+A release is a milestone named after its version (`1.0.0`). It holds only the issues that must be closed before that release PR opens, all of them Priority Urgent or High; nice-to-haves stay outside. A bug with Priority Urgent or High goes into the next release's milestone. The release PR opens only when the milestone has no open issues:
 
 ```bash
 gh api repos/milten89/OpenUrzednik.NET/milestones --jq '.[] | select(.title == "1.0.0") | .open_issues'
@@ -136,7 +136,7 @@ Reading or changing the project needs the `project` scope on the `gh` token (`gh
 | Field | Type | Values |
 |---|---|---|
 | Status | single select | `Triage` (new; not sorted yet), `Backlog` (accepted; blocked or not next), `Ready` (approved to start by the maintainer; no open blockers), `In progress` (branch or PR open, or waiting on an outside party), `Done` (merged, closed or completed) |
-| Priority | single select | `P0` (urgent: harm now or a calendar deadline), `P1` (needed for the next release), `P2` (should do; may slip), `P3` (later) |
+| Priority | single select | `Urgent` (harm now or a calendar deadline), `High` (needed for the next release), `Medium` (should do; may slip), `Low` (later, or after the release). Views sort by the options' order, not by name |
 | Phase | single select | `Phase 0` … `Phase 6`: the stages of the 1.0 plan |
 | Seq | number | Execution order within the plan, in steps of 10, leaving room to insert |
 | Plan | text | The plan id (e.g. `P0-0`, `M5`) |
@@ -178,4 +178,4 @@ Set in the web UI (project → ⋯ → Workflows). The Free plan allows one auto
 
 ### Intake
 
-Issues (from the forms, or opened by agents) arrive through auto-add with Status `Triage`. PRs, Dependabot's included, are added without a Status and show in the Review queue view. Security reports never arrive (they stay private, see `SECURITY.md`). The maintainer sets labels and Priority, puts a P0/P1 bug into the next milestone, and moves provider proposals to `Backlog` with Priority P3. Only the maintainer moves an issue to `Ready`.
+Issues (from the forms, or opened by agents) arrive through auto-add with Status `Triage`. PRs, Dependabot's included, are added without a Status and show in the Review queue view. Security reports never arrive (they stay private, see `SECURITY.md`). The maintainer sets labels and Priority, puts an Urgent or High bug into the next milestone, and moves provider proposals to `Backlog` with Priority Low. Only the maintainer moves an issue to `Ready`.
