@@ -1,0 +1,13 @@
+<Project>
+
+  <!-- The package's release notes link to its GitHub Release. NBGV sets the version properties inside GetBuildVersion,
+       which runs before GenerateNuspec, so this target runs after it. A public release (main) links to its own tag,
+       written by /release-notes and published by nuget-release.yml; a preview links to the list of releases. -->
+  <Target Name="SetPackageReleaseNotes" AfterTargets="GetBuildVersion">
+    <PropertyGroup>
+      <PackageReleaseNotes Condition="'$(PublicRelease)' == 'true'">$(RepositoryUrl)/releases/tag/v$(NuGetPackageVersion)</PackageReleaseNotes>
+      <PackageReleaseNotes Condition="'$(PublicRelease)' != 'true'">$(RepositoryUrl)/releases</PackageReleaseNotes>
+    </PropertyGroup>
+  </Target>
+
+</Project>

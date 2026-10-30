@@ -126,12 +126,13 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 ## Workflow
 
 - Branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`). PRs target `develop` and are merged with a merge commit (squash is disabled). Releases go from a `release/X.Y` branch, made from `develop`, into `main` ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
+- A release or hotfix PR into `main` must add `docs/release-notes/v<version>.md` (`/release-notes`): the `build (net10.0)` job checks it on the PR, and `nuget-release.yml` checks it again before publishing.
 - A fix for a released version follows the hotfix procedure in [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md): `hotfix/…` from the `vX.Y.Z` tag, the next patch in `version.json`, a PR into `main`, then the back-merge into `develop` through a `merge/vX.Y.Z` branch.
 - Commit or push only when asked. One issue per PR (see "Issues and the project").
 - If a change contradicts an accepted ADR, stop and use `/adr` instead of working around it. Until the first stable release, accepted ADRs are changed in place with a dated note (ADR-0001); from 1.0 on, a new superseding ADR.
 - Before opening a PR, run the `reviewer` agent on the diff.
 - The NuGet workflows build and pack `OpenUrzednik.Packages.slnf` (the `src/` projects only). **A new `src/` project must be added to it**, or it isn't published. Every package gets the version of the root `version.json` (lockstep, ADR-0008); don't add a `version.json` to a project. A new package input outside `src/` goes into both `pathFilters` in `version.json` and the `paths` filter of `nuget-pre-release.yml` (a directory is `dir` in the first and `dir/**` in the second).
-- **CI job names are required status checks in the GitHub ruleset.** If you rename a job in `.github/workflows/build.yml`, `format.yml` or `dependency-review.yml`, say so: the ruleset must be updated (see `docs/GITHUB-SETUP.md`).
+- **CI job names are required status checks in the GitHub ruleset.** If you rename a job in `.github/workflows/build.yml`, `format.yml`, `dependency-review.yml` or `release-label.yml`, say so: the ruleset must be updated (see `docs/GITHUB-SETUP.md`).
 - Language ([ADR-0009](docs/adr/0009-documentation-language.md)): everything is in English, user-facing docs included (`README.md` in the root and per package, `CONTRIBUTING.md`, `SECURITY.md`, the samples README). English is the single source of truth: if a Polish text differs, the English one wins. `README.pl.md` next to the root README and each published package's README has only the informational parts: what the package is and the "unofficial" notice, installation, the quick-start example (the same code) and links to the English sections. Contract and reference content (API limits, data availability, errors, telemetry, configuration rules, dependencies, versioning, support) is English only. `SECURITY.pl.md` says how to report a vulnerability. Skeleton READMEs are English only; issue forms are bilingual inline. When a PR changes an informational part of a README, it updates `README.pl.md` too, and renaming or removing a section of an English README updates the links to it in `README.pl.md`.
 - Prose style: when you write or edit user-facing prose (READMEs, `CONTRIBUTING`, `SECURITY`), run `/stop-slop` on the English files and `/miodkuj` on the Polish ones (`*.pl.md`). Edit only the prose: keep code blocks, commands, package and API names, badges, links and numbers exactly as they are. Meaning comes before style: keep API limits and qualifiers ("only", "never", "at most") even where a style rule says to cut them (stop-slop removes absolutes and adverbs).
 
@@ -142,7 +143,7 @@ Work is tracked in this repository's issues and in the public project [OpenUrzed
 - Take open issues with Status `Ready` and without the `maintainer-only` label, by Priority, then Seq. Only the maintainer moves an issue to `Ready`.
 - Before you start, check that no open issue blocks it: `gh issue view <n> --json blockedBy --jq '[.blockedBy.nodes[] | select(.state == "OPEN") | .number]'` must print `[]`.
 - When you start, set the issue's Status to `In progress`. That is the only field you change: never set `Done`, Priority, Phase, Seq, Size, Due, or the issue's milestone and labels unless asked.
-- One issue per PR. The PR body starts with `Closes #<n>`. When you open the PR, give it at least one release label from `.github/release.yml` (`gh pr create --label <label>`), normally the one forecast on the issue.
+- One issue per PR. The PR body starts with `Closes #<n>`. When you open the PR, give it at least one release label from `.github/release.yml` (`gh pr create --label <label>`), normally the one forecast on the issue or proposed by the `reviewer` agent; the `release-label` check fails a PR without one.
 - Never start, change or close a `maintainer-only` issue.
 - You may open follow-up issues for problems outside the current issue. The project adds them with Status `Triage`, and the maintainer sorts them.
 - Release and hotfix PRs target `main`, where `Closes` doesn't close the issue. The maintainer moves those issues to `Done`.
@@ -161,6 +162,7 @@ gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id
 - `/new-endpoint`: checklist for adding or changing a client method (DTO, mapper, validation, client, tests, docs).
 - `/verify-api`: compare DTOs and test payloads with live API responses, and capture fixtures.
 - `/adr`: create a new MADR record and update the index.
+- `/release-notes`: draft `docs/release-notes/v<version>.md` for a release or hotfix; `nuget-release.yml` publishes nothing without it.
 - `/miodkuj`: remove AI-sounding, bureaucratic and translated phrasing from Polish prose (vendored from [bartekpucek/miodkuj@32004e3](https://github.com/bartekpucek/miodkuj/tree/32004e3), MIT).
 - `/stop-slop`: remove predictable AI writing patterns from English prose (vendored from [hardikpandya/stop-slop@8da1f03](https://github.com/hardikpandya/stop-slop/tree/8da1f03), MIT).
 - `reviewer` agent: reviews a diff against the ADRs and the conventions above.

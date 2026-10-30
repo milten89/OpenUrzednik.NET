@@ -1,0 +1,53 @@
+name: Release label
+
+# Every PR needs at least one release label, so the generated release notes can file it (.github/release.yml).
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, reopened, labeled, unlabeled, synchronize ]
+
+permissions:
+  contents: read
+
+# Opening a PR with labels fires "opened" and then "labeled"; only the newest run matters.
+concurrency:
+  group: release-label-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  release-label:
+    # NOTE: "release-label" is a required status check in the "protected-branches" ruleset.
+    # If you rename this job, update the ruleset (see docs/GITHUB-SETUP.md).
+    name: release-label
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the release-notes configuration
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        sparse-checkout: .github/release.yml
+        sparse-checkout-cone-mode: false
+        persist-credentials: false
+
+    # The release labels are the ones .github/release.yml names: every category's labels plus the excluded ones,
+    # without the "*" catch-all. A PR that matched only "*" would land under "Other changes".
+    - name: Require a release label
+      env:
+        PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+      run: |
+        # yq only converts the YAML to JSON; jq picks the labels. Don't filter in yq: it treats "*" in a comparison
+        # as a wildcard, so select(. != "*") drops every label.
+        release_labels=$(yq -o=json '.' .github/release.yml \
+          | jq -c '[(.changelog.categories // [])[] | (.labels // [])[]] + (.changelog.exclude.labels // []) | map(select(. != "*")) | unique')
+        echo "Release labels: $release_labels"
+        if [ "$(jq length <<< "$release_labels")" -eq 0 ]; then
+          echo "::error::Found no release labels in .github/release.yml."
+          exit 1
+        fi
+        echo "PR labels: $PR_LABELS"
+        matched=$(jq -n --argjson release "$release_labels" --argjson pr "$PR_LABELS" '$pr - ($pr - $release)')
+        if [ "$(jq length <<< "$matched")" -eq 0 ]; then
+          echo "::error::Add at least one release label: $(jq -r 'join(", ")' <<< "$release_labels")."
+          exit 1
+        fi
+        echo "Release label(s): $(jq -r 'join(", ")' <<< "$matched")"

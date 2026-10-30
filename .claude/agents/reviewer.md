@@ -46,7 +46,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - Copy-pasted logic that should go into the shared pipeline.
 - `.editorconfig` conventions; tests follow the `partial` class / file-per-method / `Method_Condition_Expected` layout with a constant-seed Faker.
 - A new `src/` project is listed in `OpenUrzednik.Packages.slnf` (the NuGet workflows pack only that), and in `OpenUrzednik.slnx`.
-- CI: a renamed job in `build.yml`, `format.yml` or `dependency-review.yml` means the ruleset's required checks must be updated (`docs/GITHUB-SETUP.md`).
+- CI: a renamed job in `build.yml`, `format.yml`, `dependency-review.yml` or `release-label.yml` means the ruleset's required checks must be updated (`docs/GITHUB-SETUP.md`).
 
 ## Verify
 
@@ -54,4 +54,4 @@ Run `dotnet build OpenUrzednik.slnx` and `dotnet test OpenUrzednik.slnx -f net10
 
 ## Output
 
-Group findings by **Blocking**, **Should fix** and **Nit**. Then add a separate **Performance analysis** section that lists every performance degradation you found, each with `path:line`, what is slower, on which target, roughly how often it runs (per request, per log entry, once) and the faster alternative; if there is none, say "No performance degradations found". A degradation on a hot path is at least **Should fix**. Each finding: `path:line`, what is wrong, why (cite the ADR or rule), and a concrete fix. Report only findings you checked. If nothing is wrong, say so plainly. Don't edit files.
+Group findings by **Blocking**, **Should fix** and **Nit**. A release or hotfix PR into `main` must add `docs/release-notes/v<version>.md`. Then add a separate **Performance analysis** section that lists every performance degradation you found, each with `path:line`, what is slower, on which target, roughly how often it runs (per request, per log entry, once) and the faster alternative; if there is none, say "No performance degradations found". Last, propose the PR's **release label** from `.github/release.yml`, so the PR can be opened with it (the `release-label` check fails a PR without one): `breaking-change` for anything that breaks the SemVer scope of ADR-0011, `skip-changelog` for release and back-merge PRs (a hotfix PR is the fix itself: `bug`). A degradation on a hot path is at least **Should fix**. Each finding: `path:line`, what is wrong, why (cite the ADR or rule), and a concrete fix. Report only findings you checked. If nothing is wrong, say so plainly. Don't edit files.
