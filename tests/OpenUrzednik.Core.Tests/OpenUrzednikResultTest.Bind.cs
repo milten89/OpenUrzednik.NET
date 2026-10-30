@@ -71,4 +71,12 @@ public partial class OpenUrzednikResultTest
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Success().Bind<int>(null!));
     }
+
+    [Fact]
+    public void BindAsync_NullNext_ThrowsArgumentNullExceptionSynchronously()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = OpenUrzednikResult.Success().BindAsync<int>(null!); })
+            .ParamName.ShouldBe("next");
+    }
 }

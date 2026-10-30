@@ -13,12 +13,13 @@ public static class OpenUrzednikResultExtensions
     /// </summary>
     /// <param name="resultTask">Result task to check.</param>
     /// <returns>Task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="resultTask"/> is <see langword="null"/>; thrown before the task is returned.</exception>
     /// <exception cref="OpenUrzednikException">Thrown when the result is a failure, as in <see cref="OpenUrzednikResult.EnsureSuccess()"/>.</exception>
-    public static async Task EnsureSuccessAsync(this Task<OpenUrzednikResult> resultTask)
+    public static Task EnsureSuccessAsync(this Task<OpenUrzednikResult> resultTask)
     {
         ArgumentNullException.ThrowIfNull(resultTask);
 
-        (await resultTask.ConfigureAwait(false)).EnsureSuccess();
+        return EnsureSuccessCoreAsync(resultTask);
     }
 
     /// <summary>
@@ -26,12 +27,13 @@ public static class OpenUrzednikResultExtensions
     /// </summary>
     /// <param name="resultTask">Result task to check.</param>
     /// <returns>The value of the result if it is in a successful state.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="resultTask"/> is <see langword="null"/>; thrown before the task is returned.</exception>
     /// <exception cref="OpenUrzednikException">Thrown when the result is a failure, as in <see cref="OpenUrzednikResult.EnsureSuccess()"/>.</exception>
-    public static async Task<T> EnsureSuccessAsync<T>(this Task<OpenUrzednikResult<T>> resultTask)
+    public static Task<T> EnsureSuccessAsync<T>(this Task<OpenUrzednikResult<T>> resultTask)
     {
         ArgumentNullException.ThrowIfNull(resultTask);
 
-        return (await resultTask.ConfigureAwait(false)).EnsureSuccess();
+        return EnsureSuccessCoreAsync(resultTask);
     }
 
     /// <summary>
@@ -42,12 +44,13 @@ public static class OpenUrzednikResultExtensions
     /// <param name="resultTask">The task returning the source result.</param>
     /// <param name="map">The transformation.</param>
     /// <returns>A successful result with the transformed value, or a failure with the source errors.</returns>
-    public static async Task<OpenUrzednikResult<TOut>> MapAsync<T, TOut>(this Task<OpenUrzednikResult<T>> resultTask, Func<T, TOut> map)
+    /// <exception cref="ArgumentNullException"><paramref name="resultTask"/> or <paramref name="map"/> is <see langword="null"/>; thrown before the task is returned.</exception>
+    public static Task<OpenUrzednikResult<TOut>> MapAsync<T, TOut>(this Task<OpenUrzednikResult<T>> resultTask, Func<T, TOut> map)
     {
         ArgumentNullException.ThrowIfNull(resultTask);
         ArgumentNullException.ThrowIfNull(map);
 
-        return (await resultTask.ConfigureAwait(false)).Map(map);
+        return MapCoreAsync(resultTask, map);
     }
 
     /// <summary>
@@ -58,12 +61,13 @@ public static class OpenUrzednikResultExtensions
     /// <param name="resultTask">The task returning the source result.</param>
     /// <param name="next">The operation to run with the value.</param>
     /// <returns>The result of <paramref name="next"/>, or a failure with the source errors.</returns>
-    public static async Task<OpenUrzednikResult<TOut>> BindAsync<T, TOut>(this Task<OpenUrzednikResult<T>> resultTask, Func<T, OpenUrzednikResult<TOut>> next)
+    /// <exception cref="ArgumentNullException"><paramref name="resultTask"/> or <paramref name="next"/> is <see langword="null"/>; thrown before the task is returned.</exception>
+    public static Task<OpenUrzednikResult<TOut>> BindAsync<T, TOut>(this Task<OpenUrzednikResult<T>> resultTask, Func<T, OpenUrzednikResult<TOut>> next)
     {
         ArgumentNullException.ThrowIfNull(resultTask);
         ArgumentNullException.ThrowIfNull(next);
 
-        return (await resultTask.ConfigureAwait(false)).Bind(next);
+        return BindCoreAsync(resultTask, next);
     }
 
     /// <summary>
@@ -74,11 +78,27 @@ public static class OpenUrzednikResultExtensions
     /// <param name="resultTask">The task returning the source result.</param>
     /// <param name="next">The asynchronous operation to run with the value.</param>
     /// <returns>The result of <paramref name="next"/>, or a failure with the source errors.</returns>
-    public static async Task<OpenUrzednikResult<TOut>> BindAsync<T, TOut>(this Task<OpenUrzednikResult<T>> resultTask, Func<T, Task<OpenUrzednikResult<TOut>>> next)
+    /// <exception cref="ArgumentNullException"><paramref name="resultTask"/> or <paramref name="next"/> is <see langword="null"/>; thrown before the task is returned.</exception>
+    public static Task<OpenUrzednikResult<TOut>> BindAsync<T, TOut>(this Task<OpenUrzednikResult<T>> resultTask, Func<T, Task<OpenUrzednikResult<TOut>>> next)
     {
         ArgumentNullException.ThrowIfNull(resultTask);
         ArgumentNullException.ThrowIfNull(next);
 
-        return await (await resultTask.ConfigureAwait(false)).BindAsync(next).ConfigureAwait(false);
+        return BindCoreAsync(resultTask, next);
     }
+
+    private static async Task EnsureSuccessCoreAsync(Task<OpenUrzednikResult> resultTask) =>
+        (await resultTask.ConfigureAwait(false)).EnsureSuccess();
+
+    private static async Task<T> EnsureSuccessCoreAsync<T>(Task<OpenUrzednikResult<T>> resultTask) =>
+        (await resultTask.ConfigureAwait(false)).EnsureSuccess();
+
+    private static async Task<OpenUrzednikResult<TOut>> MapCoreAsync<T, TOut>(Task<OpenUrzednikResult<T>> resultTask, Func<T, TOut> map) =>
+        (await resultTask.ConfigureAwait(false)).Map(map);
+
+    private static async Task<OpenUrzednikResult<TOut>> BindCoreAsync<T, TOut>(Task<OpenUrzednikResult<T>> resultTask, Func<T, OpenUrzednikResult<TOut>> next) =>
+        (await resultTask.ConfigureAwait(false)).Bind(next);
+
+    private static async Task<OpenUrzednikResult<TOut>> BindCoreAsync<T, TOut>(Task<OpenUrzednikResult<T>> resultTask, Func<T, Task<OpenUrzednikResult<TOut>>> next) =>
+        await (await resultTask.ConfigureAwait(false)).BindAsync(next).ConfigureAwait(false);
 }

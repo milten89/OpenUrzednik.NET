@@ -39,12 +39,24 @@ public partial class OpenUrzednikResultExtensionsTest
     }
 
     [Fact]
-    public async Task MapAsync_NullTask_ThrowsArgumentNullException()
+    public void MapAsync_NullTask_ThrowsArgumentNullExceptionSynchronously()
     {
         // Arrange
         Task<OpenUrzednikResult<int>> task = null!;
 
         // Act && Assert
-        await Should.ThrowAsync<ArgumentNullException>(() => task.MapAsync(v => v));
+        Should.Throw<ArgumentNullException>(() => { _ = task.MapAsync(v => v); })
+            .ParamName.ShouldBe("resultTask");
+    }
+
+    [Fact]
+    public void MapAsync_NullMap_ThrowsArgumentNullExceptionSynchronously()
+    {
+        // Arrange
+        var task = Task.FromResult(OpenUrzednikResult.Success(1));
+
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = task.MapAsync((Func<int, int>)null!); })
+            .ParamName.ShouldBe("map");
     }
 }
