@@ -28,12 +28,12 @@ All of these must hold:
 - `develop` contains `main`: the last back-merge is done.
 - Every workflow run on `origin/develop`'s commit is `completed` with `success` (wait for one still running, such as CodeQL). `build.yml` runs only on PRs (the ruleset requires it before a merge) and inside `nuget-pre-release.yml`, so a merge that changed a package input shows "NuGet - pre-release"; one that changed only docs or CI may show just CodeQL.
 - No open Dependabot alerts (`0`).
-- The milestone named after the version has no open issues, and no open `bug` issue has Priority P0 or P1 in the project:
+- The milestone named after the version has no open issues, and no open `bug` issue has Priority Urgent or High in the project:
 
   ```bash
   gh api repos/milten89/OpenUrzednik.NET/milestones --jq '.[] | select(.title == "<version>") | .open_issues'
   gh project item-list 2 --owner milten89 --format json --limit 200 \
-    --jq '[.items[] | select(.content.type == "Issue" and .status != "Done" and ((.labels // []) | index("bug")) and (.priority == "P0" or .priority == "P1")) | .content.number]'
+    --jq '[.items[] | select(.content.type == "Issue" and .status != "Done" and ((.labels // []) | index("bug")) and (.priority == "Urgent" or .priority == "High")) | .content.number]'
   ```
 
   The first prints `0` (nothing if the milestone doesn't exist: ask the user whether that's intended), the second `[]`. Confirm each number the second lists with `gh issue view <n> --json state`: only open issues count.
