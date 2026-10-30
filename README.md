@@ -48,6 +48,12 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 - We may remove a .NET target that isn't the lowest one in a minor version, after Microsoft ends its support; apps on that version then get the next lower build, with the same API. `netstandard2.0` stays, so .NET Framework keeps working.
 - We don't support .NET Framework 4.6.1 to 4.7.1: there, `netstandard2.0` libraries need extra facade assemblies or binding redirects (Microsoft recommends 4.7.2 or later).
 
+## Versioning and support
+
+The packages share one version and follow [Semantic Versioning](https://semver.org/). From 1.0, a minor or patch version doesn't break the public API on any target, documented behaviour, error types and codes (`notFound`, `rateLimitExceeded`, …) or telemetry names (sources, spans, tags, log event ids).
+
+A minor version may add client methods, model properties and options, raise a dependency's minimum version, or drop a .NET target that isn't the lowest one once Microsoft has ended its support. A patch version may raise a dependency's patch version to fix a vulnerability. Log and exception message text can change in any version, and previews may break anything. The full rules are in [ADR-0011](docs/adr/0011-compatibility-policy.md).
+
 ---
 
 ## 🛠️ Quick start

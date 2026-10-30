@@ -5,7 +5,8 @@ namespace OpenUrzednik.Nbp;
 /// <see cref="DefaultApiUrl"/> with the <see cref="HttpClient"/>'s own timeout.
 /// The clients read the options once, in their constructor; later changes to the instance have no effect.
 /// </summary>
-public class NbpOptions
+/// <remarks>Minor versions may add options; each new one is optional and keeps today's behaviour when unset (ADR-0011).</remarks>
+public sealed class NbpOptions
 {
     /// <summary>
     /// The public NBP API, used when neither <see cref="ApiUrl"/> nor <see cref="HttpClient.BaseAddress"/> is set.

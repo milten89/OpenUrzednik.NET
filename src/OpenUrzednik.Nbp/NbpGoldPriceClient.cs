@@ -10,7 +10,7 @@ using OpenUrzednik.Nbp.Validation;
 namespace OpenUrzednik.Nbp;
 
 /// <inheritdoc cref="INbpGoldPriceClient"/>
-public class NbpGoldPriceClient : INbpGoldPriceClient
+public sealed class NbpGoldPriceClient : INbpGoldPriceClient
 {
     private static readonly NbpJsonContext JsonContext = new();
 

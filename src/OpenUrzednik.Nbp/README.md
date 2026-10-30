@@ -49,6 +49,10 @@ The client takes the API address from the first place that sets one: `NbpOptions
 
 Errors such as missing data, an exceeded rate limit, a timeout or an invalid currency code come back in the result, not as exceptions. If you prefer exceptions, call `EnsureSuccess()` on the result. A `null` currency code or an undefined `TableType` is a programming error: the method throws `ArgumentNullException` or `ArgumentOutOfRangeException` right away, before it returns a task. A resilience handler's rejections (timeout, open circuit breaker, rate limiter) become errors only when the clients are registered with `AddOpenUrzednikNbp()`; with your own `HttpClient` setup they come out as Polly exceptions.
 
+## Compatibility
+
+Minor versions may add methods to the client interfaces, properties to the models and options to `NbpOptions` ([ADR-0011](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0011-compatibility-policy.md)). The clients and `NbpOptions` are `sealed`: to swap or wrap a client, use its interface (`INbpGoldPriceClient` and the others). If you implement an interface yourself, a new method breaks your build until you add it; a `throw new NotImplementedException();` stub is enough for methods you don't call. An implementation compiled against an older version, e.g. in another package, has to be rebuilt. New model properties are `init` properties (set them in an object initializer or with `with`); the positional constructors and `Deconstruct` don't change.
+
 ## API gateways
 
 For most gateways in front of the NBP API, `NbpOptions.ApiUrl` is enough: the client appends the NBP paths (e.g. `exchangerates/rates/a/USD`) to it. If the gateway renames paths or needs a query parameter, rewrite the request in a `DelegatingHandler`. The paths the client builds aren't configurable in any other way.

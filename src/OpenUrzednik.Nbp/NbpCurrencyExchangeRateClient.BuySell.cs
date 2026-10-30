@@ -7,7 +7,7 @@ using OpenUrzednik.Nbp.Validation;
 
 namespace OpenUrzednik.Nbp;
 
-public partial class NbpCurrencyExchangeRateClient
+public sealed partial class NbpCurrencyExchangeRateClient
 {
     /// <inheritdoc/>
     public Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLatestAsync(string currency, CancellationToken cancellationToken = default)

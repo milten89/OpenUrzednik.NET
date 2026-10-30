@@ -42,7 +42,7 @@ First read `CLAUDE.md` and every **accepted** ADR in `docs/adr/` that relates to
 - Public behaviour changes are covered by unit tests and WireMock tests, including every error path in ADR-0002's Confirmation.
 
 **API and quality**
-- Public API: XML docs present; no accidental breaking changes (renamed or removed public members, changed signatures). Flag them for a major version or an ADR.
+- Public API: XML docs present. From the first stable release, a break in ADR-0011's scope (renamed or removed public members, changed signatures, changed documented behaviour, error types or codes, telemetry names or event ids, a dropped lowest target, a newly sealed class) is **Blocking** unless the PR is for a major version: it carries `breaking-change` and raises `version.json` on `develop` to the next major. Before 1.0, list such breaks and check the label. Always flag: a new public class that isn't `sealed` and isn't designed for inheritance; an abstract member added to `OpenUrzednikError`, `OpenUrzednikException` or `ValueValidator<T>`; a member added to an interface other than a client interface. From 1.0 also flag: new public API in a `hotfix/*` PR; a positional or `required` property added to an existing model (use a non-`required` `init` property); a removal without a prior `[Obsolete]` release; a package-validation suppression other than CP0006 for a new client-interface method.
 - Copy-pasted logic that should go into the shared pipeline.
 - `.editorconfig` conventions; tests follow the `partial` class / file-per-method / `Method_Condition_Expected` layout with a constant-seed Faker.
 - A new `src/` project is listed in `OpenUrzednik.Packages.slnf` (the NuGet workflows pack only that), and in `OpenUrzednik.slnx`.

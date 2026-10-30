@@ -37,3 +37,4 @@ Błędy, takie jak brak danych, przekroczony limit zapytań albo upływ limitu c
 - [.NET Framework i daty](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#dates-and-net-framework)
 - [Logowanie i śledzenie](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#logging-and-tracing)
 - [Telemetria: spany, tagi i identyfikatory zdarzeń logów](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#telemetry-reference)
+- [Zgodność między wersjami](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#compatibility)
