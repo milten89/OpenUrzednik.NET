@@ -60,7 +60,7 @@ jobs:
           exit 1
         fi
         notes="docs/release-notes/v$version.md"
-        if [ ! -s "$notes" ]; then
+        if [ ! -f "$notes" ] || ! grep -q '[^[:space:]]' "$notes"; then
           echo "::error::$notes is missing or empty. Run /release-notes on this branch and commit the file."
           exit 1
         fi

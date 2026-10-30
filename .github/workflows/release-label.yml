@@ -38,7 +38,7 @@ jobs:
         # yq only converts the YAML to JSON; jq picks the labels. Don't filter in yq: it treats "*" in a comparison
         # as a wildcard, so select(. != "*") drops every label.
         release_labels=$(yq -o=json '.' .github/release.yml \
-          | jq -c '[.changelog.categories[].labels[], .changelog.exclude.labels[]] | map(select(. != "*")) | unique')
+          | jq -c '[(.changelog.categories // [])[] | (.labels // [])[]] + (.changelog.exclude.labels // []) | map(select(. != "*")) | unique')
         echo "Release labels: $release_labels"
         if [ "$(jq length <<< "$release_labels")" -eq 0 ]; then
           echo "::error::Found no release labels in .github/release.yml."
