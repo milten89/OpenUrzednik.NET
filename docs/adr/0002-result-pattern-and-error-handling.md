@@ -84,7 +84,7 @@ The metadata keys are public constants next to the errors that set them: `OpenUr
 ### Confirmation
 
 * WireMock tests cover every error path for each client, asserting the error type: 400 with the server's message, 401 and 403, 404, 429 with `Retry-After`, 5xx, a 200 with an empty array (`NotFoundError`, for endpoints that return an array), malformed JSON, a timeout and a connection failure. This is the canonical list; `CLAUDE.md` and the `/new-endpoint` skill point to it. Unit tests cover the status mapping in the request executor.
-* `reviewer` agent and code review reject `catch (Exception)`.
+* The analyzer rule CA1031 (do not catch general exception types) is a warning in `src/` (`src/.editorconfig`), which CI turns into an error; the `reviewer` agent and code review reject `catch (Exception)` too.
 
 ## More Information
 
@@ -115,3 +115,5 @@ These are breaking changes for preview users.
 **2026-10-30 change: masked values in validation errors** ([#109](https://github.com/milten89/OpenUrzednik.NET/issues/109)). `ValueValidator<T>.GetValidationErrorResult` stores the validated value under `ValueMetadataKey`, so a validator for a personal identifier would copy the identifier into every error, exception and log that shows the metadata. A validator for a personal identifier must pass a masked value, under the rule in [ADR-0003](0003-telemetry-abstractions.md). NBP validates no such value, so nothing changes there.
 
 **2026-10-30 change: synchronous argument errors in every task-returning method** ([#159](https://github.com/milten89/OpenUrzednik.NET/issues/159)). The rule from #89 covered only the provider clients. Core's extensions on `Task<…>` (`EnsureSuccessAsync`, `MapAsync`, `BindAsync`) checked their arguments inside an `async` method, so a `null` task or delegate came back as a faulted task. They now check their arguments, then return the task of a private `async` method, and the rule covers every public method of a public type that returns a task. It is a breaking change for callers who observed the exception on the task.
+
+**2026-10-30 change: CA1031 enforces the catch rule** ([#110](https://github.com/milten89/OpenUrzednik.NET/issues/110)). The rule against `catch (Exception)` and a bare `catch` relied on review. CA1031 is now a warning in `src/`, and an error in CI; `src/` had no violations. Tests aren't covered, since they may catch broadly on purpose.

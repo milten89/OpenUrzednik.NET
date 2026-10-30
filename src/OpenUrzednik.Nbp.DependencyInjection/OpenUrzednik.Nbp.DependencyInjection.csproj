@@ -4,6 +4,8 @@
     <Description>Unofficial Microsoft.Extensions.DependencyInjection registration for the OpenUrzednik.NET NBP clients: typed HttpClients, validated options, logging and tracing; ready for AddStandardResilienceHandler() on .NET 8 and later.</Description>
     <PackageTags>NBP;DependencyInjection;HttpClientFactory;API;Poland;Gov</PackageTags>
     <OpenUrzednikPackageIcon>icon-nbp.png</OpenUrzednikPackageIcon>
+    <!-- The packages ADR-0004 allows an integration package; src/Directory.Build.targets checks the list. -->
+    <OpenUrzednikAllowedPackageReferences>Microsoft.Extensions.Http;Microsoft.Extensions.Options;Polly.Core</OpenUrzednikAllowedPackageReferences>
   </PropertyGroup>
 
   <ItemGroup>

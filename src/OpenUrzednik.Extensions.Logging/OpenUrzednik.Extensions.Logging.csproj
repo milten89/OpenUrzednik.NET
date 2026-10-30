@@ -3,6 +3,8 @@
   <PropertyGroup>
     <Description>Unofficial OpenUrzednik.NET adapter for Microsoft.Extensions.Logging: sends the clients' structured logs to ILogger.</Description>
     <PackageTags>Logging;ILogger;API;Poland;Gov</PackageTags>
+    <!-- The packages ADR-0004 allows an integration package; src/Directory.Build.targets checks the list. -->
+    <OpenUrzednikAllowedPackageReferences>Microsoft.Extensions.Logging.Abstractions</OpenUrzednikAllowedPackageReferences>
   </PropertyGroup>
 
   <ItemGroup>

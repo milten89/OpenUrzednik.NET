@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-29
+date: 2026-10-30
 decision-makers: milten89
 ---
 
@@ -53,7 +53,7 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 
 ### Confirmation
 
-`dotnet list package --include-transitive` for each `src/` provider/Core project shows no non-BCL dependencies; the `reviewer` agent flags new `PackageReference`s in Core/provider projects.
+The build checks every `src/` project's direct `PackageReference`s against an allow-list (`CheckPackageReferenceAllowList` in `src/Directory.Build.targets`). The lists hold the packages approved so far, a subset of what the table above allows: Core and the providers only `System.Text.Json`, `System.Net.Http.Json`, `Microsoft.Bcl.TimeProvider` and `Microsoft.Bcl.HashCode`, and only on netstandard2.0; the Diagnostics adapter and the integration packages name theirs in their csproj (`OpenUrzednikAllowedPackageReferences`). Any other reference fails the build; a package the table allows still needs approval and a change to the list. `dotnet list package --include-transitive` for each `src/` provider/Core project shows no non-BCL dependencies; the `reviewer` agent flags new `PackageReference`s in Core/provider projects.
 
 ## More Information
 
@@ -87,3 +87,5 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 **2026-10-29 note: `OpenUrzednik.Http` is shared source** ([#85](https://github.com/milten89/OpenUrzednik.NET/issues/85)). The HTTP layer is no longer a package but internal source compiled into each REST provider ([ADR-0006](0006-shared-http-layer.md)). The "Shared infrastructure" row of the table became "Shared source", and `OpenUrzednik.Nbp` now references `System.Net.Http.Json` on netstandard2.0 itself.
 
 **2026-10-29 note: marked rejections** ([#90](https://github.com/milten89/OpenUrzednik.NET/issues/90)). Network failures became a `ConnectionFailedError` ([ADR-0002](0002-result-pattern-and-error-handling.md)), so an `HttpRequestException` alone no longer means `ServiceUnavailableError`. The DI package's handler marks the circuit-breaker and rate-limiter rejections with an `Exception.Data` entry, and the executor returns a `ServiceUnavailableError` for a marked exception (or one that wraps it, as .NET Framework's `HttpClient` may). A marker type would have needed `InternalsVisibleTo` from the provider to the DI package, which also exposes the provider's internal polyfills and makes them clash with the DI package's own copy on netstandard2.0.
+
+**2026-10-30 note: the build checks the rule** ([#110](https://github.com/milten89/OpenUrzednik.NET/issues/110)). Until now only the `reviewer` agent and code review caught a new dependency. A target in `src/Directory.Build.targets` now fails the build of any `src/` project that references a package its list doesn't name: the default list is the Core and provider row of the table, and the Diagnostics adapter and the integration packages set theirs in their csproj. References the SDK adds itself and build-only ones (`PrivateAssets="all"`, such as Nerdbank.GitVersioning) aren't dependencies of the package and aren't checked. Adding a package now means changing its project's list, which a reviewer sees. A runtime library referenced with `PrivateAssets="all"` would pass the check (and break the package at runtime); code review still catches that.
