@@ -7,8 +7,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
-    <Authors>milten89</Authors>
-    <Company>OpenUrzednik Open Source</Company>
+    <Authors>Andrzej Ochodek</Authors>
+    <Company>Andrzej Ochodek</Company>
+    <Copyright>Copyright (c) 2026 Andrzej Ochodek</Copyright>
     <Description>Modern, high-performance .NET SDK for Polish government public APIs.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/milten89/OpenUrzednik.NET</RepositoryUrl>
@@ -27,6 +28,9 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1900;NU1901;NU1902;NU1903;NU1904;NU1905</WarningsNotAsErrors>
 
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <!-- Source file in assets/branding packed as icon.png. A provider package overrides it (BRANDING.md). -->
+    <OpenUrzednikPackageIcon Condition="'$(OpenUrzednikPackageIcon)' == ''">icon.png</OpenUrzednikPackageIcon>
 
     <!-- Strong naming (ADR-0005): every assembly, tests included, is signed with this key. The key pair is checked in on purpose,
          as Microsoft's library guidance recommends: a strong name is an identity, not a security boundary, and anyone may rebuild
@@ -41,5 +45,6 @@
     <!-- Fallback for a project without its own README.md; each package's own README is packed by its csproj. -->
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false"
           Condition="!Exists('$(MSBuildProjectDirectory)\README.md')" />
+    <None Include="$(MSBuildThisFileDirectory)assets/branding/$(OpenUrzednikPackageIcon)" Pack="true" PackagePath="\icon.png" Visible="false" />
   </ItemGroup>
 </Project>
