@@ -56,8 +56,8 @@ With Claude Code, `/prepare-release` runs steps 1–5 with extra checks, and `/p
 ## Hotfix procedure (main = 1.0, develop = 1.1)
 
 We assume full API compatibility between `1.0` and `1.1` (per SemVer — a minor bump must not
-break compatibility), so there is **no need for a separate support line or for NBGV
-branch-naming**. The full process:
+break compatibility), so within one major version there is **no need for a separate support line or for NBGV
+branch-naming**. For the previous major version, see [Support for the previous major version](#support-for-the-previous-major-version). The full process:
 
 1. Create a branch from the tag of the last released version:
 
@@ -91,7 +91,19 @@ Open a PR from `merge/v1.1.0` into `develop`, label it `skip-changelog`, and mer
 
 **Never open a PR straight from `main` into `develop`:** `develop` would get the stable version from `main`'s `version.json` and publish `1.1.0-g<commit>` previews, and resolving a conflict in GitHub's web editor would commit to `main`.
 
-> If a breaking change (`2.0`) is introduced in the future and parallel support for an older `1.x` line becomes necessary, that's the point to revisit NBGV's branch-naming mechanism (`release.branchName`). It's deliberately left out for now as unneeded complexity.
+## Security fix
+
+A vulnerability is reported privately ([`SECURITY.md`](../SECURITY.md)): acknowledge it within 14 days, and aim to publish the fix within 90 days of confirming it.
+
+1. Create a draft **GitHub Security Advisory** for the report (Security → Advisories), and prepare and review the fix privately, e.g. in the advisory's **temporary private fork**, so nothing is public too early.
+2. When the fix is ready to ship, push it as a `hotfix/…` branch and release it with the hotfix procedure above. The hotfix PR is public and runs the required checks, so open it only then (`hotfix/…` from the last release tag, the next patch version, release notes, back-merge). For the previous major's support line, see below.
+3. Publish the advisory: ecosystem NuGet, every affected package, the affected and patched version ranges, a CVE when it is warranted, and credit for the reporter unless they decline.
+4. Deprecate the affected versions of every affected package on nuget.org (Manage package → Deprecation, the critical-bugs reason, alternate package: the patched version).
+5. Tell the reporter that the fix and the advisory are out.
+
+## Support for the previous major version
+
+Fixes go to the latest minor of the latest major only. When `2.0.0` is released, `1.x` still gets **security fixes for 6 months**, from a support branch `release/1.x` made from the last `v1.*` tag. Before that release, the branch needs `^refs/heads/release/1\.x$` in `publicReleaseRefSpec` (`version.json`), a trigger in the release workflow, the publishing environment's branch rule, CI triggers and ruleset protection for PRs into it, and a change to ADR-0008, which today makes `main` the only public ref ([#119](https://github.com/milten89/OpenUrzednik.NET/issues/119)). A `1.x` security fix then goes from a `hotfix/…` branch made from `release/1.x` into `release/1.x`, and is released from there.
 
 ## Dev-only dependencies vs. the published package
 
