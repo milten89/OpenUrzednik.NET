@@ -1,4 +1,9 @@
-# OpenUrzednik.NET 💼🇵🇱
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/branding/header-dark.svg">
+    <img alt="OpenUrzędnik.NET" src="assets/branding/header-light.svg" width="483">
+  </picture>
+</h1>
 
 🇬🇧 Pełna dokumentacja jest po angielsku: [README.md](README.md). Ta wersja zawiera tylko część informacyjną. Jeśli wersje się różnią, obowiązuje angielska.
 
