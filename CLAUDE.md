@@ -30,10 +30,11 @@ dotnet test OpenUrzednik.slnx                    # all TFMs; locally only instal
 dotnet test OpenUrzednik.slnx -f net10.0         # fastest local loop
 dotnet test tests/OpenUrzednik.Nbp.Tests --filter-class "*NbpGoldPriceClientTest"
 dotnet format OpenUrzednik.slnx --verify-no-changes   # CI fails if this reports changes
+dotnet pack OpenUrzednik.Packages.slnf -c Release    # runs package validation, as CI does
 dotnet test tests/OpenUrzednik.IntegrationTests --explicit on   # also hits the real NBP API
 ```
 
-Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and `dotnet format --verify-no-changes`, and report the results.
+Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and `dotnet format --verify-no-changes`, and report the results. If the change touches a public API, a target or packaging, also run the pack above: package validation fails it when the builds of a package differ. Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`); ADR-0011 allows only CP0006 for a new client-interface method.
 
 ## Architecture rules (from ADRs)
 
