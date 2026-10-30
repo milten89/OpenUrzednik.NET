@@ -108,7 +108,7 @@ Release notes (`.github/release.yml`) group PRs by the **release labels**; every
 | `area:telemetry` | `#1D76DB` | Telemetry contract, `OpenUrzednik.Diagnostics`, `OpenUrzednik.Extensions.Logging` |
 | `provider:nbp` | `#FBCA04` | Affects `OpenUrzednik.Nbp` |
 | `provider-proposal` | `#C5DEF5` | Proposal for a new provider (issue form) |
-| `question` | `#d876e3` | A question rather than a change (GitHub default) |
+| `question` | `#d876e3` | A question rather than a change (GitHub default); the question form applies it |
 | `good first issue`, `help wanted`, `duplicate`, `invalid`, `wontfix` | GitHub defaults | As GitHub describes them |
 
 ## Milestones
