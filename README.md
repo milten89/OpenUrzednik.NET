@@ -46,6 +46,7 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 - We build for `netstandard2.0` and the .NET LTS releases that Microsoft supports (and a newer release only when we need its APIs). CI tests every build; the `netstandard2.0` build runs its tests on .NET Framework 4.8.
 - .NET 8 and .NET 9 reach the end of Microsoft's support on 10 November 2026. Your .NET 8 or 9 app keeps working with the `net8.0` build; we'll remove it only in a major version, because it is our lowest .NET target.
 - We may remove a .NET target that isn't the lowest one in a minor version, after Microsoft ends its support; apps on that version then get the next lower build, with the same API. `netstandard2.0` stays, so .NET Framework keeps working.
+- The assemblies are strong-named (public key token `e8d5ca0d09eb5ce1`), so strong-named .NET Framework apps and libraries can use them. The assembly version changes only with the major version (`1.0.0.0` for every 1.x release), so binding redirects stay valid across minor and patch updates.
 - We don't support .NET Framework 4.6.1 to 4.7.1: there, `netstandard2.0` libraries need extra facade assemblies or binding redirects (Microsoft recommends 4.7.2 or later).
 
 ## Versioning and support

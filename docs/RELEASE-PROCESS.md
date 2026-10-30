@@ -13,7 +13,7 @@
 
 All published packages share one version (lockstep, [ADR-0008](adr/0008-branching-versioning-and-release.md)). It comes from the root `version.json`, which [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) (NBGV) reads; projects have no `version.json` of their own.
 
-- **`develop`** carries the number of the next release plus a preview suffix: `"version": "0.1.0-preview.{height}"`. `{height}` is the git height: the number of commits from the one that set this version up to the one being built, both included, counting only commits that change a package input listed in `pathFilters` (`src`, `version.json`, `Directory.Build.props`, `Directory.Packages.props`, `OpenUrzednik.Packages.slnf`, and the packed icons `assets/branding/icon.png` and `assets/branding/icon-nbp.png`).
+- **`develop`** carries the number of the next release plus a preview suffix: `"version": "0.1.0-preview.{height}"`. `{height}` is the git height: the number of commits from the one that set this version up to the one being built, both included, counting only commits that change a package input listed in `pathFilters` (`src`, `version.json`, `Directory.Build.props`, `Directory.Packages.props`, `OpenUrzednik.Packages.slnf`, the strong-name key `OpenUrzednik.snk`, and the packed icons `assets/branding/icon.png` and `assets/branding/icon-nbp.png`).
 - **Only `main` is a public ref** (`publicReleaseRefSpec`). Every other branch, `develop` and release branches included, appends the commit id: `develop` publishes versions like `0.1.0-preview.12.g1a2b3c4d5e`.
 - **A release removes the suffix**: `"1.1.0-preview.{height}"` → `"1.1.0"`. SemVer sorts a prerelease below the release with the same number, so every release sorts above its previews:
 
