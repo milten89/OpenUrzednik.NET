@@ -92,9 +92,10 @@ public partial class OpenUrzednikGenericResultTest
     }
 
     [Fact]
-    public async Task BindAsync_NullNext_ThrowsArgumentNullException()
+    public void BindAsync_NullNext_ThrowsArgumentNullExceptionSynchronously()
     {
         // Act && Assert
-        await Should.ThrowAsync<ArgumentNullException>(() => OpenUrzednikResult.Success(1).BindAsync<int>(null!));
+        Should.Throw<ArgumentNullException>(() => { _ = OpenUrzednikResult.Success(1).BindAsync<int>(null!); })
+            .ParamName.ShouldBe("next");
     }
 }

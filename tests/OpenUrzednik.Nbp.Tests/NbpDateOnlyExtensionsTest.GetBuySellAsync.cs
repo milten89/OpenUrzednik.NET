@@ -78,7 +78,7 @@ public partial class NbpDateOnlyExtensionsTest
     public void GetBuySellAsync_NullClient_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => ((INbpExchangeRateTableClient)null!).GetBuySellAsync(new DateOnly(2026, 10, 2)))
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpExchangeRateTableClient)null!).GetBuySellAsync(new DateOnly(2026, 10, 2)); })
             .ParamName.ShouldBe("client");
     }
 }

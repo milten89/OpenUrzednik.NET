@@ -71,4 +71,26 @@ public partial class OpenUrzednikResultExtensionsTest
         var exception = await Should.ThrowAsync<TestException>(async () => await result.EnsureSuccessAsync());
         exception.Errors.Count.ShouldBe(2);
     }
+
+    [Fact]
+    public void EnsureSuccessAsync_NullTask_ThrowsArgumentNullExceptionSynchronously()
+    {
+        // Arrange
+        Task<OpenUrzednikResult> task = null!;
+
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = task.EnsureSuccessAsync(); })
+            .ParamName.ShouldBe("resultTask");
+    }
+
+    [Fact]
+    public void EnsureSuccessAsync_NullGenericTask_ThrowsArgumentNullExceptionSynchronously()
+    {
+        // Arrange
+        Task<OpenUrzednikResult<int>> task = null!;
+
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = task.EnsureSuccessAsync(); })
+            .ParamName.ShouldBe("resultTask");
+    }
 }
