@@ -49,3 +49,31 @@ body:
       description: Do czego potrzebujesz tego API? / What do you need it for?
     validations:
       required: true
+  - type: dropdown
+    id: quota
+    attributes:
+      label: Rodzaj limitu / Quota type
+      description: Opcjonalne. / Optional.
+      options: [ "Brak limitu / No limit", "Ograniczanie tempa / Throttling", "Limit dzienny lub na adres IP / Daily or per-IP quota", "Nie wiem / Unknown" ]
+  - type: dropdown
+    id: session
+    attributes:
+      label: Sesja lub logowanie / Stateful session or login
+      description: Opcjonalne. Czy trzeba się zalogować osobnym wywołaniem? / Optional. Is a separate login call needed?
+      options: [ "Tak / Yes", "Nie / No", "Nie wiem / Unknown" ]
+  - type: dropdown
+    id: personal-data
+    attributes:
+      label: Dane osobowe w odpowiedziach / Personal data in responses
+      description: Opcjonalne. / Optional.
+      options: [ "Tak / Yes", "Nie / No", "Nie wiem / Unknown" ]
+  - type: textarea
+    id: test-environment
+    attributes:
+      label: Środowisko testowe / Test environment
+      description: Opcjonalne. Adres lub opis. / Optional. URL or description.
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Wymagane zależności / Required dependencies
+      description: Opcjonalne. Np. biblioteka do archiwów, certyfikaty. / Optional. E.g. an archive library, certificates.

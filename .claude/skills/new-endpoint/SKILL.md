@@ -54,7 +54,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
   - Use `Faker().WithConstantSeed()`, the DTO fakers, `StubHttpMessageHandler`, `FakeTimeProvider`.
 - **Mapper** tests in `MapperTest.<MapMethod>.cs`; a **validator** test per new validator.
 - **WireMock** (`tests/OpenUrzednik.IntegrationTests/<Provider>/WireMock/`):
-  - success with the captured real body
+  - success with the captured real body; if responses can contain personal data, capture from the provider's test environment or from legal-person records, replace remaining personal fields with fake values of the same format, and never commit API keys, session ids or tokens. Hand-written bodies are only for cases the real API can't produce (an empty answer `[]`, malformed JSON)
   - every error path in the canonical list in [ADR-0002](../../../docs/adr/0002-result-pattern-and-error-handling.md)'s Confirmation
   - Assert the request path and `Accept` header.
 - **Real API** test with `[ManualFact]` (explicit: runs with `--explicit on` or when `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set).

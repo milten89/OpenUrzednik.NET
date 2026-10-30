@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-02
+date: 2026-10-30
 decision-makers: milten89
 ---
 
@@ -40,7 +40,7 @@ Chosen option: "Keep custom abstractions and ship official adapter packages".
 * Errors are recorded via `RecordError`/`RecordErrors` extensions, which set OpenTelemetry's `error.type` tag to `OpenUrzednikError.Code`. The `error` events `RecordErrors` adds are best-effort.
 * Every log entry has an `OpenUrzednikEventId`: the shared HTTP layer's events are 1xxx, a provider's own 2xxx, and each provider lists all of them as constants (`NbpLogEvents`). The `{provider}` log property is the provider's short name (`nbp`), as in span names.
 * Log calls at `Debug`/`Trace` are guarded with `IsEnabled`; messages use templates with named placeholders, never string interpolation.
-* Never log secrets (API keys, session ids) or full personal identifiers (PESEL, NIP of natural persons) – mask them.
+* Never put secrets (API keys, session ids, tokens) or personal identifiers (PESEL, NIP, REGON, bank account numbers, whoever they belong to) in log messages or properties, span names or tags, error and exception messages, error metadata or `Exception.Data`. Show at most the last 4 characters (e.g. `*******1234`), or use a template or display value instead. A provider ADR may require stricter masking.
 
 ### Consequences
 
@@ -77,3 +77,5 @@ Rules from 1.0 on:
 * **Cross-package internals:** on .NET, Diagnostics and the providers call Core's internal `SharedActivityTraceSource` and `ActivitySpan` through `InternalsVisibleTo`. Package dependencies are minimums ([ADR-0008](0008-branching-versioning-and-release.md)), so an app may pair a newer Core with older packages: within a major, those members are only added to, never changed or removed.
 * **Sources are unversioned:** `ActivitySource` gets no version; the stability rule above takes its place.
 * **Metrics are out of scope.** The library records no metrics; `HttpClient`'s own metrics cover requests. Adding metrics later needs a new decision.
+
+**2026-10-30 change: no secrets or personal identifiers in telemetry or errors** ([#109](https://github.com/milten89/OpenUrzednik.NET/issues/109)). The rule only named logs and exempted the NIP of a legal person. NBP handles no such data, but the MF and GUS providers will, and the shared executor already writes request paths into `url.path`, logs and the messages of the errors it returns (timeout, connection, serialization and status errors all carry the request path), so an identifier in a path would leak through every channel. The rule now covers all of them and every holder of an identifier, and allows at most the last 4 characters. A provider whose paths carry identifiers also needs a display path ([ADR-0006](0006-shared-http-layer.md)).

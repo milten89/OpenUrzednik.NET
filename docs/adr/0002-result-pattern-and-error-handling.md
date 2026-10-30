@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-29
+date: 2026-10-30
 decision-makers: milten89
 ---
 
@@ -46,7 +46,7 @@ Chosen option: "All failures that can happen during normal execution are returne
 | Timeout: an `OperationCanceledException` while the **caller's** token is not cancelled (the request deadline, `HttpClient.Timeout`, a resilience handler's timeout) | `RequestTimeoutError`, with `Timeout` when the limit is known | `requestTimeout` | none |
 | `default(OpenUrzednikResult<T>)` | `UnknownError` | `unknown` | none |
 
-The metadata keys are public constants next to the errors that set them: `OpenUrzednikError.StatusCodeMetadataKey`, `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`. Other metadata, if any appears, is informational.
+The metadata keys are public constants next to the errors that set them: `OpenUrzednikError.StatusCodeMetadataKey`, `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`. Other metadata, if any appears, is informational. A validator for a personal identifier (PESEL, NIP, REGON, bank account number) passes a masked value to `GetValidationErrorResult`, which puts it into the error's metadata ([ADR-0003](0003-telemetry-abstractions.md)).
 
 **Compatibility of the error contract** (from the first stable release):
 
@@ -111,3 +111,5 @@ Supersedes the informal rule in `CONTRIBUTING.md`. Shared HTTP behaviour is impl
 * `Value` on a failure named no error; its message now lists them.
 
 These are breaking changes for preview users.
+
+**2026-10-30 change: masked values in validation errors** ([#109](https://github.com/milten89/OpenUrzednik.NET/issues/109)). `ValueValidator<T>.GetValidationErrorResult` stores the validated value under `ValueMetadataKey`, so a validator for a personal identifier would copy the identifier into every error, exception and log that shows the metadata. A validator for a personal identifier must pass a masked value, under the rule in [ADR-0003](0003-telemetry-abstractions.md). NBP validates no such value, so nothing changes there.
