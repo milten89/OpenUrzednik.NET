@@ -139,7 +139,7 @@ Reading or changing the project needs the `project` scope on the `gh` token (`gh
 | Priority | single select | `Urgent` (harm now or a calendar deadline), `High` (needed for the next release), `Medium` (should do; may slip), `Low` (later, or after the release). Views sort by the options' order, not by name |
 | Phase | single select | `Phase 0` … `Phase 6`: the stages of the 1.0 plan |
 | Seq | number | Execution order within the plan, in steps of 10, leaving room to insert |
-| Plan | text | The plan id (e.g. `P0-0`, `M5`) |
+| Plan | text | The plan id (e.g. `P0-0`, `M5`); follow-ups get the next free `F<n>` |
 | Size | single select | Maintainer effort to review or do it: `XS` (< 15 min), `S` (< 30 min), `M` (about 1 h), `L` (several hours) |
 | Due | date | Only for calendar deadlines |
 
@@ -178,4 +178,4 @@ Set in the web UI (project → ⋯ → Workflows). The Free plan allows one auto
 
 ### Intake
 
-Issues (from the forms, or opened by agents) arrive through auto-add with Status `Triage`. PRs, Dependabot's included, are added without a Status and show in the Review queue view. Security reports never arrive (they stay private, see `SECURITY.md`). The maintainer sets labels and Priority, puts an Urgent or High bug into the next milestone, and moves provider proposals to `Backlog` with Priority Low. Only the maintainer moves an issue to `Ready`.
+Issues (from the forms, or opened by agents) arrive through auto-add with Status `Triage`. PRs, Dependabot's included, are added without a Status and show in the Review queue view. Security reports never arrive (they stay private, see `SECURITY.md`). The maintainer, or an agent with the `/triage` skill and the maintainer's approval of its proposal, sets labels and the project fields, puts an Urgent or High bug into the next milestone, and moves provider proposals to `Backlog` with Priority Low. Only the maintainer decides that an issue moves to `Ready`.
