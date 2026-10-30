@@ -35,8 +35,14 @@ jobs:
       env:
         PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
       run: |
-        release_labels=$(yq -o=json '[.changelog.categories[].labels[], .changelog.exclude.labels[]] | map(select(. != "*")) | unique' .github/release.yml)
+        # yq only converts the YAML to JSON; jq picks the labels.
+        release_labels=$(yq -o=json '.' .github/release.yml \
+          | jq -c '[.changelog.categories[].labels[], .changelog.exclude.labels[]] | map(select(. != "*")) | unique')
         echo "Release labels: $release_labels"
+        if [ "$(jq length <<< "$release_labels")" -eq 0 ]; then
+          echo "::error::Found no release labels in .github/release.yml."
+          exit 1
+        fi
         echo "PR labels: $PR_LABELS"
         matched=$(jq -n --argjson release "$release_labels" --argjson pr "$PR_LABELS" '$pr - ($pr - $release)')
         if [ "$(jq length <<< "$matched")" -eq 0 ]; then
