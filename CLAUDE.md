@@ -156,7 +156,7 @@ Project fields need the `project` scope (`gh auth refresh -s project`):
 
 ```bash
 # Ready issues for agents, by Priority, then Seq (.id is the project item id)
-gh project item-list 2 --owner milten89 --format json --limit 200 --jq '[.items[] | select(.status == "Ready" and .content.type == "Issue" and ((.labels // []) | index("maintainer-only") | not))] | sort_by(({"Urgent":0,"High":1,"Medium":2,"Low":3,"P0":0,"P1":1,"P2":2,"P3":3}[.priority // ""] // 9), .seq) | .[] | "#\(.content.number) \(.priority) \(.id) \(.title)"'
+gh project item-list 2 --owner milten89 --format json --limit 200 --jq '[.items[] | select(.status == "Ready" and .content.type == "Issue" and ((.labels // []) | index("maintainer-only") | not))] | sort_by(({"Urgent":0,"High":1,"Medium":2,"Low":3}[.priority // ""] // 9), .seq) | .[] | "#\(.content.number) \(.priority) \(.id) \(.title)"'
 # Set Status to In progress
 gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id PVTSSF_lAHOAJh3Rs4BnebIzhmC35A --single-select-option-id e0ec58a2
 ```

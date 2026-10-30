@@ -33,7 +33,7 @@ All of these must hold:
   ```bash
   gh api repos/milten89/OpenUrzednik.NET/milestones --jq '.[] | select(.title == "<version>") | .open_issues'
   gh project item-list 2 --owner milten89 --format json --limit 200 \
-    --jq '[.items[] | select(.content.type == "Issue" and .status != "Done" and ((.labels // []) | index("bug")) and (.priority == "Urgent" or .priority == "High" or .priority == "P0" or .priority == "P1")) | .content.number]'
+    --jq '[.items[] | select(.content.type == "Issue" and .status != "Done" and ((.labels // []) | index("bug")) and (.priority == "Urgent" or .priority == "High")) | .content.number]'
   ```
 
   The first prints `0` (nothing if the milestone doesn't exist: ask the user whether that's intended), the second `[]`. Confirm each number the second lists with `gh issue view <n> --json state`: only open issues count.
