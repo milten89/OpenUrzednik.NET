@@ -11,8 +11,8 @@ internal sealed class RestProviderProfile
     /// <summary>
     /// Initializes a new instance of the <see cref="RestProviderProfile"/> class.
     /// </summary>
-    /// <param name="name">Short lowercase name used in span names, e.g. <c>nbp</c> gives <c>nbp.http.get</c>.</param>
-    /// <param name="displayName">Name used in error messages and logs, e.g. <c>NBP API</c>.</param>
+    /// <param name="name">Short lowercase name used in span names (e.g. <c>nbp</c> gives <c>nbp.http.get</c>) and as the <c>{provider}</c> log property.</param>
+    /// <param name="displayName">Name used in error messages, e.g. <c>NBP API</c>.</param>
     /// <param name="mapErrorAsync">
     /// Optional override for non-success responses. Return <see langword="null"/> to use the default mapping (ADR-0002).
     /// Expected failures, e.g. an error body that isn't valid JSON, must be returned as errors or <see langword="null"/>:
@@ -30,12 +30,12 @@ internal sealed class RestProviderProfile
     }
 
     /// <summary>
-    /// Gets the short name used in span names (<c>&lt;name&gt;.http.get</c>).
+    /// Gets the short name used in span names (<c>&lt;name&gt;.http.get</c>) and as the <c>{provider}</c> log property.
     /// </summary>
     public string Name { get; }
 
     /// <summary>
-    /// Gets the name used in error messages and logs.
+    /// Gets the name used in error messages.
     /// </summary>
     public string DisplayName { get; }
 

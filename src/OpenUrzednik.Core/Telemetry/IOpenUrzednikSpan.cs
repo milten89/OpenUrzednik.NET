@@ -3,6 +3,7 @@ namespace OpenUrzednik.Core.Telemetry;
 /// <summary>
 /// A started span; disposing it ends the span. Started by <see cref="IOpenUrzednikTraceSource.StartSpan"/>.
 /// </summary>
+/// <remarks>The library calls this interface, so it doesn't change within a major version; a new capability comes as a separate interface (ADR-0003).</remarks>
 public interface IOpenUrzednikSpan : IDisposable
 {
     /// <summary>
@@ -28,7 +29,7 @@ public interface IOpenUrzednikSpan : IDisposable
     /// <param name="name">The event name.</param>
     void AddEvent(string name);
 
-    /// <summary>Adds an event with one tag, e.g. <c>error</c> with <c>error.code</c>.</summary>
+    /// <summary>Adds an event with one tag, e.g. <c>error</c> with <c>error.type</c>.</summary>
     /// <param name="name">The event name.</param>
     /// <param name="tagKey">The tag name.</param>
     /// <param name="tagValue">The tag value.</param>

@@ -12,11 +12,12 @@ public sealed partial class OpenUrzednikLoggerTest
     public void Log_NoValues_WritesTemplateAsMessageAndOriginalFormat()
     {
         // Act
-        CreateSut().Log(OpenUrzednikLogLevel.Information, null, "Client created");
+        CreateSut().Log(OpenUrzednikLogLevel.Information, TestEvent, null, "Client created");
 
         // Assert
         var entry = _logger.Entries.ShouldHaveSingleItem();
         entry.Level.ShouldBe(LogLevel.Information);
+        entry.EventId.ShouldBe(new EventId(1001, "RequestTimedOut"));
         entry.Message.ShouldBe("Client created");
         entry.State.ShouldBe([new("{OriginalFormat}", "Client created")]);
     }
@@ -25,7 +26,7 @@ public sealed partial class OpenUrzednikLoggerTest
     public void Log_OneValue_WritesStructuredState()
     {
         // Act
-        CreateSut().Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", "GetAsync");
+        CreateSut().Log(OpenUrzednikLogLevel.Debug, TestEvent, null, "Validation failed for {operation}", "operation", "GetAsync");
 
         // Assert
         var entry = _logger.Entries.ShouldHaveSingleItem();
@@ -41,7 +42,7 @@ public sealed partial class OpenUrzednikLoggerTest
         var exception = new HttpRequestException("Connection refused");
 
         // Act
-        CreateSut().Log(OpenUrzednikLogLevel.Warning, exception, "{provider} request to {path} failed", "provider", "NBP API", "path", "cenyzlota");
+        CreateSut().Log(OpenUrzednikLogLevel.Warning, TestEvent, exception, "{provider} request to {path} failed", "provider", "NBP API", "path", "cenyzlota");
 
         // Assert
         var entry = _logger.Entries.ShouldHaveSingleItem();
@@ -57,7 +58,7 @@ public sealed partial class OpenUrzednikLoggerTest
         var timeout = TimeSpan.FromSeconds(10);
 
         // Act
-        CreateSut().Log(OpenUrzednikLogLevel.Warning, null, "{provider} did not respond to {path} within {timeout}",
+        CreateSut().Log(OpenUrzednikLogLevel.Warning, TestEvent, null, "{provider} did not respond to {path} within {timeout}",
             "provider", "NBP API", "path", "cenyzlota", "timeout", timeout);
 
         // Assert
@@ -73,7 +74,7 @@ public sealed partial class OpenUrzednikLoggerTest
         KeyValuePair<string, object?>[] properties = [new("a", 1), new("b", 2), new("c", 3), new("d", 4)];
 
         // Act
-        CreateSut().Log(OpenUrzednikLogLevel.Error, null, "{a} {b} {c} {d}", properties);
+        CreateSut().Log(OpenUrzednikLogLevel.Error, TestEvent, null, "{a} {b} {c} {d}", properties);
 
         // Assert
         var entry = _logger.Entries.ShouldHaveSingleItem();
@@ -86,7 +87,7 @@ public sealed partial class OpenUrzednikLoggerTest
     public void Log_NullPropertyList_ThrowsArgumentNullException()
     {
         // Act
-        var exception = Should.Throw<ArgumentNullException>(() => CreateSut().Log(OpenUrzednikLogLevel.Error, null, "Message", null!));
+        var exception = Should.Throw<ArgumentNullException>(() => CreateSut().Log(OpenUrzednikLogLevel.Error, TestEvent, null, "Message", null!));
 
         // Assert
         exception.ParamName.ShouldBe("properties");
@@ -100,11 +101,11 @@ public sealed partial class OpenUrzednikLoggerTest
         var sut = CreateSut();
 
         // Act
-        sut.Log(OpenUrzednikLogLevel.Debug, null, "Message");
-        sut.Log(OpenUrzednikLogLevel.Debug, null, "{a}", "a", 1);
-        sut.Log(OpenUrzednikLogLevel.Debug, null, "{a} {b}", "a", 1, "b", 2);
-        sut.Log(OpenUrzednikLogLevel.Debug, null, "{a} {b} {c}", "a", 1, "b", 2, "c", 3);
-        sut.Log(OpenUrzednikLogLevel.Debug, null, "{a}", [new KeyValuePair<string, object?>("a", 1)]);
+        sut.Log(OpenUrzednikLogLevel.Debug, TestEvent, null, "Message");
+        sut.Log(OpenUrzednikLogLevel.Debug, TestEvent, null, "{a}", "a", 1);
+        sut.Log(OpenUrzednikLogLevel.Debug, TestEvent, null, "{a} {b}", "a", 1, "b", 2);
+        sut.Log(OpenUrzednikLogLevel.Debug, TestEvent, null, "{a} {b} {c}", "a", 1, "b", 2, "c", 3);
+        sut.Log(OpenUrzednikLogLevel.Debug, TestEvent, null, "{a}", [new KeyValuePair<string, object?>("a", 1)]);
 
         // Assert
         _logger.Entries.ShouldBeEmpty();
@@ -114,7 +115,7 @@ public sealed partial class OpenUrzednikLoggerTest
     public void Log_LevelNone_WritesNothing()
     {
         // Act
-        CreateSut().Log(OpenUrzednikLogLevel.None, null, "Message");
+        CreateSut().Log(OpenUrzednikLogLevel.None, TestEvent, null, "Message");
 
         // Assert
         _logger.Entries.ShouldBeEmpty();

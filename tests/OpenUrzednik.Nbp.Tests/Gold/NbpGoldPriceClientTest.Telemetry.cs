@@ -6,6 +6,7 @@ using Bogus;
 using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
@@ -50,7 +51,7 @@ public partial class NbpGoldPriceClientTest
         await sut.GetAsync(faker.Date.BeforeGoldMinDate(), TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", "GetAsync");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, NbpEvents.ValidationFailed, null, "Validation failed for {operation}", "operation", "GetAsync");
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
     }
 
@@ -71,7 +72,7 @@ public partial class NbpGoldPriceClientTest
         await sut.GetAsync(date, TestContext.Current.CancellationToken);
 
         // Assert
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, NbpEvents.NoData, null, "NBP API returned empty array for {path}", "path", Arg.Any<string>());
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, Arg.Any<string>());
     }
 

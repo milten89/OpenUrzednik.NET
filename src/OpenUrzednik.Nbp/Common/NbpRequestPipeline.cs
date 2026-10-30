@@ -64,7 +64,7 @@ internal sealed class NbpRequestPipeline
         if (validation.IsFailure)
         {
             if (_telemetry.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-                _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", operation);
+                _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, NbpEvents.ValidationFailed, null, "Validation failed for {operation}", "operation", operation);
             traceSpan.RecordErrors(validation.Errors);
             return (validation, null);
         }
@@ -80,7 +80,7 @@ internal sealed class NbpRequestPipeline
     private OpenUrzednikResult<TModel> EmptyArray<TModel>(IOpenUrzednikSpan traceSpan, string path)
     {
         if (_telemetry.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-            _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, null, "NBP API returned empty array for {path}", "path", path);
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, NbpEvents.NoData, null, "NBP API returned empty array for {path}", "path", path);
         var error = new NotFoundError("NBP API returned empty array.");
         traceSpan.RecordError(error);
         return OpenUrzednikResult.Failure<TModel>(error);

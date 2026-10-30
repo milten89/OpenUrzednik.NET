@@ -7,6 +7,7 @@ using NSubstitute;
 using OpenUrzednik.Core.Errors;
 
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon;
@@ -120,7 +121,7 @@ public partial class NbpExchangeRateTableClientTest
 
         // Assert
         tracer.Received(1).StartSpan(Arg.Any<string>());
-        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, null, "Validation failed for {operation}", "operation", Arg.Any<string>());
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, NbpEvents.ValidationFailed, null, "Validation failed for {operation}", "operation", Arg.Any<string>());
     }
 
     [Fact]

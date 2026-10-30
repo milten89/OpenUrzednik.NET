@@ -22,7 +22,7 @@ public partial class NbpCurrencyExchangeRateClient
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.latest");
         traceSpan.SetTag("nbp.currency", currency);
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate();
 
@@ -43,7 +43,7 @@ public partial class NbpCurrencyExchangeRateClient
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.top_count");
         traceSpan.SetTag("nbp.currency", currency);
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
         traceSpan.SetTag("nbp.top_count", topCount);
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
@@ -66,7 +66,7 @@ public partial class NbpCurrencyExchangeRateClient
     {
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.today");
         traceSpan.SetTag("nbp.currency", currency);
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate();
 
@@ -88,7 +88,7 @@ public partial class NbpCurrencyExchangeRateClient
         var day = DateOnly.FromDateTime(date);
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.date");
         traceSpan.SetTag("nbp.currency", currency);
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
@@ -113,7 +113,7 @@ public partial class NbpCurrencyExchangeRateClient
         var toDay = DateOnly.FromDateTime(to);
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.range");
         traceSpan.SetTag("nbp.currency", currency);
-        traceSpan.SetTag("nbp.table", table);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
         traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 

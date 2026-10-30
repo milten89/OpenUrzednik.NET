@@ -25,7 +25,7 @@ internal static class NbpPayload
         }
         catch (InvalidPayloadException ex)
         {
-            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, ex, "Failed to map NBP response: {reason}", "reason", ex.Message);
+            telemetryProvider.Logger.Log(OpenUrzednikLogLevel.Error, NbpEvents.MappingFailed, ex, "Failed to map NBP response: {reason}", "reason", ex.Message);
             var error = new SerializationError(ex.Message);
             traceSpan.RecordError(error);
             return OpenUrzednikResult.Failure<TModel>(error);

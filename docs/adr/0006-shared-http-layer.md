@@ -35,7 +35,7 @@ Chosen option: "Shared source files compiled into each provider", because the la
 
 ### Provider-author reference
 
-* A provider describes itself with a `RestProviderProfile(name, displayName, mapErrorAsync)`. `name` builds the span name `<name>.http.get`; `displayName` goes into messages and the `{provider}` log property.
+* A provider describes itself with a `RestProviderProfile(name, displayName, mapErrorAsync)`. `name` builds the span name `<name>.http.get` and is the `{provider}` log property; `displayName` goes into error messages. Every log call of the layer has an event id from `RestLogEvents` (1xxx), which the provider's public log-events class mirrors ([ADR-0003](0003-telemetry-abstractions.md)). The provider passes its `ActivitySource` name to `OpenUrzednikTelemetry`, which uses it when the app gives no trace source (on the .NET targets); for that, the provider is added to Core's .NET-only `InternalsVisibleTo`.
 * `RestRequestExecutor` resolves request paths against an absolute base address and never changes the `HttpClient`, so one `HttpClient` can serve several providers. The request deadline (the timeout passed to it, or `HttpClient.Timeout` when none is set) covers reading the body too.
 * `GetAsync` **returns** as errors: every non-success status, an empty, malformed or undecodable JSON body, network failures (`HttpRequestException`, or an `IOException` while reading the body) and timeouts while sending or reading a success body (an `OperationCanceledException` while the caller's token isn't cancelled). When the error body can't be read before the deadline, `ReadMessageAsync()` returns `null` and the error is still returned.
 * **Thrown**:

@@ -15,25 +15,25 @@ public sealed class NullOpenUrzednikLogger : IOpenUrzednikLogger
     public bool IsEnabled(OpenUrzednikLogLevel level) => false;
 
     /// <inheritdoc/>
-    public void Log(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate)
+    public void Log(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate)
     {
     }
 
     /// <inheritdoc/>
-    public void Log<T0>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+    public void Log<T0>(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate,
                         string name0, T0 value0)
     {
     }
 
     /// <inheritdoc/>
-    public void Log<T0, T1>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+    public void Log<T0, T1>(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate,
                             string name0, T0 value0,
                             string name1, T1 value1)
     {
     }
 
     /// <inheritdoc/>
-    public void Log<T0, T1, T2>(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+    public void Log<T0, T1, T2>(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate,
                                 string name0, T0 value0,
                                 string name1, T1 value1,
                                 string name2, T2 value2)
@@ -41,7 +41,7 @@ public sealed class NullOpenUrzednikLogger : IOpenUrzednikLogger
     }
 
     /// <inheritdoc/>
-    public void Log(OpenUrzednikLogLevel level, Exception? exception, string messageTemplate,
+    public void Log(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate,
                     IReadOnlyList<KeyValuePair<string, object?>> properties)
     {
     }

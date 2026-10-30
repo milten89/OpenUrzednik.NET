@@ -26,11 +26,11 @@ public sealed partial class ActivitySpanTest
         var span = StartSpan();
 
         // Act
-        span.AddEvent("error", "error.code", "validation");
+        span.AddEvent("error", "error.type", "validation");
 
         // Assert
         var activityEvent = Stop(span).Events.ShouldHaveSingleItem();
         activityEvent.Name.ShouldBe("error");
-        activityEvent.Tags.ShouldBe([new("error.code", "validation")]);
+        activityEvent.Tags.ShouldBe([new("error.type", "validation")]);
     }
 }

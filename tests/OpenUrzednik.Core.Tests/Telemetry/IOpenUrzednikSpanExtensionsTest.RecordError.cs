@@ -44,7 +44,7 @@ public partial class IOpenUrzednikSpanExtensionsTest
         // Assert
         _ = error.Received(1).Code;
         _ = error.Received(1).Message;
-        span.Received(1).SetTag("error.code", code);
+        span.Received(1).SetTag("error.type", code);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, message);
     }
 }

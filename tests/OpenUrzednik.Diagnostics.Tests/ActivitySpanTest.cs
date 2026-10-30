@@ -1,5 +1,7 @@
 using System.Diagnostics;
 
+using OpenUrzednik.Core.Telemetry;
+
 using Shouldly;
 
 namespace OpenUrzednik.Diagnostics.Tests;

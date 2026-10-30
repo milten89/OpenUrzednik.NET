@@ -1,11 +1,10 @@
 using System.Diagnostics;
 
-using OpenUrzednik.Core.Telemetry;
-
-namespace OpenUrzednik.Diagnostics;
+namespace OpenUrzednik.Core.Telemetry;
 
 /// <summary>
 /// An <see cref="IOpenUrzednikSpan"/> over a started <see cref="Activity"/>; disposing it stops the activity.
+/// Compiled into Core on the .NET targets and linked into <c>OpenUrzednik.Diagnostics</c> for netstandard2.0, so both use one implementation (ADR-0003).
 /// </summary>
 internal sealed class ActivitySpan : IOpenUrzednikSpan
 {
@@ -18,6 +17,17 @@ internal sealed class ActivitySpan : IOpenUrzednikSpan
     private readonly Activity _activity;
 
     internal ActivitySpan(Activity activity) => _activity = activity;
+
+    /// <summary>
+    /// Starts an <see cref="ActivityKind.Internal"/> activity on <paramref name="source"/>. When nothing listens to the source,
+    /// or the span isn't sampled, returns the no-op span and allocates nothing.
+    /// </summary>
+    /// <remarks>OpenUrzednik.Diagnostics calls it through <c>InternalsVisibleTo</c> on .NET: within a major version, don't change or remove it.</remarks>
+    internal static IOpenUrzednikSpan Start(ActivitySource source, string operationName)
+    {
+        var activity = source.StartActivity(operationName, ActivityKind.Internal);
+        return activity is null ? NullOpenUrzednikTraceSource.Instance.StartSpan(operationName) : new ActivitySpan(activity);
+    }
 
     internal Activity Activity => _activity;
 

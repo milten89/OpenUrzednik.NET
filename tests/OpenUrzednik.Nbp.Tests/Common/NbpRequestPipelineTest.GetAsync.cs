@@ -34,7 +34,7 @@ public sealed partial class NbpRequestPipelineTest
         pathBuilt.ShouldBeFalse();
         handler.Request.ShouldBeNull();
         // RecordErrors adds one "error" event per error.
-        span.Received(1).AddEvent("error", "error.code", ValidationError.ErrorCode);
+        span.Received(1).AddEvent("error", "error.type", ValidationError.ErrorCode);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public sealed partial class NbpRequestPipelineTest
 
         // Assert
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>().Message.ShouldBe("NBP API response is missing 'rates'.");
-        span.Received(1).SetTag("error.code", SerializationError.ErrorCode);
+        span.Received(1).SetTag("error.type", SerializationError.ErrorCode);
     }
 
     [Fact]
@@ -82,6 +82,6 @@ public sealed partial class NbpRequestPipelineTest
 
         // Assert
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
-        span.Received(1).AddEvent("error", "error.code", ServiceUnavailableError.ErrorCode);
+        span.Received(1).AddEvent("error", "error.type", ServiceUnavailableError.ErrorCode);
     }
 }
