@@ -56,7 +56,7 @@ public partial class OpenUrzednikResultExtensionsTest
         var task = Task.FromResult(OpenUrzednikResult.Success(1));
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => { _ = task.MapAsync((Func<int, int>)null!); })
+        Should.Throw<ArgumentNullException>(() => { _ = task.MapAsync<int, int>(null!); })
             .ParamName.ShouldBe("map");
     }
 }
