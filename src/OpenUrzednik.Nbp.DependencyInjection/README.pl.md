@@ -2,6 +2,8 @@
 
 🇬🇧 Pełna dokumentacja jest po angielsku: [README.md](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp.DependencyInjection/README.md). Ta wersja zawiera tylko część informacyjną. Jeśli wersje się różnią, obowiązuje angielska.
 
+> ⚠️ **Projekt nieoficjalny:** OpenUrzednik.NET to projekt społecznościowy. Nie jest powiązany z Narodowym Bankiem Polskim (NBP) ani z żadną inną polską instytucją publiczną i nie działa z ich upoważnienia.
+
 Rejestracja klientów **NBP** z [OpenUrzednik.Nbp](https://www.nuget.org/packages/OpenUrzednik.Nbp) w Microsoft.Extensions.DependencyInjection: klienty typowane z `IHttpClientFactory`, sprawdzane opcje, logowanie i śledzenie.
 
 > Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). Przegląd projektu po polsku znajdziesz w [głównym README](https://github.com/milten89/OpenUrzednik.NET/blob/develop/README.pl.md).

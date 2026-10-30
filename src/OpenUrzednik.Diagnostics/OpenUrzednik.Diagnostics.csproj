@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>System.Diagnostics ActivitySource adapter for OpenUrzednik.NET: turns the clients' spans into Activities for OpenTelemetry and other listeners.</Description>
+    <Description>Unofficial OpenUrzednik.NET adapter for System.Diagnostics: turns the clients' spans into Activities for OpenTelemetry and other listeners.</Description>
     <PackageTags>Tracing;ActivitySource;OpenTelemetry;API;Poland;Gov</PackageTags>
   </PropertyGroup>
 

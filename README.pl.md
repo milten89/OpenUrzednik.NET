@@ -2,12 +2,12 @@
 
 🇬🇧 Pełna dokumentacja jest po angielsku: [README.md](README.md). Ta wersja zawiera tylko część informacyjną. Jeśli wersje się różnią, obowiązuje angielska.
 
-[![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Core?style=flat-square)](https://www.nuget.org/)
+[![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Nbp?style=flat-square)](https://www.nuget.org/packages/OpenUrzednik.Nbp)
 [![License](https://img.shields.io/github/license/milten89/OpenUrzednik.NET?style=flat-square)](LICENSE)
 
 **OpenUrzednik.NET** to nowoczesny, otwartoźródłowy zestaw bibliotek dla platformy .NET, służący do integracji z polskimi API oraz danymi publicznymi. W aktualnej fazie rozwoju projekt skupia się na wspólnych fundamentach (`OpenUrzednik.Core`) oraz na referencyjnym kliencie API NBP (`OpenUrzednik.Nbp`), na którego wzór powstaną kolejne pakiety.
 
-> ⚠️ **Projekt nieoficjalny:** Ten zestaw bibliotek jest oddolną inicjatywą społecznościową i nie jest powiązany, autoryzowany ani sponsorowany przez żadne z polskich ministerstw ani urzędów państwowych.
+> ⚠️ **Projekt nieoficjalny:** to oddolna inicjatywa społecznościowa. Nie jest powiązana z Narodowym Bankiem Polskim (NBP), ministerstwami, urzędami ani żadną inną polską instytucją publiczną i nie działa z ich upoważnienia.
 
 ---
 
@@ -39,37 +39,50 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 
 ## 🛠️ Szybki start
 
-Aktualnie najłatwiej zacząć od `OpenUrzednik.Core`.
+Zainstaluj klienta NBP:
 
-### Przykład użycia `OpenUrzednikResult`
-
-```csharp
-using OpenUrzednik.Core;
-using OpenUrzednik.Core.Errors;
-
-OpenUrzednikResult<int> result = OpenUrzednikResult.Success(42);
-int value = result.EnsureSuccess();
-Console.WriteLine(value);
+```bash
+dotnet add package OpenUrzednik.Nbp
 ```
 
-Przykład błędu biznesowego:
+Do wydania 1.0.0 dodaj `--prerelease`: na razie są opublikowane tylko wersje preview.
 
 ```csharp
-using OpenUrzednik.Core;
-using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
+using OpenUrzednik.Nbp;
+using OpenUrzednik.Nbp.Gold;
 
-OpenUrzednikResult<int> failed = OpenUrzednikResult.Failure<int>(new ValidationError("NIP is invalid."));
+// One HttpClient for the whole app; the clients don't change it.
+using var httpClient = new HttpClient();
+var gold = new NbpGoldPriceClient(httpClient);
+var rates = new NbpCurrencyExchangeRateClient(httpClient);
 
+// Expected failures (no data, timeouts, HTTP errors) come back as errors, not exceptions.
+var latest = await gold.GetLatestAsync();
+if (latest.IsSuccess)
+    Console.WriteLine($"Gold, 1 g: {latest.Value.Price} PLN ({latest.Value.Date:yyyy-MM-dd})");
+else
+    Console.WriteLine($"Gold price unavailable: {latest.Errors[0].Message}");
+
+// Match handles both cases in one expression.
+var usd = await rates.GetTopCountAsync("USD", 5);
+Console.WriteLine(usd.Match(
+    value => $"USD, last {value.Rates.Count} mid rates: {string.Join(", ", value.Rates.Select(r => r.Price))}",
+    errors => $"USD rates unavailable: {errors[0].Message}"));
+
+// Prefer exceptions? EnsureSuccess() throws an OpenUrzednikException subtype for a failed result.
 try
 {
-    int value = failed.EnsureSuccess();
+    GoldPrice price = (await gold.GetAsync(new DateTime(2025, 12, 25))).EnsureSuccess(); // no price on Christmas
+    Console.WriteLine(price.Price);
 }
-catch (OpenUrzednikValidationException ex)
+catch (OpenUrzednikException ex)
 {
-    Console.WriteLine(ex.Message);
+    Console.WriteLine($"{ex.GetType().Name} ({ex.Error?.Code}): {ex.Message}");
 }
 ```
+
+Każde wywołanie zwraca `OpenUrzednikResult<T>`. Pracę z wynikiem (`Map`, `Bind`, `TryGetValue`, wyjątki) opisuje [README pakietu Core](src/OpenUrzednik.Core/README.md#working-with-a-result), a pozostałe metody i ograniczenia API opisuje [README pakietu OpenUrzednik.Nbp](src/OpenUrzednik.Nbp/README.md). Oba są po angielsku.
 
 ### Klienty i DI
 

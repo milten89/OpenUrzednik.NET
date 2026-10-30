@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Microsoft.Extensions.Logging adapter for OpenUrzednik.NET: sends the clients' structured logs to ILogger.</Description>
+    <Description>Unofficial OpenUrzednik.NET adapter for Microsoft.Extensions.Logging: sends the clients' structured logs to ILogger.</Description>
     <PackageTags>Logging;ILogger;API;Poland;Gov</PackageTags>
   </PropertyGroup>
 

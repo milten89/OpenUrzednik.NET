@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>OpenUrzednik.NET client for NBP (Narodowy Bank Polski) — currency exchange rates and gold price data from the National Bank of Poland API.</Description>
+    <Description>Unofficial .NET client for the NBP (Narodowy Bank Polski) API: currency exchange rates, rate tables and gold prices. Not affiliated with NBP.</Description>
     <PackageTags>NBP;Currency;ExchangeRates;Gold;API;Poland;Gov</PackageTags>
   </PropertyGroup>
 

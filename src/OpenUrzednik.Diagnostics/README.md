@@ -2,6 +2,8 @@
 
 🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.pl.md)
 
+> ⚠️ **Unofficial:** OpenUrzednik.NET is a community project. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP) or any other Polish public institution.
+
 Adapter that turns the spans of **OpenUrzednik.NET** clients into `Activity` objects from `System.Diagnostics`, which OpenTelemetry and other tracing tools collect.
 
 > Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.

@@ -2,6 +2,8 @@
 
 🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.pl.md)
 
+> ⚠️ **Unofficial:** OpenUrzednik.NET is a community project. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP) or any other Polish public institution.
+
 Shared abstractions for the whole **OpenUrzednik.NET** set: the Result pattern (`OpenUrzednikResult` / `OpenUrzednikResult<T>`), typed errors (`OpenUrzednikError`) and exceptions (`OpenUrzednikException`) for consumers who prefer the classic style.
 
 > Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
@@ -20,6 +22,25 @@ using OpenUrzednik.Core.Errors;
 
 OpenUrzednikResult<int> result = OpenUrzednikResult.Success(42);
 int value = result.EnsureSuccess();
+```
+
+A failed result:
+
+```csharp
+using OpenUrzednik.Core;
+using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Core.Exceptions;
+
+OpenUrzednikResult<int> failed = OpenUrzednikResult.Failure<int>(new ValidationError("NIP is invalid."));
+
+try
+{
+    int value = failed.EnsureSuccess();
+}
+catch (OpenUrzednikValidationException ex)
+{
+    Console.WriteLine(ex.Message);
+}
 ```
 
 ## Working with a result
