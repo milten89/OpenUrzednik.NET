@@ -126,6 +126,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 ## Workflow
 
 - Branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`). PRs target `develop` and are merged with a merge commit (squash is disabled). Releases go from a `release/X.Y` branch, made from `develop`, into `main` ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
+- Prepare a release only with `/prepare-release` (it never publishes: the maintainer merges the PR into `main` and approves the `nuget-release` deployment); after the publish, `/prepare-release after` checks it and opens the back-merge.
 - A release or hotfix PR into `main` must add `docs/release-notes/v<version>.md` (`/release-notes`): the `build (net10.0)` job checks it on the PR, and `nuget-release.yml` checks it again before publishing.
 - A fix for a released version follows the hotfix procedure in [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md): `hotfix/…` from the `vX.Y.Z` tag, the next patch in `version.json`, a PR into `main`, then the back-merge into `develop` through a `merge/vX.Y.Z` branch.
 - Commit or push only when asked. One issue per PR (see "Issues and the project").
@@ -163,6 +164,7 @@ gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id
 - `/verify-api`: compare DTOs and test payloads with live API responses, and capture fixtures.
 - `/adr`: create a new MADR record and update the index.
 - `/release-notes`: draft `docs/release-notes/v<version>.md` for a release or hotfix; `nuget-release.yml` publishes nothing without it.
+- `/prepare-release`: prepare a release (checks, `release/X.Y`, version, notes, package checks, the PR into `main`); `after`: verify the published release and open the back-merge.
 - `/miodkuj`: remove AI-sounding, bureaucratic and translated phrasing from Polish prose (vendored from [bartekpucek/miodkuj@32004e3](https://github.com/bartekpucek/miodkuj/tree/32004e3), MIT).
 - `/stop-slop`: remove predictable AI writing patterns from English prose (vendored from [hardikpandya/stop-slop@8da1f03](https://github.com/hardikpandya/stop-slop/tree/8da1f03), MIT).
 - `reviewer` agent: reviews a diff against the ADRs and the conventions above.

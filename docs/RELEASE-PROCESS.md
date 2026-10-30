@@ -31,6 +31,8 @@ All published packages share one version (lockstep, [ADR-0008](adr/0008-branchin
 
 ## Releasing
 
+With Claude Code, `/prepare-release` runs steps 1–5 with extra checks, and `/prepare-release after` checks the published packages and does step 7. The steps below are the same process by hand.
+
 1. Create `release/X.Y` from the latest `develop`.
 2. In the root `version.json`, remove the preview suffix:
 

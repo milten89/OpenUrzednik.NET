@@ -1,7 +1,7 @@
 ---
 name: release-notes
 description: Draft the release notes of an OpenUrzednik.NET release or hotfix as docs/release-notes/v<version>.md, from GitHub's generated notes grouped by the release labels, with migration notes for breaking changes. Use on a release/X.Y or hotfix/… branch before its PR into main, whenever the user asks for release notes, a changelog or "what's in this release", and whenever a release PR fails the "Check the release notes" step.
-argument-hint: "<version, e.g. 1.1.0> [branch, default: the current branch]"
+argument-hint: "<version, e.g. 1.1.0> [branch or commit on origin, default: the current branch]"
 ---
 
 # Draft release notes
@@ -11,7 +11,7 @@ The notes are the body of the GitHub Release and the page every package's `relea
 ## 1. Range
 
 - **Version:** the argument, or `version` in the branch's `version.json`. It must be stable (no `-preview`); a release branch has already removed the suffix.
-- **Branch:** the argument, or the current branch (`release/X.Y` or `hotfix/…`), pushed to `origin`: the API reads GitHub, not the local checkout.
+- **Branch:** the argument, or the current branch (`release/X.Y` or `hotfix/…`), pushed to `origin`: the API reads GitHub, not the local checkout. The argument can also be a commit id already on `origin`, such as the `develop` commit a release branch was made from (`/prepare-release` drafts the notes before pushing).
 - **Previous release:** the latest `v*` tag that is a release, ignoring `v0.1.0-preview` (from the old version scheme):
 
   ```bash
