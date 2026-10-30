@@ -8,10 +8,6 @@
 
 > Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
-## Status
-
-🧪 Preview: clients for exchange rates (`NbpCurrencyExchangeRateClient`), rate tables (`NbpExchangeRateTableClient`) and gold prices (`NbpGoldPriceClient`) are available. The public API may still change before the stable release.
-
 ## Installation
 
 ```bash
@@ -47,9 +43,81 @@ var client = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions
 
 With a DI container, use [OpenUrzednik.Nbp.DependencyInjection](https://www.nuget.org/packages/OpenUrzednik.Nbp.DependencyInjection): `builder.Services.AddOpenUrzednikNbp()` registers all three clients, and `.AddStandardResilienceHandler()` adds retries.
 
-The client takes the API address from the first place that sets one: `NbpOptions.ApiUrl`, `HttpClient.BaseAddress`, and finally the default `https://api.nbp.pl/api/`. If you don't set `NbpOptions.Timeout`, the `HttpClient`'s timeout applies (100 s by default). `NbpOptions.Timeout` can shorten that limit but not extend it, because `HttpClient.Timeout` still applies until the response headers arrive. The API address can't contain a query (`?…`) or a fragment (`#…`).
+The client takes the API address from the first place that sets one: `NbpOptions.ApiUrl`, `HttpClient.BaseAddress`, and finally the default `https://api.nbp.pl/api/`. If you don't set `NbpOptions.Timeout`, the `HttpClient`'s timeout applies (100 s by default). `NbpOptions.Timeout` can shorten that limit but not extend it, because `HttpClient.Timeout` still applies until the response headers arrive. The API address must be an absolute `https` URL without a query (`?…`) or a fragment (`#…`): the constructor throws an `ArgumentException` for any other scheme, for `NbpOptions.ApiUrl` and for `HttpClient.BaseAddress` alike.
 
 Errors such as missing data, an exceeded rate limit, a timeout or an invalid currency code come back in the result, not as exceptions. If you prefer exceptions, call `EnsureSuccess()` on the result. A `null` currency code or an undefined `TableType` is a programming error: the method throws `ArgumentNullException` or `ArgumentOutOfRangeException` right away, before it returns a task. A resilience handler's rejections (timeout, open circuit breaker, rate limiter) become errors only when the clients are registered with `AddOpenUrzednikNbp()`; with your own `HttpClient` setup they come out as Polly exceptions.
+
+## Methods
+
+Each client has the same groups of methods; every method takes a `CancellationToken` last. `TableType` is `A` (common currencies, the default for rates) or `B` (less common currencies); table C (buy and sell rates) has its own `GetBuySell…` methods.
+
+| Group | `NbpCurrencyExchangeRateClient` | `NbpExchangeRateTableClient` | `NbpGoldPriceClient` |
+|---|---|---|---|
+| Latest | `GetLatestAsync(currency, table)`, `GetBuySellLatestAsync(currency)` | `GetLatestAsync(table)`, `GetBuySellLatestAsync()` | `GetLatestAsync()` |
+| Today | `GetTodayAsync(currency, table)`, `GetBuySellTodayAsync(currency)` | `GetTodayAsync(table)`, `GetBuySellTodayAsync()` | `GetTodayAsync()` |
+| One date | `GetAsync(currency, date, table)`, `GetBuySellAsync(currency, date)` | `GetAsync(table, date)`, `GetBuySellAsync(date)` | `GetAsync(date)` |
+| Date range | `GetAsync(currency, from, to, table)`, `GetBuySellAsync(currency, from, to)` | `GetAsync(table, from, to)`, `GetBuySellAsync(from, to)` | `GetAsync(from, to)` |
+| Last N | `GetTopCountAsync(currency, topCount, table)`, `GetBuySellTopCountAsync(currency, topCount)` | `GetTopCountAsync(table, topCount)`, `GetBuySellTopCountAsync(topCount)` | `GetTopCountAsync(topCount)` |
+
+The currency client returns one currency's rates (`CurrencyExchangeRates`, with a `Rates` list), the table client whole tables (`ExchangeRateTable`) and the gold client gold prices (`GoldPrice`). A range keeps the order NBP returns, which today is ascending by date.
+
+## Data availability and limits
+
+**Publication.** Times are Europe/Warsaw time.
+
+- Table A: business days, between 11:45 and 12:15.
+- Table B: Wednesdays, between 11:45 and 12:15, or the previous business day when Wednesday is a holiday.
+- Table C (buy and sell): business days, between 7:45 and 8:15.
+- Gold prices: business days, at about 8:00. NBP doesn't document this hour. We observed it on the API.
+
+`Get…TodayAsync` returns a `NotFoundError` until the day's publication, and on days without one. `GetLatestAsync` returns the most recent published value.
+
+**Limits.** The client checks these before it sends a request; a violation comes back as a `ValidationError`.
+
+| What | Limit |
+|---|---|
+| Earliest date | 2002-01-02 for rates and tables, 2013-01-02 for gold |
+| Latest date | Today's date in Europe/Warsaw, not in the caller's time zone or UTC |
+| Top count | 1 to 255 for rates and gold; for tables, 1 to 67 for A and C, 1 to 14 for B |
+| Date range | `to - from` at most 367 days for rates and gold, 93 days for tables |
+| Currency code | 3 letters, upper or lower case |
+
+In a range method, `from` may be earlier than the earliest date: only `to` is checked against the earliest date and against today. `from` later than `to` is a validation error.
+
+**Empty answers.** A date or range with no publication (a weekend, a holiday, a date before the table existed) is a `NotFoundError`: NBP answers it with an HTTP 404 (the error then carries the status code) or with an empty list. See [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.md#errors) for the other error types. NBP describes its API in the [official documentation](https://api.nbp.pl/en.html).
+
+## The last rate before a date
+
+To get the rate of the last publication before a given date, request a short range that ends the day before and take the item with the latest `PublicationDate`. Weekends and holidays have no publication, so the range has to reach back far enough: 10 days for tables A and C, 21 days for table B (published weekly).
+
+```csharp
+var date = new DateTime(2026, 3, 16);
+
+var result = await client.GetAsync("USD", date.AddDays(-10), date.AddDays(-1));
+if (result.IsSuccess)
+{
+    var rate = result.Value.Rates[0];
+    foreach (var item in result.Value.Rates)
+    {
+        if (item.PublicationDate > rate.PublicationDate)
+            rate = item;
+    }
+
+    Console.WriteLine($"{rate.PublicationDate:yyyy-MM-dd}: {rate.Price}");
+}
+else
+{
+    Console.WriteLine(result.Errors[0].Message);
+}
+```
+
+For table B, pass `TableType.B` and `date.AddDays(-21)`. For buy and sell rates, use `GetBuySellAsync(currency, from, to)`; its items have `Ask` and `Bid`. A range without any publication is a `NotFoundError`.
+
+## HttpClient and thread safety
+
+The clients don't own the `HttpClient`, never change it and aren't `IDisposable`. Create one `HttpClient` for the application, or take it from `IHttpClientFactory` (the [DependencyInjection package](https://www.nuget.org/packages/OpenUrzednik.Nbp.DependencyInjection) does that), and share it. Don't create an `HttpClient` per request: it exhausts sockets.
+
+The clients are thread-safe: create one client per `HttpClient` and share it across threads and concurrent calls.
 
 ## Compatibility
 
