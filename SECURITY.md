@@ -13,3 +13,5 @@ Please include:
 - the potential impact.
 
 We reply as soon as we can. This is a hobby open-source project, not a company with an SLA, so a reply may take a few days.
+
+The strong-name key `OpenUrzednik.snk` in the repository is public on purpose: a strong name is an assembly identity, not a security measure ([ADR-0005](docs/adr/0005-target-frameworks.md)). It isn't a leaked secret, so please don't report it.

@@ -12,6 +12,7 @@ on:
       - 'Directory.Build.props'
       - 'Directory.Packages.props'
       - 'OpenUrzednik.Packages.slnf'
+      - 'OpenUrzednik.snk'
       - 'assets/branding/icon.png'
       - 'assets/branding/icon-nbp.png'
 
