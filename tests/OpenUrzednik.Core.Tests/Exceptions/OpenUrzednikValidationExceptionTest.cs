@@ -52,7 +52,7 @@ public class OpenUrzednikValidationExceptionTest
     public void Ctor_NullErrors_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new OpenUrzednikValidationException((IReadOnlyList<ValidationError>)null!));
+        Should.Throw<ArgumentNullException>(() => new OpenUrzednikValidationException(null!));
     }
 
     [Fact]
