@@ -144,12 +144,12 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 
 Work is tracked in this repository's issues and in the public project [OpenUrzednik.NET](https://github.com/users/milten89/projects/2); its fields, views and workflows are described in [`docs/GITHUB-SETUP.md`](docs/GITHUB-SETUP.md#project). The issue body is the specification of the work.
 
-- Take open issues with Status `Ready` and without the `maintainer-only` label, by Priority, then Seq. Only the maintainer moves an issue to `Ready`.
+- Take open issues with Status `Ready` and without the `maintainer-only` label, by Priority, then Seq. Only the maintainer decides that an issue moves to `Ready` (an issue opened for work the maintainer asked for counts as decided; see `/triage`).
 - Before you start, check that no open issue blocks it: `gh issue view <n> --json blockedBy --jq '[.blockedBy.nodes[] | select(.state == "OPEN") | .number]'` must print `[]`.
 - When you start, set the issue's Status to `In progress`. That is the only field you change: never set `Done`, Priority, Phase, Seq, Size, Due, or the issue's milestone and labels unless asked.
 - One issue per PR. The PR body starts with `Closes #<n>`. When you open the PR, give it at least one release label from `.github/release.yml` (`gh pr create --label <label>`), normally the one forecast on the issue or proposed by the `reviewer` agent; the `release-label` check fails a PR without one.
 - Never start, change or close a `maintainer-only` issue.
-- You may open follow-up issues for problems outside the current issue. The project adds them with Status `Triage`, and the maintainer sorts them.
+- You may open follow-up issues for problems outside the current issue. The project adds them with Status `Triage`, and they are sorted with `/triage`, after the maintainer approves. An issue opened for work the maintainer asked for is triaged at once (`/triage`, last section).
 - Release and hotfix PRs target `main`, where `Closes` doesn't close the issue. The maintainer moves those issues to `Done`.
 
 Project fields need the `project` scope (`gh auth refresh -s project`):
@@ -168,6 +168,7 @@ gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id
 - `/adr`: create a new MADR record and update the index.
 - `/release-notes`: draft `docs/release-notes/v<version>.md` for a release or hotfix; `nuget-release.yml` publishes nothing without it.
 - `/prepare-release`: prepare a release (checks, `release/X.Y`, version, notes, package checks, the PR into `main`); `after`: verify the published release and open the back-merge.
+- `/triage`: sort the project's Triage column (verify each issue against `develop`, propose the fields in one table, apply them after the maintainer approves); also how an agent triages an issue it opens at the maintainer's request.
 - `/miodkuj`: remove AI-sounding, bureaucratic and translated phrasing from Polish prose (vendored from [bartekpucek/miodkuj@32004e3](https://github.com/bartekpucek/miodkuj/tree/32004e3), MIT).
 - `/stop-slop`: remove predictable AI writing patterns from English prose (vendored from [hardikpandya/stop-slop@8da1f03](https://github.com/hardikpandya/stop-slop/tree/8da1f03), MIT).
 - `reviewer` agent: reviews a diff against the ADRs and the conventions above.
