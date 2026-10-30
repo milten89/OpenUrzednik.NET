@@ -6,7 +6,7 @@ using OpenUrzednik.Nbp.UrlBuilder;
 namespace OpenUrzednik.Nbp;
 
 /// <inheritdoc cref="INbpCurrencyExchangeRateClient"/>
-public partial class NbpCurrencyExchangeRateClient : INbpCurrencyExchangeRateClient
+public sealed partial class NbpCurrencyExchangeRateClient : INbpCurrencyExchangeRateClient
 {
     private static readonly NbpJsonContext JsonContext = new();
 

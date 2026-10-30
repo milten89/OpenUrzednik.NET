@@ -22,6 +22,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 ## 3. Public model
 
 - `public sealed record` with XML docs on every parameter. Use `IReadOnlyList<T>` for collections and override `Equals`/`GetHashCode` when the record holds a list.
+- Adding data to an existing model: a non-`required` `init` property, not a new positional parameter, and include it in a custom `Equals`/`GetHashCode` (ADR-0011).
 - Dates: public parameters and model properties are `DateTime` on every target (ADR-0005): convert arguments with `DateOnly.FromDateTime` at the start of the method, return `ToPublicDate()` from the mapper, and add the `DateOnly` overload to `NbpDateOnlyExtensions` (.NET only). DTOs, validators and URL builders use `DateOnly` (an alias for `DateTime` on netstandard2.0). Money and rates: `decimal`.
 - Check for name clashes with types in other namespaces of the same package.
 
@@ -36,6 +37,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 
 ## 6. Client method
 
+- SemVer (ADR-0011), from 1.0: a new method on a client interface is a minor change (suppress package validation's CP0006 for exactly that method); changing or removing one, or changing documented behaviour, needs a major version (`breaking-change` label, `version.json` raised). A patch adds no new method. Before 1.0, breaking changes only need the `breaking-change` label.
 - Add it to the interface first, with XML docs that state limits and the publication schedule. `CancellationToken cancellationToken = default` goes last, in both the interface and the class.
 - Follow the existing pattern: start the span (`<provider>.<area>.<operation>`, no `get_` prefix: `latest`, `today`, `top_count`, `date`, `range`) → set tags → combine the validators → `await _pipeline.GetAsync(...)` (whole payload) or `GetFirstAsync(...)` (first item of an array) with `.ConfigureAwait(false)`. The pipeline (`Nbp/Common/NbpRequestPipeline.cs`) logs and records validation failures, builds the path only after validation, sends the request, maps the payload and records failures. Put the URL builder call inside the path lambda (`() => builder.ForDate(date)`), never before it: builders reject invalid input.
 - No `catch (Exception)`. Failures are returned as results; only caller cancellation and argument errors are thrown (ADR-0002). A `null` argument (`ArgumentNullException.ThrowIfNull`) or an undefined enum value (`ArgumentGuard.ThrowIfUndefined`) throws synchronously: the public method is not `async`, checks them and returns `<Method>CoreAsync(...)`. Format and range checks stay validators that return a `ValidationError`.

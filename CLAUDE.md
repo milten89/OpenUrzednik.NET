@@ -77,6 +77,14 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - Dispose `HttpRequestMessage` and `HttpResponseMessage`.
 - Deserialize with source-generated `JsonTypeInfo<T>` (`NbpJsonContext`); no reflection-based serialization.
 
+**Compatibility ([ADR-0011](docs/adr/0011-compatibility-policy.md))**
+- Now: public classes not designed for inheritance are `sealed` (unsealing is a minor change, sealing after 1.0 a major one). The abstract extension points (`OpenUrzednikError`, `OpenUrzednikException`, `ValueValidator<T>`) never get a new abstract member, and no interface except a client interface gets a new member (telemetry interfaces are frozen).
+- From the first stable release:
+  - Covered within a major: the public API on every target, documented behaviour, the error contract (ADR-0002) and the telemetry contract (ADR-0003). Not covered: log and exception message text, log properties, undocumented behaviour, internal types (except Core internals called through `InternalsVisibleTo`, which are only added to), previews.
+  - A client interface may gain a method in a minor version; package validation reports it (CP0006), and the PR suppresses exactly that diagnostic, citing ADR-0011.
+  - Before a major removes a member, mark it `[Obsolete]` (with the replacement) for at least one minor. A patch (`hotfix/*`) adds no public API.
+  - A PR with a breaking change carries `breaking-change` and raises `version.json` on `develop` to the next major ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
+
 **Client API ([ADR-0007](docs/adr/0007-client-api-and-extensibility.md))**
 - The default case is one line (`new NbpGoldPriceClient(httpClient)`).
 - Parts that shape requests (the URL builders, `NbpTable`) are internal; tests replace them through an internal constructor. Each client has two public constructors: `(HttpClient)` and `(HttpClient, NbpOptions?, TimeProvider?, logger, traceSource)`. Gateways use `NbpOptions.ApiUrl` and a `DelegatingHandler`.
@@ -95,7 +103,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 
 - C# `latest`, nullable enabled, file-scoped namespaces, `_camelCase` private fields. `.editorconfig` is authoritative.
 - Namespaces ([ADR-0007](docs/adr/0007-client-api-and-extensibility.md)): clients, their interfaces and options in the provider's root namespace (`OpenUrzednik.Nbp`, files in the project root); models in area namespaces (`.Currency`, `.Table`, `.Gold`). Core: results and their `Task<…>` extensions in `OpenUrzednik.Core`, operations on a result as instance methods, extension methods next to the type they extend. No public `.Extensions` or `.Options` namespaces in Core or providers (package names like `OpenUrzednik.Extensions.Logging` and internal namespaces are exempt).
-- Public models are `sealed record`s with `IReadOnlyList<T>` collections. Records holding lists override `Equals`/`GetHashCode` (see `Currency/CurrencyExchangeRates.cs`).
+- Public models are `sealed record`s with `IReadOnlyList<T>` collections. Records holding lists override `Equals`/`GetHashCode` (see `Currency/CurrencyExchangeRates.cs`). New data on an existing model is a non-`required` `init` property, never a new positional parameter (it would change the constructor and `Deconstruct`); include it in a custom `Equals`/`GetHashCode` (ADR-0011).
 - DTOs are `internal sealed class` in `Dto/`, with `[JsonPropertyName]`. Mark a property `required` **only if the real API always returns it**: check with `/verify-api`.
 - Mappers are `internal static class Mapper` per area. Validators derive from `ValueValidator<T>` in `Validation/` and are `internal sealed`.
 - Public API needs `///` XML docs: a missing one is warning CS1591 in `src/`, and CI treats every warning as an error (`TreatWarningsAsErrors` when `ContinuousIntegrationBuild`; NuGet vulnerability warnings excepted). Mention API limits (date ranges, top count, publication schedule).

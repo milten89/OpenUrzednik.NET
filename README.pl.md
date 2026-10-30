@@ -84,6 +84,7 @@ Gotowe programy z klientami NBP, z kontenerem DI i bez niego, znajdziesz w [`sam
 ## Więcej po angielsku
 
 - [Testy](README.md#tests)
+- [Wersjonowanie i wsparcie](README.md#versioning-and-support)
 
 ---
 

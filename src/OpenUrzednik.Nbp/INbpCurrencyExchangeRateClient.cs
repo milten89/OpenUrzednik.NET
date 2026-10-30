@@ -17,6 +17,11 @@ namespace OpenUrzednik.Nbp;
 /// <see cref="System.DateTime.Kind"/> are ignored), and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
 /// On .NET 8 and later, <c>NbpDateOnlyExtensions</c> adds <c>DateOnly</c> overloads.
 /// </para>
+/// <para>
+/// Minor versions may add methods to this interface (ADR-0011). If you implement it yourself, e.g. as a decorator,
+/// a new method breaks your build until you add it; a <c>throw new NotImplementedException();</c> stub is enough for the
+/// methods your code doesn't call. Calling and mocking the interface aren't affected.
+/// </para>
 /// </remarks>
 public interface INbpCurrencyExchangeRateClient
 {
