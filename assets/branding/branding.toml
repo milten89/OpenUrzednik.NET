@@ -1,0 +1,160 @@
+# The single source of truth for the OpenUrzędnik.NET branding assets.
+# Edit this file, then run: uv run assets/branding/generate.py
+# BRANDING.md explains the design; the numbers live here.
+# All geometry is in SVG user units (the viewBox of the file it ends up in).
+
+# Name shown in every <title> and drawn as the wordmark.
+[brand]
+name = "OpenUrzędnik.NET"
+# The wordmark is drawn in two parts: the first in the ink color, the second in the accent color.
+wordmark = ["OpenUrzędnik", ".NET"]
+
+# Cascadia Mono (SIL OFL 1.1). The archive is downloaded once into a cache outside the
+# repository and checked against the SHA-256 below; `version` must match the font's own version.
+[font]
+url = "https://github.com/microsoft/cascadia-code/releases/download/v2102.25/CascadiaCode-2102.25.zip"
+sha256 = "a64e8834f06ec9acca4a5307cb6cf35922021d4fd0ca19096f8bf6a3e2515ad3"
+member = "ttf/CascadiaMono.ttf"
+version = "2102.025"
+# Weights the variable font is instanced at.
+bold = 700
+regular = 400
+
+# Color tokens, referenced by name below.
+[colors]
+purple = "#512BD4"       # ticket body, .NET in the light wordmark
+red = "#C8102E"          # strip at the top of the ticket, stripe on the social preview
+lilac = "#D9D2FA"        # OU.NET on the ticket
+white = "#FFFFFF"        # label, perforation
+ink = "#1F1F1F"          # wordmark on light backgrounds
+grey = "#5F5E5A"         # tagline on the social preview
+paper = "#FAFAF7"        # social preview background
+dark_ink = "#E6EDF3"     # wordmark on dark backgrounds
+dark_purple = "#9B87F5"  # .NET on dark backgrounds
+
+# The queue ticket shared by every icon, the headers and the social preview.
+# viewBox 0 0 120 120. The notches are semicircles cut into both sides, centered on notch_y.
+[ticket]
+viewbox = 120
+x = 22
+y = 14
+width = 76
+height = 92
+notch_radius = 8
+notch_y = 58
+fill = "purple"
+strip_height = 6
+strip_fill = "red"
+# Perforation: a dashed line along notch_y.
+perforation_x1 = 32
+perforation_x2 = 88
+perforation_width = 2
+perforation_dash = "4 4"
+perforation_stroke = "white"
+
+# "OU.NET" in the top half of every ticket, centered on center_x.
+[ticket.top_text]
+text = "OU.NET"
+center_x = 60
+baseline = 44
+size = 15
+color = "lilac"
+
+# The label in the bottom half ("200" or the provider name), centered on center_x.
+# size = min(max_size, max_width / text width at size 1), rounded down to size_step.
+[ticket.label]
+center_x = 60
+baseline = 94
+max_size = 30
+max_width = 56
+size_step = 0.5
+max_chars = 5
+color = "white"
+
+# Icons: one SVG and one PNG (render_size × render_size) per entry, file name without extension.
+# label_in_title = false keeps the label out of the <title> (the base icon is just the brand).
+# base = true marks the one icon whose ticket the headers and social cards reuse (exactly one).
+[icons]
+render_size = 128
+
+[[icons.icon]]
+file = "icon"
+label = "200"
+label_in_title = false
+base = true
+
+[[icons.icon]]
+file = "icon-nbp"
+label = "NBP"
+
+[[icons.icon]]
+file = "icon-gus"
+label = "GUS"
+
+[[icons.icon]]
+file = "icon-krs"
+label = "KRS"
+
+[[icons.icon]]
+file = "icon-mf"
+label = "MF"
+
+# Favicon: a bigger ticket with a thicker strip, no perforation, no text. SVG + PNG.
+[favicon]
+file = "favicon"
+png = "favicon-32"
+render_size = 32
+x = 14
+y = 10
+width = 92
+height = 100
+notch_radius = 12
+notch_y = 60
+strip_height = 16
+
+# README headers: the base icon scaled by icon_scale at the origin, then the wordmark.
+# Width = wordmark_x + wordmark width + padding_right, rounded up to a whole unit. SVG only.
+[header]
+height = 96
+icon_scale = 0.8
+wordmark_x = 104
+wordmark_baseline = 62
+wordmark_size = 40
+padding_right = 4
+
+[[header.variant]]
+file = "header-light"
+ink = "ink"
+accent = "purple"
+
+[[header.variant]]
+file = "header-dark"
+ink = "dark_ink"
+accent = "dark_purple"
+
+# Social preview cards (1280×640): flag stripe, base icon, wordmark and a tagline. SVG + PNG.
+# The maintainer uploads one of them to GitHub by hand.
+[social]
+width = 1280
+height = 640
+background = "paper"
+# Bands at the top, drawn in order: [y, height, color].
+bands = [[0, 16, "white"], [16, 16, "red"]]
+icon_translate = [64, 176]
+icon_scale = 2.4
+text_x = 392
+wordmark_baseline = 322
+wordmark_size = 72
+wordmark_ink = "ink"
+wordmark_accent = "purple"
+tagline_baseline = 392
+tagline_size = 30
+tagline_color = "grey"
+
+[[social.card]]
+file = "social-preview"
+tagline = "Klienci .NET do polskich API publicznych"
+
+[[social.card]]
+file = "social-preview-en"
+tagline = ".NET clients for Polish public APIs"

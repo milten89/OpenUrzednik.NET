@@ -1,6 +1,6 @@
 # OpenUrzędnik.NET branding
 
-The spec for the project's icons and logo. With this file and `icon.svg`, a person or an agent can rebuild every asset or draw a new provider icon so it matches the rest.
+The spec for the project's icons and logo. `branding.toml` holds every number, color, label and tagline, and `generate.py` builds every asset from it. This file explains the design; when a number here and in `branding.toml` disagree, `branding.toml` wins.
 
 ## Idea
 
@@ -18,9 +18,12 @@ The design is flat on purpose: no gradients, shadows or outlines. It has to read
 | `icon-<provider>.svg`, `icon-<provider>.png` | Base ticket with the provider name in place of `200` | NuGet icon of the provider and its integration packages (`icon-nbp` → `Nbp`, `Nbp.DependencyInjection`) |
 | `favicon.svg`, `favicon-32.png` | Ticket without text | Anything at 32 px or less |
 | `header-light.svg`, `header-dark.svg` | Ticket + wordmark | Root `README.md` / `README.pl.md` |
-| `social-preview.svg`, `social-preview.png` | 1280×640 card | GitHub repository social preview (uploaded by hand) |
+| `social-preview.svg`, `social-preview.png` | 1280×640 card, Polish tagline | GitHub repository social preview (uploaded by hand) |
+| `social-preview-en.svg`, `social-preview-en.png` | 1280×640 card, English tagline | The same, for an English-facing upload |
+| `branding.toml` | Every number, color, label and tagline | `generate.py` |
+| `generate.py` | Generator script | Builds every SVG and PNG above |
 
-The SVG is the source; each PNG is rendered from its SVG. Text in every SVG is converted to outlines (paths), so the files never depend on installed fonts.
+`branding.toml` is the source: `generate.py` writes each SVG from it and renders each PNG from its SVG. Text in every SVG is converted to outlines (paths), so the files never depend on installed fonts.
 
 ### Package → icon
 
@@ -119,7 +122,7 @@ No perforation, no text. Every package and provider shares the same favicon.
 
 ## README header
 
-- Canvas height 96. Width = 104 + wordmark width + 4 (483 for the current wordmark).
+- Canvas height 96. Width = 104 + wordmark width + 4, rounded up to a whole unit (483 for the current wordmark).
 - Ticket: the full icon group scaled by 0.8 at the origin, so it is about 61×74 inside x 17.6–78.4, y 11.2–84.8.
 - Wordmark: starts at x 104, baseline 62, size 40, weight 700.
 - No background (transparent). Two files: `header-light.svg` (ink `#1F1F1F`, `.NET` `#512BD4`) and `header-dark.svg` (ink `#E6EDF3`, `.NET` `#9B87F5`), switched with `<picture>` and `prefers-color-scheme`.
@@ -131,52 +134,24 @@ No perforation, no text. Every package and provider shares the same favicon.
 - Ticket: the base icon group, `translate(64 176) scale(2.4)` (ticket body at x 116.8–299.2, y 209.6–430.4).
 - Wordmark: x 392, baseline 322, size 72, weight 700, ink + purple.
 - Tagline: `Klienci .NET do polskich API publicznych`, x 392, baseline 392, size 30, weight 400, `#5F5E5A`.
+- Two cards, identical except for the tagline: `social-preview` (Polish, above) and `social-preview-en` (`.NET clients for Polish public APIs`, for an English-facing upload). The maintainer chooses which one to upload.
 - GitHub crops the edges in some views: keep content at least 40 px from every edge.
 
 ## Adding a provider icon
 
-1. Copy `icon.svg` to `icon-<provider>.svg` (lowercase file name).
-2. Replace the **last** `<path>` (the white `200`) with the outlined label, sized and centered by the label rules, baseline 94. Change `<title>` to `OpenUrzędnik.NET <LABEL>`.
-3. Render `icon-<provider>.png` at 128×128.
-4. Check it at 128, 64 and 32 px next to `icon.png`: the label must not touch the notches.
-5. Wire it as described in "Package → icon" and add the row to the table there.
+1. Add an entry to `[icons]` in `branding.toml`: `file = "icon-<provider>"` (lowercase) and `label`, following the label rules. The script sizes and centers the label and sets `<title>` to `OpenUrzędnik.NET <LABEL>`.
+2. Run `uv run assets/branding/generate.py`. It writes `icon-<provider>.svg` and renders `icon-<provider>.png` at 128×128.
+3. Check it at 128, 64 and 32 px next to `icon.png`: the label must not touch the notches.
+4. Wire it as described in "Package → icon": `OpenUrzednikPackageIcon` in the csproj, the PNG in `pathFilters` in `version.json` and in the `paths` filter of `nuget-pre-release.yml`, and the row in the table there.
 
-## Converting text to outlines and rendering PNGs
+## Generating the assets
 
-Any tool that outlines text works: Inkscape (*Path → Object to Path*), Figma (*Outline stroke / Flatten*), or a script. The current files were made with Python `fonttools` and Node `@resvg/resvg-js`:
-
-```python
-# pip install fonttools
-from fontTools.ttLib import TTFont
-from fontTools.varLib.instancer import instantiateVariableFont
-from fontTools.pens.svgPathPen import SVGPathPen
-from fontTools.pens.transformPen import TransformPen
-
-font = instantiateVariableFont(TTFont("CascadiaMono.ttf"), {"wght": 700})
-glyphs, cmap, upm = font.getGlyphSet(), font.getBestCmap(), font["head"].unitsPerEm
-
-def text_path(text, center_x, baseline, size):
-    k = size / upm
-    x = center_x - sum(glyphs[cmap[ord(c)]].width for c in text) * k / 2
-    pen = SVGPathPen(glyphs, ntos=lambda v: f"{v:.2f}".rstrip("0").rstrip("."))
-    for c in text:
-        g = glyphs[cmap[ord(c)]]
-        g.draw(TransformPen(pen, (k, 0, 0, -k, x, baseline)))  # font units are y-up
-        x += g.width * k
-    return pen.getCommands()
-
-print(f'<path fill="#FFFFFF" d="{text_path("NBP", 60, 94, 30)}"/>')
+```bash
+uv run assets/branding/generate.py          # write every SVG and PNG listed in branding.toml
+uv run assets/branding/generate.py --check  # generate into a temporary directory; exit 1 and list the files that differ
 ```
 
-```js
-// npm install @resvg/resvg-js
-const fs = require('fs');
-const { Resvg } = require('@resvg/resvg-js');
-const png = new Resvg(fs.readFileSync('icon-nbp.svg'), { fitTo: { mode: 'width', value: 128 } }).render().asPng();
-fs.writeFileSync('icon-nbp.png', png);
-```
-
-Render sizes: icons 128, favicon 32, social preview 1280. Write SVGs as UTF-8 with LF line endings (`<title>` contains `ę`).
+The script is a uv script with pinned dependencies, locked with hashes in `generate.py.lock`: `fonttools` outlines the text and `resvg-py` (resvg) renders the PNGs. It downloads the font archive named in `branding.toml` once into a cache outside the repository (`%LOCALAPPDATA%\openurzednik-branding` on Windows, `$XDG_CACHE_HOME/openurzednik-branding` or `~/.cache/openurzednik-branding` elsewhere), checks its SHA-256, and fails if the font version differs from the one pinned there. Output is deterministic: running it twice gives the same bytes, so `--check` passes on an unchanged tree. Render sizes: icons 128, favicon 32, social preview 1280. SVGs are UTF-8 with LF line endings (`<title>` contains `ę`).
 
 ## Don'ts
 
