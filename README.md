@@ -60,6 +60,8 @@ The packages share one version and follow [Semantic Versioning](https://semver.o
 
 A minor version may add client methods, model properties and options, raise a dependency's minimum version, or drop a .NET target that isn't the lowest one once Microsoft has ended its support. A patch version may raise a dependency's patch version to fix a vulnerability. Log and exception message text can change in any version, and previews may break anything. The full rules are in [ADR-0011](docs/adr/0011-compatibility-policy.md).
 
+Fixes go to the latest minor version of the latest major version, as a new patch version: to get a fix, update to the latest minor. Previews aren't supported. When a new major version is released, the previous major version still gets security fixes for 6 months. To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
 ---
 
 ## 🛠️ Quick start
