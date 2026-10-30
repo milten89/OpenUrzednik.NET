@@ -31,9 +31,8 @@ The design is flat on purpose: no gradients, shadows or outlines. It has to read
 |---|---|
 | `OpenUrzednik.Core`, `.Extensions.Logging`, `.Diagnostics` | `icon.png` |
 | `OpenUrzednik.Nbp`, `OpenUrzednik.Nbp.DependencyInjection` | `icon-nbp.png` |
-| `OpenUrzednik.Gus` (and its integrations) | `icon-gus.png` (not wired until the provider is ready, ADR-0010) |
-| `OpenUrzednik.Krs` (and its integrations) | `icon-krs.png` (not wired until the provider is ready, ADR-0010) |
-| `OpenUrzednik.Mf` (and its integrations) | `icon-mf.png` (not wired until the provider is ready, ADR-0010) |
+
+A provider gets its icon when it becomes ready (ADR-0010), by adding its entry to `branding.toml`.
 
 Rule: shared infrastructure gets the base icon. A provider package and every package built on it (`*.DependencyInjection`, future adapters) get that provider's icon. The root `Directory.Build.props` packs the file named by the `OpenUrzednikPackageIcon` property as `icon.png` (default `icon.png`). A provider csproj and each package built on it set `<OpenUrzednikPackageIcon>icon-<provider>.png</OpenUrzednikPackageIcon>`. When you add a provider icon, also add its PNG to `pathFilters` in `version.json` and to the `paths` filter of `.github/workflows/nuget-pre-release.yml` (ADR-0008).
 

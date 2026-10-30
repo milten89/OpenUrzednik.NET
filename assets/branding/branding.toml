@@ -87,18 +87,6 @@ base = true
 file = "icon-nbp"
 label = "NBP"
 
-[[icons.icon]]
-file = "icon-gus"
-label = "GUS"
-
-[[icons.icon]]
-file = "icon-krs"
-label = "KRS"
-
-[[icons.icon]]
-file = "icon-mf"
-label = "MF"
-
 # Favicon: a bigger ticket with a thicker strip, no perforation, no text. SVG + PNG.
 [favicon]
 file = "favicon"
