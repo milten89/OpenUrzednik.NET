@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Microsoft.Extensions.DependencyInjection registration for the OpenUrzednik.NET NBP clients: typed HttpClients, validated options, logging and tracing, ready for AddStandardResilienceHandler().</Description>
+    <Description>Unofficial Microsoft.Extensions.DependencyInjection registration for the OpenUrzednik.NET NBP clients: typed HttpClients, validated options, logging and tracing, ready for AddStandardResilienceHandler().</Description>
     <PackageTags>NBP;DependencyInjection;HttpClientFactory;API;Poland;Gov</PackageTags>
   </PropertyGroup>
 

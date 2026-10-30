@@ -2,12 +2,12 @@
 
 🇵🇱 [Wersja polska (skrócona)](README.pl.md)
 
-[![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Core?style=flat-square)](https://www.nuget.org/)
+[![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Nbp?style=flat-square)](https://www.nuget.org/packages/OpenUrzednik.Nbp)
 [![License](https://img.shields.io/github/license/milten89/OpenUrzednik.NET?style=flat-square)](LICENSE)
 
 **OpenUrzednik.NET** is a set of open-source .NET libraries for Polish public APIs and public data. At this stage the project focuses on the shared foundations (`OpenUrzednik.Core`) and on the reference client for the NBP API (`OpenUrzednik.Nbp`), which the next packages will follow.
 
-> ⚠️ **Unofficial project:** this is a community initiative. It is not affiliated with, authorized or sponsored by any Polish ministry or government office.
+> ⚠️ **Unofficial project:** this is a community initiative. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP), any ministry, government office or any other Polish public institution.
 
 ---
 
@@ -59,37 +59,50 @@ A minor version may add client methods, model properties and options, raise a de
 
 ## 🛠️ Quick start
 
-The easiest place to start right now is `OpenUrzednik.Core`.
+Install the NBP client:
 
-### Using `OpenUrzednikResult`
-
-```csharp
-using OpenUrzednik.Core;
-using OpenUrzednik.Core.Errors;
-
-OpenUrzednikResult<int> result = OpenUrzednikResult.Success(42);
-int value = result.EnsureSuccess();
-Console.WriteLine(value);
+```bash
+dotnet add package OpenUrzednik.Nbp
 ```
 
-A business error:
+Until 1.0.0, add `--prerelease`: only previews are published so far.
 
 ```csharp
-using OpenUrzednik.Core;
-using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
+using OpenUrzednik.Nbp;
+using OpenUrzednik.Nbp.Gold;
 
-OpenUrzednikResult<int> failed = OpenUrzednikResult.Failure<int>(new ValidationError("NIP is invalid."));
+// One HttpClient for the whole app; the clients don't change it.
+using var httpClient = new HttpClient();
+var gold = new NbpGoldPriceClient(httpClient);
+var rates = new NbpCurrencyExchangeRateClient(httpClient);
 
+// Expected failures (no data, timeouts, HTTP errors) come back as errors, not exceptions.
+var latest = await gold.GetLatestAsync();
+if (latest.IsSuccess)
+    Console.WriteLine($"Gold, 1 g: {latest.Value.Price} PLN ({latest.Value.Date:yyyy-MM-dd})");
+else
+    Console.WriteLine($"Gold price unavailable: {latest.Errors[0].Message}");
+
+// Match handles both cases in one expression.
+var usd = await rates.GetTopCountAsync("USD", 5);
+Console.WriteLine(usd.Match(
+    value => $"USD, last {value.Rates.Count} mid rates: {string.Join(", ", value.Rates.Select(r => r.Price))}",
+    errors => $"USD rates unavailable: {errors[0].Message}"));
+
+// Prefer exceptions? EnsureSuccess() throws an OpenUrzednikException subtype for a failed result.
 try
 {
-    int value = failed.EnsureSuccess();
+    GoldPrice price = (await gold.GetAsync(new DateTime(2025, 12, 25))).EnsureSuccess(); // no price on Christmas
+    Console.WriteLine(price.Price);
 }
-catch (OpenUrzednikValidationException ex)
+catch (OpenUrzednikException ex)
 {
-    Console.WriteLine(ex.Message);
+    Console.WriteLine($"{ex.GetType().Name} ({ex.Error?.Code}): {ex.Message}");
 }
 ```
+
+Every call returns an `OpenUrzednikResult<T>`. [Working with a result](src/OpenUrzednik.Core/README.md#working-with-a-result) covers `Map`, `Bind`, `TryGetValue` and the exceptions; the [OpenUrzednik.Nbp README](src/OpenUrzednik.Nbp/README.md) lists the other methods and the API's limits.
 
 ### Clients and DI
 

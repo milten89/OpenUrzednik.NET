@@ -2,6 +2,8 @@
 
 🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md)
 
+> ⚠️ **Unofficial:** OpenUrzednik.NET is a community project. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP) or any other Polish public institution.
+
 Registers the **NBP** clients from [OpenUrzednik.Nbp](https://www.nuget.org/packages/OpenUrzednik.Nbp) in Microsoft.Extensions.DependencyInjection: typed clients from `IHttpClientFactory`, validated options, logging and tracing.
 
 > Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.

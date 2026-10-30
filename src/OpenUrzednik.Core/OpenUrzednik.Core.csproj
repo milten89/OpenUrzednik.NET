@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Core abstractions for OpenUrzednik.NET: Result-pattern error handling (OpenUrzednikResult), typed exceptions, and provider-agnostic building blocks for Polish government API clients.</Description>
+    <Description>Unofficial core abstractions for OpenUrzednik.NET, .NET clients for Polish public APIs: Result-pattern error handling (OpenUrzednikResult), typed errors and exceptions, and provider-agnostic building blocks.</Description>
     <PackageTags>ResultPattern;ErrorHandling;API;Poland;Gov</PackageTags>
   </PropertyGroup>
 
