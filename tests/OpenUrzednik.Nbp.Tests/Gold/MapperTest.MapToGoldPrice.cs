@@ -11,7 +11,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Nbp.Tests.Gold;
 
-public class MapperTest
+public partial class MapperTest
 {
     [Fact]
     public void MapToGoldPrice_SingleDto_ReturnsGoldPriceWithMatchingDateAndPrice()

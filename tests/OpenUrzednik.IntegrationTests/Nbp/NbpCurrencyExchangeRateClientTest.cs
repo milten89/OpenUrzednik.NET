@@ -62,6 +62,38 @@ public class NbpCurrencyExchangeRateClientTest : IClassFixture<NbpHttpClientFixt
         result.Value.Rates.Count.ShouldBeGreaterThan(200);
     }
 
+    [ManualFact]
+    public async Task GetLastPublishedBeforeAsync_Monday_ReturnsThePreviousFridaysRate()
+    {
+        // Arrange
+        var date = new DateTime(2026, 10, 5); // a Monday; the Friday before is 2026-10-02
+
+        // Act
+        var result = await _client.GetLastPublishedBeforeAsync("USD", date, cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var rate = result.Value.Rates.ShouldHaveSingleItem();
+        rate.PublicationDate.ShouldBe(new DateTime(2026, 10, 2));
+        rate.Price.ShouldBeGreaterThan(0m);
+    }
+
+    [ManualFact]
+    public async Task GetBuySellLastPublishedBeforeAsync_Monday_ReturnsThePreviousFridaysRate()
+    {
+        // Arrange
+        var date = new DateTime(2026, 10, 5); // a Monday; the Friday before is 2026-10-02
+
+        // Act
+        var result = await _client.GetBuySellLastPublishedBeforeAsync("USD", date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var rate = result.Value.Rates.ShouldHaveSingleItem();
+        rate.TableId.ShouldBe("192/C/NBP/2026");
+        rate.PublicationDate.ShouldBe(new DateTime(2026, 10, 2));
+    }
+
     // Guards the limits in DateRangeValidator and TopCountValidator: one step past each must be rejected by the API itself.
     [ManualTheory]
     [InlineData("exchangerates/rates/a/usd/2025-01-01/2026-01-04/", "367")]

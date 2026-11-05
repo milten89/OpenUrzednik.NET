@@ -28,6 +28,15 @@ internal static class Mapper
         return Array.AsReadOnly(tables);
     }
 
+    /// <summary>The table with the latest publication date, or <see langword="null"/> when <paramref name="dto"/> is empty.</summary>
+    internal static ExchangeRateTable? MapLastToExchangeRateTable(ExchangeRateTableDto[] dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+
+        var last = NbpPayload.Latest(dto, static x => x.PublicationDate);
+        return last is null ? null : MapToExchangeRateTable(last);
+    }
+
     internal static ExchangeRateTable MapToExchangeRateTable(ExchangeRateTableDto dto)
     {
         NbpPayload.EnsurePresent(dto, "item");
@@ -56,6 +65,15 @@ internal static class Mapper
             tables[i] = MapToBuySellExchangeRateTable(dto[i]);
 
         return Array.AsReadOnly(tables);
+    }
+
+    /// <summary>The table with the latest publication date, or <see langword="null"/> when <paramref name="dto"/> is empty.</summary>
+    internal static BuySellExchangeRateTable? MapLastToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+
+        var last = NbpPayload.Latest(dto, static x => x.PublicationDate);
+        return last is null ? null : MapToBuySellExchangeRateTable(last);
     }
 
     internal static BuySellExchangeRateTable MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto dto)

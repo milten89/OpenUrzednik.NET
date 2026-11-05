@@ -58,8 +58,9 @@ Each client has the same groups of methods; every method takes a `CancellationTo
 | One date | `GetAsync(currency, date, table)`, `GetBuySellAsync(currency, date)` | `GetAsync(table, date)`, `GetBuySellAsync(date)` | `GetAsync(date)` |
 | Date range | `GetAsync(currency, from, to, table)`, `GetBuySellAsync(currency, from, to)` | `GetAsync(table, from, to)`, `GetBuySellAsync(from, to)` | `GetAsync(from, to)` |
 | Last N | `GetTopCountAsync(currency, topCount, table)`, `GetBuySellTopCountAsync(currency, topCount)` | `GetTopCountAsync(table, topCount)`, `GetBuySellTopCountAsync(topCount)` | `GetTopCountAsync(topCount)` |
+| Last before a date | `GetLastPublishedBeforeAsync(currency, date, table)`, `GetBuySellLastPublishedBeforeAsync(currency, date)` | `GetLastPublishedBeforeAsync(table, date)`, `GetBuySellLastPublishedBeforeAsync(date)` | `GetLastPublishedBeforeAsync(date)` |
 
-The currency client returns one currency's rates (`CurrencyExchangeRates`, with a `Rates` list), the table client whole tables (`ExchangeRateTable`) and the gold client gold prices (`GoldPrice`). A range keeps the order NBP returns, which today is ascending by date.
+The currency client returns one currency's rates (`CurrencyExchangeRates`, with a `Rates` list), the table client whole tables (`ExchangeRateTable`) and the gold client gold prices (`GoldPrice`). A range keeps the order NBP returns, which today is ascending by date. `GetLastPublishedBeforeAsync` returns a single item: one table, one gold price, or a `CurrencyExchangeRates` with exactly one rate.
 
 ## Data availability and limits
 
@@ -82,28 +83,20 @@ The currency client returns one currency's rates (`CurrencyExchangeRates`, with 
 | Date range | `to - from` at most 367 days for rates and gold, 93 days for tables |
 | Currency code | 3 letters, upper or lower case |
 
-In a range method, `from` may be earlier than the earliest date: only `to` is checked against the earliest date and against today. `from` later than `to` is a validation error.
+In a range method, `from` may be earlier than the earliest date: only `to` is checked against the earliest date and against today. `from` later than `to` is a validation error. In `Get…LastPublishedBeforeAsync`, the client checks the day before `date` the same way, so `date` must be later than the earliest date and not later than tomorrow. With tomorrow, the result is today's publication once it is out (see the publication times above), and the one before until then.
 
 **Empty answers.** A date or range with no publication (a weekend, a holiday, a date before the table existed) is a `NotFoundError`: NBP answers it with an HTTP 404 (the error then carries the status code) or with an empty list. See [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors) for the other error types. NBP describes its API in the [official documentation](https://api.nbp.pl/en.html).
 
 ## The last rate before a date
 
-To get the rate of the last publication before a given date, request a short range that ends the day before and take the item with the latest `PublicationDate`. Weekends and holidays have no publication, so the range has to reach back far enough: 10 days for tables A and C, 21 days for table B (published weekly).
+Many Polish tax and accounting rules use the NBP rate from the last business day before a given day, for example the day of an invoice or a payment. `GetLastPublishedBeforeAsync` returns the last publication before `date`, never the one on `date` itself: for a Monday you usually get the previous Friday's rate, even after NBP has published Monday's.
 
 ```csharp
-var date = new DateTime(2026, 3, 16);
-
-var result = await client.GetAsync("USD", date.AddDays(-10), date.AddDays(-1));
+var result = await client.GetLastPublishedBeforeAsync("USD", new DateTime(2026, 3, 16));
 if (result.IsSuccess)
 {
     var rate = result.Value.Rates[0];
-    foreach (var item in result.Value.Rates)
-    {
-        if (item.PublicationDate > rate.PublicationDate)
-            rate = item;
-    }
-
-    Console.WriteLine($"{rate.PublicationDate:yyyy-MM-dd}: {rate.Price}");
+    Console.WriteLine($"{rate.TableId}, {rate.PublicationDate:yyyy-MM-dd}: {rate.Price}");
 }
 else
 {
@@ -111,7 +104,9 @@ else
 }
 ```
 
-For table B, pass `TableType.B` and `date.AddDays(-21)`. For buy and sell rates, use `GetBuySellAsync(currency, from, to)`; its items have `Ask` and `Bid`. A range without any publication is a `NotFoundError`.
+The client sends one range request that ends the day before `date` and returns the item with the latest publication date. The range covers 14 days for tables A and C and for gold, and 28 days for table B, which NBP publishes once a week. No gap between NBP publications is that long, so a `NotFoundError` means NBP published nothing in the range, for example before the first table or gold price.
+
+For table B, pass `TableType.B`. For buy and sell rates, call `GetBuySellLastPublishedBeforeAsync(currency, date)`; the rate has `Ask` and `Bid`. The table and gold clients have the same methods. Only the date part of `date` counts, as in every other method.
 
 ## HttpClient and thread safety
 
@@ -189,25 +184,30 @@ Each client method starts one span on the `OpenUrzednik.Nbp` source, with the HT
 | `nbp.currency.top_count` | `GetTopCountAsync` | `nbp.currency`, `nbp.table`, `nbp.top_count` |
 | `nbp.currency.date` | `GetAsync(currency, date)` | `nbp.currency`, `nbp.table`, `nbp.date` |
 | `nbp.currency.range` | `GetAsync(currency, from, to)` | `nbp.currency`, `nbp.table`, `nbp.from`, `nbp.to` |
+| `nbp.currency.last_published_before` | `GetLastPublishedBeforeAsync(currency, date)` | `nbp.currency`, `nbp.table`, `nbp.date` |
 | `nbp.currency.buy_sell_latest`, `.buy_sell_today` | `GetBuySellLatestAsync`, `GetBuySellTodayAsync` | `nbp.currency` |
 | `nbp.currency.buy_sell_top_count` | `GetBuySellTopCountAsync` | `nbp.currency`, `nbp.top_count` |
 | `nbp.currency.buy_sell_date` | `GetBuySellAsync(currency, date)` | `nbp.currency`, `nbp.date` |
 | `nbp.currency.buy_sell_range` | `GetBuySellAsync(currency, from, to)` | `nbp.currency`, `nbp.from`, `nbp.to` |
+| `nbp.currency.buy_sell_last_published_before` | `GetBuySellLastPublishedBeforeAsync(currency, date)` | `nbp.currency`, `nbp.date` |
 | `nbp.table.latest`, `.today` | `NbpExchangeRateTableClient.GetLatestAsync`, `GetTodayAsync` | `nbp.table` |
 | `nbp.table.top_count` | `GetTopCountAsync` | `nbp.table`, `nbp.top_count` |
 | `nbp.table.date` | `GetAsync(table, date)` | `nbp.table`, `nbp.date` |
 | `nbp.table.range` | `GetAsync(table, from, to)` | `nbp.table`, `nbp.from`, `nbp.to` |
+| `nbp.table.last_published_before` | `GetLastPublishedBeforeAsync(table, date)` | `nbp.table`, `nbp.date` |
 | `nbp.table.buy_sell_latest`, `.buy_sell_today` | `GetBuySellLatestAsync`, `GetBuySellTodayAsync` | none |
 | `nbp.table.buy_sell_top_count` | `GetBuySellTopCountAsync` | `nbp.top_count` |
 | `nbp.table.buy_sell_date` | `GetBuySellAsync(date)` | `nbp.date` |
 | `nbp.table.buy_sell_range` | `GetBuySellAsync(from, to)` | `nbp.from`, `nbp.to` |
+| `nbp.table.buy_sell_last_published_before` | `GetBuySellLastPublishedBeforeAsync(date)` | `nbp.date` |
 | `nbp.gold.latest`, `.today` | `NbpGoldPriceClient.GetLatestAsync`, `GetTodayAsync` | none |
 | `nbp.gold.top_count` | `GetTopCountAsync` | `nbp.top_count` |
 | `nbp.gold.date` | `GetAsync(date)` | `nbp.date` |
 | `nbp.gold.range` | `GetAsync(from, to)` | `nbp.from`, `nbp.to` |
+| `nbp.gold.last_published_before` | `GetLastPublishedBeforeAsync(date)` | `nbp.date` |
 | `nbp.http.get` | the request of any method | `http.request.method`, `server.address` (e.g. `api.nbp.pl`, or the `ApiUrl` host), `server.port` (always set, e.g. `443`), `url.path` (e.g. `/api/cenyzlota`), `http.response.status_code` |
 
-Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)).
+Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. In the `last_published_before` spans, `nbp.date` is the date passed to the method, not the end of the requested range. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)).
 
 ### Log events
 

@@ -50,4 +50,49 @@ public class NbpPayloadTest
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, error.Message);
         logger.Received(1).Log(OpenUrzednikLogLevel.Error, NbpEvents.MappingFailed, Arg.Any<InvalidPayloadException>(), "Failed to map NBP response: {reason}", "reason", error.Message);
     }
+
+    [Fact]
+    public void Latest_UnsortedItems_ReturnsItemWithLatestDate()
+    {
+        // Arrange
+        string[] items = ["2026-09-30", "2026-10-02", "2026-10-01"];
+
+        // Act
+        var result = NbpPayload.Latest(items, static x => DateOnly.FromDateTime(DateTime.Parse(x, System.Globalization.CultureInfo.InvariantCulture)));
+
+        // Assert
+        result.ShouldBeSameAs(items[1]);
+    }
+
+    [Fact]
+    public void Latest_EqualDates_ReturnsFirstOfThem()
+    {
+        // Arrange
+        var first = new object();
+        var second = new object();
+
+        // Act
+        var result = NbpPayload.Latest([first, second], static _ => new DateOnly(2026, 10, 2));
+
+        // Assert
+        result.ShouldBeSameAs(first);
+    }
+
+    [Fact]
+    public void Latest_NoItems_ReturnsNull()
+    {
+        // Act
+        var result = NbpPayload.Latest(Array.Empty<object>(), static _ => new DateOnly(2026, 10, 2));
+
+        // Assert
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Latest_NullItem_ThrowsInvalidPayloadException()
+    {
+        // Act && Assert
+        Should.Throw<InvalidPayloadException>(() => NbpPayload.Latest([new object(), null!], static _ => new DateOnly(2026, 10, 2)))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
+    }
 }

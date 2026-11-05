@@ -114,4 +114,26 @@ public sealed partial class NbpCurrencyExchangeRateClient
         return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellAsync), validation,
             () => _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency).ForDateRange(fromDay, toDay), JsonContext.BuySellCurrencyExchangeRatesDto, Mapper.MapToBuySellExchangeRates, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <inheritdoc/>
+    public Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLastPublishedBeforeAsync(string currency, DateTime date, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(currency);
+
+        return GetBuySellLastPublishedBeforeCoreAsync(currency, date, cancellationToken);
+    }
+
+    private async Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLastPublishedBeforeCoreAsync(string currency, DateTime date, CancellationToken cancellationToken)
+    {
+        var day = DateOnly.FromDateTime(date);
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.buy_sell_last_published_before");
+        traceSpan.SetTag("nbp.currency", currency);
+        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+
+        var validation = new Iso4217Validator(nameof(currency), currency).Validate()
+            .And(new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, NbpCalendar.Today(_timeProvider)).Validate());
+
+        return await _pipeline.GetLastAsync(traceSpan, nameof(GetBuySellLastPublishedBeforeAsync), validation,
+            () => _urlBuilderFactory.GetCurrencyBuilder(NbpTable.C, currency).ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), day.AddDays(-1)), JsonContext.BuySellCurrencyExchangeRatesDto, Mapper.MapLastToBuySellExchangeRates, cancellationToken).ConfigureAwait(false);
+    }
 }
