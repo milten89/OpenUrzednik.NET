@@ -58,6 +58,24 @@ internal sealed class NbpRequestPipeline
             : EmptyArray<TModel>(traceSpan, requestPath!));
     }
 
+    /// <summary>
+    /// Like <see cref="GetAsync{TDto, TModel}"/>, for a range request of which only the last publication is wanted.
+    /// <paramref name="mapLast"/> maps the item with the latest publication date, or returns <see langword="null"/> when the payload
+    /// has no item; like an empty array in <see cref="GetFirstAsync{TDto, TModel}"/>, that becomes a <see cref="NotFoundError"/>
+    /// without a status code.
+    /// </summary>
+    internal async Task<OpenUrzednikResult<TModel>> GetLastAsync<TDto, TModel>(IOpenUrzednikSpan traceSpan, string operation, OpenUrzednikResult validation,
+        Func<string> path, JsonTypeInfo<TDto> typeInfo, Func<TDto, TModel?> mapLast, CancellationToken cancellationToken)
+        where TModel : class
+    {
+        var (response, requestPath) = await RequestAsync(traceSpan, operation, validation, path, typeInfo, cancellationToken).ConfigureAwait(false);
+
+        return response.Bind(dto => NbpPayload.Map(dto, mapLast, _telemetry, traceSpan)
+            .Bind(model => model is not null
+                ? OpenUrzednikResult.Success(model)
+                : EmptyArray<TModel>(traceSpan, requestPath!)));
+    }
+
     private async Task<(OpenUrzednikResult<TDto> Response, string? Path)> RequestAsync<TDto>(IOpenUrzednikSpan traceSpan, string operation,
         OpenUrzednikResult validation, Func<string> path, JsonTypeInfo<TDto> typeInfo, CancellationToken cancellationToken)
     {

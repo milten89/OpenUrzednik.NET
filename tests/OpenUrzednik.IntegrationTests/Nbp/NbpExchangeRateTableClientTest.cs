@@ -28,6 +28,37 @@ public class NbpExchangeRateTableClientTest : IClassFixture<NbpHttpClientFixture
         result.Value.Count.ShouldBe(topCount);
     }
 
+    // Table B is published on Wednesdays: for a Thursday the last one before is the day before.
+    [ManualFact]
+    public async Task GetLastPublishedBeforeAsync_TableBOnThursday_ReturnsWednesdaysTable()
+    {
+        // Arrange
+        var date = new DateTime(2026, 10, 1); // a Thursday
+
+        // Act
+        var result = await _client.GetLastPublishedBeforeAsync(TableType.B, date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.TableId.ShouldBe("039/B/NBP/2026");
+        result.Value.PublicationDate.ShouldBe(new DateTime(2026, 9, 30));
+    }
+
+    [ManualFact]
+    public async Task GetBuySellLastPublishedBeforeAsync_Monday_ReturnsThePreviousFridaysTable()
+    {
+        // Arrange
+        var date = new DateTime(2026, 10, 5); // a Monday; the Friday before is 2026-10-02
+
+        // Act
+        var result = await _client.GetBuySellLastPublishedBeforeAsync(date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.TableId.ShouldBe("192/C/NBP/2026");
+        result.Value.PublicationDate.ShouldBe(new DateTime(2026, 10, 2));
+    }
+
     [ManualFact]
     public async Task GetBuySellTopCountAsync_AtTableLimit_IsAcceptedByTheApi()
     {

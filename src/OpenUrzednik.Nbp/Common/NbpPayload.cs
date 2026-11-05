@@ -17,6 +17,29 @@ internal static class NbpPayload
             throw new InvalidPayloadException($"NBP API response is missing '{name}'.");
     }
 
+    /// <summary>
+    /// The item with the latest <paramref name="date"/>, or <see langword="null"/> when <paramref name="items"/> is empty.
+    /// NBP returns ranges in ascending order, but doesn't document it, so every item is compared; of equal dates the first wins.
+    /// </summary>
+    internal static T? Latest<T>(T[] items, Func<T, DateOnly> date)
+        where T : class
+    {
+        T? latest = null;
+        var latestDay = 0;
+        foreach (var item in items)
+        {
+            EnsurePresent(item, "item");
+            var day = date(item).DayNumber;
+            if (latest is null || day > latestDay)
+            {
+                latest = item;
+                latestDay = day;
+            }
+        }
+
+        return latest;
+    }
+
     internal static OpenUrzednikResult<TModel> Map<TDto, TModel>(TDto dto, Func<TDto, TModel> map, OpenUrzednikTelemetry telemetryProvider, IOpenUrzednikSpan traceSpan)
     {
         try

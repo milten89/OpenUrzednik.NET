@@ -95,6 +95,24 @@ public interface INbpCurrencyExchangeRateClient
     Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(string currency, DateTime from, DateTime to, TableType table = TableType.A, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets the mid exchange rate of the currency from the last publication before the specified date, the "previous business day" rule of Polish tax and accounting.
+    /// If no rate was published in the 14 days before the date (28 days for table B), the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date must be later than 2002-01-02 and not later than tomorrow (Europe/Warsaw date), because the day before it must be a date the NBP API supports. With tomorrow, the result is today's publication once it is out, and the one before until then.
+    /// </summary>
+    /// <remarks>
+    /// The date itself is excluded: for a Monday the result is usually the rate of the previous Friday (for table B, of the last Wednesday before it), even when Monday's rate is already published.
+    /// The client requests the 14 days before the date (28 days for table B, published weekly) in one range and returns the rate with the latest publication date.
+    /// </remarks>
+    /// <param name="currency">ISO 4217 currency code</param>
+    /// <param name="date">Date; only rates published before it count</param>
+    /// <param name="table">Mid rate table that lists the currency: <see cref="TableType.A"/> (common currencies, default) or <see cref="TableType.B"/> (less common currencies)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the currency exchange rates with exactly one rate, or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
+    Task<OpenUrzednikResult<CurrencyExchangeRates>> GetLastPublishedBeforeAsync(string currency, DateTime date, TableType table = TableType.A, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets the latest buy and sell exchange rate.
     /// </summary>
     /// <remarks>
@@ -152,4 +170,20 @@ public interface INbpCurrencyExchangeRateClient
     /// <returns>Result containing the buy and sell exchange rates or an error</returns>
     /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
     Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellAsync(string currency, DateTime from, DateTime to, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the buy and sell exchange rate from the last publication before the specified date, the "previous business day" rule of Polish tax and accounting.
+    /// If no rate was published in the 14 days before the date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date must be later than 2002-01-02 and not later than tomorrow (Europe/Warsaw date), because the day before it must be a date the NBP API supports. With tomorrow, the result is today's publication once it is out, and the one before until then.
+    /// </summary>
+    /// <remarks>
+    /// The date itself is excluded: for a Monday the result is usually the rate of the previous Friday, even when Monday's rate is already published.
+    /// The client requests the 14 days before the date in one range and returns the rate with the latest publication date.
+    /// </remarks>
+    /// <param name="currency">ISO 4217 currency code</param>
+    /// <param name="date">Date; only rates published before it count</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the buy and sell exchange rates with exactly one rate, or an error</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="currency"/> is <see langword="null"/>. Thrown before the task is returned.</exception>
+    Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLastPublishedBeforeAsync(string currency, DateTime date, CancellationToken cancellationToken = default);
 }

@@ -17,6 +17,15 @@ internal static class Mapper
         return Array.AsReadOnly(goldPrices);
     }
 
+    /// <summary>The price with the latest date, or <see langword="null"/> when <paramref name="dto"/> is empty.</summary>
+    internal static GoldPrice? MapLastToGoldPrice(GoldPriceDto[] dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+
+        var last = NbpPayload.Latest(dto, static x => x.Date);
+        return last is null ? null : MapToGoldPrice(last);
+    }
+
     internal static GoldPrice MapToGoldPrice(GoldPriceDto dto)
     {
         NbpPayload.EnsurePresent(dto, "item");

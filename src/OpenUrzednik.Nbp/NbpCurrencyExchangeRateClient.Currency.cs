@@ -124,4 +124,28 @@ public sealed partial class NbpCurrencyExchangeRateClient
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDateRange(fromDay, toDay), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <inheritdoc/>
+    public Task<OpenUrzednikResult<CurrencyExchangeRates>> GetLastPublishedBeforeAsync(string currency, DateTime date, TableType table = TableType.A, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(currency);
+        ArgumentGuard.ThrowIfUndefined(table);
+
+        return GetLastPublishedBeforeCoreAsync(currency, date, table, cancellationToken);
+    }
+
+    private async Task<OpenUrzednikResult<CurrencyExchangeRates>> GetLastPublishedBeforeCoreAsync(string currency, DateTime date, TableType table, CancellationToken cancellationToken)
+    {
+        var day = DateOnly.FromDateTime(date);
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.currency.last_published_before");
+        traceSpan.SetTag("nbp.currency", currency);
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
+        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+
+        var validation = new Iso4217Validator(nameof(currency), currency).Validate()
+            .And(new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, NbpCalendar.Today(_timeProvider)).Validate());
+
+        return await _pipeline.GetLastAsync(traceSpan, nameof(GetLastPublishedBeforeAsync), validation,
+            () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.WindowForTable(table)), day.AddDays(-1)), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapLastToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
+    }
 }

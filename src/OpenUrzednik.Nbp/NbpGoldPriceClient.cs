@@ -111,4 +111,17 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilder.ForDateRange(fromDay, toDay), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <inheritdoc/>
+    public async Task<OpenUrzednikResult<GoldPrice>> GetLastPublishedBeforeAsync(DateTime date, CancellationToken cancellationToken = default)
+    {
+        var day = DateOnly.FromDateTime(date);
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.last_published_before");
+        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+
+        var validation = new LastPublishedBeforeDateValidator(nameof(date), day, GoldDateValidator.MinDate, NbpCalendar.Today(_timeProvider)).Validate();
+
+        return await _pipeline.GetLastAsync(traceSpan, nameof(GetLastPublishedBeforeAsync), validation,
+            () => _urlBuilder.ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), day.AddDays(-1)), JsonContext.GoldPriceDtoArray, Mapper.MapLastToGoldPrice, cancellationToken).ConfigureAwait(false);
+    }
 }

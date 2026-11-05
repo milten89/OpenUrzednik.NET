@@ -106,4 +106,25 @@ public sealed partial class NbpExchangeRateTableClient
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForDateRange(fromDay, toDay), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <inheritdoc/>
+    public Task<OpenUrzednikResult<ExchangeRateTable>> GetLastPublishedBeforeAsync(TableType table, DateTime date, CancellationToken cancellationToken = default)
+    {
+        ArgumentGuard.ThrowIfUndefined(table);
+
+        return GetLastPublishedBeforeCoreAsync(table, date, cancellationToken);
+    }
+
+    private async Task<OpenUrzednikResult<ExchangeRateTable>> GetLastPublishedBeforeCoreAsync(TableType table, DateTime date, CancellationToken cancellationToken)
+    {
+        var day = DateOnly.FromDateTime(date);
+        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.last_published_before");
+        traceSpan.SetTag("nbp.table", table.ToTagValue());
+        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+
+        var validation = new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, NbpCalendar.Today(_timeProvider)).Validate();
+
+        return await _pipeline.GetLastAsync(traceSpan, nameof(GetLastPublishedBeforeAsync), validation,
+            () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.WindowForTable(table)), day.AddDays(-1)), JsonContext.ExchangeRateTableDtoArray, Mapper.MapLastToExchangeRateTable, cancellationToken).ConfigureAwait(false);
+    }
 }

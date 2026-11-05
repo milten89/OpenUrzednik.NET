@@ -31,6 +31,15 @@ public static class NbpDateOnlyExtensions
         return client.GetAsync(from.ToPublicDate(), to.ToPublicDate(), cancellationToken);
     }
 
+    /// <inheritdoc cref="INbpGoldPriceClient.GetLastPublishedBeforeAsync(DateTime, CancellationToken)"/>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
+    public static Task<OpenUrzednikResult<GoldPrice>> GetLastPublishedBeforeAsync(this INbpGoldPriceClient client, DateOnly date, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+
+        return client.GetLastPublishedBeforeAsync(date.ToPublicDate(), cancellationToken);
+    }
+
     /// <inheritdoc cref="INbpCurrencyExchangeRateClient.GetAsync(string, DateTime, TableType, CancellationToken)"/>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="currency"/> is <see langword="null"/>.</exception>
     public static Task<OpenUrzednikResult<CurrencyExchangeRates>> GetAsync(this INbpCurrencyExchangeRateClient client, string currency, DateOnly date,
@@ -49,6 +58,16 @@ public static class NbpDateOnlyExtensions
         ArgumentNullException.ThrowIfNull(client);
 
         return client.GetAsync(currency, from.ToPublicDate(), to.ToPublicDate(), table, cancellationToken);
+    }
+
+    /// <inheritdoc cref="INbpCurrencyExchangeRateClient.GetLastPublishedBeforeAsync(string, DateTime, TableType, CancellationToken)"/>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="currency"/> is <see langword="null"/>.</exception>
+    public static Task<OpenUrzednikResult<CurrencyExchangeRates>> GetLastPublishedBeforeAsync(this INbpCurrencyExchangeRateClient client, string currency, DateOnly date,
+        TableType table = TableType.A, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+
+        return client.GetLastPublishedBeforeAsync(currency, date.ToPublicDate(), table, cancellationToken);
     }
 
     /// <inheritdoc cref="INbpCurrencyExchangeRateClient.GetBuySellAsync(string, DateTime, CancellationToken)"/>
@@ -71,6 +90,16 @@ public static class NbpDateOnlyExtensions
         return client.GetBuySellAsync(currency, from.ToPublicDate(), to.ToPublicDate(), cancellationToken);
     }
 
+    /// <inheritdoc cref="INbpCurrencyExchangeRateClient.GetBuySellLastPublishedBeforeAsync(string, DateTime, CancellationToken)"/>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> or <paramref name="currency"/> is <see langword="null"/>.</exception>
+    public static Task<OpenUrzednikResult<BuySellExchangeRates>> GetBuySellLastPublishedBeforeAsync(this INbpCurrencyExchangeRateClient client, string currency, DateOnly date,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+
+        return client.GetBuySellLastPublishedBeforeAsync(currency, date.ToPublicDate(), cancellationToken);
+    }
+
     /// <inheritdoc cref="INbpExchangeRateTableClient.GetAsync(TableType, DateTime, CancellationToken)"/>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
     public static Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(this INbpExchangeRateTableClient client, TableType table, DateOnly date,
@@ -91,6 +120,16 @@ public static class NbpDateOnlyExtensions
         return client.GetAsync(table, from.ToPublicDate(), to.ToPublicDate(), cancellationToken);
     }
 
+    /// <inheritdoc cref="INbpExchangeRateTableClient.GetLastPublishedBeforeAsync(TableType, DateTime, CancellationToken)"/>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
+    public static Task<OpenUrzednikResult<ExchangeRateTable>> GetLastPublishedBeforeAsync(this INbpExchangeRateTableClient client, TableType table, DateOnly date,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+
+        return client.GetLastPublishedBeforeAsync(table, date.ToPublicDate(), cancellationToken);
+    }
+
     /// <inheritdoc cref="INbpExchangeRateTableClient.GetBuySellAsync(DateTime, CancellationToken)"/>
     /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
     public static Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(this INbpExchangeRateTableClient client, DateOnly date,
@@ -109,6 +148,16 @@ public static class NbpDateOnlyExtensions
         ArgumentNullException.ThrowIfNull(client);
 
         return client.GetBuySellAsync(from.ToPublicDate(), to.ToPublicDate(), cancellationToken);
+    }
+
+    /// <inheritdoc cref="INbpExchangeRateTableClient.GetBuySellLastPublishedBeforeAsync(DateTime, CancellationToken)"/>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/>.</exception>
+    public static Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellLastPublishedBeforeAsync(this INbpExchangeRateTableClient client, DateOnly date,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+
+        return client.GetBuySellLastPublishedBeforeAsync(date.ToPublicDate(), cancellationToken);
     }
 }
 #endif

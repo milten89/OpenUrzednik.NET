@@ -120,6 +120,21 @@ public class NbpGoldPriceClientTest : IClassFixture<NbpHttpClientFixture>
         result.Value.ShouldAllBe(x => x.Date >= before && x.Date <= today);
     }
 
+    [ManualFact]
+    public async Task GetLastPublishedBeforeAsync_Monday_ReturnsThePreviousFridaysPrice()
+    {
+        // Arrange
+        var date = new DateTime(2026, 10, 5); // a Monday; the Friday before is 2026-10-02
+
+        // Act
+        var result = await _client.GetLastPublishedBeforeAsync(date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Date.ShouldBe(new DateTime(2026, 10, 2));
+        result.Value.Price.ShouldBe(517.55m);
+    }
+
     private static DateTime WarsawToday()
     {
         // .NET Framework only knows the Windows time zone id.
