@@ -42,6 +42,10 @@ Every entry has an event id (`EventId` with an id and a name, e.g. `1001 Request
 
 Entries are structured: they carry named values (e.g. `provider`, `path`) and the template in `{OriginalFormat}`, like entries from `LoggerMessage`. Serilog, OpenTelemetry and other providers see them as separate properties. The message text is formatted with the invariant culture.
 
+## Trimming and Native AOT
+
+The .NET builds (`net8.0`, `net10.0`) are trimming- and Native AOT-compatible: publishing an app with trimming or Native AOT gives no warning from this package. CI checks it on every change ([ADR-0014](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0014-trimming-and-native-aot.md)). The `netstandard2.0` build (.NET Framework) isn't covered.
+
 ## Dependencies
 
 The package depends on `Microsoft.Extensions.Logging.Abstractions`. The core and provider packages have their own logging interfaces and don't need this dependency ([ADR-0003](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0003-telemetry-abstractions.md)).

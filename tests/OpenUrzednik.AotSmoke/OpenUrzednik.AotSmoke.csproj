@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Native AOT smoke test (#118): `dotnet publish` compiles the libraries with every src assembly rooted, so any trimming or
+       AOT warning (IL2xxx/IL3xxx) fails the publish; the published binary then calls the clients offline and exits non-zero on a
+       wrong result. CI runs it in the "aot (net10.0)" job. Not an xUnit project: the test props' runner and net472 don't apply. -->
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <IsTestProject>false</IsTestProject>
+    <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Diagnostics\OpenUrzednik.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Extensions.Logging\OpenUrzednik.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Nbp.DependencyInjection\OpenUrzednik.Nbp.DependencyInjection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+  <!-- Analyze every type of the published libraries, not only what Program.cs reaches. -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="OpenUrzednik.Core" />
+    <TrimmerRootAssembly Include="OpenUrzednik.Diagnostics" />
+    <TrimmerRootAssembly Include="OpenUrzednik.Extensions.Logging" />
+    <TrimmerRootAssembly Include="OpenUrzednik.Nbp" />
+    <TrimmerRootAssembly Include="OpenUrzednik.Nbp.DependencyInjection" />
+  </ItemGroup>
+
+  <!-- Bodies captured from the real NBP API, shared with the WireMock tests. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\Nbp\Fixtures\gold-latest.json" LogicalName="gold-latest.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\Nbp\Fixtures\rates-a-latest.json" LogicalName="rates-a-latest.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\Nbp\Fixtures\rates-c-latest.json" LogicalName="rates-c-latest.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\Nbp\Fixtures\tables-a-latest.json" LogicalName="tables-a-latest.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\Nbp\Fixtures\tables-c-latest.json" LogicalName="tables-c-latest.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\Nbp\Fixtures\error-404.txt" LogicalName="error-404.txt" />
+  </ItemGroup>
+
+</Project>

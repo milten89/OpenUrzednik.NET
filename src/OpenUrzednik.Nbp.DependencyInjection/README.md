@@ -24,6 +24,10 @@ dotnet add package OpenUrzednik.Nbp.DependencyInjection
 
 A .NET 8 app therefore stays on Microsoft.Extensions 8.x. `Polly.Core` is there for the exception types the package recognises when a resilience handler rejects a request. The package also depends on [OpenUrzednik.Nbp](https://www.nuget.org/packages/OpenUrzednik.Nbp), [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) and [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics), which bring their own dependencies.
 
+## Trimming and Native AOT
+
+The .NET builds (`net8.0`, `net10.0`) are trimming- and Native AOT-compatible: publishing an app with trimming or Native AOT gives no warning from this package. CI checks it on every change ([ADR-0014](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0014-trimming-and-native-aot.md)). The `netstandard2.0` build (.NET Framework) isn't covered.
+
 ## Usage
 
 ```csharp

@@ -61,6 +61,10 @@ When nothing listens to the source, the adapter creates no `Activity` and alloca
 
 On .NET Framework, `Activity` gets hierarchical ids by default, not W3C ones. OpenTelemetry switches the app to W3C; without it, set `Activity.DefaultIdFormat = ActivityIdFormat.W3C` and `Activity.ForceDefaultIdFormat = true`.
 
+## Trimming and Native AOT
+
+The .NET builds (`net8.0`, `net10.0`) are trimming- and Native AOT-compatible: publishing an app with trimming or Native AOT gives no warning from this package. CI checks it on every change ([ADR-0014](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0014-trimming-and-native-aot.md)). The `netstandard2.0` build (.NET Framework) isn't covered.
+
 ## Dependencies
 
 On .NET the package has no dependencies, because `ActivitySource` is part of .NET. On `netstandard2.0` (.NET Framework) it depends on `System.Diagnostics.DiagnosticSource`.

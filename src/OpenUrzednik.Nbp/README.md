@@ -123,6 +123,8 @@ The clients are thread-safe: create one client per `HttpClient` and share it acr
 
 Minor versions may add methods to the client interfaces, properties to the models and options to `NbpOptions` ([ADR-0011](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0011-compatibility-policy.md)). The clients and `NbpOptions` are `sealed`: to swap or wrap a client, use its interface (`INbpGoldPriceClient` and the others). If you implement an interface yourself, a new method breaks your build until you add it; a `throw new NotImplementedException();` stub is enough for methods you don't call. An implementation compiled against an older version, e.g. in another package, has to be rebuilt. New model properties are `init` properties (set them in an object initializer or with `with`); the positional constructors and `Deconstruct` don't change.
 
+The .NET builds (`net8.0`, `net10.0`) are trimming- and Native AOT-compatible: publishing an app with trimming or Native AOT gives no warning from this package. CI checks it on every change ([ADR-0014](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0014-trimming-and-native-aot.md)). The `netstandard2.0` build (.NET Framework) isn't covered.
+
 ## API gateways
 
 For most gateways in front of the NBP API, `NbpOptions.ApiUrl` is enough: the client appends the NBP paths (e.g. `exchangerates/rates/a/USD`) to it. If the gateway renames paths or needs a query parameter, rewrite the request in a `DelegatingHandler`. The paths the client builds aren't configurable in any other way.
