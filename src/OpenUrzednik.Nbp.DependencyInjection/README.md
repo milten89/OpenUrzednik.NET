@@ -101,6 +101,27 @@ builder.Services.AddOpenUrzednikNbp();
 
 `Configure<NbpOptions>(builder.Configuration.GetSection("Nbp"))` does the same. Both need the `Microsoft.Extensions.Options.ConfigurationExtensions` package, which ASP.NET Core apps already have. The configuration binder uses reflection; for trimming and Native AOT, enable the [configuration binder source generator](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration-generator).
 
+## Several NBP setups
+
+To use NBP in two ways in one app, for example directly and through a gateway, register each setup under a key with `AddKeyedOpenUrzednikNbp`. Each key gets its own `HttpClient` and options; the default registration can stay alongside:
+
+```csharp
+builder.Services.AddOpenUrzednikNbp();
+builder.Services.AddKeyedOpenUrzednikNbp("gateway", options => options.ApiUrl = "https://proxy.example.com/nbp/")
+    .AddStandardResilienceHandler();
+```
+
+Inject a keyed client with `[FromKeyedServices]`:
+
+```csharp
+public sealed class RatesService([FromKeyedServices("gateway")] INbpGoldPriceClient goldPrices)
+{
+    // ...
+}
+```
+
+The registration rules above apply per key: a second call with the same key only adds its `configure` delegate, the options are named after the key (`AddOptions<NbpOptions>("gateway").BindConfiguration("Nbp:Gateway")` binds them) and are read once, and invalid ones stop the app at startup. The key's `HttpClient` is named `NbpServiceCollectionExtensions.HttpClientName + ":" + key` (`"OpenUrzednik.Nbp:gateway"`). Keyed services need a container that supports them, as Microsoft's dependency injection 8.0 and later does. The keyed clients log under the same categories and trace on the same `OpenUrzednik.Nbp` source as the default ones; tell the setups apart by the HTTP span's `server.address`.
+
 ## Registering the clients yourself
 
 `AddOpenUrzednikNbp()` covers the usual setup. If you need a client with its own `HttpClient` configuration, create it in a factory lambda:
