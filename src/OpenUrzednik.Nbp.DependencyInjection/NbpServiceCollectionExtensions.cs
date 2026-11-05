@@ -33,7 +33,8 @@ public static class NbpServiceCollectionExtensions
     /// No resilience is added. Chain Microsoft's handler on the returned builder, e.g.
     /// <c>services.AddOpenUrzednikNbp().AddStandardResilienceHandler()</c>: its rejections (timeout, open circuit breaker, rate limiter)
     /// are returned as <c>RequestTimeoutError</c> and <c>ServiceUnavailableError</c> (without a status code), not thrown; a network failure is a
-    /// <c>ConnectionFailedError</c>. Add one resilience handler, not several.
+    /// <c>ConnectionFailedError</c>. Add one resilience handler, not several. A client you register yourself gets the same translation from
+    /// <see cref="AddOpenUrzednikNbpRejectionHandler"/>.
     /// </para>
     /// <para>
     /// Startup validation covers <see cref="NbpOptions"/> only: an invalid <see cref="HttpClient.BaseAddress"/> set on the returned builder
@@ -60,10 +61,7 @@ public static class NbpServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<NbpOptions>, NbpOptionsValidation>());
         options.ValidateOnStart();
 
-        // Inserted first rather than appended, so it stays outside every resilience handler: one chained on the returned builder,
-        // one added before this call, and one from ConfigureHttpClientDefaults, whose handlers come before the named client's.
-        var builder = services.AddHttpClient(HttpClientName)
-            .ConfigureAdditionalHttpMessageHandlers((handlers, _) => handlers.Insert(0, new ResilienceRejectionHandler()));
+        var builder = services.AddHttpClient(HttpClientName).AddOpenUrzednikNbpRejectionHandler();
 
         builder.AddTypedClient((httpClient, provider) => new NbpCurrencyExchangeRateClient(httpClient, GetOptions(provider),
             provider.GetService<TimeProvider>(),
@@ -80,6 +78,39 @@ public static class NbpServiceCollectionExtensions
         services.TryAddTransient<INbpGoldPriceClient>(provider => provider.GetRequiredService<NbpGoldPriceClient>());
 
         return builder;
+    }
+
+    /// <summary>
+    /// Makes an NBP client registered without <see cref="AddOpenUrzednikNbp"/> return a resilience handler's rejections as errors:
+    /// a timeout as a <c>RequestTimeoutError</c>, an open circuit breaker or a rate limiter as a <c>ServiceUnavailableError</c>
+    /// (without a status code), instead of a thrown exception.
+    /// </summary>
+    /// <remarks>
+    /// The handler goes first in the chain, outside every resilience handler, wherever that one is added (on this builder, before,
+    /// or through <c>ConfigureHttpClientDefaults</c>). Calling this method again, or on the builder <see cref="AddOpenUrzednikNbp"/>
+    /// returns, adds nothing: that builder already has it.
+    /// </remarks>
+    /// <param name="builder">The builder of the <see cref="HttpClient"/> the NBP clients use.</param>
+    /// <returns>The same builder.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    public static IHttpClientBuilder AddOpenUrzednikNbpRejectionHandler(this IHttpClientBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        // Inserted first rather than appended, so it stays outside every resilience handler: one chained on the builder later,
+        // one added before this call, and one from ConfigureHttpClientDefaults, whose handlers come before the named client's.
+        return builder.ConfigureAdditionalHttpMessageHandlers(static (handlers, _) =>
+        {
+            // Already in the list means an earlier call inserted it at 0; only an app inserting its own handler at 0 in between could
+            // move it inward, which a handler meant to sit outside resilience doesn't do.
+            foreach (var handler in handlers)
+            {
+                if (handler is ResilienceRejectionHandler)
+                    return;
+            }
+
+            handlers.Insert(0, new ResilienceRejectionHandler());
+        });
     }
 
     private static IOpenUrzednikTraceSource TraceSource => ActivityTraceSource.GetShared(NbpTelemetry.SourceName);
