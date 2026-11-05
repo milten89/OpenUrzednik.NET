@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-30
+date: 2026-11-05
 decision-makers: milten89
 ---
 
@@ -36,7 +36,7 @@ Chosen option: "Keep custom abstractions and ship official adapter packages".
 **Conventions:**
 
 * Span names: `<provider>.<area>.<operation>` in snake_case, e.g. `nbp.currency.buy_sell_latest`, `nbp.http.get`.
-* Tag names: `<provider>.<parameter>` (e.g. `nbp.currency`, `nbp.top_count`); standard HTTP tags follow OpenTelemetry semantic conventions (`http.request.method`, `url.path`, `http.response.status_code`).
+* Tag names: `<provider>.<parameter>` (e.g. `nbp.currency`, `nbp.top_count`); standard HTTP tags follow OpenTelemetry's HTTP client semantic conventions (`http.request.method`, `server.address`, `server.port`, `url.path`, `http.response.status_code`).
 * Errors are recorded via `RecordError`/`RecordErrors` extensions, which set OpenTelemetry's `error.type` tag to `OpenUrzednikError.Code`. The `error` events `RecordErrors` adds are best-effort.
 * Every log entry has an `OpenUrzednikEventId`: the shared HTTP layer's events are 1xxx, a provider's own 2xxx, and each provider lists all of them as constants (`NbpLogEvents`). The `{provider}` log property is the provider's short name (`nbp`), as in span names.
 * Log calls at `Debug`/`Trace` are guarded with `IsEnabled`; messages use templates with named placeholders, never string interpolation.
@@ -79,3 +79,5 @@ Rules from 1.0 on:
 * **Metrics are out of scope.** The library records no metrics; `HttpClient`'s own metrics cover requests. Adding metrics later needs a new decision.
 
 **2026-10-30 change: no secrets or personal identifiers in telemetry or errors** ([#109](https://github.com/milten89/OpenUrzednik.NET/issues/109)). The rule only named logs and exempted the NIP of a legal person. NBP handles no such data, but the MF and GUS providers will, and the shared executor already writes request paths into `url.path`, logs and the messages of the errors it returns (timeout, connection, serialization and status errors all carry the request path), so an identifier in a path would leak through every channel. The rule now covers all of them and every holder of an identifier, and allows at most the last 4 characters. A provider whose paths carry identifiers also needs a display path ([ADR-0006](0006-shared-http-layer.md)).
+
+**2026-11-05 change: host and port on the HTTP span** ([#121](https://github.com/milten89/OpenUrzednik.NET/issues/121)). OpenTelemetry's HTTP client conventions require `server.address` and `server.port`, and the `nbp.http.get` span had neither, so a trace without `HttpClient` instrumentation didn't show which host was called. The span now carries both (the host as `Uri.IdnHost`: an IPv6 address without brackets, an international domain in ASCII), taken from the address the client was given (`NbpOptions.ApiUrl`, the `HttpClient`'s base address or the default) before any `DelegatingHandler` rewrites it, like `url.path`. `server.port` is always set, as .NET 9+ does for its own HTTP spans. `url.full` stays out: a future provider's query string may carry personal identifiers. The host stays out of the logs, whose properties aren't part of the stable contract.

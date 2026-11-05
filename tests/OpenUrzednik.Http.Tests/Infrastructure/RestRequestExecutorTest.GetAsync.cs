@@ -615,8 +615,48 @@ public partial class RestRequestExecutorTest
 
         // Assert
         span.Received(1).SetTag("http.request.method", "GET");
+        span.Received(1).SetTag("server.address", httpClient.BaseAddress!.Host);
+        span.Received(1).SetTag<object>("server.port", 443);
         span.Received(1).SetTag("url.path", httpClient.BaseAddress!.AbsolutePath.TrimEnd('/') + relativePath);
         span.Received(1).SetTag("http.response.status_code", (int)HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetAsync_BaseAddressWithPort_SetsServerAddressAndPortTags()
+    {
+        // Arrange
+        var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("a", 1))))
+        {
+            BaseAddress = new Uri("http://gateway.example.com:8080/nbp/"),
+        };
+
+        // Act
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync("/cenyzlota", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        span.Received(1).SetTag("server.address", "gateway.example.com");
+        span.Received(1).SetTag<object>("server.port", 8080);
+    }
+
+    [Theory]
+    [InlineData("http://[::1]:8080/api/", "::1", 8080)]
+    [InlineData("https://bücher.example/api/", "xn--bcher-kva.example", 443)]
+    public async Task GetAsync_IpV6OrInternationalHost_SetsServerAddressWithoutBracketsInAscii(string baseAddress, string expectedAddress, int expectedPort)
+    {
+        // Arrange
+        var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("a", 1))))
+        {
+            BaseAddress = new Uri(baseAddress),
+        };
+
+        // Act
+        await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync("/cenyzlota", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        span.Received(1).SetTag("server.address", expectedAddress);
+        span.Received(1).SetTag<object>("server.port", expectedPort);
     }
 
     [Fact]

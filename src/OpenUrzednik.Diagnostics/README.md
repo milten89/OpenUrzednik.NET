@@ -47,7 +47,7 @@ The request itself is a `Client` span from `HttpClient`, nested under `<provider
 ## What goes into the trace
 
 - Each client method has a span `<provider>.<area>.<operation>` (e.g. `nbp.gold.latest`) with its parameters as tags (e.g. `nbp.top_count`).
-- The HTTP request is a child span `nbp.http.get` with the tags `http.request.method`, `url.path` and `http.response.status_code`.
+- The HTTP request is a child span `nbp.http.get` with the tags `http.request.method`, `server.address`, `server.port`, `url.path` and `http.response.status_code` (OpenTelemetry's HTTP client conventions).
 - A failure sets the `Error` status and OpenTelemetry's `error.type` tag to the error code (e.g. `serviceUnavailable`, `validation`; see the error table in the [OpenUrzednik.Core README](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.md#errors)). A span with several errors (validation) also gets an `error` event per error, and an exception adds an `exception` event.
 - All spans are of kind `Internal`.
 
