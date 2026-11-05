@@ -108,10 +108,12 @@ builder.Services.AddOpenUrzednikNbp();
 ```csharp
 builder.Services.AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>((httpClient, services) =>
     new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = "https://proxy.example.com/nbp/" },
-        services.GetService<TimeProvider>()));
+        services.GetService<TimeProvider>()))
+    .AddOpenUrzednikNbpRejectionHandler()
+    .AddStandardResilienceHandler();
 ```
 
-A bare `AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>()` isn't supported: resolving the client throws an `InvalidOperationException` ("A suitable constructor … could not be located"). A client registered this way gets no logger unless you pass one (`loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>()`), records spans only on .NET 8 and later unless you pass `ActivityTraceSource.GetShared(NbpTelemetry.SourceName)`, and a resilience handler's rejections aren't turned into errors (see below).
+A bare `AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>()` isn't supported: resolving the client throws an `InvalidOperationException` ("A suitable constructor … could not be located"). A client registered this way gets no logger unless you pass one (`loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>()`), records spans only on .NET 8 and later unless you pass `ActivityTraceSource.GetShared(NbpTelemetry.SourceName)`, and a resilience handler's rejections are turned into errors only if you call `AddOpenUrzednikNbpRejectionHandler()` on its builder, as in the example above; the errors are described under [Retries and timeouts](#retries-and-timeouts). Calling it more than once, or on the builder `AddOpenUrzednikNbp()` returns, adds nothing.
 
 ## Retries and timeouts
 
