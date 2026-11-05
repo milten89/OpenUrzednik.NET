@@ -5,10 +5,24 @@
 
 input="$(cat)"
 
-# Extract tool_input.file_path without depending on jq.
-file="$(printf '%s' "$input" | sed -n 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
-file="${file//\\\\/\\}"
+# Read tool_input.file_path; jq when available, otherwise the first "file_path" after "tool_input"
+# (not the last one in the input, which could come from tool_response).
+if command -v jq >/dev/null 2>&1; then
+  file="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null | tr -d '\r')"
+else
+  case "$input" in
+    *'"tool_input"'*) rest="${input#*\"tool_input\"}" ;;
+    *) exit 0 ;;
+  esac
+  case "$rest" in
+    *'"file_path"'*) rest="${rest#*\"file_path\"}" ;;
+    *) exit 0 ;;
+  esac
+  file="$(printf '%s' "$rest" | sed -n '1s/^[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
+  file="${file//\\\\/\\}"
+fi
 
+# Only *.cs: dotnet format ignores an upper-case .CS file even when it is passed with --include.
 case "$file" in
   *.cs) ;;
   *) exit 0 ;;
