@@ -102,8 +102,11 @@ public sealed partial class NbpServiceCollectionExtensionsTest
     [Fact]
     public void AddOpenUrzednikNbpRejectionHandler_NullBuilder_ThrowsArgumentNullException()
     {
+        // Arrange
+        IHttpClientBuilder builder = null!;
+
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => ((IHttpClientBuilder)null!).AddOpenUrzednikNbpRejectionHandler())
+        Should.Throw<ArgumentNullException>(() => builder.AddOpenUrzednikNbpRejectionHandler())
             .ParamName.ShouldBe("builder");
     }
 }
