@@ -2,18 +2,22 @@ name: NuGet - release
 
 on:
   push:
-    branches: [main]
+    # main, and the support branches of earlier majors (release/N.x, security fixes only; ADR-0008).
+    branches: [ main, 'release/*.x' ]
 
 permissions:
   contents: read
 
-# Releases are queued, never cancelled: a half-finished publish/tag run must not be interrupted.
+# Releases are queued, never cancelled: a half-finished publish/tag run must not be interrupted. One queue per branch, so a
+# release from main never waits for one from a support branch (they share no tag or package version).
 concurrency:
-  group: nuget-release
+  group: nuget-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  # Creating a support branch from a release tag pushes nothing new to release: skip that run.
   build:
+    if: ${{ !github.event.created }}
     uses: ./.github/workflows/build.yml
 
   deploy:
@@ -102,6 +106,7 @@ jobs:
             --skip-duplicate
 
       # One tag and one GitHub Release for all packages. Each part is skipped if it exists, so a failed run can be re-run.
+      # A release from a support branch (release/N.x) is never marked Latest: that stays the newest major.
       - name: Tag and create the GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -117,5 +122,7 @@ jobs:
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release $tag already exists, skipping."
           else
-            gh release create "$tag" ./artifacts/*.nupkg --verify-tag --title "$tag" --notes-file "docs/release-notes/$tag.md"
+            latest=true
+            [ "$GITHUB_REF_NAME" = main ] || latest=false
+            gh release create "$tag" ./artifacts/*.nupkg --verify-tag --title "$tag" --notes-file "docs/release-notes/$tag.md" --latest="$latest"
           fi

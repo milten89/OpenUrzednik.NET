@@ -1,12 +1,12 @@
 ---
 name: release-notes
-description: Draft the release notes of an OpenUrzednik.NET release or hotfix as docs/release-notes/v<version>.md, from GitHub's generated notes grouped by the release labels, with migration notes for breaking changes. Use on a release/X.Y or hotfix/… branch before its PR into main, whenever the user asks for release notes, a changelog or "what's in this release", and whenever a release PR fails the "Check the release notes" step.
+description: Draft the release notes of an OpenUrzednik.NET release or hotfix as docs/release-notes/v<version>.md, from GitHub's generated notes grouped by the release labels, with migration notes for breaking changes. Use on a release/X.Y or hotfix/… branch before its PR into main (or into a support branch release/N.x), whenever the user asks for release notes, a changelog or "what's in this release", and whenever a release PR fails the "Check the release notes" step.
 argument-hint: "<version, e.g. 1.1.0> [branch or commit on origin, default: the current branch]"
 ---
 
 # Draft release notes
 
-The notes are the body of the GitHub Release and the page every package's `releaseNotes` links to (`…/releases/tag/v<version>`). `nuget-release.yml` publishes nothing without `docs/release-notes/v<version>.md`, and the `build (net10.0)` job checks the file on every PR into `main` (`docs/RELEASE-PROCESS.md`). Write them for people who use the packages: what changed for them and what they must do.
+The notes are the body of the GitHub Release and the page every package's `releaseNotes` links to (`…/releases/tag/v<version>`). `nuget-release.yml` publishes nothing without `docs/release-notes/v<version>.md`, and the `build (net10.0)` job checks the file on every PR into `main` or a support branch `release/N.x` (`docs/RELEASE-PROCESS.md`). Write them for people who use the packages: what changed for them and what they must do.
 
 ## 1. Range
 
@@ -19,7 +19,7 @@ The notes are the body of the GitHub Release and the page every package's `relea
   git tag -l "v*" --sort=-v:refname | grep -v -- '-' | head -1   # skips prerelease tags, v0.1.0-preview included
   ```
 
-  For a hotfix, it is the tag the branch was made from. None before 1.0.0: the notes then cover the whole history.
+  For a hotfix, it is the tag the branch was made from. For a backport to a support branch `release/N.x` (`docs/RELEASE-PROCESS.md`), it is the latest `vN.*` release tag, not the latest tag overall (that belongs to the newer major): `git tag -l "vN.*" --sort=-v:refname | grep -v -- '-' | head -1`. None before 1.0.0: the notes then cover the whole history.
 
 ## 2. Draft from GitHub
 

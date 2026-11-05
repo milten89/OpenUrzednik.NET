@@ -132,8 +132,9 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 
 - Branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`). PRs target `develop` and are merged with a merge commit (squash is disabled). Releases go from a `release/X.Y` branch, made from `develop`, into `main` ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
 - Prepare a release only with `/prepare-release` (it never publishes: the maintainer merges the PR into `main` and approves the `nuget-release` deployment); after the publish, `/prepare-release after` checks it and opens the back-merge.
-- A release or hotfix PR into `main` must add `docs/release-notes/v<version>.md` (`/release-notes`): the `build (net10.0)` job checks it on the PR, and `nuget-release.yml` checks it again before publishing.
+- A release or hotfix PR into `main`, or a backport PR into a support branch `release/N.x`, must add `docs/release-notes/v<version>.md` (`/release-notes`): the `build (net10.0)` job checks it on the PR, and `nuget-release.yml` checks it again before publishing.
 - A fix for a released version follows the hotfix procedure in [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md): `hotfix/…` from the `vX.Y.Z` tag, the next patch in `version.json`, a PR into `main`, then the back-merge into `develop` through a `merge/vX.Y.Z` branch.
+- After a new major, the previous one has a support branch `release/N.x` (a public ref; [ADR-0008](docs/adr/0008-branching-versioning-and-release.md), [ADR-0013](docs/adr/0013-version-support-policy.md)) for security fixes only, for 6 months. A security fix lands on the latest line first, then is backported: `hotfix/N.x-…` from `origin/release/N.x`, cherry-pick the fix, the next patch of that line, release notes, a PR into `release/N.x`. Never merge `release/N.x` into `main` or `develop`. Nothing else goes into it, except a CI fix needed to keep it releasable, in the same backport PR.
 - Commit or push only when asked. One issue per PR (see "Issues and the project").
 - ADRs are append-only ([ADR-0001](docs/adr/0001-record-architecture-decisions.md)): never edit an accepted or rejected ADR except its status line and a link to the ADR that supersedes it. Follow-up work goes into issues; a clarification that changes no decision goes here or into the linked docs. If a change contradicts an accepted ADR, stop and use `/adr` instead of working around it: the new ADR restates the whole decision and supersedes the old one. A decision that shapes the architecture or is hard to reverse (public API shape, the error or telemetry contract, dependencies, target frameworks, the release and support flow) gets an ADR in the same PR, also when it was settled in chat.
 - Before opening a PR, run the `reviewer` agent on the diff.
@@ -153,7 +154,7 @@ Work is tracked in this repository's issues and in the public project [OpenUrzed
 - One issue per PR. The PR body starts with `Closes #<n>`. When you open the PR, give it at least one release label from `.github/release.yml` (`gh pr create --label <label>`), normally the one forecast on the issue or proposed by the `reviewer` agent; the `release-label` check fails a PR without one.
 - Never start, change or close a `maintainer-only` issue.
 - You may open follow-up issues for problems outside the current issue. The project adds them with Status `Triage`, and they are sorted with `/triage`, after the maintainer approves. An issue opened for work the maintainer asked for is triaged at once (`/triage`, last section).
-- Release and hotfix PRs target `main`, where `Closes` doesn't close the issue. The maintainer moves those issues to `Done`.
+- Release and hotfix PRs target `main` (backports a support branch `release/N.x`), where `Closes` doesn't close the issue. The maintainer moves those issues to `Done`.
 
 Project fields need the `project` scope (`gh auth refresh -s project`):
 

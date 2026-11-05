@@ -2,10 +2,11 @@
 
 ## Branch structure
 
-- **`main`** — protected, PR-only. Always contains the code of the currently supported release version.
+- **`main`** — protected, PR-only. Always contains the code of the latest release.
 - **`develop`** — protected, PR-only. All feature work lands here; publishes pre-release packages.
 - **`release/X.Y`** — made from `develop` for a release; its PR goes into `main`.
-- **`hotfix/…`** — made from a release tag for a fix to the released version; its PR goes into `main`.
+- **`hotfix/…`** — made from a release tag for a fix to the released version, its PR into `main`; or, for a security backport (`hotfix/N.x-…`), made from `release/N.x`, its PR into `release/N.x`.
+- **`release/N.x`** — support branch of the previous major (e.g. `release/1.x` after `2.0.0`), made from its last `vN.*` tag; protected, PR-only; publishes stable `N.Y.Z` versions; only security fixes, for 6 months ([below](#support-for-the-previous-major-version)).
 - **`merge/vX.Y.Z`** — made from `main` after a release or hotfix, to bring `main` back into `develop`.
 - PR merge strategy: **merge commits** (squash and rebase are disabled).
 
@@ -14,7 +15,7 @@
 All published packages share one version (lockstep, [ADR-0008](adr/0008-branching-versioning-and-release.md)). It comes from the root `version.json`, which [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) (NBGV) reads; projects have no `version.json` of their own.
 
 - **`develop`** carries the number of the next release plus a preview suffix: `"version": "0.1.0-preview.{height}"`. `{height}` is the git height: the number of commits from the one that set this version up to the one being built, both included, counting only commits that change a package input listed in `pathFilters` (`src`, `version.json`, `Directory.Build.props`, `Directory.Packages.props`, `OpenUrzednik.Packages.slnf`, the strong-name key `OpenUrzednik.snk`, and the packed icons `assets/branding/icon.png` and `assets/branding/icon-nbp.png`).
-- **Only `main` is a public ref** (`publicReleaseRefSpec`; the support branch `release/N.x` joins it before 2.0, [#119](https://github.com/milten89/OpenUrzednik.NET/issues/119)). Every other branch, `develop` and release branches included, appends the commit id: `develop` publishes versions like `0.1.0-preview.12.g1a2b3c4d5e`.
+- **Only `main` and the support branches `release/N.x` are public refs** (`publicReleaseRefSpec`). Every other branch, `develop` and the `release/X.Y` branches included, appends the commit id: `develop` publishes versions like `0.1.0-preview.12.g1a2b3c4d5e`.
 - **A release removes the suffix**: `"1.1.0-preview.{height}"` → `"1.1.0"`. SemVer sorts a prerelease below the release with the same number, so every release sorts above its previews:
 
   `1.1.0-preview.1 < … < 1.1.0-preview.37 < 1.1.0 < 1.1.1 < 1.2.0-preview.1`
@@ -41,7 +42,7 @@ With Claude Code, `/prepare-release` runs steps 1–5 with extra checks, and `/p
    + "version": "1.1.0",
    ```
 
-3. Check the packages locally. Builds of the release branch still get `1.1.0-g<commit id>`, because only `main` is public, so pack with `PublicRelease=true` into a folder that doesn't exist yet (delete `artifacts/release` first):
+3. Check the packages locally. Builds of the release branch still get `1.1.0-g<commit id>`, because `release/X.Y` isn't a public ref, so pack with `PublicRelease=true` into a folder that doesn't exist yet (delete `artifacts/release` first):
 
    ```bash
    dotnet pack OpenUrzednik.Packages.slnf -c Release -o artifacts/release -p:ContinuousIntegrationBuild=true -p:PublicRelease=true
@@ -96,14 +97,40 @@ Open a PR from `merge/v1.1.0` into `develop`, label it `skip-changelog`, and mer
 A vulnerability is reported privately ([`SECURITY.md`](../SECURITY.md)): acknowledge it within 14 days, and aim to publish the fix within 90 days of confirming it.
 
 1. Create a draft **GitHub Security Advisory** for the report (Security → Advisories), and prepare and review the fix privately, e.g. in the advisory's **temporary private fork**, so nothing is public too early.
-2. When the fix is ready to ship, push it as a `hotfix/…` branch and release it with the hotfix procedure above. The hotfix PR is public and runs the required checks, so open it only then (`hotfix/…` from the last release tag, the next patch version, release notes, back-merge). For the previous major's support line, see below.
-3. Publish the advisory: ecosystem NuGet, every affected package, the affected and patched version ranges, a CVE when it is warranted, and credit for the reporter unless they decline.
-4. Deprecate the affected versions of every affected package on nuget.org (Manage package → Deprecation, the critical-bugs reason, alternate package: the patched version).
-5. Tell the reporter that the fix and the advisory are out.
+2. While the previous major is supported and affected, prepare its backport privately too ([below](#support-for-the-previous-major-version)): once the latest line's fix is public, the old line is exposed until its patch ships.
+3. When the fixes are ready to ship, push the latest line's fix as a `hotfix/…` branch and release it with the hotfix procedure above. The hotfix PR is public and runs the required checks, so open it only then (`hotfix/…` from the last release tag, the next patch version, release notes, back-merge). Open and release the backport right after it.
+4. Publish the advisory once every affected line is patched: ecosystem NuGet, every affected package, the affected and patched version ranges (one patched version per line), a CVE when it is warranted, and credit for the reporter unless they decline.
+5. Deprecate the affected versions of every affected package on nuget.org (Manage package → Deprecation, the critical-bugs reason, alternate package: the patched version of the same line).
+6. Tell the reporter that the fix and the advisory are out.
 
 ## Support for the previous major version
 
-Fixes go to the latest minor of the latest major only. When `2.0.0` is released, `1.x` still gets **security fixes for 6 months**, from a support branch `release/1.x` made from the last `v1.*` tag. Before that release, the branch needs `^refs/heads/release/1\.x$` in `publicReleaseRefSpec` (`version.json`), a trigger in the release workflow, the publishing environment's branch rule, CI triggers, ruleset protection and the release-notes check for PRs into it, as [ADR-0008](adr/0008-branching-versioning-and-release.md) decides ([#119](https://github.com/milten89/OpenUrzednik.NET/issues/119)). A `1.x` security fix then goes from a `hotfix/…` branch made from `release/1.x` into `release/1.x`, and is released from there.
+Fixes go to the latest minor of the latest major only ([ADR-0013](adr/0013-version-support-policy.md)). When a new major is released (e.g. `2.0.0`), the previous one (`1.x`) still gets **security fixes for 6 months**, from a support branch `release/1.x` ([ADR-0008](adr/0008-branching-versioning-and-release.md)).
+
+The repository is set up for any `release/N.x` branch: `version.json` makes it a public ref (`^refs/heads/release/\d+\.x$`), so its builds get stable versions; `nuget-release.yml` publishes on a push to it; the CI workflows, CodeQL and the release-notes check run on PRs into it; the ruleset protects it and the `nuget-release` environment allows it ([`GITHUB-SETUP.md`](GITHUB-SETUP.md)). A release from it gets a tag and a GitHub Release like any other, but is never marked **Latest**: that stays the newest major.
+
+**When the new major is released**, create the support branch from the previous major's last tag (no PR: nothing changes; the `nuget-release` run of that push is skipped), on GitHub (Branches → New branch, source: the tag) or with git. The ruleset lets it be created although the tagged commit has no status checks (`do_not_enforce_on_create`, [`GITHUB-SETUP.md`](GITHUB-SETUP.md)):
+
+```bash
+git fetch origin --tags
+git push origin "$(git tag --list 'v1.*' --sort=-v:refname | head -n 1)^{commit}:refs/heads/release/1.x"
+```
+
+**A security fix** lands on the latest line first, with the [security fix](#security-fix) steps (a hotfix into `main`; when the vulnerable code isn't in any release of the latest major, a PR into `develop` is enough). Then it is backported:
+
+1. Create a branch from the support branch, and cherry-pick only the commits of the fix itself (not the latest line's `version.json` or release-notes commits). If the vulnerability exists only in `1.x`, make the fix on this branch instead.
+
+   ```bash
+   git switch -c hotfix/1.x-cve-2027-1234 origin/release/1.x
+   git cherry-pick -x <commit>…   # on a conflict, resolve it and keep the "cherry picked from" line
+   ```
+
+2. Set the root `version.json` to the next patch of that line (e.g. `"1.4.3"` after `v1.4.2`).
+3. Open a PR **hotfix → `release/1.x`**, labelled `bug`. Then run `/release-notes 1.4.3`, and commit and push `docs/release-notes/v1.4.3.md`; the PR's `build (net10.0)` job fails until the file is there.
+4. Merge (merge commit) → `nuget-release.yml` publishes `1.4.3`, tags `v1.4.3` and creates the GitHub Release (not marked Latest).
+5. **No back-merge:** `release/1.x` is never merged into `main` or `develop`, which carry the newer major and already have the fix. Its release notes stay on `release/1.x` and in the GitHub Release.
+
+Only security fixes go into the support branch. A CI or tooling change needed to keep it releasable (e.g. an action that no longer runs) goes into the same backport PR: a merge without a new version would fail `nuget-release.yml` as "already released". After the 6 months the branch stays, but gets no more fixes.
 
 ## Dev-only dependencies vs. the published package
 
