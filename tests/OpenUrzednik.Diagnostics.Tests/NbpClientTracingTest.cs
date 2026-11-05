@@ -44,8 +44,33 @@ public sealed class NbpClientTracingTest : IDisposable
         http.OperationName.ShouldBe("nbp.http.get");
         http.ParentSpanId.ShouldBe(operation.SpanId);
         http.GetTagItem("http.request.method").ShouldBe("GET");
+        http.GetTagItem("server.address").ShouldBe("api.nbp.pl");
+        http.GetTagItem("server.port").ShouldBe(443);
         http.GetTagItem("url.path").ShouldBe("/api/cenyzlota");
         http.GetTagItem("http.response.status_code").ShouldBe(200);
+    }
+
+    [Fact]
+    public async Task GetLatestAsync_GatewayApiUrl_TagsGatewayAddress()
+    {
+        // Arrange
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""[{"data":"2026-10-02","cena":517.55}]""", Encoding.UTF8, "application/json"),
+        };
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(response));
+        var sut = new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = "https://gateway.example.com:8443/nbp/" },
+            traceSource: new ActivityTraceSource(_recorder.Source));
+
+        // Act
+        var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var http = _recorder.Stopped[0];
+        http.GetTagItem("server.address").ShouldBe("gateway.example.com");
+        http.GetTagItem("server.port").ShouldBe(8443);
+        http.GetTagItem("url.path").ShouldBe("/nbp/cenyzlota");
     }
 
     [Fact]

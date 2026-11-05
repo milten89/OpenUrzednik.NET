@@ -147,7 +147,7 @@ var client = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions { ApiU
 // GetLatestAsync("USD") requests https://gateway.example.com/nbp/fx/rates/a/USD?api-version=1
 ```
 
-With `AddOpenUrzednikNbp()`, add the handler with `.AddHttpMessageHandler(() => new NbpGatewayHandler())`. Spans still show the NBP path (`url.path`), because the client tags it before the handler runs; error messages show the rewritten address.
+With `AddOpenUrzednikNbp()`, add the handler with `.AddHttpMessageHandler(() => new NbpGatewayHandler())`. Spans still show the NBP path (`url.path`) and the configured host and port (`server.address`, `server.port`), because the client tags them before the handler runs; error messages show the rewritten address.
 
 ## Dates and .NET Framework
 
@@ -203,7 +203,7 @@ Each client method starts one span on the `OpenUrzednik.Nbp` source, with the HT
 | `nbp.gold.top_count` | `GetTopCountAsync` | `nbp.top_count` |
 | `nbp.gold.date` | `GetAsync(date)` | `nbp.date` |
 | `nbp.gold.range` | `GetAsync(from, to)` | `nbp.from`, `nbp.to` |
-| `nbp.http.get` | the request of any method | `http.request.method`, `url.path` (e.g. `/api/cenyzlota`), `http.response.status_code` |
+| `nbp.http.get` | the request of any method | `http.request.method`, `server.address` (e.g. `api.nbp.pl`, or the `ApiUrl` host), `server.port` (always set, e.g. `443`), `url.path` (e.g. `/api/cenyzlota`), `http.response.status_code` |
 
 Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.md#errors)).
 

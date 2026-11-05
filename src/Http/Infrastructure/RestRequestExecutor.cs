@@ -38,6 +38,10 @@ internal sealed class RestRequestExecutor
     private readonly OpenUrzednikTelemetry _telemetry;
     private readonly TimeProvider _timeProvider;
     private readonly string _spanName;
+    // The span's server.address and server.port: request paths are relative, so the authority is the base address's.
+    // Computed once (Uri.IdnHost allocates); the port is boxed once, because SetTag stores an object.
+    private readonly string _serverAddress;
+    private readonly object _serverPort;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestRequestExecutor"/> class.
@@ -72,6 +76,8 @@ internal sealed class RestRequestExecutor
         _telemetry = telemetry ?? new OpenUrzednikTelemetry();
         _timeProvider = timeProvider ?? TimeProvider.System;
         _spanName = profile.Name + ".http.get";
+        _serverAddress = baseAddress.IdnHost;
+        _serverPort = baseAddress.Port;
     }
 
     /// <summary>
@@ -110,9 +116,12 @@ internal sealed class RestRequestExecutor
 
         var requestUri = new Uri(BaseAddress, relativePath.TrimStart('/'));
 
-        // OpenTelemetry HTTP semantic conventions (ADR-0003).
+        // OpenTelemetry HTTP client semantic conventions (ADR-0003): the address the client was given, before any DelegatingHandler
+        // rewrites it. server.port is always set, as .NET 9+ does.
         using var traceSpan = _telemetry.TraceSource.StartSpan(_spanName);
         traceSpan.SetTag("http.request.method", "GET");
+        traceSpan.SetTag("server.address", _serverAddress);
+        traceSpan.SetTag("server.port", _serverPort);
         traceSpan.SetTag("url.path", requestUri.AbsolutePath);
 
         // Expected failures are returned as errors; this only marks the span when something unexpected escapes,
