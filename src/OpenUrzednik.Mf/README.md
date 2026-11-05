@@ -6,8 +6,8 @@ Planned **VAT white list** (Biała Lista, Ministry of Finance) client for OpenUr
 
 ## Status
 
-🚧 Planned, not started. Work on new providers begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). We deprecated and unlisted the empty previews published earlier (up to `1.0.13-preview`) on nuget.org.
+🚧 Planned, not started. Work on new providers begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0010-provider-readiness-gate.md)). We deprecated and unlisted the empty previews published earlier (up to `1.0.13-preview`) on nuget.org.
 
 ## Installation
 
-No usable package is published. We'll publish it when the client is ready to use ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)).
+No usable package is published. We'll publish it when the client is ready to use ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0010-provider-readiness-gate.md)).

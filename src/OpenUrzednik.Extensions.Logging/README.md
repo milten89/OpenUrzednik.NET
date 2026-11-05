@@ -1,6 +1,6 @@
 # OpenUrzednik.Extensions.Logging
 
-🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Extensions.Logging/README.pl.md)
+🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Extensions.Logging/README.pl.md)
 
 > ⚠️ **Unofficial:** OpenUrzednik.NET is a community project. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP) or any other Polish public institution.
 
@@ -38,10 +38,10 @@ The log category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldP
 
 If you already have an `ILogger`, use `new OpenUrzednikLogger(logger)`.
 
-Every entry has an event id (`EventId` with an id and a name, e.g. `1001 RequestTimedOut`), fixed by the library and the same in every client of a provider; NBP lists them in `NbpLogEvents` and the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#telemetry-reference). Filter by event id rather than message text, which may change.
+Every entry has an event id (`EventId` with an id and a name, e.g. `1001 RequestTimedOut`), fixed by the library and the same in every client of a provider; NBP lists them in `NbpLogEvents` and the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#telemetry-reference). Filter by event id rather than message text, which may change.
 
 Entries are structured: they carry named values (e.g. `provider`, `path`) and the template in `{OriginalFormat}`, like entries from `LoggerMessage`. Serilog, OpenTelemetry and other providers see them as separate properties. The message text is formatted with the invariant culture.
 
 ## Dependencies
 
-The package depends on `Microsoft.Extensions.Logging.Abstractions`. The core and provider packages have their own logging interfaces and don't need this dependency ([ADR-0003](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0003-telemetry-abstractions.md)).
+The package depends on `Microsoft.Extensions.Logging.Abstractions`. The core and provider packages have their own logging interfaces and don't need this dependency ([ADR-0003](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0003-telemetry-abstractions.md)).

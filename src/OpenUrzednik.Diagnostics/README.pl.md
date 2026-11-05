@@ -1,12 +1,12 @@
 # OpenUrzednik.Diagnostics
 
-🇬🇧 Pełna dokumentacja jest po angielsku: [README.md](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md). Ta wersja zawiera tylko część informacyjną. Jeśli wersje się różnią, obowiązuje angielska.
+🇬🇧 Pełna dokumentacja jest po angielsku: [README.md](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md). Ta wersja zawiera tylko część informacyjną. Jeśli wersje się różnią, obowiązuje angielska.
 
 > ⚠️ **Projekt nieoficjalny:** OpenUrzednik.NET to projekt społecznościowy. Nie jest powiązany z Narodowym Bankiem Polskim (NBP) ani z żadną inną polską instytucją publiczną i nie działa z ich upoważnienia.
 
 Adapter, który zamienia spany klientów **OpenUrzednik.NET** na `Activity` z `System.Diagnostics`. Zbierają je OpenTelemetry i inne narzędzia do śledzenia.
 
-> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). Przegląd projektu po polsku znajdziesz w [głównym README](https://github.com/milten89/OpenUrzednik.NET/blob/develop/README.pl.md).
+> Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). Przegląd projektu po polsku znajdziesz w [głównym README](https://github.com/milten89/OpenUrzednik.NET/blob/main/README.pl.md).
 
 ## Instalacja
 
@@ -35,7 +35,7 @@ var client = new NbpGoldPriceClient(httpClient,
 
 ## Więcej po angielsku
 
-- [Własne `ActivitySource`](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#usage)
-- [Spany żądań `HttpClient`](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#http-client-spans)
-- [Co trafia do śladu (spany, tagi, błędy, stabilność, .NET Framework)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#what-goes-into-the-trace)
-- [Zależności](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Diagnostics/README.md#dependencies)
+- [Własne `ActivitySource`](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#usage)
+- [Spany żądań `HttpClient`](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#http-client-spans)
+- [Co trafia do śladu (spany, tagi, błędy, stabilność, .NET Framework)](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#what-goes-into-the-trace)
+- [Zależności](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#dependencies)

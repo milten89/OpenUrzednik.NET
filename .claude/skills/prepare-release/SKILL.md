@@ -85,7 +85,7 @@ python .claude/skills/prepare-release/scripts/check_packages.py artifacts/releas
 ```
 
 - The pack also runs package validation; it must pass with no new suppression.
-- `check_packages.py` checks every `.nupkg`: the exact version, `releaseNotes` linking `…/releases/tag/v<version>`, the icon, a Description starting with "Unofficial", no preview wording in the packed README, and repository links on `main`. Each line it prints is a problem; fix it on `develop` (a normal PR), not on the release branch, unless the fix is the release's own (version, README table). Before 1.0.0, the issues of milestone `1.0.0` cover them: the "Unofficial" Description (P4-1), the preview sections of the package READMEs (P4-2), the icon (P4-5) and the `blob/develop` → `blob/main` links (P4-10). If one is still open, stop and name it.
+- `check_packages.py` checks every `.nupkg`: the exact version, `releaseNotes` linking `…/releases/tag/v<version>`, the icon, a Description starting with "Unofficial", no preview wording in the packed README, and repository links on `main`. Each line it prints is a problem; fix it on `develop` (a normal PR), not on the release branch, unless the fix is the release's own (version, README table). Before 1.0.0, the issues of milestone `1.0.0` cover them: the "Unofficial" Description (P4-1), the preview sections of the package READMEs (P4-2) and the icon (P4-5). If one is still open, stop and name it.
 - `git diff origin/develop --stat` lists only `version.json`, `README.md`, `README.pl.md` and the notes file.
 
 ### 5. Confirm, push and open the PR
