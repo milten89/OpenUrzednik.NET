@@ -8,7 +8,7 @@ argument-hint: "[version, e.g. 1.1.0] | after [version]"
 
 A release goes from `develop` through `release/X.Y` into `main`; merging that PR runs `nuget-release.yml`, which publishes every package, tags `v<version>` and creates the GitHub Release ([`docs/RELEASE-PROCESS.md`](../../../docs/RELEASE-PROCESS.md), [ADR-0008](../../../docs/adr/0008-branching-versioning-and-release.md)). This skill does everything up to that PR, and with `after`, everything after the publish. **It never publishes**: never run `dotnet nuget push` (denied), never create the tag or the Release, never merge into `main` or approve a deployment.
 
-Hotfixes aren't covered: follow the hotfix procedure in `docs/RELEASE-PROCESS.md` by hand.
+Hotfixes and security backports to a support branch `release/N.x` aren't covered: follow the hotfix procedure and "Support for the previous major version" in `docs/RELEASE-PROCESS.md` by hand.
 
 Stop and report at the first failed check, with what failed and what would fix it. Don't work around a check. Repository: `milten89/OpenUrzednik.NET`; examples use bash.
 

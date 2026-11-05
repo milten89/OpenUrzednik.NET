@@ -5,7 +5,8 @@
     "precision": "major"
   },
   "publicReleaseRefSpec": [
-    "^refs/heads/main$"
+    "^refs/heads/main$",
+    "^refs/heads/release/\\d+\\.x$"
   ],
   "nugetPackageVersion": {
     "semVer": 2

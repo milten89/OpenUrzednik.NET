@@ -3,7 +3,7 @@ name: Release label
 # Every PR needs at least one release label, so the generated release notes can file it (.github/release.yml).
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, 'release/*.x' ]
     types: [ opened, reopened, labeled, unlabeled, synchronize ]
 
 permissions:

@@ -23,14 +23,14 @@ gh api repos/milten89/OpenUrzednik.NET/environments
 
 ## Ruleset `protected-branches` (id 20632755)
 
-Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
+Targets `refs/heads/main`, `refs/heads/develop` and the support branches `refs/heads/release/*.x` ([`RELEASE-PROCESS.md`](RELEASE-PROCESS.md#support-for-the-previous-major-version)). Enforcement: active.
 
 | Rule | Configuration |
 |---|---|
 | Restrict deletions | on |
 | Block force pushes | on |
 | Require a pull request | 0 approvals, CODEOWNERS review, dismiss stale approvals, resolve all conversations, allowed merge method: merge |
-| Required status checks (strict, up to date) | `build (net8.0)`, `build (net10.0)`, `test (net472)`, `aot (net10.0)`, `format`, `dependency-review`, `release-label` (once [#96](https://github.com/milten89/OpenUrzednik.NET/issues/96) is done) |
+| Required status checks (strict, up to date; not enforced when a branch is created, `do_not_enforce_on_create`, so a support branch can be made from a release tag) | `build (net8.0)`, `build (net10.0)`, `test (net472)`, `aot (net10.0)`, `format`, `dependency-review`, `release-label` (once [#96](https://github.com/milten89/OpenUrzednik.NET/issues/96) is done) |
 | Code scanning | CodeQL: alerts threshold `errors`, security alerts `high_or_higher` |
 | Bypass | Repository role **Admin**, mode **pull requests only** (the maintainer can merge their own PRs, but cannot push directly) |
 
@@ -41,7 +41,7 @@ Targets `refs/heads/main` and `refs/heads/develop`. Enforcement: active.
 > gh api -X PUT repos/milten89/OpenUrzednik.NET/rulesets/20632755 --input ruleset.json
 > ```
 
-`format`, `dependency-review` and CodeQL run on PRs to both `develop` and `main`, so release PRs (`release/X.Y` → `main`) can satisfy every required check.
+Every required check, and CodeQL, runs on PRs into `develop`, `main` and `release/*.x`, so release PRs (`release/X.Y` → `main`) and backports into a support branch can satisfy every required check.
 
 Not used:
 * **Restrict updates:** it made every merge an admin bypass, because only bypass actors could update the branches. The pull request rule already blocks direct pushes.
@@ -54,7 +54,7 @@ Not used:
 | Environment | Deployment branches | Protection |
 |---|---|---|
 | `nuget-pre-release` | `develop` | none (a merge to `develop` that changes a package input publishes previews) |
-| `nuget-release` | `main` | required reviewer: `milten89` |
+| `nuget-release` | `main`, `release/*.x` | required reviewer: `milten89` |
 
 Both use NuGet trusted publishing (OIDC via `NuGet/login`). The secret `NUGET_USER` holds the nuget.org user name.
 
