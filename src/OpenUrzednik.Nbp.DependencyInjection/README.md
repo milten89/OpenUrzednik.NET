@@ -1,6 +1,6 @@
 # OpenUrzednik.Nbp.DependencyInjection
 
-🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md)
+🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md)
 
 > ⚠️ **Unofficial:** OpenUrzednik.NET is a community project. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP) or any other Polish public institution.
 
@@ -206,6 +206,6 @@ This handler doesn't honor `Retry-After`. The package treats what such a handler
 
 ## Logging and tracing
 
-The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`. Every log entry has an event id from `NbpLogEvents`; the span names, tags and event ids are listed in the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.md#telemetry-reference).
+The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`. Every log entry has an event id from `NbpLogEvents`; the span names, tags and event ids are listed in the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#telemetry-reference).
 
 If you register your own `TimeProvider`, the clients use it instead of `TimeProvider.System`.

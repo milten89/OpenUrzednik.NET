@@ -1,6 +1,6 @@
 # OpenUrzednik.Nbp
 
-🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Nbp/README.pl.md)
+🇵🇱 [Wersja polska (skrócona)](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.pl.md)
 
 > ⚠️ **Unofficial:** OpenUrzednik.NET is a community project. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP) or any other Polish public institution.
 
@@ -84,7 +84,7 @@ The currency client returns one currency's rates (`CurrencyExchangeRates`, with 
 
 In a range method, `from` may be earlier than the earliest date: only `to` is checked against the earliest date and against today. `from` later than `to` is a validation error.
 
-**Empty answers.** A date or range with no publication (a weekend, a holiday, a date before the table existed) is a `NotFoundError`: NBP answers it with an HTTP 404 (the error then carries the status code) or with an empty list. See [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.md#errors) for the other error types. NBP describes its API in the [official documentation](https://api.nbp.pl/en.html).
+**Empty answers.** A date or range with no publication (a weekend, a holiday, a date before the table existed) is a `NotFoundError`: NBP answers it with an HTTP 404 (the error then carries the status code) or with an empty list. See [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors) for the other error types. NBP describes its API in the [official documentation](https://api.nbp.pl/en.html).
 
 ## The last rate before a date
 
@@ -121,7 +121,7 @@ The clients are thread-safe: create one client per `HttpClient` and share it acr
 
 ## Compatibility
 
-Minor versions may add methods to the client interfaces, properties to the models and options to `NbpOptions` ([ADR-0011](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0011-compatibility-policy.md)). The clients and `NbpOptions` are `sealed`: to swap or wrap a client, use its interface (`INbpGoldPriceClient` and the others). If you implement an interface yourself, a new method breaks your build until you add it; a `throw new NotImplementedException();` stub is enough for methods you don't call. An implementation compiled against an older version, e.g. in another package, has to be rebuilt. New model properties are `init` properties (set them in an object initializer or with `with`); the positional constructors and `Deconstruct` don't change.
+Minor versions may add methods to the client interfaces, properties to the models and options to `NbpOptions` ([ADR-0011](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0011-compatibility-policy.md)). The clients and `NbpOptions` are `sealed`: to swap or wrap a client, use its interface (`INbpGoldPriceClient` and the others). If you implement an interface yourself, a new method breaks your build until you add it; a `throw new NotImplementedException();` stub is enough for methods you don't call. An implementation compiled against an older version, e.g. in another package, has to be rebuilt. New model properties are `init` properties (set them in an object initializer or with `with`); the positional constructors and `Deconstruct` don't change.
 
 ## API gateways
 
@@ -205,7 +205,7 @@ Each client method starts one span on the `OpenUrzednik.Nbp` source, with the HT
 | `nbp.gold.range` | `GetAsync(from, to)` | `nbp.from`, `nbp.to` |
 | `nbp.http.get` | the request of any method | `http.request.method`, `server.address` (e.g. `api.nbp.pl`, or the `ApiUrl` host), `server.port` (always set, e.g. `443`), `url.path` (e.g. `/api/cenyzlota`), `http.response.status_code` |
 
-Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/develop/src/OpenUrzednik.Core/README.md#errors)).
+Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)).
 
 ### Log events
 
