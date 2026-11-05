@@ -67,7 +67,7 @@ public sealed class NbpDependencyInjectionWireMockTest : IDisposable
 
         // Assert
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>()
-            .Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(503);
+            .Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(503);
         _server.LogEntries.Count().ShouldBe(1);
     }
 

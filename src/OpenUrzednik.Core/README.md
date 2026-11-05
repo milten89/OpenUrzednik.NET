@@ -82,7 +82,7 @@ A client returns these errors in the result. Switch on the type, or compare `Cod
 | No connection (DNS, TLS, refused or broken connection) | `ConnectionFailedError` | `connectionFailed` | none |
 | A timeout (the client's or `HttpClient`'s deadline, a resilience handler's timeout) | `RequestTimeoutError` (`Timeout` when known) | `requestTimeout` | none |
 
-The metadata keys are constants: `OpenUrzednikError.StatusCodeMetadataKey`, `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`.
+The metadata keys are constants: `HttpErrorMetadata.StatusCodeKey`, `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`. Read the status code with `error.GetHttpStatusCode()` (`int?`) or `error.TryGetHttpStatusCode(out var status)`: it is set only when an HTTP response caused the error. Error types describe the situation, not the transport, so the same type can come from a response or from elsewhere (an empty list is a `NotFoundError` without a status code).
 
 From the first stable release, within a major version the type and `Code` of each case above, and the metadata keys, stay the same. New errors may appear in a minor version (e.g. a more specific error in place of `UnknownError`), so always handle a default case.
 

@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-10-30
+date: 2026-11-05
 decision-makers: milten89
 ---
 
@@ -46,7 +46,7 @@ Chosen option: "All failures that can happen during normal execution are returne
 | Timeout: an `OperationCanceledException` while the **caller's** token is not cancelled (the request deadline, `HttpClient.Timeout`, a resilience handler's timeout) | `RequestTimeoutError`, with `Timeout` when the limit is known | `requestTimeout` | none |
 | `default(OpenUrzednikResult<T>)` | `UnknownError` | `unknown` | none |
 
-The metadata keys are public constants next to the errors that set them: `OpenUrzednikError.StatusCodeMetadataKey`, `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`. Other metadata, if any appears, is informational. A validator for a personal identifier (PESEL, NIP, REGON, bank account number) passes a masked value to `GetValidationErrorResult`, which puts it into the error's metadata ([ADR-0003](0003-telemetry-abstractions.md)).
+The metadata keys are public constants: the transport's key next to its accessors (`HttpErrorMetadata.StatusCodeKey`, read with `GetHttpStatusCode()` or `TryGetHttpStatusCode`, [ADR-0012](0012-error-types-describe-conditions.md)), the others next to the errors that set them: `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`. Other metadata, if any appears, is informational. A validator for a personal identifier (PESEL, NIP, REGON, bank account number) passes a masked value to `GetValidationErrorResult`, which puts it into the error's metadata ([ADR-0003](0003-telemetry-abstractions.md)).
 
 **Compatibility of the error contract** (from the first stable release):
 
@@ -117,3 +117,5 @@ These are breaking changes for preview users.
 **2026-10-30 change: synchronous argument errors in every task-returning method** ([#159](https://github.com/milten89/OpenUrzednik.NET/issues/159)). The rule from #89 covered only the provider clients. Core's extensions on `Task<…>` (`EnsureSuccessAsync`, `MapAsync`, `BindAsync`) checked their arguments inside an `async` method, so a `null` task or delegate came back as a faulted task. They now check their arguments, then return the task of a private `async` method, and the rule covers every public method of a public type that returns a task. It is a breaking change for callers who observed the exception on the task.
 
 **2026-10-30 change: CA1031 enforces the catch rule** ([#110](https://github.com/milten89/OpenUrzednik.NET/issues/110)). The rule against `catch (Exception)` and a bare `catch` relied on review. CA1031 is now a warning in `src/`, and an error in CI; `src/` had no violations. Tests aren't covered, since they may catch broadly on purpose.
+
+**2026-11-05 change: a typed accessor for the status code** ([#123](https://github.com/milten89/OpenUrzednik.NET/issues/123)). The status code was only the `statusCode` metadata entry. It is now read with `GetHttpStatusCode()` or `TryGetHttpStatusCode` from `HttpErrorMetadata`, which also holds the key; `OpenUrzednikError.StatusCodeMetadataKey` and the base constructor's `statusCode` parameter are gone, because error types describe conditions, not transports ([ADR-0012](0012-error-types-describe-conditions.md)). The key and its values are unchanged.

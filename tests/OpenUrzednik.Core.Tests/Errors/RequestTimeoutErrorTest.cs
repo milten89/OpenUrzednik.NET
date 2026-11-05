@@ -41,7 +41,7 @@ public partial class RequestTimeoutErrorTest
         var error = new RequestTimeoutError("message", statusCode: 408);
 
         // Assert
-        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(408);
+        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(408);
         error.Timeout.ShouldBeNull();
     }
 }

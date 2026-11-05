@@ -24,7 +24,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 255 wyników / Maximum size of 255 data series has been exceeded");
-        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(400);
+        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 367 dni / Limit of 367 days has been exceeded");
-        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(400);
+        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
-        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(404);
+        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnauthorizedError>();
-        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe((int)statusCode);
+        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RateLimitExceededError>();
         error.RetryAfter.ShouldBe(TimeSpan.FromSeconds(30));
-        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(429);
+        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(429);
     }
 
     [Theory]
@@ -127,7 +127,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
-        error.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe((int)statusCode);
+        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
     }
 
     [Fact]

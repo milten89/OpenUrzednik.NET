@@ -24,12 +24,14 @@ public sealed class RateLimitExceededError : OpenUrzednikError
     /// </summary>
     /// <param name="message">The message associated with the error.</param>
     /// <param name="retryAfter">How long to wait before retrying, if the server said so.</param>
-    /// <param name="statusCode">HTTP status code of the response that caused the error, if any.</param>
+    /// <param name="statusCode">HTTP status code of the response that caused the error, if any; read it with <see cref="HttpErrorMetadata.GetHttpStatusCode"/>.</param>
     public RateLimitExceededError(string message, TimeSpan? retryAfter, int? statusCode = null)
-        : base(ErrorCode, message, statusCode)
+        : base(ErrorCode, message)
     {
         RetryAfter = retryAfter;
 
+        if (statusCode.HasValue)
+            AddMetadata(HttpErrorMetadata.StatusCodeKey, statusCode.Value);
         AddMetadata(RetryAfterMetadataKey, retryAfter);
     }
 

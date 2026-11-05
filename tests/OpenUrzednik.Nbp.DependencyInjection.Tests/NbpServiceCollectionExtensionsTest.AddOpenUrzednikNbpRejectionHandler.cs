@@ -37,7 +37,7 @@ public sealed partial class NbpServiceCollectionExtensionsTest
 
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
-        error.Metadata.ContainsKey(OpenUrzednikError.StatusCodeMetadataKey).ShouldBeFalse();
+        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
     }
 
     [Fact]

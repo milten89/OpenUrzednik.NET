@@ -15,7 +15,7 @@ public class ConnectionFailedErrorTest
 
         // Assert
         error.Code.ShouldBe("connectionFailed");
-        error.Metadata.ContainsKey(OpenUrzednikError.StatusCodeMetadataKey).ShouldBeFalse();
+        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
     }
 
     [Fact]
