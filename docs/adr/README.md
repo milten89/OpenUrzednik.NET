@@ -18,3 +18,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0012](0012-error-types-describe-conditions.md) | Error types describe conditions, not transports | accepted |
 | [0013](0013-version-support-policy.md) | Version support policy | accepted |
 | [0014](0014-trimming-and-native-aot.md) | Trimming and Native AOT compatibility | accepted |
+| [0015](0015-log-and-trace-correlation.md) | Log entries are written inside the operation's span | accepted |
