@@ -61,7 +61,7 @@ public sealed partial class NbpRequestPipelineTest
 
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
-        error.Metadata.ContainsKey(OpenUrzednikError.StatusCodeMetadataKey).ShouldBeFalse();
+        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
         // RecordError (one error) sets only the error.type tag; RecordErrors also adds events.
         span.Received(1).SetTag("error.type", NotFoundError.ErrorCode);
     }

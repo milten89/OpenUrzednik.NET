@@ -15,3 +15,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0009](0009-documentation-language.md) | Documentation language | accepted |
 | [0010](0010-provider-readiness-gate.md) | Framework first: NBP as the reference provider | accepted |
 | [0011](0011-compatibility-policy.md) | Compatibility policy | accepted |
+| [0012](0012-error-types-describe-conditions.md) | Error types describe conditions, not transports | accepted |

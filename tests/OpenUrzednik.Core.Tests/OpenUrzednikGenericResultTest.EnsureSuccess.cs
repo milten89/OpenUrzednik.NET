@@ -93,7 +93,7 @@ public partial class OpenUrzednikGenericResultTest
 
         // Assert
         exception.Error.ShouldBeSameAs(error);
-        exception.Error!.Metadata[OpenUrzednikError.StatusCodeMetadataKey].ShouldBe(404);
+        exception.Error!.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
         exception.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
     }
 
