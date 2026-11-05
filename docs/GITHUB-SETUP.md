@@ -71,6 +71,12 @@ Set on nuget.org → account menu → **Trusted Publishing**. All packages are o
 
 Both trust publisher GitHub Actions, repository owner `milten89` (id 9992006) and repository `OpenUrzednik.NET` (id 1304343799). Neither may unlist or relist versions; unlisting is done by hand with a short-lived API key.
 
+## nuget.org ID prefix reservation
+
+The package ID prefix `OpenUrzednik.*` is reserved for the account `milten89` (requested in [#106](https://github.com/milten89/OpenUrzednik.NET/issues/106), closed as granted on 2026-10-30). Only that account can push a new package whose ID starts with `OpenUrzednik.`, and nuget.org shows a verified mark next to each such package. A new package therefore needs no extra request, but it must be pushed from `milten89`, which the trusted-publishing policies above do. See [Package ID prefix reservation](https://learn.microsoft.com/nuget/nuget-org/id-prefix-reservation).
+
+To check it, look for the verified mark on a package page, or ask the search API (its URL is the `SearchQueryService` entry in `https://api.nuget.org/v3/index.json`): `?q=owner:milten89&prerelease=true&semVerLevel=2.0.0` lists every listed package with `verified: true`.
+
 ## Security
 
 | Setting | Value |
