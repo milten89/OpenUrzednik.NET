@@ -157,9 +157,13 @@ internal sealed class FixtureHandler(HttpStatusCode? status = null, string? reso
             _ => null,
         };
         var content = body ?? (name is null ? null : Read(name));
-        return Task.FromResult(content is null
-            ? new HttpResponseMessage(HttpStatusCode.NotImplemented) { RequestMessage = request, Content = new StringContent($"No fixture for {path}") }
-            : new HttpResponseMessage(status ?? HttpStatusCode.OK) { RequestMessage = request, Content = new StringContent(content) });
+        // HttpClient owns and disposes the response.
+        var response = new HttpResponseMessage(content is null ? HttpStatusCode.NotImplemented : status ?? HttpStatusCode.OK)
+        {
+            RequestMessage = request,
+            Content = new StringContent(content ?? $"No fixture for {path}"),
+        };
+        return Task.FromResult(response);
     }
 
     private static string Read(string name)
