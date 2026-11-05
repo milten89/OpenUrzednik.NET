@@ -42,6 +42,8 @@ Every entry has an event id (`EventId` with an id and a name, e.g. `1001 Request
 
 Entries are structured: they carry named values (e.g. `provider`, `path`) and the template in `{OriginalFormat}`, like entries from `LoggerMessage`. Serilog, OpenTelemetry and other providers see them as separate properties. The message text is formatted with the invariant culture.
 
+Entries are written while the operation's span is `Activity.Current`, so with tracing on, your logging setup can attach the trace and span ids to them: OpenTelemetry logging does it by itself, plain `Microsoft.Extensions.Logging` with `ActivityTrackingOptions`. See [Correlating logs and traces](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#correlating-logs-and-traces) in the OpenUrzednik.Diagnostics README.
+
 ## Trimming and Native AOT
 
 The .NET builds (`net8.0`, `net10.0`) are trimming- and Native AOT-compatible: publishing an app with trimming or Native AOT gives no warning from this package. CI checks it on every change ([ADR-0014](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0014-trimming-and-native-aot.md)). The `netstandard2.0` build (.NET Framework) isn't covered.
