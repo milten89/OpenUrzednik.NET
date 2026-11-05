@@ -17,6 +17,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | `src/OpenUrzednik.Gus`, `Krs`, `Mf` | Empty skeletons. **Do not work on them** ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)) |
 | `tests/OpenUrzednik.*.Tests` | Unit tests (xUnit v3, Shouldly, NSubstitute, Bogus, `FakeTimeProvider`) |
 | `tests/OpenUrzednik.IntegrationTests` | WireMock tests (run in CI) and tests against the real API (explicit: they run with `--explicit on` or when `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set) |
+| `tests/OpenUrzednik.AotSmoke` | Native AOT smoke app, not an xUnit project: published and run by the CI job `aot (net10.0)` (`dotnet publish tests/OpenUrzednik.AotSmoke -f net10.0`, needs `clang` on Linux or the C++ build tools on Windows) |
 | `tests/OpenUrzednik.TestCommon` | Shared test helpers: `StubHttpMessageHandler`, `ManualFact`/`ManualTheory`, Faker extensions |
 | `samples/` | Runnable examples against the real NBP API (console, minimal Web API with DI); built in CI with the solution, not packed |
 
@@ -111,7 +112,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - DTOs are `internal sealed class` in `Dto/`, with `[JsonPropertyName]`. Mark a property `required` **only if the real API always returns it**: check with `/verify-api`.
 - Mappers are `internal static class Mapper` per area. Validators derive from `ValueValidator<T>` in `Validation/` and are `internal sealed`.
 - Public API needs `///` XML docs: a missing one is warning CS1591 in `src/`, and CI treats every warning as an error (`TreatWarningsAsErrors` when `ContinuousIntegrationBuild`; NuGet vulnerability warnings excepted). Mention API limits (date ranges, top count, publication schedule).
-- Library code stays trimming- and Native AOT-safe: the .NET targets set `IsAotCompatible`, so reflection-based APIs show up as IL2xxx/IL3xxx warnings.
+- Library code stays trimming- and Native AOT-safe: the .NET targets set `IsAotCompatible`, so reflection-based APIs show up as IL2xxx/IL3xxx warnings. The CI job `aot (net10.0)` publishes `tests/OpenUrzednik.AotSmoke` with Native AOT, every published `src/` assembly rooted (`TrimmerRootAssembly`), so a warning in the libraries or their dependencies fails it; then it runs the binary, which calls the clients offline with captured fixtures. A new published package gets a `ProjectReference` and a `TrimmerRootAssembly` there, and its dependencies and transport code must be AOT-safe (e.g. no reflection-based `XmlSerializer` for SOAP). The READMEs promise this compatibility for the .NET builds of every package ([ADR-0014](docs/adr/0014-trimming-and-native-aot.md)).
 - Large clients are split into `partial` files by area (`NbpCurrencyExchangeRateClient.BuySell.cs`).
 - Messages and logs are in English. Format dates invariantly (`yyyy-MM-dd`).
 - No parallel API variants: one public method per operation, returning a result; the exception style comes only through `EnsureSuccess()` / `EnsureSuccessAsync()`.

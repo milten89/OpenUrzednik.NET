@@ -43,6 +43,10 @@ catch (OpenUrzednikValidationException ex)
 }
 ```
 
+## Trimming and Native AOT
+
+The .NET builds (`net8.0`, `net10.0`) are trimming- and Native AOT-compatible: publishing an app with trimming or Native AOT gives no warning from this package. CI checks it on every change ([ADR-0014](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0014-trimming-and-native-aot.md)). The `netstandard2.0` build (.NET Framework) isn't covered.
+
 ## Working with a result
 
 ```csharp
