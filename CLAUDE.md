@@ -87,6 +87,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
   - A client interface may gain a method in a minor version; package validation reports it (CP0006), and the PR suppresses exactly that diagnostic, citing ADR-0011.
   - Before a major removes a member, mark it `[Obsolete]` (with the replacement) for at least one minor. A patch (`hotfix/*`) adds no public API.
   - A PR with a breaking change carries `breaking-change` and raises `version.json` on `develop` to the next major ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
+- Support ([ADR-0013](docs/adr/0013-version-support-policy.md)): fixes go to the latest minor of the latest major; after a new major, the previous one gets security fixes for 6 months from `release/N.x` (ADR-0008).
 
 **Client API ([ADR-0007](docs/adr/0007-client-api-and-extensibility.md))**
 - The default case is one line (`new NbpGoldPriceClient(httpClient)`).
@@ -133,7 +134,7 @@ Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and 
 - A release or hotfix PR into `main` must add `docs/release-notes/v<version>.md` (`/release-notes`): the `build (net10.0)` job checks it on the PR, and `nuget-release.yml` checks it again before publishing.
 - A fix for a released version follows the hotfix procedure in [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md): `hotfix/…` from the `vX.Y.Z` tag, the next patch in `version.json`, a PR into `main`, then the back-merge into `develop` through a `merge/vX.Y.Z` branch.
 - Commit or push only when asked. One issue per PR (see "Issues and the project").
-- If a change contradicts an accepted ADR, stop and use `/adr` instead of working around it. Until the first stable release, accepted ADRs are changed in place with a dated note (ADR-0001); from 1.0 on, a new superseding ADR.
+- ADRs are append-only ([ADR-0001](docs/adr/0001-record-architecture-decisions.md)): never edit an accepted or rejected ADR except its status line and a link to the ADR that supersedes it. Follow-up work goes into issues; a clarification that changes no decision goes here or into the linked docs. If a change contradicts an accepted ADR, stop and use `/adr` instead of working around it: the new ADR restates the whole decision and supersedes the old one. A decision that shapes the architecture or is hard to reverse (public API shape, the error or telemetry contract, dependencies, target frameworks, the release and support flow) gets an ADR in the same PR, also when it was settled in chat.
 - Before opening a PR, run the `reviewer` agent on the diff.
 - The NuGet workflows build and pack `OpenUrzednik.Packages.slnf` (the `src/` projects only). **A new `src/` project must be added to it**, or it isn't published. Every package gets the version of the root `version.json` (lockstep, ADR-0008); don't add a `version.json` to a project. A new package input outside `src/` goes into both `pathFilters` in `version.json` and the `paths` filter of `nuget-pre-release.yml` (a directory is `dir` in the first and `dir/**` in the second).
 - Package icons follow `assets/branding/BRANDING.md`: a provider package sets `OpenUrzednikPackageIcon` in its csproj, and its PNG joins both publish lists above.
@@ -166,7 +167,7 @@ gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id
 
 - `/new-endpoint`: checklist for adding or changing a client method (DTO, mapper, validation, client, tests, docs).
 - `/verify-api`: compare DTOs and test payloads with live API responses, and capture fixtures.
-- `/adr`: create a new MADR record and update the index.
+- `/adr`: create a new MADR record, or one that supersedes an accepted record, and update the index.
 - `/release-notes`: draft `docs/release-notes/v<version>.md` for a release or hotfix; `nuget-release.yml` publishes nothing without it.
 - `/prepare-release`: prepare a release (checks, `release/X.Y`, version, notes, package checks, the PR into `main`); `after`: verify the published release and open the back-merge.
 - `/triage`: sort the project's Triage column (verify each issue against `develop`, propose the fields in one table, apply them after the maintainer approves); also how an agent triages an issue it opens at the maintainer's request.

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-05
+confidence: high
 decision-makers: milten89
 ---
 
@@ -8,7 +9,7 @@ decision-makers: milten89
 
 ## Context and Problem Statement
 
-Public Polish APIs fail in many routine ways: missing data (404 for a holiday), invalid requests (400), rate limits (429), outages (5xx), timeouts and broken connections. Consumers need to handle these predictably. Today some of them are returned as `OpenUrzednikResult` errors and others (network failures, timeouts, mapping errors) escape as exceptions, and the code base contains broad `catch (Exception)` blocks. What is the contract between "returned as a failed result" and "thrown"?
+Public Polish APIs fail in many routine ways: missing data (404 for a holiday), invalid requests (400), rate limits (429), outages (5xx), timeouts and broken connections. Consumers need to handle these predictably. Without a rule, some of them end up as `OpenUrzednikResult` errors while others (network failures, timeouts, mapping errors) escape as exceptions, and broad `catch (Exception)` blocks creep in. What is the contract between "returned as a failed result" and "thrown"?
 
 ## Decision Drivers
 
@@ -22,6 +23,12 @@ Public Polish APIs fail in many routine ways: missing data (404 for a holiday), 
 * All failures that can happen during normal execution are returned in the result
 * Only API responses (HTTP status, payload) are returned in the result; transport failures are thrown
 * Replace the custom result with a third-party library or plain exceptions
+
+For parts of the result API:
+
+* A dual surface: a throwing and a result-returning method for each operation
+* Implicit conversions from a value or an error to `OpenUrzednikResult<T>`
+* .NET's `ValidationException` and `SerializationException` as the exceptions of validation and serialization errors
 
 ## Decision Outcome
 
@@ -38,38 +45,42 @@ Chosen option: "All failures that can happen during normal execution are returne
 | 200 with an empty array, for endpoints that return an array (no data for the date or range) | `NotFoundError` | `notFound` | none: no `statusCode` |
 | 408 | `RequestTimeoutError` | `requestTimeout` | `statusCode` |
 | 429 | `RateLimitExceededError` with `RetryAfter` | `rateLimitExceeded` | `statusCode`, `retryAfter` |
-| 5xx (504 included) | `ServiceUnavailableError` | `serviceUnavailable` | `statusCode` |
-| A resilience handler's open circuit breaker or rate limiter (through the DI package, [ADR-0004](0004-dependency-policy.md)) | `ServiceUnavailableError`; `Exception` is an `HttpRequestException` whose `InnerException` is the rejection | `serviceUnavailable` | none |
+| 5xx (504 included: it is the gateway, not the client, that timed out) | `ServiceUnavailableError` | `serviceUnavailable` | `statusCode` |
+| A resilience handler's open circuit breaker or rate limiter (through the DI package, which marks these rejections so the executor tells them apart from network failures, [ADR-0004](0004-dependency-policy.md)) | `ServiceUnavailableError`; `Exception` is an `HttpRequestException` whose `InnerException` is the rejection | `serviceUnavailable` | none |
 | Any other non-success status | `UnknownError` | `unknown` | `statusCode` |
 | Empty or malformed payload, deserialization or mapping failure | `SerializationError` (or a more specific error) | `serialization` | none |
 | DNS, TLS or connection failure while sending (`HttpRequestException`); network failure while reading the body (`HttpRequestException`, `IOException`) | `ConnectionFailedError` with the cause in `Exception` | `connectionFailed` | none |
 | Timeout: an `OperationCanceledException` while the **caller's** token is not cancelled (the request deadline, `HttpClient.Timeout`, a resilience handler's timeout) | `RequestTimeoutError`, with `Timeout` when the limit is known | `requestTimeout` | none |
 | `default(OpenUrzednikResult<T>)` | `UnknownError` | `unknown` | none |
 
-The metadata keys are public constants: the transport's key next to its accessors (`HttpErrorMetadata.StatusCodeKey`, read with `GetHttpStatusCode()` or `TryGetHttpStatusCode`, [ADR-0012](0012-error-types-describe-conditions.md)), the others next to the errors that set them: `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`. Other metadata, if any appears, is informational. A validator for a personal identifier (PESEL, NIP, REGON, bank account number) passes a masked value to `GetValidationErrorResult`, which puts it into the error's metadata ([ADR-0003](0003-telemetry-abstractions.md)).
+An error caused by a non-success HTTP status carries that status code. The metadata keys are public constants: the transport's key next to its accessors (`HttpErrorMetadata.StatusCodeKey`, read with `GetHttpStatusCode()` or `TryGetHttpStatusCode`, [ADR-0012](0012-error-types-describe-conditions.md)), the others next to the errors that set them: `RateLimitExceededError.RetryAfterMetadataKey`, `ValidationError.RuleNameMetadataKey`, `NameMetadataKey` and `ValueMetadataKey`. Other metadata, if any appears, is informational. A validator for a personal identifier (PESEL, NIP, REGON, bank account number) passes a masked value to `GetValidationErrorResult`, which puts it into the error's metadata ([ADR-0003](0003-telemetry-abstractions.md)).
 
 **Compatibility of the error contract** (from the first stable release):
 
 * Within a major version, the error type and `Code` of a documented condition don't change, and neither do the documented metadata keys.
 * The set of errors is open: callers always handle a default case (e.g. treat any unknown error like `UnknownError`).
-* A minor version may turn an `UnknownError` case into a more specific error, and may return a subclass of today's error type that keeps the parent's `Code` (unsealing a type is additive).
+* A minor version may turn an `UnknownError` case into a more specific error, and may return a subclass of a condition's error type that keeps the parent's `Code` (unsealing a type is additive).
 
 **Thrown:**
 
-* Caller cancellation – `OperationCanceledException` when the caller's `CancellationToken` was cancelled.
-* Programmer errors – `ArgumentNullException`, `ArgumentException`, invalid configuration detected in constructors/options. In every public method of a public type that returns a task (the provider clients' methods, Core's extensions on `Task<…>`), a `null` argument (`ArgumentNullException`) and a value that isn't a defined enum member (`ArgumentOutOfRangeException`) are thrown **synchronously**, before the method returns its task, as the task-based asynchronous pattern says for usage errors: the method isn't `async` and checks them before it creates the task, typically by returning the task of a private `async` method.
-* Fatal runtime conditions – `OutOfMemoryException`, `StackOverflowException`, etc. are never caught.
+* Caller cancellation: `OperationCanceledException` when the caller's `CancellationToken` was cancelled.
+* Programmer errors: `ArgumentNullException`, `ArgumentException`, invalid configuration detected in constructors/options. In every public method of a public type that returns a task (the provider clients' methods, Core's extensions on `Task<…>` such as `EnsureSuccessAsync`, `MapAsync` and `BindAsync`), a `null` argument (`ArgumentNullException`) and a value that isn't a defined enum member (`ArgumentOutOfRangeException`) are thrown **synchronously**, before the method returns its task, as the task-based asynchronous pattern says for usage errors: the method isn't `async` and checks them before it creates the task, typically by returning the task of a private `async` method. The line between thrown and returned is where the .NET design guidelines draw it: a usage error throws; a non-null value of the right type that fails a format or range check is a returned `ValidationError`.
+* Fatal runtime conditions: `OutOfMemoryException`, `StackOverflowException`, etc. are never caught.
 
 **Rules for code:**
 
 * Never write `catch (Exception)` or a bare `catch`. Catch the specific exception types listed above and convert them to errors. The rule is not dogmatic: if a new specific exception type is expected during normal execution, add it explicitly and document why. Example: the exceptions a resilience handler throws when it rejects a request are translated in the DI packages ([ADR-0004](0004-dependency-policy.md)).
 * Mappers and other internal code must not throw on bad API data; they return a result or the caller converts a known exception type to an error.
-* Every `OpenUrzednikError` implements `CreateException()` returning an `OpenUrzednikException`-derived type (the original exception, if any, becomes `InnerException`). The public, non-virtual `ToException()` calls it and attaches the error, so `EnsureSuccess()` always throws exceptions from the library's hierarchy that keep their error.
+* Every `OpenUrzednikError` implements the protected `CreateException()` returning an `OpenUrzednikException`-derived type (the original exception, if any, becomes `InnerException`). The public, non-virtual `ToException()` calls it and attaches the error, so `EnsureSuccess()` always throws exceptions from the library's hierarchy that keep their error.
 * The exception keeps the error it was created from (`OpenUrzednikException.Error`, with its metadata) and, when there were several, all of them (`Errors`).
-* Several errors are produced only by validation. `EnsureSuccess()` then throws **one `OpenUrzednikValidationException` whose `Errors` lists every failure**, the pattern used by FluentValidation, never an `AggregateException`. If a result ever holds several errors of other kinds, the first error's exception is thrown, with all of them in `Errors`.
+* Several errors are produced only by validation. `EnsureSuccess()` then throws **one `OpenUrzednikValidationException` whose `Errors` lists every failure**, the pattern used by FluentValidation, never an `AggregateException` (which is outside the library's hierarchy). If a result ever holds several errors of other kinds, the first error's exception is thrown, with all of them in `Errors`.
+* The exceptions of validation and serialization errors are `OpenUrzednikValidationException` and `OpenUrzednikSerializationException`, named so they don't clash with `System.ComponentModel.DataAnnotations.ValidationException` and `System.Runtime.Serialization.SerializationException`.
 * `default(OpenUrzednikResult<T>)` must not be observable as a successful result: it is a failure with an `UnknownError`.
 * `default(OpenUrzednikResult)` (the non-generic result) is a success on purpose: it has no value that could be uninitialized, and it is the same as `new OpenUrzednikResult()` and `OpenUrzednikResult.Success()`.
 * `OpenUrzednikResult<T>.Value` on a failure throws `InvalidOperationException`, as `Nullable<T>.Value` does; the message lists each error's code and message, and the first error's exception is the `InnerException`. Callers read `Value` after `IsSuccess` or `TryGetValue`, or call `EnsureSuccess()` for a typed exception.
+* Results compose with `Map`, `Bind`, `BindAsync`, `Match` and `TryGetValue`, which forward errors without copying them.
+* From a value or an error, the only implicit conversion is `OpenUrzednikError` → the non-generic `OpenUrzednikResult`. There is no implicit conversion from a value or an error to `OpenUrzednikResult<T>`. A failed `OpenUrzednikResult` converts implicitly to a failed `OpenUrzednikResult<T>` with the same errors, so a failure can be passed on from a method returning the generic result; converting a successful one throws `InvalidOperationException`, because it has no value.
+* Results are not comparable: `OpenUrzednikResult` and `OpenUrzednikResult<T>` don't implement `IEquatable<>`, `Equals` overrides or `==`, and the performance analyzer's CA1815 stays suppressed with that justification. Value equality would have to define when two failures are equal (the same error instances? the same codes?) and would invite comparing results instead of inspecting them. Callers compare `IsSuccess`, the value or the error codes.
 
 ### Consequences
 
@@ -79,43 +90,45 @@ The metadata keys are public constants: the transport's key next to its accessor
 * Bad, because new expected exception types must be added deliberately.
 * Bad, because it departs from the .NET Framework Design Guidelines, which report failures with exceptions. The departure is deliberate: for a public API these failures (a holiday without data, a rate limit, an outage) are normal flow, and a result works like the Try pattern the guidelines recommend for common failures, without a `try/catch` per call.
 * Bad, because callers must check `IsFailure` (or call `EnsureSuccess()`); a forgotten check surfaces only when they read `Value`.
-* A dual surface (a throwing and a result-returning method for each operation) was rejected: it doubles the API and its documentation; `EnsureSuccess()`/`EnsureSuccessAsync()` give the exception style on top of one API.
 
 ### Confirmation
 
 * WireMock tests cover every error path for each client, asserting the error type: 400 with the server's message, 401 and 403, 404, 429 with `Retry-After`, 5xx, a 200 with an empty array (`NotFoundError`, for endpoints that return an array), malformed JSON, a timeout and a connection failure. This is the canonical list; `CLAUDE.md` and the `/new-endpoint` skill point to it. Unit tests cover the status mapping in the request executor.
-* The analyzer rule CA1031 (do not catch general exception types) is a warning in `src/` (`src/.editorconfig`), which CI turns into an error; the `reviewer` agent and code review reject `catch (Exception)` too.
+* The analyzer rule CA1031 (do not catch general exception types) is a warning in `src/` (`src/.editorconfig`), which CI turns into an error; the `reviewer` agent and code review reject `catch (Exception)` too. Tests aren't covered, since they may catch broadly on purpose.
+
+## Pros and Cons of the Options
+
+### A dual surface: a throwing and a result-returning method for each operation
+
+* Bad, because it doubles the API and its documentation; `EnsureSuccess()`/`EnsureSuccessAsync()` give the exception style on top of one API.
+
+### Implicit conversions from a value or an error to `OpenUrzednikResult<T>`
+
+* Bad, because C# doesn't apply user-defined conversions from interface types (e.g. `IReadOnlyList<T>`).
+* Bad, because for `OpenUrzednikResult<object>` an error could silently become a successful value.
+
+### .NET's `ValidationException` and `SerializationException` as the exceptions of validation and serialization errors
+
+* Bad, because they don't derive from `OpenUrzednikException`, so they can't carry `Error`/`Errors`.
+* Bad, because their meaning is different: attribute-based model validation, and the obsolete formatter serialization.
+* Bad, because `DataAnnotations` is an extra package on netstandard2.0.
 
 ## More Information
 
-Supersedes the informal rule in `CONTRIBUTING.md`. Shared HTTP behaviour is implemented once, see [ADR-0006](0006-shared-http-layer.md).
+Supersedes the informal rule in `CONTRIBUTING.md`. Shared HTTP behaviour is implemented once, see [ADR-0006](0006-shared-http-layer.md). Error types describe conditions, not transports: [ADR-0012](0012-error-types-describe-conditions.md).
 
-**2026-10-02 change.** `EnsureSuccess()` throws `AggregateException` for several errors, which is outside the library's hierarchy and contradicts the rule above; the multiple-errors rule now says what to throw instead (implemented with backlog item 18, together with the `Error`/`Errors` properties). The `default(OpenUrzednikResult<T>)` rule was implemented in #15. Implicit conversions from a value or an error to `OpenUrzednikResult<T>` were considered and rejected: C# doesn't apply user-defined conversions from interface types (e.g. `IReadOnlyList<T>`), and for `OpenUrzednikResult<object>` an error could silently become a successful value. Only `OpenUrzednikError` → non-generic `OpenUrzednikResult` is allowed.
+### Changes before 1.0
 
-**2026-10-02 change (backlog item 18).** The multiple-errors rule and `Error`/`Errors` are implemented. To guarantee that every exception keeps its error, `ToException()` is no longer abstract: errors implement the protected `CreateException()` (returning `OpenUrzednikException`, no longer `Exception`) and `ToException()` attaches the error. `OpenUrzednikResult` gained `Map`, `Bind`, `BindAsync`, `Match` and `TryGetValue`, which forward errors without copying them, and the implicit conversion from `OpenUrzednikError`.
+Until 1.0 this record was changed in place; the full notes are in [the version before the consolidation](https://github.com/milten89/OpenUrzednik.NET/blob/8e72c4d274de2c92fa348641db6ad9d1b52b220b/docs/adr/0002-result-pattern-and-error-handling.md#more-information).
 
-**2026-10-04 decision (backlog item 36).** Results are not comparable: `OpenUrzednikResult` and `OpenUrzednikResult<T>` don't implement `IEquatable<>` or `==`, and the performance analyzer's CA1815 stays suppressed with that justification. Value equality would have to define when two failures are equal (same error instances? same codes?) and would invite comparing results instead of inspecting them. Callers compare `IsSuccess`, the value or the error codes.
-
-**2026-10-04 change (backlog item 32).** `ValidationException` and `SerializationException` are renamed to `OpenUrzednikValidationException` and `OpenUrzednikSerializationException`: the old names clashed with `System.ComponentModel.DataAnnotations.ValidationException` and `System.Runtime.Serialization.SerializationException`. The .NET types themselves were rejected: they don't derive from `OpenUrzednikException` (so they can't carry `Error`/`Errors`), their meaning is different (attribute-based model validation, the obsolete formatter serialization), and `DataAnnotations` is an extra package on netstandard2.0.
-
-**2026-10-17 change: one list of error paths** ([#77](https://github.com/milten89/OpenUrzednik.NET/issues/77)). The Confirmation, `CLAUDE.md` and the `/new-endpoint` skill listed different error paths: `CLAUDE.md` left out 401/403, and the skill also left out the connection failure. The Confirmation now lists every path the WireMock tests already cover for each NBP client, including the 200 with an empty array for endpoints that return one, and the other two documents point to it.
-
-**2026-10-29 change: argument errors are thrown** ([#89](https://github.com/milten89/OpenUrzednik.NET/issues/89)). Before, the NBP clients returned a `ValidationError` for a `null` currency code and an undefined `TableType`, while the rules above and `CONTRIBUTING` named `ArgumentNullException` for a `null` argument, so callers couldn't tell from the docs whether to catch an exception or check the result. The maintainer drew the line where the .NET design guidelines do: a usage error (a `null` argument or an undefined enum value) throws, synchronously; a non-null value of the right type that fails a format or range check is a returned `ValidationError`. Core's extensions on `Task<…>` (`EnsureSuccessAsync`, `MapAsync`, `BindAsync`) still check their arguments inside an `async` method; that is a separate change (done on 2026-10-30, #159). It affects the 15 methods that take a currency code or a `TableType`; the gold methods take neither. It is a breaking change for preview users.
-
-**2026-10-29 change: the 1.0 error contract** ([#90](https://github.com/milten89/OpenUrzednik.NET/issues/90)). The "Returned" list became the mapping table above, and the compatibility rule, the reasons for departing from the design guidelines, the `default(OpenUrzednikResult)` rule and the `Value` rule were added. Changes made with it:
-
-* Network failures were a `ServiceUnavailableError` without a status, the same type as a 5xx and a resilience handler's rejection. They are now a `ConnectionFailedError` (`connectionFailed`, `ConnectionFailedException`). The rejections stay a `ServiceUnavailableError`: the DI package marks them, and the executor tells them apart ([ADR-0004](0004-dependency-policy.md)).
-* 408 was an `UnknownError`; it is now a `RequestTimeoutError` with `statusCode`. 504 stays a `ServiceUnavailableError`, because it is the gateway, not the client, that timed out.
-* The codes with an `Error` suffix were renamed: `validationError` → `validation`, `serializationError` → `serialization`, `unknownError` → `unknown`.
-* The metadata keys became public constants.
-* `Value` on a failure named no error; its message now lists them.
-
-These are breaking changes for preview users.
-
-**2026-10-30 change: masked values in validation errors** ([#109](https://github.com/milten89/OpenUrzednik.NET/issues/109)). `ValueValidator<T>.GetValidationErrorResult` stores the validated value under `ValueMetadataKey`, so a validator for a personal identifier would copy the identifier into every error, exception and log that shows the metadata. A validator for a personal identifier must pass a masked value, under the rule in [ADR-0003](0003-telemetry-abstractions.md). NBP validates no such value, so nothing changes there.
-
-**2026-10-30 change: synchronous argument errors in every task-returning method** ([#159](https://github.com/milten89/OpenUrzednik.NET/issues/159)). The rule from #89 covered only the provider clients. Core's extensions on `Task<…>` (`EnsureSuccessAsync`, `MapAsync`, `BindAsync`) checked their arguments inside an `async` method, so a `null` task or delegate came back as a faulted task. They now check their arguments, then return the task of a private `async` method, and the rule covers every public method of a public type that returns a task. It is a breaking change for callers who observed the exception on the task.
-
-**2026-10-30 change: CA1031 enforces the catch rule** ([#110](https://github.com/milten89/OpenUrzednik.NET/issues/110)). The rule against `catch (Exception)` and a bare `catch` relied on review. CA1031 is now a warning in `src/`, and an error in CI; `src/` had no violations. Tests aren't covered, since they may catch broadly on purpose.
-
-**2026-11-05 change: a typed accessor for the status code** ([#123](https://github.com/milten89/OpenUrzednik.NET/issues/123)). The status code was only the `statusCode` metadata entry. It is now read with `GetHttpStatusCode()` or `TryGetHttpStatusCode` from `HttpErrorMetadata`, which also holds the key; `OpenUrzednikError.StatusCodeMetadataKey` and the base constructor's `statusCode` parameter are gone, because error types describe conditions, not transports ([ADR-0012](0012-error-types-describe-conditions.md)). The key and its values are unchanged.
+* 2026-10-02 · Several errors throw one `OpenUrzednikValidationException` instead of an `AggregateException`; implicit conversions from a value or an error to `OpenUrzednikResult<T>` were rejected.
+* 2026-10-02 · backlog item 18 · Errors implement `CreateException()` and `ToException()` attaches the error (`Error`/`Errors`); `Map`, `Bind`, `BindAsync`, `Match`, `TryGetValue` and the conversion from `OpenUrzednikError` were added.
+* 2026-10-04 · backlog item 36 · Results are not comparable.
+* 2026-10-04 · backlog item 32 · The exceptions became `OpenUrzednikValidationException` and `OpenUrzednikSerializationException`; the .NET types were rejected.
+* 2026-10-17 · [#77](https://github.com/milten89/OpenUrzednik.NET/issues/77) · One canonical list of error paths, in the Confirmation.
+* 2026-10-29 · [#89](https://github.com/milten89/OpenUrzednik.NET/issues/89) · A `null` argument or an undefined enum value in a provider client throws synchronously instead of returning a `ValidationError`.
+* 2026-10-29 · [#90](https://github.com/milten89/OpenUrzednik.NET/issues/90) · The 1.0 error contract: the mapping table, `ConnectionFailedError`, 408 as `RequestTimeoutError`, codes without the `Error` suffix, public metadata keys, the compatibility rule, and the `default` and `Value` rules.
+* 2026-10-30 · [#109](https://github.com/milten89/OpenUrzednik.NET/issues/109) · Validators for personal identifiers put a masked value into the error's metadata.
+* 2026-10-30 · [#159](https://github.com/milten89/OpenUrzednik.NET/issues/159) · Synchronous argument errors cover every public task-returning method of a public type, Core's `Task<…>` extensions included.
+* 2026-10-30 · [#110](https://github.com/milten89/OpenUrzednik.NET/issues/110) · CA1031 enforces the rule against `catch (Exception)` in `src/`.
+* 2026-11-05 · [#123](https://github.com/milten89/OpenUrzednik.NET/issues/123) · The status code is read with the typed accessors of `HttpErrorMetadata` ([ADR-0012](0012-error-types-describe-conditions.md)).

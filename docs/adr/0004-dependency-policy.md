@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-05
+confidence: high
 decision-makers: milten89
 ---
 
@@ -8,13 +9,14 @@ decision-makers: milten89
 
 ## Context and Problem Statement
 
-Libraries used by companies are judged by their dependency graph: every transitive package is a version conflict, a licence review and a potential vulnerability. At the same time consumers expect DI registration, `IHttpClientFactory` and resilience integration. Which dependencies may each package take?
+Libraries used by companies are judged by their dependency graph: every transitive package is a version conflict, a licence review and a potential vulnerability. At the same time consumers expect DI registration, `IHttpClientFactory` and resilience integration. Which dependencies may each package take, and which versions of them?
 
 ## Decision Drivers
 
 * Minimal, predictable dependency graph for Core and provider packages.
 * netstandard2.0 support ([ADR-0005](0005-target-frameworks.md)) needs some out-of-band BCL packages.
 * First-class experience for consumers using `Microsoft.Extensions.*`.
+* A version a published library depends on is a minimum for every app that uses it.
 
 ## Considered Options
 
@@ -22,74 +24,112 @@ Libraries used by companies are judged by their dependency graph: every transiti
 * No dependencies in Core/providers; DI and integrations in separate packages
 * Zero dependencies everywhere, no DI support
 
+Within the chosen option:
+
+* Resilience: DI packages add a default resilience handler, or the app adds its own
+* Marking resilience rejections: an `Exception.Data` entry, or a marker type
+* The rejection handler for clients the app registers: an extension named after the provider, a generic name, a shared package, or a public handler class
+* Several setups of one provider: keyed services, or named registrations behind a public client factory; a `string` or an `object` key
+* The version of `System.Diagnostics.DiagnosticSource`: the latest patch, as an implementation, or the oldest supported version
+
 ## Decision Outcome
 
 Chosen option: "No dependencies in Core/providers; DI and integrations in separate packages".
 
 | Package kind | Examples | Allowed dependencies |
 |---|---|---|
-| Core | `OpenUrzednik.Core` | None on .NET targets. On netstandard2.0 only official Microsoft out-of-band BCL packages (e.g. `System.Text.Json`, `Microsoft.Bcl.TimeProvider`, `System.Memory`). |
+| Core | `OpenUrzednik.Core` | None on .NET targets. On netstandard2.0 only official Microsoft out-of-band BCL packages (e.g. `System.Text.Json`, `Microsoft.Bcl.TimeProvider`, `Microsoft.Bcl.HashCode`). |
 | Shared source (not a package) | `src/Http` ([ADR-0006](0006-shared-http-layer.md)) | None of its own: it is compiled into each REST provider, which references what it needs on netstandard2.0 (`System.Net.Http.Json`, `System.Text.Json`, `Microsoft.Bcl.TimeProvider`). |
 | Provider | `OpenUrzednik.Nbp` | Same as Core + other OpenUrzednik packages. |
 | Integration | `OpenUrzednik.Nbp.DependencyInjection`, `OpenUrzednik.Extensions.Logging` | `Microsoft.Extensions.*` (DI, Options, Http, Http.Resilience, Logging) and the package they integrate. DI packages may also use `Polly.Core`, which `Microsoft.Extensions.Http.Resilience` brings in, to recognise rejections (below). |
-| Tracing adapter | `OpenUrzednik.Diagnostics` | `System.Diagnostics.DiagnosticSource` on netstandard2.0 only (`ActivitySource` is built into .NET). |
+| Tracing adapter | `OpenUrzednik.Diagnostics` | `System.Diagnostics.DiagnosticSource` on netstandard2.0 only (`ActivitySource` is built into .NET). Core, the shared HTTP layer and the providers don't reference it ([ADR-0003](0003-telemetry-abstractions.md)). |
 | Tests | `tests/*` | Anything appropriate. |
 
 * Build-only tooling (`Nerdbank.GitVersioning`, analyzers) uses `PrivateAssets="all"` and never becomes a package dependency.
-* Versions are managed centrally in `Directory.Packages.props`; netstandard2.0-only references use a `Condition` on `TargetFramework`.
-* DI packages expose `services.AddOpenUrzednik<Provider>(...)` registering the provider's clients with validated options on a named `HttpClient`, and return the `IHttpClientBuilder`. An app with several setups of one provider registers each under a service key (`AddKeyedOpenUrzednik<Provider>(key, ...)`): keyed services, as Microsoft recommends for `HttpClient`s, with the key's own `HttpClient` and named options, not a public client factory.
-* Resilience follows the .NET standard ([Microsoft.Extensions.Http.Resilience](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience)): the app opts in by chaining `AddStandardResilienceHandler(...)` (or `AddResilienceHandler(...)`) on that builder. DI packages don't add a resilience handler themselves, because the guidance is one handler per client, not stacked.
-* DI packages translate the exceptions a resilience handler throws when it rejects a request, so they don't escape the result ([ADR-0002](0002-result-pattern-and-error-handling.md)). They register an outermost `DelegatingHandler` (before any resilience handler), and expose it as a public extension of `IHttpClientBuilder` named after the provider (`AddOpenUrzednik<Provider>RejectionHandler()`), so a client the app registers itself gets it too. The handler catches Polly's `ExecutionRejectedException` types and rethrows them as exceptions the request executor ([ADR-0006](0006-shared-http-layer.md)) already handles:
-  * `TimeoutRejectedException` → `TaskCanceledException` (inner: the rejection), returned as a `RequestTimeoutError`;
-  * other rejections (open circuit breaker, rate limiter) → an `HttpRequestException` marked as a rejection (an `Exception.Data` entry, `ResilienceRejection` in the shared HTTP layer, which the DI package compiles in too), returned as a `ServiceUnavailableError`. An unmarked `HttpRequestException` is a network failure, returned as a `ConnectionFailedError`.
+* Versions are managed centrally in `Directory.Packages.props` (central package management); a `PackageReference` carries no version. netstandard2.0-only references use a `Condition` on `TargetFramework`.
+* A new `PackageReference` in a `src/` project needs an ADR or the maintainer's approval, also for a package the table allows; only then is it added to that project's allow-list (Confirmation), never just to make a build pass.
+
+### Dependency versions
+
+The rule covers only the dependencies of the published libraries, which become minimums for the apps. Tests, build tooling and anything used only inside the repository take the latest version.
+
+* **Abstractions** (API contracts under semantic versioning, e.g. `Microsoft.Extensions.Logging.Abstractions`) take the lowest version: the first release (`x.0.0`) of the major that matches the oldest .NET target (8.0.0 while that target is `net8.0`). A higher one would force upgrades on every app for no gain. A later patch is taken only if that version has a known vulnerability (the first fixed patch, raised by hand); the minimum rises, by hand, when the oldest .NET target is removed ([ADR-0005](0005-target-frameworks.md)).
+* Any change that raises an abstraction above its minimum (typically a Dependabot PR) needs the maintainer's explicit answer first; agents stop and ask ([CLAUDE.md](../../CLAUDE.md)).
+* **Implementations** (code that runs, e.g. `System.Text.Json`, `Microsoft.Extensions.Http`) take the latest patch of the chosen minor, so the apps get bug and security fixes. A minor or major raise is a deliberate change, made by hand. `Polly.Core` is an implementation: it is the resilience engine the app runs, even though the DI package only uses its exception types. `System.Diagnostics.DiagnosticSource` is an implementation too: on .NET Framework the package carries the `Activity` and `ActivitySource` code itself, so its fixes reach the app only through a newer version.
+* **The DI package's `Microsoft.Extensions.Http` and `Microsoft.Extensions.Options`** follow the major of each target, so a .NET 8 app isn't moved to `Microsoft.Extensions.*` a major ahead of its own framework: `net8.0` takes the latest 8.0.x patch, and `net10.0` and `netstandard2.0` the latest 10.0.x patch (the LTS line that still supports .NET Framework). The major of a published library's dependency follows our targets; a new major arrives together with a new target (ADR-0005).
+* `Directory.Packages.props` groups the packages accordingly. A package with per-target versions has one normal `PackageVersion` row (the 10.0.x line) and a `net8.0`-only `PackageVersion Update` override (the 8.0.x line) in its own item group, never two conditional `Include` rows: Dependabot skips a package that has them. After .NET 8 reaches end of support (2026-11-10) the 8.0.x line gets no patches; the override then stays as it is until `net8.0` is removed in a major version (ADR-0005).
+* **Dependabot** ([`.github/dependabot.yml`](../../.github/dependabot.yml)) ignores every version update of `*.Abstractions`; a vulnerability still shows as a Dependabot alert, which doesn't depend on that file. For the published libraries' other dependencies it proposes patch updates only, in one grouped PR; a vulnerability fixed only in a newer minor shows as an alert and is raised by hand. Test and tooling packages get every update. The `net8.0` overrides are patched by hand, and a Dependabot PR that moves a `net8.0` version off the 8.0.x line is corrected by hand before merging.
+
+### DI packages and resilience
+
+* A DI package registers the provider's clients with validated options on a named `HttpClient` and returns the `IHttpClientBuilder`, through `services.AddOpenUrzednik<Provider>(...)` (e.g. `services.AddOpenUrzednikNbp(...)`). Options are checked at startup (`ValidateOnStart`) with the clients' own rules (`NbpOptions.Validate()`).
+* An app with several setups of one provider (e.g. one direct and one through a gateway) registers each under a `string` service key, through `AddKeyedOpenUrzednik<Provider>(serviceKey, ...)` (e.g. `AddKeyedOpenUrzednikNbp(serviceKey, configure)`): the clients are keyed transient services, as Microsoft recommends for `HttpClient`s, with the key's own named `HttpClient` (`OpenUrzednik.Nbp:<key>`) and options named after the key, read once like the default ones. Keyed services need Microsoft's dependency injection 8.0 or later (or a container that supports them).
+* Resilience follows the .NET standard ([Microsoft.Extensions.Http.Resilience](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience)): the app opts in by chaining `AddStandardResilienceHandler(...)` (or `AddResilienceHandler(...)`) on the returned builder. DI packages don't add a resilience handler themselves, because the guidance is one handler per client, not stacked.
+* A DI package references `Polly.Core` only to recognise the rejection types, not `Microsoft.Extensions.Http.Resilience` itself: apps that don't add a resilience handler don't get it.
+* DI packages translate the exceptions a resilience handler throws when it rejects a request, so they don't escape the result ([ADR-0002](0002-result-pattern-and-error-handling.md)). The translating `DelegatingHandler` is internal and goes outermost (before any resilience handler), and only once. Each DI package exposes it as a public extension of `IHttpClientBuilder` named after the provider (e.g. `AddOpenUrzednikNbpRejectionHandler()`), which its own registration uses, so a client the app registers itself gets it too. The handler catches Polly's `ExecutionRejectedException` types and rethrows them as exceptions the request executor ([ADR-0006](0006-shared-http-layer.md)) already handles:
+  * `TimeoutRejectedException` → `TaskCanceledException` whose inner exception is the rejection (not a `TimeoutException`), returned as a `RequestTimeoutError`. The executor reports a limit in `RequestTimeoutError.Timeout` only when it knows that limit elapsed: its own deadline cancelled the request, or at least `HttpClient.Timeout` went by. A resilience handler's timeout is reported without a limit, not as `HttpClient.Timeout`.
+  * other rejections (open circuit breaker, rate limiter) → an `HttpRequestException` marked as a rejection with an `Exception.Data` entry (`ResilienceRejection` in the shared HTTP layer, which the DI package compiles in too), returned as a `ServiceUnavailableError`; the executor also recognises an exception that wraps a marked one, as .NET Framework's `HttpClient` may. An unmarked `HttpRequestException` is a network failure, returned as a `ConnectionFailedError`.
   * Caller cancellation still throws. The shared HTTP layer itself doesn't reference Polly.
 
 ### Consequences
 
 * Good, because consumers not using Microsoft.Extensions pay nothing.
 * Good, because conflicts with consumers' Microsoft.Extensions versions are limited to opt-in packages.
+* Good, because resilience is the app's explicit choice, through the standard API.
 * Bad, because there are more packages to version, publish and document.
 * Bad, because some convenience (e.g. `IOptions<T>` in client constructors) is not available in provider packages; clients take plain option objects.
 
 ### Confirmation
 
-The build checks every `src/` project's direct `PackageReference`s against an allow-list (`CheckPackageReferenceAllowList` in `src/Directory.Build.targets`). The lists hold the packages approved so far, a subset of what the table above allows: Core and the providers only `System.Text.Json`, `System.Net.Http.Json`, `Microsoft.Bcl.TimeProvider` and `Microsoft.Bcl.HashCode`, and only on netstandard2.0; the Diagnostics adapter and the integration packages name theirs in their csproj (`OpenUrzednikAllowedPackageReferences`). Any other reference fails the build; a package the table allows still needs approval and a change to the list. `dotnet list package --include-transitive` for each `src/` provider/Core project shows no non-BCL dependencies; the `reviewer` agent flags new `PackageReference`s in Core/provider projects.
+The build checks every `src/` project's direct `PackageReference`s against an allow-list (`CheckPackageReferenceAllowList` in [`src/Directory.Build.targets`](../../src/Directory.Build.targets)): the default list there holds the approved Core and provider packages; the Diagnostics adapter and the integration packages name theirs in their csproj (`OpenUrzednikAllowedPackageReferences`). The lists hold the packages approved so far, a subset of what the table above allows, and any other reference fails the build. References the SDK adds itself and build-only ones (`PrivateAssets="all"`) aren't dependencies of the package and aren't checked; a runtime library referenced with `PrivateAssets="all"` would pass the check (and break the package at runtime), which code review catches. `dotnet list package --include-transitive` for each `src/` provider/Core project shows no non-BCL dependencies; the `reviewer` agent flags new `PackageReference`s in Core/provider projects.
+
+## Pros and Cons of the Options
+
+### DI packages add a default resilience handler
+
+* Good, because a registration comes with resilience defaults.
+* Bad, because an app adding its own handler would then stack two, which Microsoft's guidance advises against.
+
+### A marker type for resilience rejections
+
+* Bad, because it would need `InternalsVisibleTo` from the provider to the DI package, which also exposes the provider's internal polyfills and makes them clash with the DI package's own copy on netstandard2.0.
+
+### A generic name, a shared package or a public class for the rejection handler
+
+* Bad (generic name), because every DI package defines its own extension, so one name in `Microsoft.Extensions.DependencyInjection` would make calls ambiguous in an app that references two DI packages.
+* Bad (shared package), because a package for one handler isn't worth a new dependency.
+* Bad (public handler class), because placed inside a resilience handler instead of outside it would silently do nothing, which the extension rules out.
+
+### Named registrations behind a public client factory (`INbpClientFactory`)
+
+* Good, because it works with containers that lack keyed services.
+* Bad, because it adds an interface frozen from 1.0 ([ADR-0011](0011-compatibility-policy.md)) and makes callers depend on the factory. A factory can still be added in a minor version.
+
+### An `object` service key
+
+* Good, because Microsoft's keyed APIs take one.
+* Bad, because naming the options and the `HttpClient` after it would need a `ToString()`.
+
+### The oldest supported version of `System.Diagnostics.DiagnosticSource`
+
+* Good, because [Microsoft's library guidance](https://learn.microsoft.com/dotnet/standard/library-guidance/dependencies) suggests the oldest supported version for netstandard libraries.
+* Bad, because on .NET Framework the package carries the `Activity` and `ActivitySource` code itself, so the app would not get its fixes.
 
 ## More Information
 
-**2026-10-02 change.** The first version said DI packages register clients "with sensible resilience defaults". That would make the library add Polly's standard handler itself, and an app adding its own would then stack two handlers, which Microsoft's guidance advises against. The resilience is now the app's explicit choice, through the standard API, and the DI package only guarantees that the handler's rejections are returned as errors. The tracing adapter is named `OpenUrzednik.Diagnostics` ([ADR-0003](0003-telemetry-abstractions.md)).
+### Changes before 1.0
 
-**2026-10-02 implementation note** (`OpenUrzednik.Nbp.DependencyInjection`, backlog item 15):
+Until 1.0 this record was changed in place; the full notes are in [the version before the consolidation](https://github.com/milten89/OpenUrzednik.NET/blob/8e72c4d274de2c92fa348641db6ad9d1b52b220b/docs/adr/0004-dependency-policy.md#more-information).
 
-* The DI package references `Polly.Core` (8.4.2, the version `Microsoft.Extensions.Http.Resilience` 10.8 needs) only to recognise the rejection types, not `Microsoft.Extensions.Http.Resilience` itself: apps that don't add a resilience handler don't get it.
-* A timeout rejection becomes a `TaskCanceledException` whose inner exception is the `TimeoutRejectedException`, not a `TimeoutException`. The request executor reports a limit in `RequestTimeoutError.Timeout` only when it knows that limit elapsed: its own deadline cancelled the request, or `HttpClient.Timeout` fired. A resilience handler's timeout is reported without a limit, instead of as `HttpClient.Timeout`. (2026-10-02, backlog item 17: "`HttpClient.Timeout` fired" was first detected by an inner `TimeoutException`, which .NET Framework doesn't set; the executor now checks that at least `HttpClient.Timeout` has elapsed.)
-* Options are checked at startup (`ValidateOnStart`) with the clients' own rules, exposed as `NbpOptions.Validate()`.
-
-**2026-10-04 change: dependency versions.** The maintainer decided how to choose the version of a package the published libraries depend on. The rule covers only those dependencies, which become minimums for the apps; tests, build tooling and anything used only inside the repository take the latest version (clarified 2026-10-04).
-
-* **Abstractions** (API contracts under semantic versioning, e.g. `Microsoft.Extensions.Logging.Abstractions`): the lowest version: the first release (`x.0.0`) of the major that matches the oldest .NET target (currently 8.0.0). A later patch only if that version has a known vulnerability; the minimum rises when the oldest .NET target is removed ([ADR-0005](0005-target-frameworks.md)). A library's dependency version is a minimum for every app that uses it, so a higher one forces upgrades for no gain. `Microsoft.Extensions.Logging.Abstractions` moved from 10.0.10 to 8.0.0.
-* **Implementations** (code that runs, e.g. `System.Text.Json`, `Microsoft.Extensions.Http`): the latest version, so the apps get the bug and security fixes. (Narrowed on 2026-10-29 to the latest patch of the chosen minor, see below.)
-* `Directory.Packages.props` groups the packages accordingly, and Dependabot ignores version updates of `*.Abstractions` (see the 2026-10-04 note). Any change that raises an abstraction needs the maintainer's explicit answer first; agents stop and ask (CLAUDE.md).
-* Accepted consequence: `OpenUrzednik.Nbp.DependencyInjection` still brings `Microsoft.Extensions.*` 10.x (Http, Options and, through them, the abstractions) into a .NET 8 app, because the implementations stay at the latest version. (Reversed on 2026-10-17, see the note below.)
-* `Polly.Core` is an implementation: it is the resilience engine the app runs, even though the DI package only uses its exception types. It moves from 8.4.2 to the latest version (8.8.0), which replaces the earlier "version `Microsoft.Extensions.Http.Resilience` needs" choice above.
-
-**2026-10-04 change.** Dependabot opened the `Microsoft.Extensions.Logging.Abstractions` 8.0.0 → 10.x raise twice (#41, #56); both were closed under this rule. `.github/dependabot.yml` now ignores every version update of `*.Abstractions` instead of grouping them. A vulnerability still shows as a Dependabot alert, which doesn't depend on that file; the version is then raised by hand to the first fixed patch. The minimum is also raised by hand when the oldest .NET target is removed (ADR-0005).
-
-**2026-10-17 note: `System.Diagnostics.DiagnosticSource`** ([#77](https://github.com/milten89/OpenUrzednik.NET/issues/77)). Only the tracing adapter `OpenUrzednik.Diagnostics` references it, and only on netstandard2.0; Core, Http and the provider packages don't ([ADR-0003](0003-telemetry-abstractions.md)). `CLAUDE.md` had listed it among the netstandard2.0 packages allowed in Core and providers; that line, and the package list in ADR-0005, are corrected. It is classified as an implementation and takes the latest version, although [Microsoft's library guidance](https://learn.microsoft.com/dotnet/standard/library-guidance/dependencies) suggests the oldest supported version for netstandard libraries: on .NET Framework the package carries the `Activity` and `ActivitySource` code itself, so its fixes reach the app only through a newer version.
-
-**2026-10-17 change: per-target versions for the DI package** ([#84](https://github.com/milten89/OpenUrzednik.NET/issues/84)). The accepted consequence above is reversed. `Microsoft.Extensions.Http` and `Microsoft.Extensions.Options` were one version for every target, the latest 10.0.x, so a .NET 8 app using `OpenUrzednik.Nbp.DependencyInjection` was moved to `Microsoft.Extensions.*` 10.x, a major ahead of its own framework. Each target now gets the latest patch of its own major: `net8.0` → 8.0.x, `net10.0` → 10.0.x, and `netstandard2.0` → 10.0.x, the LTS line that still supports .NET Framework (conditional `PackageVersion` rows in `Directory.Packages.props`). They are still implementations, so each row takes its line's latest patch.
-
-* Dependabot no longer proposes major updates of the published libraries' dependencies (`Microsoft.Extensions.Http`, `Microsoft.Extensions.Options`, `System.Text.Json`, `System.Net.Http.Json`, `System.Diagnostics.DiagnosticSource`, `Microsoft.Bcl.TimeProvider`, `Microsoft.Bcl.HashCode`, `Polly.Core`): their major follows our targets, and a new major raises the minimum for every app. Minor and patch updates still come (narrowed on 2026-10-29 to patches only, see below); test and tooling packages keep getting majors. A new major arrives together with a new target (ADR-0005).
-* Dependabot reads `Directory.Packages.props` without a target, so the two rows of one package may confuse it: a `net8.0` row it doesn't patch is patched by hand, and a Dependabot PR that moves a `net8.0` row to 10.x is corrected by hand before merging. The 8.0.x line gets no patches after .NET 8 reaches end of support on 2026-11-10; the `net8.0` rows then stay as they are and go away when `net8.0` is removed in a major version (ADR-0005).
-
-**2026-10-29 change: patch-only updates and one override row** ([#148](https://github.com/milten89/OpenUrzednik.NET/issues/148)). Dependabot skipped every package that had two conditional `PackageVersion` rows: in #140 and #145 it moved the other implementations to 10.0.14 but left `Microsoft.Extensions.Http` and `Microsoft.Extensions.Options` at 10.0.12. Each now has one normal row (10.0.x, used by `net10.0` and `netstandard2.0`) and a `net8.0`-only `PackageVersion Update` override (8.0.x) in its own item group, which Dependabot is expected to leave alone (to be confirmed on its first run after this change); the override is patched by hand until 8.0.x stops getting patches on 2026-11-10. The maintainer also narrowed "implementations take the latest version" to **the latest patch of the chosen minor**: each version is a minimum for every app, so a minor raise (e.g. `Polly.Core` 8.8 → 8.9) is now a deliberate change rather than a Dependabot PR. Dependabot proposes patches only for the published libraries' dependencies, as one grouped PR; a vulnerability fixed only in a newer minor still shows as a Dependabot alert and is raised by hand.
-
-**2026-10-29 note: `OpenUrzednik.Http` is shared source** ([#85](https://github.com/milten89/OpenUrzednik.NET/issues/85)). The HTTP layer is no longer a package but internal source compiled into each REST provider ([ADR-0006](0006-shared-http-layer.md)). The "Shared infrastructure" row of the table became "Shared source", and `OpenUrzednik.Nbp` now references `System.Net.Http.Json` on netstandard2.0 itself.
-
-**2026-10-29 note: marked rejections** ([#90](https://github.com/milten89/OpenUrzednik.NET/issues/90)). Network failures became a `ConnectionFailedError` ([ADR-0002](0002-result-pattern-and-error-handling.md)), so an `HttpRequestException` alone no longer means `ServiceUnavailableError`. The DI package's handler marks the circuit-breaker and rate-limiter rejections with an `Exception.Data` entry, and the executor returns a `ServiceUnavailableError` for a marked exception (or one that wraps it, as .NET Framework's `HttpClient` may). A marker type would have needed `InternalsVisibleTo` from the provider to the DI package, which also exposes the provider's internal polyfills and makes them clash with the DI package's own copy on netstandard2.0.
-
-**2026-10-30 note: the build checks the rule** ([#110](https://github.com/milten89/OpenUrzednik.NET/issues/110)). Until now only the `reviewer` agent and code review caught a new dependency. A target in `src/Directory.Build.targets` now fails the build of any `src/` project that references a package its list doesn't name: the default list is the Core and provider row of the table, and the Diagnostics adapter and the integration packages set theirs in their csproj. References the SDK adds itself and build-only ones (`PrivateAssets="all"`, such as Nerdbank.GitVersioning) aren't dependencies of the package and aren't checked. Adding a package now means changing its project's list, which a reviewer sees. A runtime library referenced with `PrivateAssets="all"` would pass the check (and break the package at runtime); code review still catches that.
-
-**2026-11-05 change: the rejection handler for clients registered by the app** ([#122](https://github.com/milten89/OpenUrzednik.NET/issues/122)). Only `AddOpenUrzednikNbp()` added the handler, so an NBP client registered with its own `AddHttpClient` and a resilience handler got Polly's rejections as exceptions, outside the result. `AddOpenUrzednikNbpRejectionHandler()` now adds the same handler to any `IHttpClientBuilder`, outermost, and only once; `AddOpenUrzednikNbp()` uses it too. The name carries the provider because every DI package defines its own: one generic name in `Microsoft.Extensions.DependencyInjection` would make calls ambiguous in an app that references two DI packages, and a shared package for one handler wasn't worth a new dependency. The handler class stays internal: placed inside a resilience handler instead of outside, it would silently do nothing, which the extension rules out.
-
-**2026-11-05 change: keyed registration** ([#124](https://github.com/milten89/OpenUrzednik.NET/issues/124)). `AddOpenUrzednikNbp()` registers one `HttpClient` and one `NbpOptions`, so an app couldn't call NBP both directly and through a gateway. `AddKeyedOpenUrzednikNbp(serviceKey, configure)` registers the three clients as keyed transient services under a `string` key, with their own named `HttpClient` (`OpenUrzednik.Nbp:<key>`) and options named after the key, read once like the default ones. Rejected: named registrations behind a public `INbpClientFactory`, which works with containers that lack keyed services but adds an interface frozen from 1.0 ([ADR-0011](0011-compatibility-policy.md)) and makes callers depend on the factory; an `object` key, like Microsoft's keyed APIs, which would need a `ToString()` to name the options and the `HttpClient`. A factory can still be added in a minor version. Keyed services need Microsoft's dependency injection 8.0 or later (or a container that supports them).
+* 2026-10-02 · DI packages add no resilience defaults: the app chains the standard handler, and the DI package returns its rejections as errors.
+* 2026-10-02 · backlog item 15 · The DI package references `Polly.Core` only, turns a timeout rejection into a `TaskCanceledException`, and validates options at startup.
+* 2026-10-04 · Dependency versions: abstractions take the lowest version, implementations the latest.
+* 2026-10-04 · Dependabot ignores every version update of `*.Abstractions`.
+* 2026-10-17 · [#77](https://github.com/milten89/OpenUrzednik.NET/issues/77) · `System.Diagnostics.DiagnosticSource` is referenced only by the Diagnostics adapter on netstandard2.0, as an implementation.
+* 2026-10-17 · [#84](https://github.com/milten89/OpenUrzednik.NET/issues/84) · The DI package's `Microsoft.Extensions.*` follow the major of each target; Dependabot proposes no major updates of the published libraries' dependencies.
+* 2026-10-29 · [#148](https://github.com/milten89/OpenUrzednik.NET/issues/148) · Implementations take the latest patch of the chosen minor, Dependabot proposes patches only, and per-target versions use one row plus a `net8.0` override.
+* 2026-10-29 · [#85](https://github.com/milten89/OpenUrzednik.NET/issues/85) · The HTTP layer became shared source instead of a package.
+* 2026-10-29 · [#90](https://github.com/milten89/OpenUrzednik.NET/issues/90) · The DI package marks circuit-breaker and rate-limiter rejections; an unmarked `HttpRequestException` is a network failure.
+* 2026-10-30 · [#110](https://github.com/milten89/OpenUrzednik.NET/issues/110) · The build checks `PackageReference`s against an allow-list.
+* 2026-11-05 · [#122](https://github.com/milten89/OpenUrzednik.NET/issues/122) · The rejection handler is a public extension named after the provider, for clients the app registers itself.
+* 2026-11-05 · [#124](https://github.com/milten89/OpenUrzednik.NET/issues/124) · Keyed registration for several setups of one provider.

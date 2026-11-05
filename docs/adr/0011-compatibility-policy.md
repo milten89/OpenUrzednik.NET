@@ -1,6 +1,7 @@
 ---
 status: accepted
-date: 2026-10-30
+date: 2026-11-05
+confidence: high
 decision-makers: milten89
 ---
 
@@ -31,7 +32,7 @@ Chosen option: "An explicit scope, with client interfaces that may grow and seal
 
 * Covered within a major version: the public API on every target ([ADR-0005](0005-target-frameworks.md)), documented behaviour, the error contract (error types, codes and documented metadata keys, [ADR-0002](0002-result-pattern-and-error-handling.md)), and the telemetry contract (source and span names, documented tags, `error.type` values, logger categories and event ids, [ADR-0003](0003-telemetry-abstractions.md)). Those ADRs hold the full lists.
 * Not covered: log and exception message text, log properties, the `error` and `exception` span events and span status descriptions ([ADR-0003](0003-telemetry-abstractions.md)), undocumented behaviour, internal types (including the shared HTTP layer, [ADR-0006](0006-shared-http-layer.md)), and previews. One exception: Core's internal members that other packages call through `InternalsVisibleTo` are only added to within a major, because an app may pair a newer Core with older packages ([ADR-0003](0003-telemetry-abstractions.md)).
-* A minor version may: add public types and non-abstract members (never an abstract member on an extension point below, never a member on an interface other than a client interface); add methods to client interfaces; add non-`required` `init` properties to models, and options to `NbpOptions` that are optional and keep today's behaviour when unset; raise dependency minimums ([ADR-0004](0004-dependency-policy.md)); drop a .NET target that isn't the lowest one, once Microsoft has ended its support ([ADR-0005](0005-target-frameworks.md)); turn an `UnknownError` case into a more specific error ([ADR-0002](0002-result-pattern-and-error-handling.md)); remove `sealed`.
+* A minor version may: add public types and non-abstract members (never an abstract member on an extension point below, never a member on an interface other than a client interface); add methods to client interfaces; add non-`required` `init` properties to models, and options to `NbpOptions` that are optional and keep the existing behaviour when unset; raise dependency minimums ([ADR-0004](0004-dependency-policy.md)); drop a .NET target that isn't the lowest one, once Microsoft has ended its support ([ADR-0005](0005-target-frameworks.md)); turn an `UnknownError` case into a more specific error ([ADR-0002](0002-result-pattern-and-error-handling.md)); remove `sealed`.
 * Only a major version may: remove or change a public member; change documented behaviour, an error type or code, or a telemetry name; drop the lowest .NET target or netstandard2.0; seal a class; change the assembly version, which follows the major version ([ADR-0005](0005-target-frameworks.md)). The strong-name key never changes.
 * A patch version adds no public API: it fixes bugs and security issues, and may raise a dependency to a patch version that fixes a vulnerability.
 
@@ -69,7 +70,7 @@ Chosen option: "An explicit scope, with client interfaces that may grow and seal
 
 ### Confirmation
 
-* Package validation runs on every pack ([#94](https://github.com/milten89/OpenUrzednik.NET/issues/94)). From 1.0.0 it also compares the public API with the last release and fails on breaking changes (the baseline is set after the release, [#117](https://github.com/milten89/OpenUrzednik.NET/issues/117)). Against that baseline it also reports a method added to a client interface (CP0006); a minor version that adds one suppresses exactly that diagnostic, naming this ADR in the PR. Any other suppression outside a major version is a policy violation.
+* Package validation runs on every pack ([#94](https://github.com/milten89/OpenUrzednik.NET/issues/94)). From the first stable release on, it also compares the public API with a baseline, the latest release, and fails on breaking changes. Against that baseline it also reports a method added to a client interface (CP0006); a minor version that adds one suppresses exactly that diagnostic, naming this ADR in the PR. Any other suppression outside a major version is a policy violation.
 * The `reviewer` agent flags: an in-scope break in a PR that isn't for a major version; a new public class that isn't `sealed` and isn't designed for inheritance (already before 1.0, because sealing later is breaking); new public API in a `hotfix/*` PR; a positional or `required` property added to a model; an abstract member added to an extension point; a removal without a prior `[Obsolete]`.
 
 ## Pros and Cons of the Options
@@ -93,5 +94,9 @@ Chosen option: "An explicit scope, with client interfaces that may grow and seal
 
 ## More Information
 
-* The support policy (which versions get fixes, security reporting) is published with SECURITY.md and the README's "Versioning and support" section ([#102](https://github.com/milten89/OpenUrzednik.NET/issues/102)).
+* The support policy (which versions get fixes) is [ADR-0013](0013-version-support-policy.md); SECURITY.md and the README's "Versioning and support" section publish it, with how to report a vulnerability ([#102](https://github.com/milten89/OpenUrzednik.NET/issues/102)).
 * The .NET breaking-change rules: [Breaking changes in .NET libraries](https://learn.microsoft.com/dotnet/standard/library-guidance/breaking-changes).
+
+### Changes before 1.0
+
+* 2026-11-05 · [#111](https://github.com/milten89/OpenUrzednik.NET/issues/111) · Wording only: `confidence` in the front matter, the support policy linked to ADR-0013, the package-validation sentence without a tracking issue. The [version before the consolidation](https://github.com/milten89/OpenUrzednik.NET/blob/8e72c4d274de2c92fa348641db6ad9d1b52b220b/docs/adr/0011-compatibility-policy.md).

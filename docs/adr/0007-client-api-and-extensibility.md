@@ -1,6 +1,7 @@
 ---
 status: accepted
-date: 2026-10-30
+date: 2026-11-05
+confidence: high
 decision-makers: milten89
 ---
 
@@ -8,7 +9,7 @@ decision-makers: milten89
 
 ## Context and Problem Statement
 
-Originally, a consumer had to construct `new NbpGoldPriceClient(httpClient, new NbpUrlBuilderFactory())` – an implementation detail (URL building) is a required constructor argument. Most consumers just want defaults, but companies sometimes call public APIs through internal proxies/gateways with a different base URL, path prefix or additional query parameters. How do we keep the common case trivial and the unusual case possible?
+A client needs an `HttpClient` and a way to build the request URLs. URL building is an implementation detail: if it is a required constructor argument (`new NbpGoldPriceClient(httpClient, new NbpUrlBuilderFactory())`), every consumer has to know about it. Most consumers just want defaults, but companies sometimes call public APIs through internal proxies or gateways with a different base URL, path prefix or additional query parameters. How do we keep the common case trivial and the unusual case possible?
 
 ## Decision Drivers
 
@@ -21,14 +22,14 @@ Originally, a consumer had to construct `new NbpGoldPriceClient(httpClient, new 
 * Simple constructors with optional, replaceable components (interfaces with default implementations)
 * Simple constructors; request shaping internal, HTTP customization through `DelegatingHandler`s
 * Single facade client (`NbpClient.Currency/.Tables/.Gold`)
-* Keep current shape (required factory parameter)
+* A required URL-builder factory parameter
 
 ## Decision Outcome
 
-Chosen option: "Simple constructors; request shaping internal, HTTP customization through `DelegatingHandler`s", because a handler covers every gateway case the public URL-builder interfaces covered, without making those interfaces API that must stay stable after 1.0.
+Chosen option: "Simple constructors; request shaping internal, HTTP customization through `DelegatingHandler`s", because a handler covers every gateway case that public URL-builder interfaces would cover, without making those interfaces API that must stay stable after 1.0.
 
 * **Default path:** `new NbpGoldPriceClient(httpClient)` works with defaults (base URL from `NbpOptions.DefaultApiUrl` when `HttpClient.BaseAddress` is not set). DI packages give `services.AddOpenUrzednikNbp()`.
-* **Configuration:** a plain options object (`NbpOptions`: base URL, timeout, …) – no `IOptions<T>` in provider packages ([ADR-0004](0004-dependency-policy.md)).
+* **Configuration:** a plain options object (`NbpOptions`: base URL, timeout, …); no `IOptions<T>` in provider packages ([ADR-0004](0004-dependency-policy.md)).
 * **Request shaping is internal:** the URL builders (`INbpUrlBuilderFactory`, `INbpUrlBuilder`, their defaults and `NbpTable`) are internal. Tests replace them through an internal constructor, and NSubstitute mocks them through `InternalsVisibleTo("DynamicProxyGenAssembly2")`. A gateway's base address goes into `NbpOptions.ApiUrl`; renamed paths and extra query parameters are rewritten in a `DelegatingHandler` (the NBP README shows one).
 * **Cross-cutting HTTP concerns** (headers, auth, proxies, retries, path rewriting) are done with `DelegatingHandler`s / `HttpClient` configuration, not with library-specific hooks. Auth that needs protocol calls (a session login such as GUS `Zaloguj` returning a session id, token acquisition) or credentials passed as API arguments belongs in the provider and is designed in its provider ADR ([ADR-0010](0010-provider-readiness-gate.md)); whether a static API key is a handler or a provider option is decided there too.
 * Separate clients per API area (currency, tables, gold) remain; a facade may be added later without breaking changes.
@@ -46,10 +47,25 @@ Chosen option: "Simple constructors; request shaping internal, HTTP customizatio
 
 README shows the one-line default usage and the gateway handler, with only the namespaces of the layout above; tests construct clients with defaults and, through the internal constructor, with substituted URL builders. The `reviewer` agent flags a public type or constructor parameter that shapes requests.
 
+## Pros and Cons of the Options
+
+### Simple constructors with optional, replaceable components
+
+Public interfaces with public defaults, passed as optional constructor parameters (e.g. `INbpUrlBuilderFactory` for custom base URLs, paths or extra query parameters).
+
+* Good, because a gateway can change base URLs, paths or query parameters without a handler.
+* Bad, because every such interface is a long-term compatibility commitment, and a `DelegatingHandler` plus `NbpOptions.ApiUrl` covers the same gateway cases.
+
+### A required URL-builder factory parameter
+
+* Bad, because an implementation detail (URL building) is a required constructor argument, so the default case needs knowledge of internals.
+
 ## More Information
 
-**2026-10-29 change: request shaping is internal** ([#86](https://github.com/milten89/OpenUrzednik.NET/issues/86)). Before, components that shaped requests were public interfaces with public defaults, passed as optional constructor parameters (`INbpUrlBuilderFactory` for custom base URLs, paths or extra query parameters), and the DI package used a registered `INbpUrlBuilderFactory`. The maintainer made them internal before 1.0: every such interface would have been a long-term compatibility commitment, and a `DelegatingHandler` plus `NbpOptions.ApiUrl` covers the same gateway cases. The `urlBuilderFactory` constructor parameter and the DI pickup were removed, and the title ("simple defaults, replaceable internals"), the chosen option, drivers, consequences and Confirmation were rewritten. Both public constructors stay.
+### Changes before 1.0
 
-**2026-10-29 change: namespace layout** ([#87](https://github.com/milten89/OpenUrzednik.NET/issues/87)). Before, the clients, their interfaces and `NbpOptions` were in the area namespaces (`OpenUrzednik.Nbp.Currency`, `.Table`, `.Gold`, `.Options`), so the one-line default needed a `using` per area, and Core's `EnsureSuccess`, `And`, `EnsureSuccessAsync`, `MapAsync`, `BindAsync`, `RecordError` and `RecordErrors` were extension methods in `OpenUrzednik.Core.Extensions`. The maintainer settled the layout above before 1.0, when moving types is still allowed. The clients' logger category (their full type name) changed with them, e.g. to `OpenUrzednik.Nbp.NbpGoldPriceClient`; a filter on the `OpenUrzednik.Nbp` prefix still matches, but filters on `OpenUrzednik.Nbp.Currency`, `.Table` or `.Gold` no longer match the clients and change their log level silently; use the type name or `OpenUrzednik.Nbp`.
+Until 1.0 this record was changed in place; the full notes are in [the version before the consolidation](https://github.com/milten89/OpenUrzednik.NET/blob/8e72c4d274de2c92fa348641db6ad9d1b52b220b/docs/adr/0007-client-api-and-extensibility.md#more-information).
 
-**2026-10-30 change: auth that a handler can't do** ([#109](https://github.com/milten89/OpenUrzednik.NET/issues/109)). The rule named auth as a handler concern, which fits a static header but not a session login that is itself an API call, or credentials that are arguments of the API (GUS BIR). Those stay in the provider, and each provider ADR decides how, including for a static API key.
+* 2026-10-29 · [#86](https://github.com/milten89/OpenUrzednik.NET/issues/86) · Request shaping became internal: the public URL-builder interfaces and the constructor parameter were removed; gateways use `NbpOptions.ApiUrl` and a `DelegatingHandler`.
+* 2026-10-29 · [#87](https://github.com/milten89/OpenUrzednik.NET/issues/87) · Namespace layout: clients, their interfaces and `NbpOptions` in the provider's root namespace; Core's result operations as instance methods; no `.Extensions` or `.Options` namespaces.
+* 2026-10-30 · [#109](https://github.com/milten89/OpenUrzednik.NET/issues/109) · Auth that needs protocol calls or credentials passed as API arguments belongs in the provider, designed in its provider ADR.
