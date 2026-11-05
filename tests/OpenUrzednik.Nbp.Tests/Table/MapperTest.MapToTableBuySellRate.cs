@@ -20,7 +20,7 @@ public partial class MapperTest
         var result = Mapper.MapToTableBuySellRate(dto);
 
         // Assert
-        result.ShouldBe(new TableBuySellRate(dto.CurrencyName, dto.CurrencyCode, dto.Ask, dto.Bid));
+        result.ShouldBe(new TableBuySellRate(dto.CurrencyName!, dto.CurrencyCode, dto.Ask, dto.Bid));
     }
 
     [Fact]
@@ -31,5 +31,20 @@ public partial class MapperTest
 
         // Act && Assert
         Should.Throw<InvalidPayloadException>(() => Mapper.MapToTableBuySellRate(dto));
+    }
+
+    [Fact]
+    public void MapToTableBuySellRate_MissingCurrencyName_ReturnsEmptyCurrencyName()
+    {
+        // Arrange
+        // Table C before 2004-05-04 has no "currency" field.
+        var source = new BuySellExchangeRateDtoFaker().WithConstantSeed().Generate();
+        var dto = new BuySellExchangeRateDto { CurrencyCode = source.CurrencyCode, Ask = source.Ask, Bid = source.Bid };
+
+        // Act
+        var result = Mapper.MapToTableBuySellRate(dto);
+
+        // Assert
+        result.ShouldBe(new TableBuySellRate(string.Empty, source.CurrencyCode, source.Ask, source.Bid));
     }
 }

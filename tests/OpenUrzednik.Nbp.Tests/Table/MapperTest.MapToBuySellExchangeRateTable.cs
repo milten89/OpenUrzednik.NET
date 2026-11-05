@@ -35,7 +35,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate.ToPublicDate(), dto.PublicationDate.ToPublicDate(),
-            [new TableBuySellRate(dto.Rates[0].CurrencyName, dto.Rates[0].CurrencyCode, dto.Rates[0].Ask, dto.Rates[0].Bid)]));
+            [new TableBuySellRate(dto.Rates[0].CurrencyName!, dto.Rates[0].CurrencyCode, dto.Rates[0].Ask, dto.Rates[0].Bid)]));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(new BuySellExchangeRateTable(dto.TableId, dto.TradingDate.ToPublicDate(), dto.PublicationDate.ToPublicDate(),
-            dto.Rates.Select(x => new TableBuySellRate(x.CurrencyName, x.CurrencyCode, x.Ask, x.Bid)).ToArray()));
+            dto.Rates.Select(x => new TableBuySellRate(x.CurrencyName!, x.CurrencyCode, x.Ask, x.Bid)).ToArray()));
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public partial class MapperTest
 
         // Assert
         result.ShouldBe(dtos.Select(x => new BuySellExchangeRateTable(x.TableId, x.TradingDate.ToPublicDate(), x.PublicationDate.ToPublicDate(),
-            [.. x.Rates.Select(r => new TableBuySellRate(r.CurrencyName, r.CurrencyCode, r.Ask, r.Bid))])));
+            [.. x.Rates.Select(r => new TableBuySellRate(r.CurrencyName!, r.CurrencyCode, r.Ask, r.Bid))])));
     }
 
     [Fact]

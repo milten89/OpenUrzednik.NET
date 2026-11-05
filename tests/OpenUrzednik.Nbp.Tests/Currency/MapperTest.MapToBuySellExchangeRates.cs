@@ -21,7 +21,7 @@ public partial class MapperTest
         var result = Mapper.MapToBuySellExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode, []));
+        result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName!, dto.CurrencyCode, []));
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public partial class MapperTest
         var result = Mapper.MapToBuySellExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode,
+        result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName!, dto.CurrencyCode,
             [new CurrencyBuySellRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate.ToPublicDate(), dto.Rates[0].Ask, dto.Rates[0].Bid)]));
     }
 
@@ -48,7 +48,7 @@ public partial class MapperTest
         var result = Mapper.MapToBuySellExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName, dto.CurrencyCode,
+        result.ShouldBe(new BuySellExchangeRates(dto.CurrencyName!, dto.CurrencyCode,
             [.. dto.Rates.Select(x => new CurrencyBuySellRate(x.TableId, x.PublicationDate.ToPublicDate(), x.Ask, x.Bid))]));
     }
 
@@ -82,5 +82,21 @@ public partial class MapperTest
 
         // Assert
         exception.ShouldBeOfType<InvalidPayloadException>();
+    }
+
+    [Fact]
+    public void MapToBuySellExchangeRates_MissingCurrencyName_ReturnsEmptyCurrencyName()
+    {
+        // Arrange
+        // NBP answers before 2004-05-04 have no "currency" field.
+        var source = new BuySellCurrencyExchangeRatesDtoFaker(1).WithConstantSeed().Generate();
+        var dto = new BuySellCurrencyExchangeRatesDto { CurrencyCode = source.CurrencyCode, Rates = source.Rates };
+
+        // Act
+        var result = Mapper.MapToBuySellExchangeRates(dto);
+
+        // Assert
+        result.ShouldBe(new BuySellExchangeRates(string.Empty, source.CurrencyCode,
+            [new CurrencyBuySellRate(source.Rates[0].TableId, source.Rates[0].PublicationDate.ToPublicDate(), source.Rates[0].Ask, source.Rates[0].Bid)]));
     }
 }

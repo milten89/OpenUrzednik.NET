@@ -3,7 +3,10 @@ namespace OpenUrzednik.Nbp.Table;
 /// <summary>
 /// One entry of <see cref="BuySellExchangeRateTable.Rates"/>: the bid and ask rates of one currency in the table
 /// </summary>
-/// <param name="CurrencyName">Currency name</param>
+/// <param name="CurrencyName">
+/// Currency name in Polish, as NBP gives it (e.g. <c>dolar amerykański</c>). Empty in tables published before
+/// 2004-05-04 (up to 85/C/NBP/2004): NBP gives the country (e.g. <c>USA</c>) there, not the currency name.
+/// </param>
 /// <param name="CurrencyCode">ISO 4217 currency code</param>
 /// <param name="Ask">
 /// Ask rate, the API's <c>ask</c> (NBP's selling rate, <i>kurs sprzedaży</i>): what you pay when you buy the currency.

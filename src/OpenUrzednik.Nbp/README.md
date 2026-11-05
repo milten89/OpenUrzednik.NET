@@ -87,6 +87,8 @@ In a range method, `from` may be earlier than the earliest date: only `to` is ch
 
 **Empty answers.** A date or range with no publication (a weekend, a holiday, a date before the table existed) is a `NotFoundError`: NBP answers it with an HTTP 404 (the error then carries the status code) or with an empty list. See [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors) for the other error types. NBP describes its API in the [official documentation](https://api.nbp.pl/en.html).
 
+**Currency names before 2004-05-04.** Tables A and C published before 2004-05-04 (up to 85/A/NBP/2004 and 85/C/NBP/2004) give the country, not the currency name, so `CurrencyName` is an empty string there; `CurrencyCode` and the rates are filled in as usual. Table B always has the name. In `CurrencyExchangeRates` and `BuySellExchangeRates`, NBP takes the name from the earliest rate in the answer: a range or a `Get…LastPublishedBeforeAsync` window whose earliest rate was published before 2004-05-04 has an empty name for all its rates, including the later ones.
+
 ## The last rate before a date
 
 Many Polish tax and accounting rules use the NBP rate from the last business day before a given day, for example the day of an invoice or a payment. `GetLastPublishedBeforeAsync` returns the last publication before `date`, never the one on `date` itself: for a Monday you usually get the previous Friday's rate, even after NBP has published Monday's.

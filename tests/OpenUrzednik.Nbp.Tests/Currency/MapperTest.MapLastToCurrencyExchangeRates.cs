@@ -22,7 +22,7 @@ public partial class MapperTest
         var result = Mapper.MapLastToCurrencyExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode,
+        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName!, dto.CurrencyCode,
             [new CurrencyRate(expected.TableId, expected.PublicationDate.ToPublicDate(), expected.Price)]));
     }
 
@@ -59,5 +59,21 @@ public partial class MapperTest
 
         // Act && Assert
         Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToCurrencyExchangeRates(dto));
+    }
+
+    [Fact]
+    public void MapLastToCurrencyExchangeRates_MissingCurrencyName_ReturnsEmptyCurrencyName()
+    {
+        // Arrange
+        // NBP answers before 2004-05-04 have no "currency" field.
+        var source = new CurrencyExchangeRatesDtoFaker(1).WithConstantSeed().Generate();
+        var dto = new CurrencyExchangeRatesDto { CurrencyCode = source.CurrencyCode, Rates = source.Rates };
+
+        // Act
+        var result = Mapper.MapLastToCurrencyExchangeRates(dto);
+
+        // Assert
+        result.ShouldNotBeNull().CurrencyName.ShouldBeEmpty();
+        result.CurrencyCode.ShouldBe(source.CurrencyCode);
     }
 }
