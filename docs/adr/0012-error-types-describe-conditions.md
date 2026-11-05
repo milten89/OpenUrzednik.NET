@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-11-05
+confidence: high
 decision-makers: milten89
 ---
 
@@ -8,7 +9,7 @@ decision-makers: milten89
 
 ## Context and Problem Statement
 
-The error types of [ADR-0002](0002-result-pattern-and-error-handling.md) (`NotFoundError`, `RateLimitExceededError`, `ServiceUnavailableError` and the others) are the contract callers branch on. Callers also need transport details: the HTTP status code was only a `statusCode` metadata entry, and #123 asked for a typed way to read it. NBP is a REST provider, but the planned providers aren't all: GUS uses SOAP and has SOAP faults, and the MF flat file is a downloaded file with I/O failures. The same condition already comes from different sources: a `NotFoundError` is an HTTP 404 or an empty answer with status 200. Where do transport details belong, so that one error type can serve every provider?
+The error types of [ADR-0002](0002-result-pattern-and-error-handling.md) (`NotFoundError`, `RateLimitExceededError`, `ServiceUnavailableError` and the others) are the contract callers branch on. Callers also need transport details, such as the HTTP status code, read in a typed way (#123). NBP is a REST provider, but the planned providers aren't all: GUS uses SOAP and has SOAP faults, and the MF flat file is a downloaded file with I/O failures. The same condition already comes from different sources: a `NotFoundError` is an HTTP 404 or an empty answer with status 200. Where do transport details belong, so that one error type can serve every provider?
 
 ## Decision Drivers
 
@@ -39,7 +40,6 @@ Chosen option: "Transport details in metadata, with typed extension accessors in
 * Good, because a transport's accessors can be added in any minor version: extension methods aren't frozen like interfaces or abstract members.
 * Good, because reading a status code doesn't allocate: the accessor unboxes the stored `int`.
 * Bad, because the status code isn't a property: callers use `GetHttpStatusCode()` or `TryGetHttpStatusCode` instead of `error.StatusCode`.
-* Bad, because the key moved from `OpenUrzednikError.StatusCodeMetadataKey` to `HttpErrorMetadata.StatusCodeKey`, and the protected base constructor with a `statusCode` parameter is gone: a breaking change for preview users. The key's name and values are unchanged.
 
 ### Confirmation
 
@@ -68,3 +68,7 @@ Chosen option: "Transport details in metadata, with typed extension accessors in
 ## More Information
 
 Decided with the maintainer on 2026-11-05 in #123. Related: [ADR-0002](0002-result-pattern-and-error-handling.md) (the error contract), [ADR-0006](0006-shared-http-layer.md) (the shared HTTP layer that maps responses to errors), [ADR-0010](0010-provider-readiness-gate.md) (provider ADRs, which name their transport's keys).
+
+### Changes before 1.0
+
+* 2026-11-05 · [#111](https://github.com/milten89/OpenUrzednik.NET/issues/111) · Wording only: `confidence` in the front matter, and the migration note for preview users removed (the release notes cover migrations). The [version before the consolidation](https://github.com/milten89/OpenUrzednik.NET/blob/8e72c4d274de2c92fa348641db6ad9d1b52b220b/docs/adr/0012-error-types-describe-conditions.md).

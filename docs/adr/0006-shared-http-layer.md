@@ -1,6 +1,7 @@
 ---
 status: accepted
-date: 2026-10-30
+date: 2026-11-05
+confidence: high
 decision-makers: milten89
 ---
 
@@ -8,7 +9,7 @@ decision-makers: milten89
 
 ## Context and Problem Statement
 
-`OpenUrzednik.Nbp` contains HTTP plumbing (`HttpClientExtensions.GetNbpAsync`): sending requests, mapping status codes to errors, reading `Retry-After`, deserializing JSON, recording telemetry. Future REST providers (MF Biała Lista, KRS) need exactly the same behaviour, and it must implement [ADR-0002](0002-result-pattern-and-error-handling.md) consistently (timeouts, network failures, disposal). GUS BIR uses SOAP. Where does shared HTTP code live?
+Every REST provider (NBP, and the planned MF Biała Lista and KRS) needs the same HTTP plumbing: sending requests, mapping status codes to errors, reading `Retry-After`, deserializing JSON, recording telemetry. It must implement [ADR-0002](0002-result-pattern-and-error-handling.md) consistently (timeouts, network failures, disposal). GUS BIR uses SOAP. Where does shared HTTP code live?
 
 ## Decision Drivers
 
@@ -30,12 +31,12 @@ Chosen option: "Shared source files compiled into each provider", because the la
 * The source lives in `src/Http` (`Infrastructure/`, `Polyfills/`), next to `src/Polyfills`. A REST provider imports `src/Http/Http.props`, which links the files into the provider, so each provider assembly has its own internal copy. The provider references `System.Net.Http.Json`, `System.Text.Json` and `Microsoft.Bcl.TimeProvider` on netstandard2.0 only ([ADR-0004](0004-dependency-policy.md)).
 * The types are `internal`, in the namespace `OpenUrzednik.Http.Infrastructure`: the request executor (`RestRequestExecutor`) with send, status → error mapping (with provider-specific overrides, e.g. for JSON error bodies; the bounded plain-text read of a 400 body is part of the default mapping), timeout vs caller-cancellation detection, `Retry-After` parsing with `TimeProvider`, JSON deserialization via `JsonTypeInfo<T>` (source-generated, trimming/AOT friendly), disposal of request/response, telemetry spans and logs.
 * No provider exposes these types in its public API. A provider's DI package links `Infrastructure/ResilienceRejection.cs` alone, to mark resilience-handler rejections for the executor ([ADR-0004](0004-dependency-policy.md)).
-* `OpenUrzednik.Nbp` uses it first; NBP-specific behaviour stays in NBP. `tests/OpenUrzednik.Http.Tests` tests the layer through Nbp's copy (`InternalsVisibleTo`); only that copy is tested there, because a second provider granting the same access would give the test project two copies of each type.
+* `OpenUrzednik.Nbp` is the first REST provider on the layer; NBP-specific behaviour stays in NBP. `tests/OpenUrzednik.Http.Tests` tests the layer through Nbp's copy (`InternalsVisibleTo`); only that copy is tested there, because a second provider granting the same access would give the test project two copies of each type.
 * Shared transports are shared source. For SOAP (GUS) this is the default; the provider ADR that [ADR-0010](0010-provider-readiness-gate.md) requires may revisit it. If real duplication with a SOAP stack appears, a new ADR can extract a transport-only layer.
 
 ### Provider-author reference
 
-* A provider describes itself with a `RestProviderProfile(name, displayName, mapErrorAsync)`. `name` builds the span name `<name>.http.get` and is the `{provider}` log property; `displayName` goes into error messages. Every log call of the layer has an event id from `RestLogEvents` (1xxx), which the provider's public log-events class mirrors ([ADR-0003](0003-telemetry-abstractions.md)). The provider passes its `ActivitySource` name to `OpenUrzednikTelemetry`, which uses it when the app gives no trace source (on the .NET targets); for that, the provider is added to Core's .NET-only `InternalsVisibleTo`.
+* A provider describes itself with a `RestProviderProfile(name, displayName, mapErrorAsync)`. `name` builds the span name `<name>.http.get` and is the `{provider}` log property; `displayName` goes into error messages. The layer's log templates are provider-neutral. Every log call of the layer has an event id from `RestLogEvents` (1xxx), which the provider's public log-events class mirrors ([ADR-0003](0003-telemetry-abstractions.md)). The provider passes its `ActivitySource` name to `OpenUrzednikTelemetry`, which uses it when the app gives no trace source (on the .NET targets); for that, the provider is added to Core's .NET-only `InternalsVisibleTo`.
 * A REST provider whose request paths or queries carry personal identifiers ([ADR-0003](0003-telemetry-abstractions.md)) must give the executor a display path or route template (e.g. `/api/search/nip/{nip}`). The executor uses the absolute `RequestUri` in every status-error message, in the error log and in `ErrorResponseContext.RequestPath` (passed to `MapErrorAsync`), so the display value must replace the whole request URI (path and query) in `url.path`, logs, error messages and `ErrorResponseContext.RequestPath`. The executor API for it is added with the first such provider (an additive change). Such a provider must also mask or drop a 400's server message, which may echo the identifier.
 * `RestRequestExecutor` resolves request paths against an absolute base address and never changes the `HttpClient`, so one `HttpClient` can serve several providers. The request deadline (the timeout passed to it, or `HttpClient.Timeout` when none is set) covers reading the body too.
 * `GetAsync` **returns** as errors: every non-success status, an empty, malformed or undecodable JSON body, network failures (`HttpRequestException`, or an `IOException` while reading the body) and timeouts while sending or reading a success body (an `OperationCanceledException` while the caller's token isn't cancelled). When the error body can't be read before the deadline, `ReadMessageAsync()` returns `null` and the error is still returned.
@@ -61,8 +62,14 @@ REST/JSON provider packages contain no direct `HttpClient.SendAsync` calls; all 
 ### New package `OpenUrzednik.Http`
 
 * Good, because one compiled copy serves every provider.
-* Bad, because its types must be public to work across assemblies, so they become API that must stay stable for providers built on it.
-* Bad, because one more package must be versioned, published and documented.
+* Bad, because its types must be public to work across assemblies, so they become API that must stay stable for providers built on it: four public types meant only for provider authors, which no application needs.
+* Bad, because one more package must be versioned, published and documented, and with one version for all packages ([ADR-0008](0008-branching-versioning-and-release.md)) a separate package saves no releases.
+
+### New package with pluggable deserialization (JSON and SOAP/XML)
+
+* Good, because the SOAP provider (GUS BIR) could use the same layer.
+* Bad, because it is a public package too, with the costs of `OpenUrzednik.Http` above.
+* Bad, because no SOAP stack exists yet to show what it would share; if real duplication appears, a new ADR can extract a transport-only layer.
 
 ### Put it into `OpenUrzednik.Core`
 
@@ -76,10 +83,13 @@ REST/JSON provider packages contain no direct `HttpClient.SendAsync` calls; all 
 
 ## More Information
 
-**2026-10-02 note (backlog item 12).** Implemented: `RestRequestExecutor`, `RestProviderProfile` and `ErrorResponseContext` in `OpenUrzednik.Http.Infrastructure`, with `OpenUrzednikTelemetry` replacing `NbpTelemetryProvider`. The bounded read of a 400 body into `BadRequestError` turned out to be provider-neutral, so it is part of the default mapping and NBP needs no override; `RestProviderProfile.MapErrorAsync` is the hook for providers whose error bodies need parsing (e.g. JSON error codes). Log templates are provider-neutral and take the provider's display name as the `{provider}` property.
+* Follow-up: deprecating the no longer published `OpenUrzednik.Http` package on nuget.org ([#116](https://github.com/milten89/OpenUrzednik.NET/issues/116)).
 
-**2026-10-17 change: one version for all packages.** All packages now share one version from the root `version.json` ([ADR-0008](0008-branching-versioning-and-release.md)), so a provider no longer path-filters `OpenUrzednik.Http`, and an HTTP change no longer re-versions only the REST providers. The driver about needless version bumps, the matching consequence and the `pathFilters` check in Confirmation were removed. The version arguments under "Pros and Cons of the Options" no longer tell the options apart.
+### Changes before 1.0
 
-**2026-10-29 change: shared source instead of a package** ([#85](https://github.com/milten89/OpenUrzednik.NET/issues/85)). The maintainer chose shared source before 1.0. The `OpenUrzednik.Http` package would have frozen four public types meant only for provider authors, while no application needs them, and with one version for all packages (2026-10-17) a separate package no longer saved releases. The code moved from `src/OpenUrzednik.Http` to `src/Http`, the types became `internal`, and `OpenUrzednik.Nbp` compiles them in and gained the netstandard2.0 `System.Net.Http.Json` reference. The package's README was removed; its provider-author reference is now the section above, which also corrects its claim that only caller cancellation throws. The package is no longer published and gets deprecated on nuget.org ([#116](https://github.com/milten89/OpenUrzednik.NET/issues/116)). The Decision Outcome, drivers, consequences, Confirmation and the pros and cons were rewritten for the chosen option.
+Until 1.0 this record was changed in place; the full notes are in [the version before the consolidation](https://github.com/milten89/OpenUrzednik.NET/blob/8e72c4d274de2c92fa348641db6ad9d1b52b220b/docs/adr/0006-shared-http-layer.md#more-information).
 
-**2026-10-30 change: scope of the executor rule and display paths** ([#109](https://github.com/milten89/OpenUrzednik.NET/issues/109)). The Confirmation said all provider HTTP goes through the executor, which cannot hold for SOAP (GUS), so it now covers REST/JSON providers and leaves other transports to their provider ADR. The ADR also says that a request URI (path or query) carrying a personal identifier must not reach `url.path`, logs, error messages or `ErrorResponseContext.RequestPath`, because the executor uses the absolute `RequestUri` there (`RestRequestExecutor.cs:277`); a 400's server message may echo the identifier too. The executor gets a display-path parameter with the first provider that needs one.
+* 2026-10-02 · backlog item 12 · The layer was implemented (`RestRequestExecutor`, `RestProviderProfile`, `ErrorResponseContext`, `OpenUrzednikTelemetry`); the bounded read of a 400 body became part of the default mapping.
+* 2026-10-17 · One version for all packages ([ADR-0008](0008-branching-versioning-and-release.md)): the path-filter and re-versioning arguments were removed.
+* 2026-10-29 · [#85](https://github.com/milten89/OpenUrzednik.NET/issues/85) · Shared source compiled into each REST provider replaced the `OpenUrzednik.Http` package; the types became internal.
+* 2026-10-30 · [#109](https://github.com/milten89/OpenUrzednik.NET/issues/109) · The executor rule covers REST/JSON providers only; a provider whose request URIs carry personal identifiers gives the executor a display path.

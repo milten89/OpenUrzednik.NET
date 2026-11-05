@@ -1,6 +1,7 @@
 ---
 status: accepted
-date: 2026-10-17
+date: 2026-11-05
+confidence: high
 decision-makers: milten89
 ---
 
@@ -20,9 +21,9 @@ The code, XML docs, package metadata and messages are in English. The primary au
 
 Chosen option: "English as the base; a short Polish version of the informational parts only", because it gives every reader one complete, authoritative text in the language of the code and the package metadata, and keeps a Polish introduction where Polish readers decide whether to use a package.
 
-* **English** – everything except the Polish files below: identifiers, XML docs, code comments, commit messages, PR descriptions, ADRs, `CLAUDE.md`/`AGENTS.md`/skills/agents, technical docs in `docs/`, error and log messages, and the user-facing docs: `README.md` (root and per package; it is the GitHub landing page and the README packed for nuget.org), `CONTRIBUTING.md`, `SECURITY.md`, the samples README and the skeleton READMEs.
+* **English:** everything except the Polish files below: identifiers, XML docs, code comments, commit messages, PR descriptions, ADRs, `CLAUDE.md`/`AGENTS.md`/skills/agents, technical docs in `docs/`, error and log messages, and the user-facing docs: `README.md` (root and per package; it is the GitHub landing page and the README packed for nuget.org), `CONTRIBUTING.md`, `SECURITY.md`, the samples README and the skeleton READMEs.
 * **English is the single source of truth.** If a Polish text differs from the English one, the English one wins, and each Polish file says so at the top. The XML docs define API behaviour; the READMEs explain it.
-* **Polish** – `README.pl.md` next to the root README and the README of each published package. It has only the informational parts: what the package is and the "unofficial" notice, installation, the quick-start example (the same code as in English), and links to the English sections. Contract and reference content stays English only: API limits and data availability, errors, telemetry, configuration rules, dependencies, versioning, support. `SECURITY.pl.md` says how to report a vulnerability.
+* **Polish:** `README.pl.md` next to the root README and the README of each published package. It has only the informational parts: what the package is and the "unofficial" notice, installation, the quick-start example (the same code as in English), and links to the English sections. Contract and reference content stays English only: API limits and data availability, errors, telemetry, configuration rules, dependencies, versioning, support. `SECURITY.pl.md` says how to report a vulnerability.
 * Issue forms are bilingual inline: each label and description has a Polish and an English part.
 * Package READMEs link to each other with absolute GitHub URLs, because nuget.org doesn't resolve relative links.
 * Polish domain terms with no good translation may appear in identifiers only when they are the official API name (e.g. NBP `cenyzlota` path), and are explained in XML docs.
@@ -39,8 +40,18 @@ Chosen option: "English as the base; a short Polish version of the informational
 
 The PR template asks whether an informational part of a README changed, and if so, whether `README.pl.md` changed too; the `reviewer` agent checks that a `*.pl.md` file gets no contract content.
 
+## Pros and Cons of the Options
+
+### Polish as the base, with a full English mirror of every user-facing document
+
+* Bad, because every document exists in two complete versions (`*.en.md` mirrors) kept in sync by hand.
+* Bad, because nothing says which version is right when they differ.
+
 ## More Information
 
-**2026-10-04 note.** English versions exist for the root and package READMEs, `CONTRIBUTING` and `SECURITY` (backlog item 22). Package READMEs link to each other with absolute GitHub URLs, because nuget.org shows the Polish README (at the time) and doesn't resolve relative links. The issue forms are bilingual inline instead of linking to an English version: each label and description has a Polish and an English part.
+### Changes before 1.0
 
-**2026-10-17 change: English as the base** ([#73](https://github.com/milten89/OpenUrzednik.NET/issues/73)). The maintainer replaced the Polish-first rule. Before, every user-facing document was Polish with an English mirror (`*.en.md`), and the packed README was Polish under English metadata. Thirteen documents existed in two complete versions (26 files) kept in sync by hand, and nothing said which version was right when they differed. `README.md` is now English in the root and in every package, and `README.pl.md` keeps only the informational parts. `CONTRIBUTING`, the samples README and the skeleton READMEs are English only. `SECURITY.md` is English, and `SECURITY.pl.md` explains how to report. The Decision Outcome above also corrects the old bullet that listed issue forms among the Polish documents linking to an English version: they have been bilingual inline since the 2026-10-04 note.
+Until 1.0 this record was changed in place; the full notes are in [the version before the consolidation](https://github.com/milten89/OpenUrzednik.NET/blob/8e72c4d274de2c92fa348641db6ad9d1b52b220b/docs/adr/0009-documentation-language.md#more-information).
+
+* 2026-10-04 · backlog item 22 · English versions of the user-facing documents; package READMEs link to each other with absolute GitHub URLs; issue forms bilingual inline.
+* 2026-10-17 · [#73](https://github.com/milten89/OpenUrzednik.NET/issues/73) · English became the base and the single source of truth; the Polish files keep only the informational parts.
