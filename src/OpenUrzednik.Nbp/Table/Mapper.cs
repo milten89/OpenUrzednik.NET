@@ -53,7 +53,7 @@ internal static class Mapper
     {
         NbpPayload.EnsurePresent(dto, "item");
 
-        return new TableRate(dto.CurrencyName, dto.CurrencyCode, dto.Price);
+        return new TableRate(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, dto.Price);
     }
 
     internal static IReadOnlyList<BuySellExchangeRateTable> MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
@@ -92,6 +92,6 @@ internal static class Mapper
     {
         NbpPayload.EnsurePresent(dto, "item");
 
-        return new TableBuySellRate(dto.CurrencyName, dto.CurrencyCode, dto.Ask, dto.Bid);
+        return new TableBuySellRate(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, dto.Ask, dto.Bid);
     }
 }

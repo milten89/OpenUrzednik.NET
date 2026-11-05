@@ -15,7 +15,7 @@ internal static class Mapper
         for (int i = 0; i < rates.Length; i++)
             rates[i] = MapToCurrencyRate(dto.Rates[i]);
 
-        return new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(rates));
+        return new(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, Array.AsReadOnly(rates));
     }
 
     /// <summary>
@@ -27,7 +27,7 @@ internal static class Mapper
         NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var last = NbpPayload.Latest(dto.Rates, static x => x.PublicationDate);
-        return last is null ? null : new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(new[] { MapToCurrencyRate(last) }));
+        return last is null ? null : new(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, Array.AsReadOnly(new[] { MapToCurrencyRate(last) }));
     }
 
     internal static CurrencyRate MapToCurrencyRate(CurrencyExchangeRateDto dto)
@@ -46,7 +46,7 @@ internal static class Mapper
         for (var i = 0; i < rates.Length; i++)
             rates[i] = MapToCurrencyBuySellRate(dto.Rates[i]);
 
-        return new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(rates));
+        return new(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, Array.AsReadOnly(rates));
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ internal static class Mapper
         NbpPayload.EnsurePresent(dto.Rates, "rates");
 
         var last = NbpPayload.Latest(dto.Rates, static x => x.PublicationDate);
-        return last is null ? null : new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(new[] { MapToCurrencyBuySellRate(last) }));
+        return last is null ? null : new(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, Array.AsReadOnly(new[] { MapToCurrencyBuySellRate(last) }));
     }
 
     internal static CurrencyBuySellRate MapToCurrencyBuySellRate(BuySellCurrencyExchangeRateDto dto)

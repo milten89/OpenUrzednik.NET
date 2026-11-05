@@ -21,7 +21,7 @@ public partial class MapperTest
         var result = Mapper.MapToCurrencyExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode, []));
+        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName!, dto.CurrencyCode, []));
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public partial class MapperTest
         var result = Mapper.MapToCurrencyExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode,
+        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName!, dto.CurrencyCode,
             [new CurrencyRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate.ToPublicDate(), dto.Rates[0].Price)]));
     }
 
@@ -48,7 +48,7 @@ public partial class MapperTest
         var result = Mapper.MapToCurrencyExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode,
+        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName!, dto.CurrencyCode,
             [.. dto.Rates.Select(x => new CurrencyRate(x.TableId, x.PublicationDate.ToPublicDate(), x.Price))]));
     }
 
@@ -76,5 +76,21 @@ public partial class MapperTest
 
         // Act && Assert
         Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyExchangeRates(dto));
+    }
+
+    [Fact]
+    public void MapToCurrencyExchangeRates_MissingCurrencyName_ReturnsEmptyCurrencyName()
+    {
+        // Arrange
+        // NBP answers before 2004-05-04 have no "currency" field.
+        var source = new CurrencyExchangeRatesDtoFaker(1).WithConstantSeed().Generate();
+        var dto = new CurrencyExchangeRatesDto { CurrencyCode = source.CurrencyCode, Rates = source.Rates };
+
+        // Act
+        var result = Mapper.MapToCurrencyExchangeRates(dto);
+
+        // Assert
+        result.ShouldBe(new CurrencyExchangeRates(string.Empty, source.CurrencyCode,
+            [new CurrencyRate(source.Rates[0].TableId, source.Rates[0].PublicationDate.ToPublicDate(), source.Rates[0].Price)]));
     }
 }
