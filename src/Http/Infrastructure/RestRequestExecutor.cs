@@ -181,6 +181,14 @@ internal sealed class RestRequestExecutor
         using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonMediaType));
 
+        // The display URI replaces the request URI in status errors and in the DI package's HttpClient logging (ADR-0017).
+        string? displayUri = null;
+        if (displayPath is not null)
+        {
+            displayUri = DisplayUri(displayPath);
+            DisplayUriRequestOption.Set(request, displayUri);
+        }
+
         // With ResponseHeadersRead, HttpClient.Timeout stops applying once the headers arrive,
         // so the deadline is applied to reading the body as well.
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -196,7 +204,7 @@ internal sealed class RestRequestExecutor
         traceSpan.SetTag("http.response.status_code", (int)response.StatusCode);
 
         if (!response.IsSuccessStatusCode)
-            return await MapErrorResponseAsync(response, messagePath, displayPath, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+            return await MapErrorResponseAsync(response, messagePath, displayUri, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
 
         var logger = _telemetry.Logger;
         try
@@ -315,9 +323,9 @@ internal sealed class RestRequestExecutor
         return error;
     }
 
-    private async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string messagePath, string? displayPath, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
+    private async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string messagePath, string? displayUri, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
     {
-        var path = displayPath is null ? response.RequestMessage?.RequestUri?.ToString() ?? messagePath : DisplayUri(displayPath);
+        var path = displayUri ?? response.RequestMessage?.RequestUri?.ToString() ?? messagePath;
         var delay = response.StatusCode == TooManyRequests ? GetDelay(response, _timeProvider) : null;
 
         // The body can be read only once, so the override and the default mapping share one read.
@@ -337,7 +345,7 @@ internal sealed class RestRequestExecutor
         }
 
         // A display path means the request carries identifiers, which a 400's server message may echo (ADR-0006).
-        var result = await MapDefaultErrorAsync(response, path, delay, traceSpan, displayPath is null ? ReadMessageOnceAsync : null).ConfigureAwait(false);
+        var result = await MapDefaultErrorAsync(response, path, delay, traceSpan, displayUri is null ? ReadMessageOnceAsync : null).ConfigureAwait(false);
         traceSpan.SetTag("error.type", result.Errors[0].Code);
         return result;
     }
