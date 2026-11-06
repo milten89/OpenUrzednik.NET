@@ -5,7 +5,8 @@
     <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
   </ItemGroup>
 
-  <!-- The masking helper (src/Privacy) is internal source that Core doesn't contain; the tests compile their own copy. -->
-  <Import Project="..\..\src\Privacy\Privacy.props" />
+  <!-- The identifier validators (src/Identifiers) and the masking helper they bring (src/Privacy) are internal source that Core
+       doesn't contain; the tests compile their own copy. -->
+  <Import Project="..\..\src\Identifiers\Identifiers.props" />
 
 </Project>
