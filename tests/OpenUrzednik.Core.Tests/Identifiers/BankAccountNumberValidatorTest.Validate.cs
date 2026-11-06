@@ -32,13 +32,17 @@ public partial class BankAccountNumberValidatorTest
     [InlineData(null)]
     [InlineData("")]
     [InlineData("\t")]
-    public void Validate_NullEmptyOrWhitespace_ReturnsValidationError(string? value)
+    public void Validate_NullEmptyOrWhitespace_ReturnsValidationErrorAndEmptyNormalized(string? value)
     {
+        // Arrange
+        var validator = new BankAccountNumberValidator(PropertyName, value!);
+
         // Act
-        var result = new BankAccountNumberValidator(PropertyName, value!).Validate();
+        var result = validator.Validate();
 
         // Assert
         result.ShouldBeMaskedValidationError("nrb", PropertyName, value, "is empty or whitespace.");
+        validator.Normalized.ShouldBeEmpty();
     }
 
     [Theory]
