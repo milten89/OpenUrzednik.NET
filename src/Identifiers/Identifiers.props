@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- Validators of Polish identifiers (NIP, REGON, KRS number, NRB), compiled into each provider that takes them as internal
+       source, like src/Privacy. Opt-in: a provider imports this file only; it brings src/Privacy (the masking the validators use)
+       unless the project imported it already. Importing Privacy.props after this file would import it twice (MSB4011). -->
+  <Import Project="..\Privacy\Privacy.props" Condition="'$(OpenUrzednikPrivacyImported)' != 'true'" />
+
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" Link="Identifiers\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>
