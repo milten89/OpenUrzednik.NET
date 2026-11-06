@@ -1,0 +1,11 @@
+<Project>
+
+  <!-- The HttpClient logging of a DI package whose provider sends display paths (ADR-0017): internal source, like src/Http.
+       A DI package imports this file; it references Microsoft.Extensions.Http already (ADR-0004). The request option the
+       executor sets is the same file the provider compiles through Http.props. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)*.cs" Link="Http\DependencyInjection\%(Filename)%(Extension)" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\Infrastructure\DisplayUriRequestOption.cs" Link="Http\Infrastructure\DisplayUriRequestOption.cs" />
+  </ItemGroup>
+
+</Project>

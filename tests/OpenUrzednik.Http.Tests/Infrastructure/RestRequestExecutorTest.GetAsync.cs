@@ -1240,6 +1240,35 @@ public partial class RestRequestExecutorTest
         serverMessage.ShouldBe("Invalid NIP " + Identifier);
     }
 
+    [Fact]
+    public async Task GetAsync_DisplayPath_AttachesDisplayUriToRequest()
+    {
+        // Arrange
+        var handler = new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("n", 1)));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(DisplayBaseAddress) };
+
+        // Act
+        await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        DisplayUriRequestOption.TryGet(handler.Request!, out var displayUri).ShouldBeTrue();
+        displayUri.ShouldBe(DisplayBaseAddress + DisplayPath);
+    }
+
+    [Fact]
+    public async Task GetAsync_NoDisplayPath_AttachesNoDisplayUri()
+    {
+        // Arrange
+        var handler = new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("n", 1)));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(DisplayBaseAddress) };
+
+        // Act
+        await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync("rates", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        DisplayUriRequestOption.TryGet(handler.Request!, out _).ShouldBeFalse();
+    }
+
     private static HttpMessageHandler CreateFailingHandler(string failure) => failure switch
     {
         "connection" => new StubHttpMessageHandler(new HttpRequestException("Connection refused")),
