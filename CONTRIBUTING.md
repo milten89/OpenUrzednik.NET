@@ -9,7 +9,7 @@
 
 - Check the [issues](https://github.com/milten89/OpenUrzednik.NET/issues) and the [project](https://github.com/users/milten89/projects/2): someone may already be working on it. Comment on the issue before you start.
 - For larger changes (a new package, a change to the public API), open an issue with a proposal before you write code. It saves time on both sides.
-- New providers follow [ADR-0016](docs/adr/0016-next-providers-and-package-naming.md): the next ones are the VAT White List, KRS and GUS BIR, tracked in issues; each starts with a provider ADR, and package names follow the ADR's rules. We close PRs that change the `src/OpenUrzednik.Gus`, `Krs` or `Mf` skeletons, which we are removing; propose another data source with the provider proposal issue form.
+- New providers follow [ADR-0016](docs/adr/0016-next-providers-and-package-naming.md): the next ones are the VAT White List, KRS and GUS BIR, tracked in issues; each starts with a provider ADR, and package names follow the ADR's rules. To propose another data source, use the provider proposal issue form.
 
 ## Repository conventions
 
