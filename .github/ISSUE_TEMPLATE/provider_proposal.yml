@@ -9,8 +9,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Prace nad nowymi providerami ruszą po pierwszym stabilnym wydaniu `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Propozycje zbieramy już teraz.
-        Work on new providers begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Proposals are welcome now.
+        Następni providerzy to Biała Lista VAT, KRS i GUS BIR ([ADR-0016](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0016-next-providers-and-package-naming.md)). W tym formularzu możesz zaproponować inne źródło danych.
+        The next providers are the VAT White List, KRS and GUS BIR ([ADR-0016](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0016-next-providers-and-package-naming.md)). Use this form to propose another data source.
   - type: input
     id: name
     attributes:

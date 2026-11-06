@@ -89,7 +89,7 @@ Każde wywołanie zwraca `OpenUrzednikResult<T>`. Pracę z wynikiem (`Map`, `Bin
 
 ### Klienty i DI
 
-Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient`. W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md). Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są dopiero planowane: prace nad nimi ruszą po pierwszym stabilnym wydaniu `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). Ich wczesne, puste wersje preview na nuget.org są oznaczone jako przestarzałe i ukryte.
+Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient`. W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md). Przygotowujemy kolejnych providerów: Białą Listę VAT (`OpenUrzednik.MF.WhiteList`), KRS (`OpenUrzednik.Krs`) i GUS BIR (`OpenUrzednik.Gus.Regon`) ([ADR-0016](docs/adr/0016-next-providers-and-package-naming.md)). Wczesne, puste wersje preview pakietów `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` na nuget.org są oznaczone jako przestarzałe i ukryte.
 
 ### Przykłady
 
