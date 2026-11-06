@@ -27,11 +27,13 @@ internal sealed class ErrorResponseContext
     /// <summary>
     /// Gets the response, e.g. for its headers. Read the body only through <see cref="ReadMessageAsync"/>: the body can be read once,
     /// and the default mapping reads it again (through the same call) when the override returns <see langword="null"/>.
+    /// Never put its request URI (<c>Response.RequestMessage.RequestUri</c>) into messages or telemetry: use <see cref="RequestPath"/>.
     /// </summary>
     public HttpResponseMessage Response { get; }
 
     /// <summary>
-    /// Gets the requested URI, for messages.
+    /// Gets the requested URI, for messages. For a request sent with a display path, it is the base address plus the display path, so it
+    /// carries no identifier (ADR-0006). The server's message from <see cref="ReadMessageAsync"/> may still echo one: mask it before use.
     /// </summary>
     public string RequestPath { get; }
 

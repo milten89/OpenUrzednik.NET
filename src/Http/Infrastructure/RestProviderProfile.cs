@@ -16,7 +16,7 @@ internal sealed class RestProviderProfile
     /// <param name="mapErrorAsync">
     /// Optional override for non-success responses. Return <see langword="null"/> to use the default mapping (ADR-0002).
     /// Expected failures, e.g. an error body that isn't valid JSON, must be returned as errors or <see langword="null"/>:
-    /// anything the override throws reaches the caller of <see cref="RestRequestExecutor.GetAsync{TDto}"/>.
+    /// anything the override throws reaches the caller of <see cref="RestRequestExecutor.GetAsync{TDto}(string, System.Text.Json.Serialization.Metadata.JsonTypeInfo{TDto}, CancellationToken)"/>.
     /// </param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="displayName"/> is empty.</exception>
     public RestProviderProfile(string name, string displayName, Func<ErrorResponseContext, Task<OpenUrzednikError?>>? mapErrorAsync = null)
