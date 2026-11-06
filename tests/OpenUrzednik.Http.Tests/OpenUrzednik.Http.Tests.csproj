@@ -6,11 +6,11 @@
     <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
   </ItemGroup>
 
-  <!-- The DI packages' HttpClient logging (src/Http/DependencyInjection, ADR-0017) isn't in Nbp, so the tests compile it.
-       Not through DependencyInjection.props: its DisplayUriRequestOption.cs would clash with Nbp's copy. -->
+  <!-- The DI packages' HttpClient logging (src/Http/DependencyInjection, ADR-0017) isn't in Nbp; the tests reach it through this
+       test-only library, which Stryker.NET can mutate (ADR-0018). -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" />
-    <Compile Include="..\..\src\Http\DependencyInjection\*.cs" Link="Http\DependencyInjection\%(Filename)%(Extension)" />
+    <ProjectReference Include="..\OpenUrzednik.Http.DependencyInjection.TestHost\OpenUrzednik.Http.DependencyInjection.TestHost.csproj" />
   </ItemGroup>
 
 </Project>

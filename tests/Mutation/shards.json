@@ -1,0 +1,64 @@
+{
+  "shards": {
+    "identifiers": {
+      "workdir": "tests/OpenUrzednik.Identifiers.TestHost",
+      "config": "tests/Mutation/stryker-identifiers.json",
+      "strict": [ "src/Identifiers/**", "src/Privacy/**" ],
+      "break": 0
+    },
+    "nbp": {
+      "workdir": "src/OpenUrzednik.Nbp",
+      "config": "tests/Mutation/stryker-nbp.json",
+      "strict": [
+        "src/Http/Infrastructure/**",
+        "src/OpenUrzednik.Nbp/Validation/**",
+        "src/OpenUrzednik.Nbp/UrlBuilder/**",
+        "src/OpenUrzednik.Nbp/Extensions/**",
+        "src/OpenUrzednik.Nbp/Currency/**",
+        "src/OpenUrzednik.Nbp/Table/**",
+        "src/OpenUrzednik.Nbp/Gold/**",
+        "src/OpenUrzednik.Nbp/Common/NbpPayload.cs",
+        "src/OpenUrzednik.Nbp/Common/NbpRequestPipeline.cs",
+        "src/OpenUrzednik.Nbp/NbpOptions.cs",
+        "src/OpenUrzednik.Nbp/NbpOptionsValidator.cs",
+        "src/OpenUrzednik.Nbp/NbpDateOnlyExtensions.cs"
+      ],
+      "break": 0
+    },
+    "http-di": {
+      "workdir": "tests/OpenUrzednik.Http.DependencyInjection.TestHost",
+      "config": "tests/Mutation/stryker-http-di.json",
+      "strict": [ "src/Http/DependencyInjection/**" ],
+      "break": 0
+    },
+    "core": {
+      "workdir": "src/OpenUrzednik.Core",
+      "config": "tests/Mutation/stryker-core.json",
+      "strict": [
+        "src/OpenUrzednik.Core/OpenUrzednikResult*.cs",
+        "src/OpenUrzednik.Core/Errors/**",
+        "src/OpenUrzednik.Core/Exceptions/**",
+        "src/OpenUrzednik.Core/Validation/**"
+      ],
+      "break": 0
+    },
+    "di": {
+      "workdir": "src/OpenUrzednik.Nbp.DependencyInjection",
+      "config": "tests/Mutation/stryker-di.json",
+      "strict": [ "src/OpenUrzednik.Nbp.DependencyInjection/ResilienceRejectionHandler.cs", "src/Http/Infrastructure/ResilienceRejection.cs" ],
+      "break": 0
+    },
+    "logging": {
+      "workdir": "src/OpenUrzednik.Extensions.Logging",
+      "config": "tests/Mutation/stryker-logging.json",
+      "strict": [],
+      "break": 0
+    },
+    "diagnostics": {
+      "workdir": "src/OpenUrzednik.Diagnostics",
+      "config": "tests/Mutation/stryker-diagnostics.json",
+      "strict": [],
+      "break": 0
+    }
+  }
+}

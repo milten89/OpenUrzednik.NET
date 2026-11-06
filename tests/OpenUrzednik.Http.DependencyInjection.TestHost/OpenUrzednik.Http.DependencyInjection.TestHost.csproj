@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Test-only library: compiles the DI packages' HttpClient logging (src/Http/DependencyInjection, ADR-0017), so Stryker.NET can
+       mutate it; it never mutates files compiled into a test project (ADR-0018). Http.Tests tests it through this copy. Not packed.
+       Not through DependencyInjection.props: its DisplayUriRequestOption.cs would clash with Nbp's copy, which this library uses. -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- tests/Directory.Build.props adds a global using for xUnit, which this library doesn't reference. -->
+  <ItemGroup>
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <Compile Include="..\..\src\Http\DependencyInjection\*.cs" Link="Http\DependencyInjection\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Http.Tests" />
+  </ItemGroup>
+
+</Project>

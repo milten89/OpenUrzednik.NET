@@ -62,3 +62,6 @@ nunit-*.xml
 # JetBrains Rider
 .idea/
 *.DotSettings.user
+
+# Stryker.NET default output when run without --output (tests/Mutation/run.py writes to artifacts/mutation)
+StrykerOutput/

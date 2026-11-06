@@ -3,10 +3,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
     <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
+    <!-- The identifier validators (src/Identifiers) and the masking helper they bring (src/Privacy) are internal source that Core
+         doesn't contain; the tests reach them through this test-only library, which Stryker.NET can mutate (ADR-0018). -->
+    <ProjectReference Include="..\OpenUrzednik.Identifiers.TestHost\OpenUrzednik.Identifiers.TestHost.csproj" />
   </ItemGroup>
-
-  <!-- The identifier validators (src/Identifiers) and the masking helper they bring (src/Privacy) are internal source that Core
-       doesn't contain; the tests compile their own copy. -->
-  <Import Project="..\..\src\Identifiers\Identifiers.props" />
 
 </Project>

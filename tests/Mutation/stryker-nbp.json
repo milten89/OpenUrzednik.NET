@@ -1,0 +1,30 @@
+{
+  "stryker-config": {
+    "project": "OpenUrzednik.Nbp.csproj",
+    "test-projects": [
+      "../../tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj",
+      "../../tests/OpenUrzednik.Http.Tests/OpenUrzednik.Http.Tests.csproj"
+    ],
+    "test-runner": "mtp",
+    "target-framework": "net10.0",
+    "concurrency": 1,
+    "coverage-analysis": "perTest",
+    "mutation-level": "Standard",
+    "mutate": [
+      "**/*.cs",
+      "!**/Polyfills/**",
+      "!**/Dto/**"
+    ],
+    "ignore-methods": [
+      "*Log",
+      "LogUnreadableBody",
+      "*Exception.ctor"
+    ],
+    "reporters": [
+      "html",
+      "json",
+      "markdown",
+      "progress"
+    ]
+  }
+}
