@@ -1,0 +1,11 @@
+<Project>
+
+  <!-- Masking of personal identifiers and secrets (ADR-0003), compiled into each provider that handles them as internal source,
+       like src/Http. Opt-in: a provider imports this file. Not a Core internal, because Core grants InternalsVisibleTo on the
+       .NET targets only, so the netstandard2.0 builds couldn't call it. Core never imports it: its copy would clash (CS0436) with a
+       provider's through Core's InternalsVisibleTo. SensitiveValue.cs holds its own #if NET. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" Link="Privacy\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>
