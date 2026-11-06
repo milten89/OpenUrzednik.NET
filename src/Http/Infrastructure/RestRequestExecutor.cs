@@ -42,6 +42,10 @@ internal sealed class RestRequestExecutor
     // Computed once (Uri.IdnHost allocates); the port is boxed once, because SetTag stores an object.
     private readonly string _serverAddress;
     private readonly object _serverPort;
+    // The base address as text, for display paths only: its path (url.path) and the whole URI (status-error messages).
+    // Built on first use, so a provider without display paths never pays for them.
+    private string? _basePath;
+    private string? _baseUri;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestRequestExecutor"/> class.
@@ -107,7 +111,37 @@ internal sealed class RestRequestExecutor
     /// <exception cref="ArgumentException">Thrown when <paramref name="relativePath"/> is empty.</exception>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="relativePath"/> or <paramref name="typeInfo"/> is null.</exception>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is cancelled.</exception>
-    public async Task<OpenUrzednikResult<TDto>> GetAsync<TDto>(string relativePath, JsonTypeInfo<TDto> typeInfo, CancellationToken cancellationToken = default)
+    public Task<OpenUrzednikResult<TDto>> GetAsync<TDto>(string relativePath, JsonTypeInfo<TDto> typeInfo, CancellationToken cancellationToken = default)
+        => GetCoreAsync(relativePath, null, typeInfo, cancellationToken);
+
+    /// <summary>
+    /// Sends a GET request for <paramref name="relativePath"/>, like <see cref="GetAsync{TDto}(string, JsonTypeInfo{TDto}, CancellationToken)"/>,
+    /// for a request whose path or query carries personal identifiers or secrets (ADR-0003, ADR-0006). <paramref name="displayPath"/> replaces
+    /// the request URI everywhere the executor writes it: the <c>url.path</c> tag (the base address path plus the display path, without its query),
+    /// logs, error messages and <see cref="ErrorResponseContext.RequestPath"/> (the base address plus the display path).
+    /// The default mapping of a 400 leaves out the server's message, which may echo the identifier; a provider that needs it reads it in
+    /// <see cref="RestProviderProfile.MapErrorAsync"/> through <see cref="ErrorResponseContext.ReadMessageAsync"/> and masks it.
+    /// </summary>
+    /// <typeparam name="TDto">The type of the deserialized body.</typeparam>
+    /// <param name="relativePath">The path relative to <see cref="BaseAddress"/>, sent as given.</param>
+    /// <param name="displayPath">
+    /// The path and query written to telemetry and messages, in the same form as <paramref name="relativePath"/>: a route template
+    /// (e.g. <c>search/nip/{nip}</c>, preferred for <c>url.path</c>) or the path with each identifier masked.
+    /// </param>
+    /// <param name="typeInfo">Source-generated metadata for <typeparamref name="TDto"/>.</param>
+    /// <param name="cancellationToken">Cancels the request; cancellation throws <see cref="OperationCanceledException"/>.</param>
+    /// <returns>The deserialized body, or the errors of a failed request.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="relativePath"/> or <paramref name="displayPath"/> is empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="relativePath"/>, <paramref name="displayPath"/> or <paramref name="typeInfo"/> is null.</exception>
+    /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is cancelled.</exception>
+    public Task<OpenUrzednikResult<TDto>> GetAsync<TDto>(string relativePath, string displayPath, JsonTypeInfo<TDto> typeInfo, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(displayPath);
+        return GetCoreAsync(relativePath, displayPath, typeInfo, cancellationToken);
+    }
+
+    // displayPath is null when the request URI carries nothing to hide: then nothing is allocated for display.
+    private async Task<OpenUrzednikResult<TDto>> GetCoreAsync<TDto>(string relativePath, string? displayPath, JsonTypeInfo<TDto> typeInfo, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
         ArgumentNullException.ThrowIfNull(typeInfo);
@@ -122,14 +156,14 @@ internal sealed class RestRequestExecutor
         traceSpan.SetTag("http.request.method", "GET");
         traceSpan.SetTag("server.address", _serverAddress);
         traceSpan.SetTag("server.port", _serverPort);
-        traceSpan.SetTag("url.path", requestUri.AbsolutePath);
+        traceSpan.SetTag("url.path", displayPath is null ? requestUri.AbsolutePath : DisplayUrlPath(displayPath));
 
         // Expected failures are returned as errors; this only marks the span when something unexpected escapes,
         // without catching it (ADR-0002 forbids catch (Exception)).
         var completed = false;
         try
         {
-            var result = await SendAndReadAsync(requestUri, relativePath, typeInfo, traceSpan, cancellationToken).ConfigureAwait(false);
+            var result = await SendAndReadAsync(requestUri, displayPath ?? relativePath, displayPath, typeInfo, traceSpan, cancellationToken).ConfigureAwait(false);
             completed = true;
             return result;
         }
@@ -140,7 +174,7 @@ internal sealed class RestRequestExecutor
         }
     }
 
-    private async Task<OpenUrzednikResult<TDto>> SendAndReadAsync<TDto>(Uri requestUri, string relativePath, JsonTypeInfo<TDto> typeInfo, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)
+    private async Task<OpenUrzednikResult<TDto>> SendAndReadAsync<TDto>(Uri requestUri, string messagePath, string? displayPath, JsonTypeInfo<TDto> typeInfo, IOpenUrzednikSpan traceSpan, CancellationToken cancellationToken)
     {
         var timeout = Timeout;
 
@@ -154,7 +188,7 @@ internal sealed class RestRequestExecutor
             timeoutSource.CancelAfter(deadline);
         var requestToken = timeoutSource.Token;
 
-        var sendResult = await SendAsync(request, relativePath, timeout, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+        var sendResult = await SendAsync(request, messagePath, timeout, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
         if (!sendResult.TryGetValue(out var sentResponse))
             return OpenUrzednikResult.Failure<TDto>(sendResult.Errors);
 
@@ -162,7 +196,7 @@ internal sealed class RestRequestExecutor
         traceSpan.SetTag("http.response.status_code", (int)response.StatusCode);
 
         if (!response.IsSuccessStatusCode)
-            return await MapErrorResponseAsync(response, relativePath, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+            return await MapErrorResponseAsync(response, messagePath, displayPath, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
 
         var logger = _telemetry.Logger;
         try
@@ -174,43 +208,43 @@ internal sealed class RestRequestExecutor
             if (dto is not null)
                 return OpenUrzednikResult.Success(dto);
 
-            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.EmptyResponse, null, "{provider} returned an empty response for {path}", "provider", _profile.Name, "path", relativePath);
+            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.EmptyResponse, null, "{provider} returned an empty response for {path}", "provider", _profile.Name, "path", messagePath);
             traceSpan.SetTag("error.type", SerializationError.ErrorCode);
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Empty response");
-            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"{_profile.DisplayName} returned an empty response for {relativePath}."));
+            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"{_profile.DisplayName} returned an empty response for {messagePath}."));
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return TimeoutFailure(timeout, relativePath, traceSpan, ex);
+            return TimeoutFailure(timeout, messagePath, traceSpan, ex);
         }
         catch (JsonException ex)
         {
-            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DeserializationFailed, ex, "Failed to deserialize {provider} response from {path}", "provider", _profile.Name, "path", relativePath);
+            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DeserializationFailed, ex, "Failed to deserialize {provider} response from {path}", "provider", _profile.Name, "path", messagePath);
             traceSpan.RecordException(ex);
             traceSpan.SetTag("error.type", SerializationError.ErrorCode);
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
-            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when deserializing response from {relativePath}", ex));
+            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when deserializing response from {messagePath}", ex));
         }
         catch (HttpRequestException ex)
         {
-            return NetworkFailure(relativePath, traceSpan, ex);
+            return NetworkFailure(messagePath, traceSpan, ex);
         }
         catch (IOException ex)
         {
-            return NetworkFailure(relativePath, traceSpan, ex);
+            return NetworkFailure(messagePath, traceSpan, ex);
         }
         catch (InvalidOperationException ex)
         {
             // ReadFromJsonAsync throws this when the response declares a charset it can't decode.
-            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, ex, "Failed to decode {provider} response from {path}", "provider", _profile.Name, "path", relativePath);
+            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, ex, "Failed to decode {provider} response from {path}", "provider", _profile.Name, "path", messagePath);
             traceSpan.RecordException(ex);
             traceSpan.SetTag("error.type", SerializationError.ErrorCode);
             traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
-            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when decoding response from {relativePath}", ex));
+            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when decoding response from {messagePath}", ex));
         }
     }
 
-    private async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpRequestMessage request, string relativePath, TimeSpan? deadline, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
+    private async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpRequestMessage request, string messagePath, TimeSpan? deadline, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
     {
         var started = Stopwatch.GetTimestamp();
         try
@@ -222,11 +256,11 @@ internal sealed class RestRequestExecutor
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return TimeoutFailure(ElapsedLimit(deadline, requestToken, started), relativePath, traceSpan, ex);
+            return TimeoutFailure(ElapsedLimit(deadline, requestToken, started), messagePath, traceSpan, ex);
         }
         catch (HttpRequestException ex)
         {
-            return NetworkFailure(relativePath, traceSpan, ex);
+            return NetworkFailure(messagePath, traceSpan, ex);
         }
     }
 
@@ -244,18 +278,18 @@ internal sealed class RestRequestExecutor
 
     // The caller's token is not cancelled, so the cancellation came from the request deadline, HttpClient.Timeout
     // or a handler's own timeout; timeout is null when the limit isn't known.
-    private OpenUrzednikResult TimeoutFailure(TimeSpan? timeout, string relativePath, IOpenUrzednikSpan traceSpan, OperationCanceledException exception)
+    private OpenUrzednikResult TimeoutFailure(TimeSpan? timeout, string messagePath, IOpenUrzednikSpan traceSpan, OperationCanceledException exception)
     {
         if (timeout is null)
             _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestTimedOut, exception, "{provider} request to {path} timed out",
-                "provider", _profile.Name, "path", relativePath);
+                "provider", _profile.Name, "path", messagePath);
         else
             _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestTimedOut, exception, "{provider} request to {path} timed out after {timeout}",
-                "provider", _profile.Name, "path", relativePath, "timeout", timeout);
+                "provider", _profile.Name, "path", messagePath, "timeout", timeout);
         var error = new RequestTimeoutError(
             timeout is null
-                ? $"{_profile.DisplayName} request to {relativePath} timed out."
-                : $"{_profile.DisplayName} did not respond to {relativePath} within {timeout}.",
+                ? $"{_profile.DisplayName} request to {messagePath} timed out."
+                : $"{_profile.DisplayName} did not respond to {messagePath} within {timeout}.",
             timeout, exception);
         traceSpan.RecordException(exception);
         traceSpan.SetTag("error.type", error.Code);
@@ -265,25 +299,25 @@ internal sealed class RestRequestExecutor
 
     // A DNS, TLS or connection failure, or a broken body read, is a ConnectionFailedError. A resilience handler's rejection (open circuit
     // breaker, rate limiter) also arrives as an HttpRequestException, marked by the DI package, and stays a ServiceUnavailableError.
-    private OpenUrzednikResult NetworkFailure(string relativePath, IOpenUrzednikSpan traceSpan, Exception exception)
+    private OpenUrzednikResult NetworkFailure(string messagePath, IOpenUrzednikSpan traceSpan, Exception exception)
     {
         var rejected = ResilienceRejection.IsRejection(exception);
         if (rejected)
-            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestRejected, exception, "{provider} request to {path} was rejected", "provider", _profile.Name, "path", relativePath);
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestRejected, exception, "{provider} request to {path} was rejected", "provider", _profile.Name, "path", messagePath);
         else
-            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ConnectionFailed, exception, "{provider} could not be reached for {path}", "provider", _profile.Name, "path", relativePath);
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ConnectionFailed, exception, "{provider} could not be reached for {path}", "provider", _profile.Name, "path", messagePath);
         OpenUrzednikError error = rejected
-            ? new ServiceUnavailableError($"{_profile.DisplayName} request to {relativePath} was rejected: {exception.Message}", exception: exception)
-            : new ConnectionFailedError($"{_profile.DisplayName} could not be reached for {relativePath}: {exception.Message}", exception);
+            ? new ServiceUnavailableError($"{_profile.DisplayName} request to {messagePath} was rejected: {exception.Message}", exception: exception)
+            : new ConnectionFailedError($"{_profile.DisplayName} could not be reached for {messagePath}: {exception.Message}", exception);
         traceSpan.RecordException(exception);
         traceSpan.SetTag("error.type", error.Code);
         traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, rejected ? "Rejected" : "Network failure");
         return error;
     }
 
-    private async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string relativePath, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
+    private async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string messagePath, string? displayPath, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
     {
-        var path = response.RequestMessage?.RequestUri?.ToString() ?? relativePath;
+        var path = displayPath is null ? response.RequestMessage?.RequestUri?.ToString() ?? messagePath : DisplayUri(displayPath);
         var delay = response.StatusCode == TooManyRequests ? GetDelay(response, _timeProvider) : null;
 
         // The body can be read only once, so the override and the default mapping share one read.
@@ -302,12 +336,14 @@ internal sealed class RestRequestExecutor
             }
         }
 
-        var result = await MapDefaultErrorAsync(response, path, delay, traceSpan, ReadMessageOnceAsync).ConfigureAwait(false);
+        // A display path means the request carries identifiers, which a 400's server message may echo (ADR-0006).
+        var result = await MapDefaultErrorAsync(response, path, delay, traceSpan, displayPath is null ? ReadMessageOnceAsync : null).ConfigureAwait(false);
         traceSpan.SetTag("error.type", result.Errors[0].Code);
         return result;
     }
 
-    private async Task<OpenUrzednikResult> MapDefaultErrorAsync(HttpResponseMessage response, string path, TimeSpan? delay, IOpenUrzednikSpan traceSpan, Func<Task<string?>> readMessageAsync)
+    // readMessageAsync is null when a 400's server message must be left out.
+    private async Task<OpenUrzednikResult> MapDefaultErrorAsync(HttpResponseMessage response, string path, TimeSpan? delay, IOpenUrzednikSpan traceSpan, Func<Task<string?>>? readMessageAsync)
     {
         var statusCode = (int)response.StatusCode;
         var logger = _telemetry.Logger;
@@ -337,7 +373,7 @@ internal sealed class RestRequestExecutor
                 }
             case HttpStatusCode.BadRequest:
                 {
-                    var serverMessage = await readMessageAsync().ConfigureAwait(false);
+                    var serverMessage = readMessageAsync is null ? null : await readMessageAsync().ConfigureAwait(false);
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.BadRequest, null, "{provider} rejected the request to {path}", "provider", name, "path", path);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Bad request");
                     return new BadRequestError(
@@ -414,6 +450,27 @@ internal sealed class RestRequestExecutor
 
         var message = new string(buffer, 0, length).Trim();
         return message.Length == 0 ? null : message;
+    }
+
+    // The url.path of a display path: the base address path, then the display path without leading '/' and without its query.
+    private string DisplayUrlPath(string displayPath)
+    {
+        var start = SkipLeadingSlashes(displayPath);
+        var query = displayPath.IndexOf('?', start);
+        var end = query < 0 ? displayPath.Length : query;
+        return string.Concat((_basePath ??= BaseAddress.AbsolutePath).AsSpan(), displayPath.AsSpan(start, end - start));
+    }
+
+    // The status-error path of a display path: the base address, then the display path without leading '/', as GetAsync resolves it.
+    private string DisplayUri(string displayPath)
+        => string.Concat((_baseUri ??= BaseAddress.ToString()).AsSpan(), displayPath.AsSpan(SkipLeadingSlashes(displayPath)));
+
+    private static int SkipLeadingSlashes(string path)
+    {
+        var start = 0;
+        while (start < path.Length && path[start] == '/')
+            start++;
+        return start;
     }
 
     private void LogUnreadableBody(Exception exception)

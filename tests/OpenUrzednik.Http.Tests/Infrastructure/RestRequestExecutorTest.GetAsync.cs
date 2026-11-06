@@ -1116,4 +1116,160 @@ public partial class RestRequestExecutorTest
         // Assert
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>().Exception.ShouldBeSameAs(thrown);
     }
+
+    // A fake identifier carried by the request URI, and the display path that hides it (ADR-0003, ADR-0006).
+    private const string Identifier = "9876543210";
+    private const string IdentifierPath = "search/nip/" + Identifier + "?date=2026-11-06";
+    private const string DisplayPath = "search/nip/{nip}?date=2026-11-06";
+    private const string DisplayBaseAddress = "https://api.example.com/api/";
+
+    public static TheoryData<string> DisplayPathFailures => new()
+    {
+        "400", "401", "403", "404", "408", "429", "500", "empty", "malformed", "charset", "body-io", "connection", "timeout",
+    };
+
+    [Fact]
+    public async Task GetAsync_NullDisplayPath_ThrowsArgumentNullException()
+    {
+        // Arrange
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.OK))) { BaseAddress = new Uri(DisplayBaseAddress) };
+
+        // Act && Assert
+        (await Should.ThrowAsync<ArgumentNullException>(async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(IdentifierPath, null!, TypeInfo, TestContext.Current.CancellationToken)))
+            .ParamName.ShouldBe("displayPath");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GetAsync_EmptyOrWhiteSpaceDisplayPath_ThrowsArgumentException(string displayPath)
+    {
+        // Arrange
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.OK))) { BaseAddress = new Uri(DisplayBaseAddress) };
+
+        // Act && Assert
+        (await Should.ThrowAsync<ArgumentException>(async () => await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(IdentifierPath, displayPath, TypeInfo, TestContext.Current.CancellationToken)))
+            .ParamName.ShouldBe("displayPath");
+    }
+
+    [Fact]
+    public async Task GetAsync_DisplayPath_SendsRelativePathAndTagsDisplayPath()
+    {
+        // Arrange
+        var dto = new TestDto("n", 1);
+        var handler = new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, dto));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(DisplayBaseAddress) };
+        var (telemetry, _, span) = CreateTelemetrySubstitutes();
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("/" + IdentifierPath, "/" + DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Value.ShouldBe(dto);
+        handler.Request!.RequestUri!.ToString().ShouldBe(DisplayBaseAddress + IdentifierPath);
+        span.Received(1).SetTag("url.path", "/api/search/nip/{nip}");
+    }
+
+    [Theory]
+    [MemberData(nameof(DisplayPathFailures))]
+    public async Task GetAsync_DisplayPathAndFailure_IdentifierAppearsNowhere(string failure)
+    {
+        // Arrange
+        using var httpClient = new HttpClient(CreateFailingHandler(failure)) { BaseAddress = new Uri(DisplayBaseAddress) };
+        var (telemetry, logger, span) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(Arg.Any<OpenUrzednikLogLevel>()).Returns(true);
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetry, _timeProvider, TimeSpan.FromSeconds(10))
+            .GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        var error = result.Errors.ShouldHaveSingleItem();
+        var written = new List<string?> { error.Message, error.ToException().Message };
+        written.AddRange(error.Metadata.Values.Select(value => value?.ToString()));
+        written.AddRange(logger.ReceivedCalls().Concat(span.ReceivedCalls()).SelectMany(call => call.GetArguments()).Select(argument => argument?.ToString()));
+        logger.ReceivedCalls().ShouldNotBeEmpty();
+        written.ShouldAllBe(text => text == null || !text.Contains(Identifier));
+    }
+
+    [Fact]
+    public async Task GetAsync_DisplayPathAndNotFound_ReturnsMessageWithDisplayUri()
+    {
+        // Arrange
+        using var httpClient = new HttpClient(CreateFailingHandler("404")) { BaseAddress = new Uri(DisplayBaseAddress) };
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Message.ShouldBe($"Resource at {DisplayBaseAddress}{DisplayPath} was not found.");
+    }
+
+    [Fact]
+    public async Task GetAsync_DisplayPathAndBadRequest_ReturnsBadRequestErrorWithoutServerMessage()
+    {
+        // Arrange
+        using var httpClient = new HttpClient(CreateFailingHandler("400")) { BaseAddress = new Uri(DisplayBaseAddress) };
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldBe($"Test API rejected the request to {DisplayBaseAddress}{DisplayPath}.");
+    }
+
+    [Fact]
+    public async Task GetAsync_DisplayPathAndErrorOverride_PassesDisplayUriAndServerMessage()
+    {
+        // Arrange
+        using var httpClient = new HttpClient(CreateFailingHandler("400")) { BaseAddress = new Uri(DisplayBaseAddress) };
+        string? requestPath = null;
+        string? serverMessage = null;
+        var connection = CreateConnectionWithOverride(httpClient, async context =>
+        {
+            requestPath = context.RequestPath;
+            serverMessage = await context.ReadMessageAsync();
+            return null;
+        });
+
+        // Act
+        await connection.GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        requestPath.ShouldBe(DisplayBaseAddress + DisplayPath);
+        serverMessage.ShouldBe("Invalid NIP " + Identifier);
+    }
+
+    private static HttpMessageHandler CreateFailingHandler(string failure) => failure switch
+    {
+        "connection" => new StubHttpMessageHandler(new HttpRequestException("Connection refused")),
+        "timeout" => new StubHttpMessageHandler(new TaskCanceledException("The operation was canceled.")),
+        _ => new StubHttpMessageHandler(CreateFailingResponse(failure)),
+    };
+
+    private static HttpResponseMessage CreateFailingResponse(string failure)
+    {
+        switch (failure)
+        {
+            case "400":
+                // The server echoes the identifier, as some APIs do.
+                return new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StringContent("Invalid NIP " + Identifier) };
+            case "429":
+                var rateLimited = new HttpResponseMessage((HttpStatusCode)429);
+                rateLimited.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(5));
+                return rateLimited;
+            case "empty":
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("null", Encoding.UTF8, MediaTypeNames.Application.Json) };
+            case "malformed":
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"name\":", Encoding.UTF8, MediaTypeNames.Application.Json) };
+            case "charset":
+                var content = new StringContent("{\"name\":\"n\",\"value\":1}");
+                content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=foo");
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+            case "body-io":
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ThrowingContent((_, _) => throw new IOException("Connection reset.")) };
+            default:
+                return new HttpResponseMessage((HttpStatusCode)int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture));
+        }
+    }
 }

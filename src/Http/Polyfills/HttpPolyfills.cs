@@ -6,7 +6,8 @@ namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
 /// netstandard2.0 has no cancellation token on these reads. The token stops the wait, so the request deadline still
-/// applies, but the read itself goes on in the background until the response is disposed.
+/// applies, but the read itself goes on in the background until the response is disposed. It also lacks the span overload of
+/// <c>string.Concat</c>.
 /// </summary>
 internal static class HttpPolyfills
 {
@@ -39,6 +40,18 @@ internal static class HttpPolyfills
         }
 
         return await task.ConfigureAwait(false);
+    }
+
+    extension(string)
+    {
+        /// <summary><c>string.Concat(ReadOnlySpan&lt;char&gt;, ReadOnlySpan&lt;char&gt;)</c>, for the executor's display paths.</summary>
+        internal static string Concat(ReadOnlySpan<char> first, ReadOnlySpan<char> second)
+        {
+            var chars = new char[first.Length + second.Length];
+            first.CopyTo(chars);
+            second.CopyTo(chars.AsSpan(first.Length));
+            return new string(chars);
+        }
     }
 }
 #endif
