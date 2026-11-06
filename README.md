@@ -31,11 +31,11 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 
 | Package | Status | Description | Targets |
 | :--- | :--- | :--- | :--- |
-| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Core abstractions available | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` and `EnsureSuccess()` / `EnsureSuccessAsync()` | `netstandard2.0`, `net8.0`, `net10.0` |
-| [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | 🧪 Preview | Sends the clients' logs to `ILogger` from Microsoft.Extensions.Logging | `netstandard2.0`, `net8.0`, `net10.0` |
-| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | 🧪 Preview | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net10.0` |
-| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | 🧪 Preview | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API. The public API may still change | `netstandard2.0`, `net8.0`, `net10.0` |
-| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Stable | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` and `EnsureSuccess()` / `EnsureSuccessAsync()` | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | ✅ Stable | Sends the clients' logs to `ILogger` from Microsoft.Extensions.Logging | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | ✅ Stable | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | ✅ Stable | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | ✅ Stable | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Planned, not started | GUS client (company lookups by REGON/NIP) | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Planned, not started | KRS client (the National Court Register) | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Planned, not started | VAT white list (Biała Lista) client | `netstandard2.0`, `net8.0`, `net10.0` |
@@ -72,8 +72,6 @@ Install the NBP client:
 ```bash
 dotnet add package OpenUrzednik.Nbp
 ```
-
-Until 1.0.0, add `--prerelease`: only previews are published so far.
 
 ```csharp
 using OpenUrzednik.Core.Exceptions;
@@ -114,7 +112,7 @@ Every call returns an `OpenUrzednikResult<T>`. [Working with a result](src/OpenU
 
 ### Clients and DI
 
-The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient` (preview). With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` are planned but not started: work on them begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). We deprecated and unlisted their early empty previews on nuget.org.
+The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient`. With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` are planned but not started: work on them begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). We deprecated and unlisted their early empty previews on nuget.org.
 
 ### Samples
 

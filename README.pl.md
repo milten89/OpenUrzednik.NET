@@ -31,11 +31,11 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 
 | Pakiet | Status | Opis |
 | :--- | :--- | :--- |
-| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.pl.md) | ✅ Dostępne podstawowe abstrakcje | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz `EnsureSuccess()` / `EnsureSuccessAsync()` |
-| [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.pl.md) | 🧪 Preview | Przekazuje logi klientów do `ILogger` z Microsoft.Extensions.Logging |
-| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | 🧪 Preview | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) |
-| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.pl.md) | 🧪 Preview | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP. API publiczne może się jeszcze zmienić |
-| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md) | 🧪 Preview | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` |
+| [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.pl.md) | ✅ Stabilny | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz `EnsureSuccess()` / `EnsureSuccessAsync()` |
+| [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.pl.md) | ✅ Stabilny | Przekazuje logi klientów do `ILogger` z Microsoft.Extensions.Logging |
+| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | ✅ Stabilny | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) |
+| [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.pl.md) | ✅ Stabilny | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP |
+| [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md) | ✅ Stabilny | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` |
 | [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Planowany, prace nie ruszyły | Klient GUS (wyszukiwanie firm po REGON/NIP) |
 | [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Planowany, prace nie ruszyły | Klient KRS (Krajowy Rejestr Sądowy) |
 | [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Planowany, prace nie ruszyły | Klient Białej Listy VAT |
@@ -49,8 +49,6 @@ Zainstaluj klienta NBP:
 ```bash
 dotnet add package OpenUrzednik.Nbp
 ```
-
-Do wydania 1.0.0 dodaj `--prerelease`: na razie są opublikowane tylko wersje preview.
 
 ```csharp
 using OpenUrzednik.Core.Exceptions;
@@ -91,7 +89,7 @@ Każde wywołanie zwraca `OpenUrzednikResult<T>`. Pracę z wynikiem (`Map`, `Bin
 
 ### Klienty i DI
 
-Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient` (wersja preview). W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md). Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są dopiero planowane: prace nad nimi ruszą po pierwszym stabilnym wydaniu `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). Ich wczesne, puste wersje preview na nuget.org są oznaczone jako przestarzałe i ukryte.
+Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient`. W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md). Pakiety `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` są dopiero planowane: prace nad nimi ruszą po pierwszym stabilnym wydaniu `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). Ich wczesne, puste wersje preview na nuget.org są oznaczone jako przestarzałe i ukryte.
 
 ### Przykłady
 
