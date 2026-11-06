@@ -32,9 +32,9 @@ internal static class IdentifierNormalizer
     internal static string Normalize(string value, int skip = 0)
     {
         var kept = 0;
-        foreach (var c in value)
+        for (var i = 0; i < value.Length; i++)
         {
-            if (!IsSeparator(c))
+            if (!IsSeparator(value[i]))
                 kept++;
         }
 
@@ -47,8 +47,10 @@ internal static class IdentifierNormalizer
         {
             var toSkip = state.skip;
             var position = 0;
-            foreach (var c in state.value)
+            var source = state.value;
+            for (var i = 0; i < source.Length; i++)
             {
+                var c = source[i];
                 if (IsSeparator(c))
                     continue;
                 if (toSkip > 0)
@@ -61,8 +63,9 @@ internal static class IdentifierNormalizer
         var chars = new char[length];
         var toSkip = skip;
         var position = 0;
-        foreach (var c in value)
+        for (var i = 0; i < value.Length; i++)
         {
+            var c = value[i];
             if (IsSeparator(c))
                 continue;
             if (toSkip > 0)
