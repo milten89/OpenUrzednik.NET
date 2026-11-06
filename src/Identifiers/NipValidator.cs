@@ -10,7 +10,7 @@ namespace OpenUrzednik.Identifiers;
 /// valid. All zeros passes the sum but is never issued.
 /// </summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Shared source (Identifiers.props): every provider compiles all validators but may use only some.")]
-internal sealed class NipValidator(string propertyName, string value) : IdentifierValidator(propertyName, value, allowCountryPrefix: true)
+internal sealed class NipValidator(string propertyName, string value) : IdentifierValidator(propertyName, value, countryPrefix: "PL")
 {
     private static readonly int[] Weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
 

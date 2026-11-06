@@ -45,7 +45,6 @@ public partial class BankAccountNumberValidatorTest
     [InlineData("6912345676123456789012345")]
     [InlineData("691234567612345678901234560")]
     [InlineData("69123456761234567890I23456")]
-    [InlineData("DE69123456761234567890123456")]
     public void Validate_WrongLengthOrCharacters_ReturnsValidationError(string value)
     {
         // Act
@@ -80,5 +79,17 @@ public partial class BankAccountNumberValidatorTest
 
         // Assert
         result.ShouldBeMaskedValidationError("nrb", PropertyName, value, "has an invalid check digit.");
+    }
+
+    [Theory]
+    [InlineData("DE89370400440532013000")]
+    [InlineData("DE69123456761234567890123456")]
+    public void Validate_ForeignCountryPrefix_ReturnsValidationError(string value)
+    {
+        // Act
+        var result = new BankAccountNumberValidator(PropertyName, value).Validate();
+
+        // Assert
+        result.ShouldBeMaskedValidationError("nrb", PropertyName, value, "must be a Polish number: the only accepted country prefix is PL.");
     }
 }

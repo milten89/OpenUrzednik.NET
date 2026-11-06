@@ -18,6 +18,7 @@ public partial class NipValidatorTest
     [InlineData(" 123 456 32 18 ", "1234563218")]
     [InlineData("PL1234563218", "1234563218")]
     [InlineData("pl 123-456-32-18", "1234563218")]
+    [InlineData("P-L 123-456-32-18", "1234563218")]
     public void Validate_ValidNip_ReturnsSuccessAndNormalizedDigits(string value, string normalized)
     {
         // Arrange
@@ -48,7 +49,6 @@ public partial class NipValidatorTest
     [InlineData("123456321")]
     [InlineData("12345632180")]
     [InlineData("12345632I8")]
-    [InlineData("DE1234563218")]
     [InlineData("1234563218PL")]
     [InlineData("--")]
     [InlineData("\uFF11\uFF12\uFF13\uFF14\uFF15\uFF16\uFF13\uFF12\uFF11\uFF18")] // fullwidth digits: only ASCII digits count
@@ -84,5 +84,17 @@ public partial class NipValidatorTest
 
         // Assert
         result.ShouldBeMaskedValidationError("nip", PropertyName, "0000000000", "isn't an issued number.");
+    }
+
+    [Theory]
+    [InlineData("DE1234563218")]
+    [InlineData("be 0123456789")]
+    public void Validate_ForeignCountryPrefix_ReturnsValidationError(string value)
+    {
+        // Act
+        var result = new NipValidator(PropertyName, value).Validate();
+
+        // Assert
+        result.ShouldBeMaskedValidationError("nip", PropertyName, value, "must be a Polish number: the only accepted country prefix is PL.");
     }
 }

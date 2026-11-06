@@ -6,24 +6,41 @@ using OpenUrzednik.Privacy;
 namespace OpenUrzednik.Identifiers;
 
 /// <summary>
-/// Base of the identifier validators: normalizes the value (<see cref="IdentifierNormalizer"/>), checks that the rest is digits of an
-/// allowed length, then the identifier's own rules. Errors never contain the value: the message names the parameter, and the error's
-/// value metadata is masked (<see cref="SensitiveValue.Mask"/>; ADR-0002, ADR-0003).
+/// Base of the identifier validators: removes separators (<see cref="IdentifierNormalizer"/>) and the identifier's country prefix, if it
+/// accepts one, checks that the rest is digits of an allowed length, then the identifier's own rules. Errors never contain the value:
+/// the message names the parameter, and the error's value metadata is masked (<see cref="SensitiveValue.Mask"/>; ADR-0002, ADR-0003).
 /// </summary>
 internal abstract class IdentifierValidator : ValueValidator<string>
 {
     /// <summary>Initializes the validator and normalizes <paramref name="value"/>.</summary>
     /// <param name="propertyName">Name of the validated parameter.</param>
     /// <param name="value">The identifier as given.</param>
-    /// <param name="allowCountryPrefix">Whether a leading <c>PL</c> is accepted and removed.</param>
+    /// <param name="countryPrefix">
+    /// The country prefix the identifier may carry, removed when present (any case): <c>PL</c> for a NIP in the EU VAT form and an account
+    /// number in the IBAN form; <see langword="null"/> when it takes none. Any other country's prefix is rejected, never removed: a foreign
+    /// number could otherwise pass as a Polish one.
+    /// </param>
     /// <remarks>The client throws <see cref="ArgumentNullException"/> for <see langword="null"/> before it validates (ADR-0002); a <see langword="null"/>
     /// that gets here anyway is reported as empty.</remarks>
-    protected IdentifierValidator(string propertyName, string value, bool allowCountryPrefix)
+    protected IdentifierValidator(string propertyName, string value, string? countryPrefix)
         : base(propertyName, value)
-        => Normalized = value is null ? string.Empty : IdentifierNormalizer.Normalize(value, allowCountryPrefix);
+    {
+        CountryPrefix = countryPrefix;
+        if (value is null)
+        {
+            Normalized = string.Empty;
+            return;
+        }
+
+        var hasPrefix = countryPrefix is not null && IdentifierNormalizer.StartsWith(value, countryPrefix);
+        Normalized = IdentifierNormalizer.Normalize(value, hasPrefix ? countryPrefix!.Length : 0);
+    }
 
     /// <summary>Gets the identifier without separators and prefix: the form to send to the API once <see cref="Validate"/> succeeds.</summary>
     internal string Normalized { get; }
+
+    /// <summary>Gets the country prefix the identifier accepts, or <see langword="null"/>.</summary>
+    protected string? CountryPrefix { get; }
 
     /// <summary>Gets what a valid value looks like, for the error message (e.g. <c>a NIP of 10 digits</c>).</summary>
     protected abstract string Format { get; }
@@ -36,7 +53,12 @@ internal abstract class IdentifierValidator : ValueValidator<string>
 
         var digits = Normalized;
         if (!HasValidLength(digits.Length) || !AreDigits(digits))
+        {
+            // Two letters left where the accepted prefix would be: another country's prefix (DE…, BE…).
+            if (CountryPrefix is not null && digits.Length >= 2 && IsAsciiLetter(digits[0]) && IsAsciiLetter(digits[1]))
+                return Failure($"'{PropertyName}' must be a Polish number: the only accepted country prefix is {CountryPrefix}.");
             return Failure($"'{PropertyName}' must be {Format}.");
+        }
 
         return ValidateDigits(digits);
     }
@@ -80,6 +102,8 @@ internal abstract class IdentifierValidator : ValueValidator<string>
             sum += Digit(digits, start + i) * weights[i];
         return sum;
     }
+
+    private static bool IsAsciiLetter(char c) => c is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z');
 
     private static bool AreDigits(string value)
     {

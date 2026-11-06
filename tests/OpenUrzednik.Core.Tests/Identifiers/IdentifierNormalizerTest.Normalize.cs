@@ -13,39 +13,50 @@ public partial class IdentifierNormalizerTest
         const string value = "1234563218";
 
         // Act
-        var normalized = IdentifierNormalizer.Normalize(value, allowCountryPrefix: true);
+        var normalized = IdentifierNormalizer.Normalize(value);
 
         // Assert
         normalized.ShouldBeSameAs(value);
     }
 
     [Theory]
-    [InlineData("123-456-32-18", false, "1234563218")]
-    [InlineData(" 12 34\t56\u00A032\u202F18 ", false, "1234563218")] // no-break and narrow no-break spaces, as banking apps copy them
-    [InlineData("PL1234563218", true, "1234563218")]
-    [InlineData("  pL-1234563218", true, "1234563218")]
-    [InlineData("PL", true, "")]
-    [InlineData("- -", false, "")]
-    public void Normalize_SeparatorsOrPrefix_RemovesThem(string value, bool allowCountryPrefix, string expected)
+    [InlineData("123-456-32-18", "1234563218")]
+    [InlineData(" 12 34	56\u00A032\u202F18 ", "1234563218")] // no-break and narrow no-break spaces, as banking apps copy them
+    [InlineData("PL 123-456-32-18", "PL1234563218")] // a prefix is the validator's rule: kept
+    [InlineData("- -", "")]
+    public void Normalize_Separators_RemovesThem(string value, string expected)
     {
         // Act
-        var normalized = IdentifierNormalizer.Normalize(value, allowCountryPrefix);
+        var normalized = IdentifierNormalizer.Normalize(value);
 
         // Assert
         normalized.ShouldBe(expected);
     }
 
-    [Theory]
-    [InlineData("PL1234563218", false)]
-    [InlineData("12PL34", true)]
-    [InlineData("P", true)]
-    [InlineData("123\u2013456\u2011321", true)] // en dash and non-breaking hyphen aren't separators
-    public void Normalize_PrefixNotAllowedOrNotLeading_KeepsIt(string value, bool allowCountryPrefix)
+    [Fact]
+    public void Normalize_OtherDashes_KeepsThem()
     {
+        // Arrange
+        const string value = "123\u2013456\u2011321"; // en dash and non-breaking hyphen aren't separators
+
         // Act
-        var normalized = IdentifierNormalizer.Normalize(value, allowCountryPrefix);
+        var normalized = IdentifierNormalizer.Normalize(value);
 
         // Assert
         normalized.ShouldBe(value);
+    }
+
+    [Theory]
+    [InlineData("PL1234563218", 2, "1234563218")]
+    [InlineData(" PL 123-456-32-18", 2, "1234563218")]
+    [InlineData("P-L1234563218", 2, "1234563218")]
+    [InlineData("PL", 2, "")]
+    public void Normalize_Skip_RemovesThatManyCharactersAfterTheSeparators(string value, int skip, string expected)
+    {
+        // Act
+        var normalized = IdentifierNormalizer.Normalize(value, skip);
+
+        // Assert
+        normalized.ShouldBe(expected);
     }
 }

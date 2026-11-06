@@ -1,51 +1,74 @@
 namespace OpenUrzednik.Identifiers;
 
 /// <summary>
-/// Turns an identifier as people write it (<c>123-456-32-18</c>, <c>PL61 1090 1014 …</c>) into the bare characters APIs take:
-/// white space (<see cref="char.IsWhiteSpace(char)"/>, so also non-breaking spaces) and ASCII hyphens are removed, and, where allowed,
-/// a leading <c>PL</c> country prefix (any case). Other dashes (en dash, non-breaking hyphen) stay, so the validators reject them.
+/// Removes the separators people write in identifiers (<c>123-456-32-18</c>, <c>61 1090 1014 …</c>): white space
+/// (<see cref="char.IsWhiteSpace(char)"/>, so also non-breaking spaces) and ASCII hyphens. Other dashes (en dash, non-breaking hyphen)
+/// stay, so the validators reject them. It knows nothing about identifiers: which prefix an identifier accepts is the validator's rule.
 /// </summary>
 internal static class IdentifierNormalizer
 {
-    /// <summary>Normalizes <paramref name="value"/>; returns it unchanged, without allocating, when there is nothing to remove.</summary>
-    /// <param name="value">The identifier as given.</param>
-    /// <param name="allowCountryPrefix">Whether a leading <c>PL</c> (NIP in the EU VAT form, an account number in the IBAN form) is removed.</param>
-    internal static string Normalize(string value, bool allowCountryPrefix)
+    /// <summary>
+    /// Whether the characters of <paramref name="value"/> that aren't separators start with <paramref name="prefix"/>, ignoring case.
+    /// </summary>
+    internal static bool StartsWith(string value, string prefix)
     {
-        var start = 0;
-        while (start < value.Length && IsSeparator(value[start]))
-            start++;
-
-        if (allowCountryPrefix && start + 1 < value.Length && (value[start] | 0x20) == 'p' && (value[start + 1] | 0x20) == 'l')
-            start += 2;
-
-        var length = 0;
-        for (var i = start; i < value.Length; i++)
+        var matched = 0;
+        for (var i = 0; i < value.Length && matched < prefix.Length; i++)
         {
-            if (!IsSeparator(value[i]))
-                length++;
+            if (IsSeparator(value[i]))
+                continue;
+            if (char.ToUpperInvariant(value[i]) != char.ToUpperInvariant(prefix[matched]))
+                return false;
+            matched++;
         }
 
-        if (length == value.Length)
+        return matched == prefix.Length;
+    }
+
+    /// <summary>
+    /// Removes the separators from <paramref name="value"/>, then its first <paramref name="skip"/> remaining characters (a prefix the caller
+    /// found with <see cref="StartsWith"/>). Returns <paramref name="value"/> itself, without allocating, when there is nothing to remove.
+    /// </summary>
+    internal static string Normalize(string value, int skip = 0)
+    {
+        var kept = 0;
+        foreach (var c in value)
+        {
+            if (!IsSeparator(c))
+                kept++;
+        }
+
+        if (kept == value.Length && skip == 0)
             return value;
 
+        var length = Math.Max(kept - skip, 0);
 #if NET
-        return string.Create(length, (value, start), static (span, state) =>
+        return string.Create(length, (value, skip), static (span, state) =>
         {
+            var toSkip = state.skip;
             var position = 0;
-            for (var i = state.start; i < state.value.Length; i++)
+            foreach (var c in state.value)
             {
-                if (!IsSeparator(state.value[i]))
-                    span[position++] = state.value[i];
+                if (IsSeparator(c))
+                    continue;
+                if (toSkip > 0)
+                    toSkip--;
+                else
+                    span[position++] = c;
             }
         });
 #else
         var chars = new char[length];
+        var toSkip = skip;
         var position = 0;
-        for (var i = start; i < value.Length; i++)
+        foreach (var c in value)
         {
-            if (!IsSeparator(value[i]))
-                chars[position++] = value[i];
+            if (IsSeparator(c))
+                continue;
+            if (toSkip > 0)
+                toSkip--;
+            else
+                chars[position++] = c;
         }
 
         return new string(chars);

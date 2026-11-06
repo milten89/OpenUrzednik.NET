@@ -9,7 +9,7 @@ namespace OpenUrzednik.Identifiers;
 /// It has no check digit. All zeros is never issued.
 /// </summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Shared source (Identifiers.props): every provider compiles all validators but may use only some.")]
-internal sealed class KrsNumberValidator(string propertyName, string value) : IdentifierValidator(propertyName, value, allowCountryPrefix: false)
+internal sealed class KrsNumberValidator(string propertyName, string value) : IdentifierValidator(propertyName, value, countryPrefix: null)
 {
     /// <inheritdoc />
     public override string Name => "krs";

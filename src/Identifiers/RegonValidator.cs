@@ -11,7 +11,7 @@ namespace OpenUrzednik.Identifiers;
 /// A 14-digit REGON must also start with a valid 9-digit one. An all-zero parent REGON is never issued.
 /// </summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Shared source (Identifiers.props): every provider compiles all validators but may use only some.")]
-internal sealed class RegonValidator(string propertyName, string value) : IdentifierValidator(propertyName, value, allowCountryPrefix: false)
+internal sealed class RegonValidator(string propertyName, string value) : IdentifierValidator(propertyName, value, countryPrefix: null)
 {
     private static readonly int[] Weights9 = [8, 9, 2, 3, 4, 5, 6, 7];
     private static readonly int[] Weights14 = [2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8];

@@ -11,7 +11,7 @@ namespace OpenUrzednik.Identifiers;
 /// (digits 3 to 10, weights 3, 9, 7, 1, 3, 9, 7, 1, sum mod 10 must be 0; Dz.U. 2024 poz. 1142, annex 2).
 /// </summary>
 [SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Shared source (Identifiers.props): every provider compiles all validators but may use only some.")]
-internal sealed class BankAccountNumberValidator(string propertyName, string value) : IdentifierValidator(propertyName, value, allowCountryPrefix: true)
+internal sealed class BankAccountNumberValidator(string propertyName, string value) : IdentifierValidator(propertyName, value, countryPrefix: "PL")
 {
     private static readonly int[] SettlementWeights = [3, 9, 7, 1, 3, 9, 7, 1];
 
