@@ -36,9 +36,6 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | ✅ Stabilny | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.pl.md) | ✅ Stabilny | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md) | ✅ Stabilny | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` |
-| [**OpenUrzednik.Gus**](src/OpenUrzednik.Gus/README.md) | 🚧 Planowany, prace nie ruszyły | Klient GUS (wyszukiwanie firm po REGON/NIP) |
-| [**OpenUrzednik.Krs**](src/OpenUrzednik.Krs/README.md) | 🚧 Planowany, prace nie ruszyły | Klient KRS (Krajowy Rejestr Sądowy) |
-| [**OpenUrzednik.Mf**](src/OpenUrzednik.Mf/README.md) | 🚧 Planowany, prace nie ruszyły | Klient Białej Listy VAT |
 
 ---
 
