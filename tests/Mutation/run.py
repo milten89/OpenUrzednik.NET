@@ -109,9 +109,14 @@ def load_shards() -> dict[str, Shard]:
 def run_stryker(shard: Shard, output: Path) -> int:
     config = os.path.relpath(shard.config, shard.workdir)
     command = ["dotnet", "stryker", "--config-file", config, "--output", str(output)]
+    # Stryker 5's MTP runner passes the active mutant through a fixed file in the temp folder (stryker-mutant-0.txt), so two runs
+    # sharing one temp folder corrupt each other's results. Each shard gets its own.
+    temp = output / "tmp"
+    temp.mkdir(parents=True, exist_ok=True)
+    env = {**os.environ, "TEMP": str(temp), "TMP": str(temp), "TMPDIR": str(temp)}
     print(f"::group::{shard.name}: {' '.join(command)} (in {shard.workdir.relative_to(ROOT).as_posix()})", flush=True)
     try:
-        return subprocess.run(command, cwd=shard.workdir, check=False).returncode
+        return subprocess.run(command, cwd=shard.workdir, env=env, check=False).returncode
     finally:
         print("::endgroup::", flush=True)
 

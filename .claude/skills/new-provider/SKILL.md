@@ -50,6 +50,7 @@ Notation, with MF White List as the example:
 
 - [ ] `tests/<Package>.Tests` (unit, a `<Prefix>LogEventsTest` like `NbpLogEventsTest`) and `tests/<Package>.DependencyInjection.Tests`.
 - [ ] `tests/OpenUrzednik.IntegrationTests`: a `ProjectReference` to each package, `<Provider>/WireMock/`, `<Provider>/Fixtures/` (copied to the output like `Nbp\Fixtures`), and `[ManualFact]` real-API tests.
+- [ ] Mutation testing ([ADR-0018](../../../docs/adr/0018-mutation-testing-before-release.md)): a shard per project under test in `tests/Mutation/shards.json` (strict files: validators, mappers, models, URL building, error mapping, anything handling identifiers) with its `stryker-<shard>.json`, and a matrix entry in `.github/workflows/mutation.yml`; `uv run tests/Mutation/run.py <shard>` passes before the first release.
 - [ ] The adapter tests, with a `ProjectReference` in each test csproj: the fallback source in `tests/OpenUrzednik.Diagnostics.Tests` (like `NbpClientTracingTest`), logging and log-trace correlation in `tests/OpenUrzednik.Extensions.Logging.Tests` (like `NbpClientLoggingTest`, `NbpClientLogTraceCorrelationTest`).
 
 ## 4. Native AOT (ADR-0014)
