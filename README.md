@@ -112,7 +112,7 @@ Every call returns an `OpenUrzednikResult<T>`. [Working with a result](src/OpenU
 
 ### Clients and DI
 
-The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient`. With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` are planned but not started: work on them begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](docs/adr/0010-provider-readiness-gate.md)). We deprecated and unlisted their early empty previews on nuget.org.
+The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient`. With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). We are preparing the next providers: the VAT White List (`OpenUrzednik.MF.WhiteList`), KRS (`OpenUrzednik.Krs`) and GUS BIR (`OpenUrzednik.Gus.Regon`) ([ADR-0016](docs/adr/0016-next-providers-and-package-naming.md)). The early empty previews of `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` on nuget.org are deprecated and unlisted.
 
 ### Samples
 

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0016
 date: 2026-11-05
 confidence: high
 decision-makers: milten89
@@ -55,6 +55,8 @@ PRs touching `src/OpenUrzednik.Gus|Krs|Mf` are rejected unless they implement th
 * Bad, because `docs/BACKLOG.md` is a closed record (work is tracked in issues), so the condition says nothing.
 
 ## More Information
+
+Superseded by [ADR-0016](0016-next-providers-and-package-naming.md).
 
 ### Changes before 1.0
 
