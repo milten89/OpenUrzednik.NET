@@ -62,7 +62,7 @@ For 1.0.0 this step doesn't apply: the range is the whole preview history, and i
 
 The first stable release follows a long preview period: the generated list has about a hundred PRs of preview churn, many without a label. Its notes therefore have, instead of that list:
 
-- **Changes since the previews:** the user-visible changes of the preview period, grouped like the categories above (breaking changes first), one line each with the PR links. Build it from the done items in `docs/BACKLOG.md` (item 28 lists the early API changes made before release notes existed) and the merged PRs (`gh pr list --state merged --base develop --limit 300 --json number,title,labels`), not from commits. Point to the package READMEs instead of repeating them.
+- **Changes since the previews:** the user-visible changes of the preview period, grouped like the categories above (breaking changes first), one line each with the PR links. Build it from the merged PRs (`gh pr list --state merged --base develop --limit 300 --json number,title,labels`), not from commits. Point to the package READMEs instead of repeating them.
 - **Full changelog:** `https://github.com/milten89/OpenUrzednik.NET/commits/v1.0.0` (there is no previous tag to compare with).
 - Under **Upgrading**, these two notes, in substance:
   - **Update all OpenUrzednik packages together, with an explicit version.** The earlier previews were numbered `1.0.N-preview`, and NuGet sorts `1.0.0` below `1.0.36-preview`, so it won't offer 1.0.0 as an update. Mixing 1.0.0 with a preview can cause NU1605 (package downgrade) errors, or silently keep a preview. Those previews are unlisted on nuget.org.

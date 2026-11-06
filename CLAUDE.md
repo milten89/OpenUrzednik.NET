@@ -21,7 +21,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | `tests/OpenUrzednik.TestCommon` | Shared test helpers: `StubHttpMessageHandler`, `ManualFact`/`ManualTheory`, Faker extensions |
 | `samples/` | Runnable examples against the real NBP API (console, minimal Web API with DI); built in CI with the solution, not packed |
 
-Work is tracked in GitHub issues and the project [OpenUrzednik.NET](https://github.com/users/milten89/projects/2); see "Issues and the project" below. Pick work from there unless told otherwise. `docs/BACKLOG.md` is a closed record.
+Work is tracked in GitHub issues and the project [OpenUrzednik.NET](https://github.com/users/milten89/projects/2); see "Issues and the project" below. Pick work from there unless told otherwise.
 
 ## Commands
 
