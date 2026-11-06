@@ -1,12 +1,26 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>OpenUrzednik.NET client for NBP (Narodowy Bank Polski) — currency exchange rates and gold price data from the National Bank of Poland API.</Description>
+    <Description>Unofficial .NET client for the NBP (Narodowy Bank Polski) API: currency exchange rates, rate tables and gold prices. Not affiliated with NBP.</Description>
     <PackageTags>NBP;Currency;ExchangeRates;Gold;API;Poland;Gov</PackageTags>
+    <OpenUrzednikPackageIcon>icon-nbp.png</OpenUrzednikPackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <!-- The shared HTTP layer, compiled in as internal source (ADR-0006). -->
+  <Import Project="..\Http\Http.props" />
+
+  <!-- netstandard2.0 only: these types are built into .NET (ADR-0004, ADR-0005). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <!-- Internally the code says DateOnly; on netstandard2.0 it is an alias for DateTime (ADR-0005). -->
+    <Using Include="System.DateTime" Alias="DateOnly" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" />
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="System.Net.Http.Json" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,6 +29,10 @@
   
   <ItemGroup>
     <InternalsVisibleTo Include="OpenUrzednik.Nbp.Tests" />
+    <!-- Tests the shared HTTP layer through Nbp's copy of it. -->
+    <InternalsVisibleTo Include="OpenUrzednik.Http.Tests" />
+    <!-- NSubstitute (Castle DynamicProxy) mocks the internal URL builders in the tests; the key is Castle's public key. -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7" />
   </ItemGroup>
 
 </Project>

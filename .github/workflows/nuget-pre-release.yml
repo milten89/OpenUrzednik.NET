@@ -1,0 +1,79 @@
+name: NuGet - pre-release
+
+on:
+  push:
+    branches: [develop]
+    # Only merges that change a package input publish previews. The list matches pathFilters in version.json, so every
+    # published preview sorts above the one before (ADR-0008). Keep the two lists the same; a directory is `dir` in
+    # pathFilters and `dir/**` here.
+    paths:
+      - 'src/**'
+      - 'version.json'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'OpenUrzednik.Packages.slnf'
+      - 'OpenUrzednik.snk'
+      - 'assets/branding/icon.png'
+      - 'assets/branding/icon-nbp.png'
+
+permissions:
+  contents: read
+
+# A started publishing run is never cancelled. GitHub keeps one pending run per group and replaces it with a newer one,
+# so the latest merge always publishes, and its previews contain the changes of a replaced run.
+concurrency:
+  group: nuget-pre-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build.yml
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: nuget-pre-release
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0   # NBGV needs full history to compute versions
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-pack-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj', '**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-pack-
+
+      - name: Restore & Build & Pack
+        run: |
+          # Only the packages (src/): the test projects also target net472, which this Linux job doesn't need to build.
+          dotnet restore OpenUrzednik.Packages.slnf
+          dotnet build OpenUrzednik.Packages.slnf --configuration Release --no-restore
+          dotnet pack OpenUrzednik.Packages.slnf --configuration Release --no-build --output ./artifacts
+
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push preview packages
+        run: |
+          dotnet nuget push "./artifacts/*.nupkg" \
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

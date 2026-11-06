@@ -1,79 +1,97 @@
-﻿using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 
 namespace OpenUrzednik.Nbp.Table;
 
 internal static class Mapper
 {
-    internal static NbpTable MapToNbpTable(MidTableType table)
+    internal static NbpTable MapToNbpTable(TableType table)
     {
         return table switch
         {
-            MidTableType.A => NbpTable.A,
-            MidTableType.B => NbpTable.B,
-            _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(MidTableType)}.", nameof(table)),
+            TableType.A => NbpTable.A,
+            TableType.B => NbpTable.B,
+            _ => throw new ArgumentException($"'{nameof(table)}' has value not defined by {nameof(TableType)}.", nameof(table)),
         };
     }
-    
-    internal static ExchangeRateTable[] MapToExchangeRateTable(ExchangeRateTableDto[] dto)
+
+    internal static IReadOnlyList<ExchangeRateTable> MapToExchangeRateTable(ExchangeRateTableDto[] dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        
+        NbpPayload.EnsurePresent(dto, "item");
+
         var tables = new ExchangeRateTable[dto.Length];
         for (int i = 0; i < tables.Length; i++)
             tables[i] = MapToExchangeRateTable(dto[i]);
 
-        return tables;
+        return Array.AsReadOnly(tables);
+    }
+
+    /// <summary>The table with the latest publication date, or <see langword="null"/> when <paramref name="dto"/> is empty.</summary>
+    internal static ExchangeRateTable? MapLastToExchangeRateTable(ExchangeRateTableDto[] dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+
+        var last = NbpPayload.Latest(dto, static x => x.PublicationDate);
+        return last is null ? null : MapToExchangeRateTable(last);
     }
 
     internal static ExchangeRateTable MapToExchangeRateTable(ExchangeRateTableDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"'{nameof(dto.Rates)}' cannot be null.", nameof(dto));
-        
-        var rates = new ExchangeRate[dto.Rates.Length];
+        NbpPayload.EnsurePresent(dto, "item");
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
+
+        var rates = new TableRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToExchangeRate(dto.Rates[i]);
+            rates[i] = MapToTableRate(dto.Rates[i]);
 
-        return new(dto.TableId, dto.PublicationDate, Array.AsReadOnly(rates));
+        return new(dto.TableId, dto.PublicationDate.ToPublicDate(), Array.AsReadOnly(rates));
     }
 
-    internal static ExchangeRate MapToExchangeRate(ExchangeRateDto dto)
+    internal static TableRate MapToTableRate(ExchangeRateDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        
-        return new ExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Price);
+        NbpPayload.EnsurePresent(dto, "item");
+
+        return new TableRate(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, dto.Price);
     }
 
-    internal static BuySellExchangeRateTable[] MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
+    internal static IReadOnlyList<BuySellExchangeRateTable> MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        
+        NbpPayload.EnsurePresent(dto, "item");
+
         var tables = new BuySellExchangeRateTable[dto.Length];
         for (int i = 0; i < tables.Length; i++)
             tables[i] = MapToBuySellExchangeRateTable(dto[i]);
 
-        return tables;
+        return Array.AsReadOnly(tables);
+    }
+
+    /// <summary>The table with the latest publication date, or <see langword="null"/> when <paramref name="dto"/> is empty.</summary>
+    internal static BuySellExchangeRateTable? MapLastToBuySellExchangeRateTable(BuySellExchangeRateTableDto[] dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+
+        var last = NbpPayload.Latest(dto, static x => x.PublicationDate);
+        return last is null ? null : MapToBuySellExchangeRateTable(last);
     }
 
     internal static BuySellExchangeRateTable MapToBuySellExchangeRateTable(BuySellExchangeRateTableDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"'{nameof(dto.Rates)}' cannot be null.", nameof(dto));
-        
-        var rates = new BuySellExchangeRate[dto.Rates.Length];
-        for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToBuySellExchangeRateTable(dto.Rates[i]);
+        NbpPayload.EnsurePresent(dto, "item");
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
 
-        return new(dto.TableId, dto.TradingDate, dto.PublicationDate, Array.AsReadOnly(rates));
+        var rates = new TableBuySellRate[dto.Rates.Length];
+        for (int i = 0; i < rates.Length; i++)
+            rates[i] = MapToTableBuySellRate(dto.Rates[i]);
+
+        return new(dto.TableId, dto.TradingDate.ToPublicDate(), dto.PublicationDate.ToPublicDate(), Array.AsReadOnly(rates));
     }
 
-    internal static BuySellExchangeRate MapToBuySellExchangeRateTable(BuySellExchangeRateDto dto)
+    internal static TableBuySellRate MapToTableBuySellRate(BuySellExchangeRateDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        
-        return new BuySellExchangeRate(dto.CurrencyName, dto.CurrencyCode, dto.Buy, dto.Sell);
+        NbpPayload.EnsurePresent(dto, "item");
+
+        return new TableBuySellRate(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, dto.Ask, dto.Bid);
     }
 }

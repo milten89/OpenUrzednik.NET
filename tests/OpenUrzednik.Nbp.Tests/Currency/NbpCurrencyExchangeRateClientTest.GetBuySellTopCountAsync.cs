@@ -1,0 +1,160 @@
+using System.Net;
+
+using Bogus;
+
+using NSubstitute;
+
+using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp.Currency;
+using OpenUrzednik.Nbp.Tests.Fakes;
+using OpenUrzednik.Nbp.UrlBuilder;
+using OpenUrzednik.Nbp.Validation;
+using OpenUrzednik.TestCommon.Extensions;
+
+using Shouldly;
+
+namespace OpenUrzednik.Nbp.Tests.Currency;
+
+public partial class NbpCurrencyExchangeRateClientTest
+{
+    [Theory]
+    [InlineData("")]
+    [InlineData("US")]
+    public async Task GetBuySellTopCountAsync_InvalidCurrency_ReturnsFailureWithoutSendingRequest(string? currency)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        int count = faker.Random.Int(3, 10);
+        Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetBuySellTopCountAsync(currency!, count, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetBuySellTopCountAsync_NullCurrency_ThrowsArgumentNullExceptionWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        int count = faker.Random.Int(3, 10);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = sut.GetBuySellTopCountAsync(null!, count, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("currency");
+        handler.Request.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task GetBuySellTopCountAsync_InvalidTopCount_ReturnsFailureWithoutSendingRequest(int topCount)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetBuySellTopCountAsync(currency, topCount, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetBuySellTopCountAsync_InvalidCurrencyAndTopCount_ReturnsCombinedValidationErrorsWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetBuySellTopCountAsync("US", 0, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(2);
+        result.Errors.ShouldAllBe(e => e is ValidationError);
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetBuySellTopCountAsync_SuccessfulResponse_ReturnsMappedBuySellExchangeRates()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        int count = faker.Random.Int(3, 10);
+        var dto = new BuySellCurrencyExchangeRatesDtoFaker(count).LinkRandomizerTo(faker).Generate();
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto), out _);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
+        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
+        var sut = CreateApiClient(httpClient, urlBuilderFactory);
+
+        // Act
+        var result = await sut.GetBuySellTopCountAsync(currency, count, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(Mapper.MapToBuySellExchangeRates(dto));
+        urlBuilderFactory.Received(1).GetCurrencyBuilder(NbpTable.C, currency);
+        urlBuilder.Received(1).ForTopCount(count);
+    }
+
+    [Fact]
+    public async Task GetBuySellTopCountAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        int count = faker.Random.Int(3, 10);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
+        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
+        var sut = CreateApiClient(httpClient, urlBuilderFactory);
+
+        // Act
+        var result = await sut.GetBuySellTopCountAsync(currency, count, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
+    }
+
+    [Fact]
+    public async Task GetBuySellTopCountAsync_TopCountAboveApiLimit_ReturnsFailureWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetBuySellTopCountAsync("USD", TopCountValidator.MaxTopCount + 1, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+}

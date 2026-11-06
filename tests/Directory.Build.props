@@ -3,20 +3,44 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
+    <!-- net472 runs the netstandard2.0 build of the libraries on .NET Framework (ADR-0005); xUnit 4 supports nothing older. -->
+    <TargetFrameworks>$(TargetFrameworks);net472</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
+    <!-- Test classes are public for xUnit but aren't API: no XML docs required. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="coverlet.collector" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+  <!-- Items are evaluated after every property, so a project that sets IsTestProject=false (TestCommon) doesn't get the runner. -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <!-- VSTest only, kept for IDEs that don't run Microsoft.Testing.Platform yet (xUnit's advice). -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- On .NET Framework there is no DateOnly, so the tests use the same alias for DateTime as OpenUrzednik.Nbp (its internals use DateOnly).
+       The compiler attributes come from src/Polyfills. A test project also sees its library's internal copy, hence CS0436. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <!-- Test-only packages from dotnet/extensions 10.x (TimeProvider.Testing, Http.Resilience) warn on every .NET Framework target;
+         the libraries themselves don't depend on them. xUnit 4 needs at least net472. -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Using Include="System.DateTime" Alias="DateOnly" />
+    <!-- Part of .NET, but a separate assembly and not an implicit using on .NET Framework. -->
+    <Reference Include="System.Net.Http" />
+    <Using Include="System.Net.Http" />
+    <Compile Include="$(MSBuildThisFileDirectory)../src/Polyfills/CompilerAttributes.cs" Link="Polyfills/CompilerAttributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)../src/Polyfills/NullableAttributes.cs" Link="Polyfills/NullableAttributes.cs" />
   </ItemGroup>
 
 </Project>

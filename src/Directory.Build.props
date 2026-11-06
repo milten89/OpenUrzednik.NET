@@ -1,0 +1,33 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- netstandard2.0 for .NET Framework 4.7.2+ (ADR-0005); the .NET targets come from the root props. -->
+    <TargetFrameworks>netstandard2.0;$(TargetFrameworks)</TargetFrameworks>
+    <!-- Every performance rule (CA18xx) as a build warning: performance comes before convenience in library code. -->
+    <AnalysisModePerformance>All</AnalysisModePerformance>
+    <!-- In CI, analyzer warnings fail the build (ContinuousIntegrationBuild is set on GitHub Actions in the root props). -->
+    <CodeAnalysisTreatWarningsAsErrors Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</CodeAnalysisTreatWarningsAsErrors>
+    <!-- Every pack checks that the builds in a package are compatible: what netstandard2.0 has, net8.0 and net10.0 have with the
+         same signatures (ADR-0005). No suppressions; ADR-0011 allows only CP0006 for a new client-interface method. The comparison
+         with the last release (PackageValidationBaselineVersion) starts after 1.0 (#117). CI packs in the build (net10.0) job. -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+
+  <!-- Trimming and Native AOT analyzers (IL2xxx/IL3xxx) on the .NET targets; IsAotCompatible implies IsTrimmable.
+       netstandard2.0 doesn't support them (NETSDK1210). -->
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Compiler and BCL types .NET has built in; each assembly gets its own internal copy. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Compile Include="$(MSBuildThisFileDirectory)Polyfills\*.cs" Link="Polyfills\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

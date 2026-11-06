@@ -1,0 +1,88 @@
+using OpenUrzednik.Core;
+using OpenUrzednik.Nbp.Gold;
+
+namespace OpenUrzednik.Nbp;
+
+/// <summary>
+/// Represents a client for interacting with the National Bank of Poland (NBP) API to retrieve gold prices.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Gold prices are published on business days in Poland, at about 8:00 (Europe/Warsaw time). NBP doesn't document the hour; it was observed on the API.
+/// </para>
+/// <para>
+/// Dates are <see cref="System.DateTime"/> on every target: only the date part of an argument is used (its time of day and
+/// <see cref="System.DateTime.Kind"/> are ignored), and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// On .NET 8 and later, <c>NbpDateOnlyExtensions</c> adds <c>DateOnly</c> overloads.
+/// </para>
+/// <para>
+/// Minor versions may add methods to this interface (ADR-0011). If you implement it yourself, e.g. as a decorator,
+/// a new method breaks your build until you add it; a <c>throw new NotImplementedException();</c> stub is enough for the
+/// methods your code doesn't call. Calling and mocking the interface aren't affected.
+/// </para>
+/// </remarks>
+public interface INbpGoldPriceClient
+{
+    /// <summary>
+    /// Gets the latest gold price.
+    /// </summary>
+    /// <remarks>
+    /// Gold prices are published on business days in Poland, at about 8:00 (Europe/Warsaw time).
+    /// Returns the most recently published value; until the next publication that is the previous one.
+    /// </remarks>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the gold price or an error</returns>
+    Task<OpenUrzednikResult<GoldPrice>> GetLatestAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the series of gold prices starting from the latest.
+    /// </summary>
+    /// <param name="topCount">Number of records to retrieve, from 1 to 255</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the gold prices or an error</returns>
+    Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets today's gold price. If the gold price is not published yet for today, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// </summary>
+    /// <remarks>
+    /// Gold prices are published on business days in Poland, at about 8:00 (Europe/Warsaw time).
+    /// Until today's publication, and on days without one, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>; use <see cref="GetLatestAsync"/> to get the most recent published value.
+    /// </remarks>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the gold price or an error</returns>
+    Task<OpenUrzednikResult<GoldPrice>> GetTodayAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the gold price for the specified date. If the gold price is not published yet for the given date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date can't be lower than 2013-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
+    /// </summary>
+    /// <param name="date">Date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the gold price or an error</returns>
+    Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the gold price for the specified date range. If the gold prices are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date range can't exceed 367 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2013-01-02, because the NBP API doesn't support it.
+    /// </summary>
+    /// <param name="from">Start date</param>
+    /// <param name="to">End date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the gold prices or an error</returns>
+    Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetAsync(DateTime from, DateTime to, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the gold price of the last publication before the specified date, the "previous business day" rule of Polish tax and accounting.
+    /// If no price was published in the 14 days before the date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date must be later than 2013-01-02 and not later than tomorrow (Europe/Warsaw date), because the day before it must be a date the NBP API supports. With tomorrow, the result is today's publication once it is out, and the one before until then.
+    /// </summary>
+    /// <remarks>
+    /// The date itself is excluded: for a Monday the result is usually the price of the previous Friday, even when Monday's price is already published.
+    /// The client requests the 14 days before the date in one range (gold prices have no longer gap) and returns the price with the latest date.
+    /// </remarks>
+    /// <param name="date">Date; only prices published before it count</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the gold price or an error</returns>
+    Task<OpenUrzednikResult<GoldPrice>> GetLastPublishedBeforeAsync(DateTime date, CancellationToken cancellationToken = default);
+}

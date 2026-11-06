@@ -5,11 +5,37 @@ namespace OpenUrzednik.Core.Errors;
 /// <summary>
 /// Represents an error indicating that the rate limit has been exceeded.
 /// </summary>
-/// <param name="Message">The message associated with the error.</param>
-/// <param name="RetryAfter">Delay between next request</param>
-public record RateLimitExceededError(string Message, TimeSpan? RetryAfter) : OpenUrzednikError(Message)
+public sealed class RateLimitExceededError : OpenUrzednikError
 {
+    /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
+    public const string ErrorCode = "rateLimitExceeded";
+
+    /// <summary>The <see cref="OpenUrzednikError.Metadata"/> key of <see cref="RetryAfter"/>.</summary>
+    public const string RetryAfterMetadataKey = "retryAfter";
+
+    /// <summary>
+    /// How long to wait before retrying, from the response's <c>Retry-After</c> header; <see langword="null"/> when the server didn't say.
+    /// A date in the header is converted to a delay from the response's <c>Date</c> header (or now), so a past date gives a negative value.
+    /// </summary>
+    public TimeSpan? RetryAfter { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RateLimitExceededError"/> class.
+    /// </summary>
+    /// <param name="message">The message associated with the error.</param>
+    /// <param name="retryAfter">How long to wait before retrying, if the server said so.</param>
+    /// <param name="statusCode">HTTP status code of the response that caused the error, if any; read it with <see cref="HttpErrorMetadata.GetHttpStatusCode"/>.</param>
+    public RateLimitExceededError(string message, TimeSpan? retryAfter, int? statusCode = null)
+        : base(ErrorCode, message)
+    {
+        RetryAfter = retryAfter;
+
+        if (statusCode.HasValue)
+            AddMetadata(HttpErrorMetadata.StatusCodeKey, statusCode.Value);
+        AddMetadata(RetryAfterMetadataKey, retryAfter);
+    }
+
     /// <inheritdoc />
-    public override Exception ToException()
+    protected override OpenUrzednikException CreateException()
         => new RateLimitExceededException(Message, RetryAfter);
 }

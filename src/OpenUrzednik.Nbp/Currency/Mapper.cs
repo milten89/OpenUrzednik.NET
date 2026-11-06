@@ -1,59 +1,70 @@
-﻿using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 
 namespace OpenUrzednik.Nbp.Currency;
 
 internal static class Mapper
 {
-    internal static CountryExchangeRates MapToCountryExchangeRates(CountryExchangeRatesDto dto)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"{nameof(dto.Rates)} cannot be null.", nameof(dto));
-        
-        var rates = new ExchangeRate[dto.Rates.Length];
-        for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToCurrencyExchangeRate(dto.Rates[i]);
-
-        return new(dto.Country, dto.CurrencyName, dto.CurrencySymbol, dto.CurrencyCode, Array.AsReadOnly(rates));
-    }
-    
     internal static CurrencyExchangeRates MapToCurrencyExchangeRates(CurrencyExchangeRatesDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"{nameof(dto.Rates)} cannot be null.", nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
 
-        var rates = new ExchangeRate[dto.Rates.Length];
+        var rates = new CurrencyRate[dto.Rates.Length];
         for (int i = 0; i < rates.Length; i++)
-            rates[i] = MapToCurrencyExchangeRate(dto.Rates[i]);
+            rates[i] = MapToCurrencyRate(dto.Rates[i]);
 
-        return new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(rates));
+        return new(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, Array.AsReadOnly(rates));
     }
-    
-    internal static ExchangeRate MapToCurrencyExchangeRate(CurrencyExchangeRateDto dto)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
 
-        return new ExchangeRate(dto.TableId, dto.PublicationDate, dto.Price);
+    /// <summary>
+    /// The currency with only the rate that has the latest publication date, or <see langword="null"/> when <c>rates</c> is empty.
+    /// </summary>
+    internal static CurrencyExchangeRates? MapLastToCurrencyExchangeRates(CurrencyExchangeRatesDto dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
+
+        var last = NbpPayload.Latest(dto.Rates, static x => x.PublicationDate);
+        return last is null ? null : new(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, Array.AsReadOnly(new[] { MapToCurrencyRate(last) }));
+    }
+
+    internal static CurrencyRate MapToCurrencyRate(CurrencyExchangeRateDto dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+
+        return new CurrencyRate(dto.TableId, dto.PublicationDate.ToPublicDate(), dto.Price);
     }
 
     internal static BuySellExchangeRates MapToBuySellExchangeRates(BuySellCurrencyExchangeRatesDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (dto.Rates is null)
-            throw new ArgumentException($"{nameof(dto.Rates)} cannot be null.", nameof(dto));
+        NbpPayload.EnsurePresent(dto, "item");
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
 
-        var rates = new BuySellExchangeRate[dto.Rates.Length];
+        var rates = new CurrencyBuySellRate[dto.Rates.Length];
         for (var i = 0; i < rates.Length; i++)
-            rates[i] = MapToBuySellExchangeRate(dto.Rates[i]);
+            rates[i] = MapToCurrencyBuySellRate(dto.Rates[i]);
 
-        return new(dto.CurrencyName, dto.CurrencyCode, Array.AsReadOnly(rates));
+        return new(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, Array.AsReadOnly(rates));
     }
 
-    internal static BuySellExchangeRate MapToBuySellExchangeRate(BuySellCurrencyExchangeRateDto dto)
+    /// <summary>
+    /// The currency with only the rate that has the latest publication date, or <see langword="null"/> when <c>rates</c> is empty.
+    /// </summary>
+    internal static BuySellExchangeRates? MapLastToBuySellExchangeRates(BuySellCurrencyExchangeRatesDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
+        NbpPayload.EnsurePresent(dto, "item");
+        NbpPayload.EnsurePresent(dto.Rates, "rates");
 
-        return new BuySellExchangeRate(dto.TableId, dto.PublicationDate, dto.Buy, dto.Sell);
+        var last = NbpPayload.Latest(dto.Rates, static x => x.PublicationDate);
+        return last is null ? null : new(dto.CurrencyName ?? string.Empty, dto.CurrencyCode, Array.AsReadOnly(new[] { MapToCurrencyBuySellRate(last) }));
+    }
+
+    internal static CurrencyBuySellRate MapToCurrencyBuySellRate(BuySellCurrencyExchangeRateDto dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+
+        return new CurrencyBuySellRate(dto.TableId, dto.PublicationDate.ToPublicDate(), dto.Ask, dto.Bid);
     }
 }

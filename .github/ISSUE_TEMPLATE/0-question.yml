@@ -1,0 +1,35 @@
+name: ❓ Pytanie / Question
+description: Zapytaj, jak użyć pakietu lub dlaczego działa w określony sposób. / Ask how to use a package or why it behaves the way it does.
+labels: [ "question" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Możesz pisać po polsku lub po angielsku. / Polish or English is fine.
+
+        Brakuje danych albo się nie zgadzają? Najpierw sprawdź je w [API NBP](https://api.nbp.pl/): biblioteka zwraca to, co publikuje NBP. / Data missing or different from what you expected? Check [NBP's API](https://api.nbp.pl/en.html) first: the library returns what NBP publishes.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Pakiet / Package
+      options:
+        - OpenUrzednik.Core
+        - OpenUrzednik.Extensions.Logging
+        - OpenUrzednik.Diagnostics
+        - OpenUrzednik.Nbp
+        - OpenUrzednik.Nbp.DependencyInjection
+        - Inny / Other
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Pytanie / Question
+      description: Co chcesz zrobić i czego nie wiesz? Przykład kodu mile widziany. / What are you trying to do, and what's unclear? A code sample helps.
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: Co już próbowałem/am / What you've tried
+      description: Dokumentacja, przykłady, wyniki z API. / Docs, samples, API responses.

@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Unofficial OpenUrzednik.NET adapter for System.Diagnostics: turns the clients' spans into Activities for OpenTelemetry and other listeners.</Description>
+    <PackageTags>Tracing;ActivitySource;OpenTelemetry;API;Poland;Gov</PackageTags>
+  </PropertyGroup>
+
+  <!-- The only package ADR-0004 allows the tracing adapter, on netstandard2.0 only; src/Directory.Build.targets checks it. -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <OpenUrzednikAllowedPackageReferences>System.Diagnostics.DiagnosticSource</OpenUrzednikAllowedPackageReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <!-- netstandard2.0 only: these types are built into .NET (ADR-0004, ADR-0005). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+  </ItemGroup>
+
+  <!-- On .NET these types are in Core (internal, InternalsVisibleTo); netstandard2.0 compiles the same files in (ADR-0003). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Compile Include="..\OpenUrzednik.Core\Telemetry\Activities\*.cs" Link="Activities\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Diagnostics.Tests" />
+  </ItemGroup>
+
+</Project>

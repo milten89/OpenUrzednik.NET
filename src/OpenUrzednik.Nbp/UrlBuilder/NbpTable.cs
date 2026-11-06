@@ -1,8 +1,14 @@
-﻿namespace OpenUrzednik.Nbp.UrlBuilder;
+namespace OpenUrzednik.Nbp.UrlBuilder;
 
-public enum NbpTable
+/// <summary>
+/// NBP rate table, as used in request paths.
+/// </summary>
+internal enum NbpTable
 {
+    /// <summary>Table A: mid rates of common currencies.</summary>
     A,
-    B, 
+    /// <summary>Table B: mid rates of less common currencies.</summary>
+    B,
+    /// <summary>Table C: bid and ask rates.</summary>
     C,
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -11,7 +11,13 @@
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Shouldly" />
-    <PackageReference Include="WireMock.Net" />
+    <!-- Fact and Theory only; the test projects bring the runner. -->
+    <PackageReference Include="xunit.v3.extensibility.core" />
+  </ItemGroup>
+
+  <!-- ArgumentNullException.ThrowIfNull and friends on .NET Framework; only here, because no other assembly sees these internals. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Compile Include="../../src/Polyfills/ThrowHelpers.cs" Link="Polyfills/ThrowHelpers.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,79 @@
+name: 🏛️ Nowe źródło danych / New provider proposal
+description: Zaproponuj integrację z kolejnym publicznym API. / Propose integration with another public API.
+labels: [ "provider-proposal" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Możesz pisać po polsku lub po angielsku. / Polish or English is fine.
+  - type: markdown
+    attributes:
+      value: |
+        Prace nad nowymi providerami ruszą po pierwszym stabilnym wydaniu `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Propozycje zbieramy już teraz.
+        Work on new providers begins after the first stable release of `OpenUrzednik.Nbp` ([ADR-0010](https://github.com/milten89/OpenUrzednik.NET/blob/develop/docs/adr/0010-provider-readiness-gate.md)). Proposals are welcome now.
+  - type: input
+    id: name
+    attributes:
+      label: Nazwa API / API name
+      placeholder: "np. / e.g. CEIDG, VIES, KSeF"
+    validations:
+      required: true
+  - type: input
+    id: docs
+    attributes:
+      label: Dokumentacja / Documentation URL
+    validations:
+      required: true
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protokół / Protocol
+      options: [ "REST/JSON", "SOAP/XML", "Inny / Other" ]
+    validations:
+      required: true
+  - type: dropdown
+    id: auth
+    attributes:
+      label: Uwierzytelnianie / Authentication
+      options: [ "Brak / None", "Klucz API / API key", "Certyfikat / Certificate", "OAuth / token", "Inne / Other" ]
+    validations:
+      required: true
+  - type: textarea
+    id: limits
+    attributes:
+      label: Limity i regulamin / Rate limits and terms of use
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Zastosowanie / Use case
+      description: Do czego potrzebujesz tego API? / What do you need it for?
+    validations:
+      required: true
+  - type: dropdown
+    id: quota
+    attributes:
+      label: Rodzaj limitu / Quota type
+      description: Opcjonalne. / Optional.
+      options: [ "Brak limitu / No limit", "Ograniczanie tempa / Throttling", "Limit dzienny lub na adres IP / Daily or per-IP quota", "Nie wiem / Unknown" ]
+  - type: dropdown
+    id: session
+    attributes:
+      label: Sesja lub logowanie / Stateful session or login
+      description: Opcjonalne. Czy trzeba się zalogować osobnym wywołaniem? / Optional. Is a separate login call needed?
+      options: [ "Tak / Yes", "Nie / No", "Nie wiem / Unknown" ]
+  - type: dropdown
+    id: personal-data
+    attributes:
+      label: Dane osobowe w odpowiedziach / Personal data in responses
+      description: Opcjonalne. / Optional.
+      options: [ "Tak / Yes", "Nie / No", "Nie wiem / Unknown" ]
+  - type: textarea
+    id: test-environment
+    attributes:
+      label: Środowisko testowe / Test environment
+      description: Opcjonalne. Adres lub opis. / Optional. URL or description.
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Wymagane zależności / Required dependencies
+      description: Opcjonalne. Np. biblioteka do archiwów, certyfikaty. / Optional. E.g. an archive library, certificates.

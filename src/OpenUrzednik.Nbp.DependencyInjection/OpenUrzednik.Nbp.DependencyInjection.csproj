@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Unofficial Microsoft.Extensions.DependencyInjection registration for the OpenUrzednik.NET NBP clients: typed HttpClients, validated options, logging and tracing; ready for AddStandardResilienceHandler() on .NET 8 and later.</Description>
+    <PackageTags>NBP;DependencyInjection;HttpClientFactory;API;Poland;Gov</PackageTags>
+    <OpenUrzednikPackageIcon>icon-nbp.png</OpenUrzednikPackageIcon>
+    <!-- The packages ADR-0004 allows an integration package; src/Directory.Build.targets checks the list. -->
+    <OpenUrzednikAllowedPackageReferences>Microsoft.Extensions.Http;Microsoft.Extensions.Options;Polly.Core</OpenUrzednikAllowedPackageReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.Extensions.Logging\OpenUrzednik.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.Diagnostics\OpenUrzednik.Diagnostics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Polly.Core" />
+  </ItemGroup>
+
+  <!-- Marks resilience-handler rejections for the shared HTTP layer compiled into the providers (ADR-0004). -->
+  <ItemGroup>
+    <Compile Include="..\Http\Infrastructure\ResilienceRejection.cs" Link="Http\ResilienceRejection.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Nbp.DependencyInjection.Tests" />
+  </ItemGroup>
+
+</Project>

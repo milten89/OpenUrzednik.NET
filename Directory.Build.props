@@ -1,14 +1,15 @@
 <Project>
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
-    <Authors>milten89</Authors>
-    <Company>OpenUrzednik Open Source</Company>
+    <Authors>Andrzej Ochodek</Authors>
+    <Company>Andrzej Ochodek</Company>
+    <Copyright>Copyright (c) 2026 Andrzej Ochodek</Copyright>
     <Description>Modern, high-performance .NET SDK for Polish government public APIs.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/milten89/OpenUrzednik.NET</RepositoryUrl>
@@ -21,12 +22,29 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <Deterministic>true</Deterministic>
+    <!-- In CI every warning fails the build. NuGet audit warnings stay warnings: a new advisory (NU1901-NU1904) or an
+         unreachable vulnerability feed (NU1900, NU1905) would otherwise turn every PR red for reasons outside the change. -->
+    <TreatWarningsAsErrors Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1900;NU1901;NU1902;NU1903;NU1904;NU1905</WarningsNotAsErrors>
 
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <!-- Source file in assets/branding packed as icon.png. A provider package overrides it (BRANDING.md). -->
+    <OpenUrzednikPackageIcon Condition="'$(OpenUrzednikPackageIcon)' == ''">icon.png</OpenUrzednikPackageIcon>
+
+    <!-- Strong naming (ADR-0005): every assembly, tests included, is signed with this key. The key pair is checked in on purpose,
+         as Microsoft's library guidance recommends: a strong name is an identity, not a security boundary, and anyone may rebuild
+         with it. Never change or replace the key: that changes the identity of every assembly (a binary breaking change).
+         PublicKey is the full public key; the SDK puts it into every InternalsVisibleTo that has no Key of its own. -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)OpenUrzednik.snk</AssemblyOriginatorKeyFile>
+    <PublicKey>002400000480000094000000060200000024000052534131000400000100010059140fccf92ca0de1fe0f857c7631caf9fac225b9b0525ff6dd9649013a55396b09550fe8e0cb8a311c2d21e52541838e3ad45c559b80061fcc8a43f9a3fdb994ab86fa2e7b0b7864406bd7333e17b6e8a4d46f214903c6590587fe7c8b5df852b41ab3cbe99b11bcb3b36a2f5838c6eec705c976b9b5cb068d70700ea4598b8</PublicKey>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+    <!-- Fallback for a project without its own README.md; each package's own README is packed by its csproj. -->
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false"
+          Condition="!Exists('$(MSBuildProjectDirectory)\README.md')" />
+    <None Include="$(MSBuildThisFileDirectory)assets/branding/$(OpenUrzednikPackageIcon)" Pack="true" PackagePath="\icon.png" Visible="false" />
   </ItemGroup>
 </Project>

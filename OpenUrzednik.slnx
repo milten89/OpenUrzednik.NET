@@ -1,17 +1,26 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/OpenUrzednik.Core/OpenUrzednik.Core.csproj" />
+    <Project Path="src/OpenUrzednik.Diagnostics/OpenUrzednik.Diagnostics.csproj" />
+    <Project Path="src/OpenUrzednik.Extensions.Logging/OpenUrzednik.Extensions.Logging.csproj" />
     <Project Path="src/OpenUrzednik.Gus/OpenUrzednik.Gus.csproj" />
     <Project Path="src/OpenUrzednik.Krs/OpenUrzednik.Krs.csproj" />
     <Project Path="src/OpenUrzednik.Mf/OpenUrzednik.Mf.csproj" />
     <Project Path="src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />
+    <Project Path="src/OpenUrzednik.Nbp.DependencyInjection/OpenUrzednik.Nbp.DependencyInjection.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/OpenUrzednik.Samples.Console/OpenUrzednik.Samples.Console.csproj" />
+    <Project Path="samples/OpenUrzednik.Samples.WebApi/OpenUrzednik.Samples.WebApi.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/OpenUrzednik.AotSmoke/OpenUrzednik.AotSmoke.csproj" />
     <Project Path="tests/OpenUrzednik.Core.Tests/OpenUrzednik.Core.Tests.csproj" />
-    <Project Path="tests/OpenUrzednik.Gus.Tests/OpenUrzednik.Gus.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Diagnostics.Tests/OpenUrzednik.Diagnostics.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Extensions.Logging.Tests/OpenUrzednik.Extensions.Logging.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Http.Tests/OpenUrzednik.Http.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.IntegrationTests/OpenUrzednik.IntegrationTests.csproj" Id="43a404a5-1ece-4e8a-ade7-d8f5fc3b7858"/>
-    <Project Path="tests/OpenUrzednik.Krs.Tests/OpenUrzednik.Krs.Tests.csproj" />
-    <Project Path="tests/OpenUrzednik.Mf.Tests/OpenUrzednik.Mf.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Nbp.DependencyInjection.Tests/OpenUrzednik.Nbp.DependencyInjection.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.TestCommon/OpenUrzednik.TestCommon.csproj" />
   </Folder>

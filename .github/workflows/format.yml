@@ -1,0 +1,40 @@
+name: CI - Code Format
+
+on:
+  pull_request:
+    branches: [ main, develop, 'release/*.x' ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: format-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    # NOTE: "format" is a required status check in the "protected-branches" ruleset. Do not rename.
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Cache NuGet packages
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-format-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj', '**/packages.lock.json') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-format-
+
+    - name: Restore dependencies
+      run: dotnet restore OpenUrzednik.slnx
+
+    - name: Check code format (dotnet format)
+      run: dotnet format OpenUrzednik.slnx --verify-no-changes --no-restore --verbosity diagnostic

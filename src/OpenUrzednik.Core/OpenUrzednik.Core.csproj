@@ -1,16 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Core abstractions for OpenUrzednik.NET: Result-pattern error handling (OpenUrzednikResult), typed exceptions, and provider-agnostic building blocks for Polish government API clients.</Description>
+    <Description>Unofficial core abstractions for OpenUrzednik.NET, .NET clients for Polish public APIs: Result-pattern error handling (OpenUrzednikResult), typed errors and exceptions, and provider-agnostic building blocks.</Description>
     <PackageTags>ResultPattern;ErrorHandling;API;Poland;Gov</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
+  <!-- The ActivitySource tracing behind the providers' fallback trace source (ADR-0003): .NET has ActivitySource built in.
+       On netstandard2.0 Core takes no dependency, so these files are linked into OpenUrzednik.Diagnostics instead. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Compile Remove="Telemetry\Activities\**" />
+  </ItemGroup>
+
+  <!-- .NET targets only: on netstandard2.0 the internal polyfills would clash in the assemblies that see them.
+       The internals these assemblies call are a contract between packages (ADR-0003): within a major, add, never change or remove.
+       Every REST provider goes here, because its OpenUrzednikTelemetry (src/Http) uses SharedActivityTraceSource. -->
+  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
+    <InternalsVisibleTo Include="OpenUrzednik.Diagnostics" />
+    <InternalsVisibleTo Include="OpenUrzednik.Nbp" />
+    <InternalsVisibleTo Include="OpenUrzednik.Diagnostics.Tests" />
   </ItemGroup>
 
 </Project>

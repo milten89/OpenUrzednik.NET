@@ -1,21 +1,26 @@
-﻿using OpenUrzednik.Core;
+using OpenUrzednik.Core;
 using OpenUrzednik.Core.Validation;
+using OpenUrzednik.Nbp.Extensions;
 
 namespace OpenUrzednik.Nbp.Validation;
 
-internal sealed class DateRangeValidator((DateOnly From, DateOnly To) value) : ValueValidator<(DateOnly From, DateOnly To)>("date range", value)
+internal sealed class DateRangeValidator((DateOnly From, DateOnly To) value, int maxDays) : ValueValidator<(DateOnly From, DateOnly To)>("date range", value)
 {
-    public const int MaxDateRange = 93;
+    /// <summary>Maximum <c>to - from</c> in days accepted by <c>exchangerates/rates</c> and <c>cenyzlota</c>.</summary>
+    public const int MaxRatesDateRange = 367;
+
+    /// <summary>Maximum <c>to - from</c> in days accepted by <c>exchangerates/tables</c>.</summary>
+    public const int MaxTablesDateRange = 93;
 
     public override string Name => "dateRange";
 
     public override OpenUrzednikResult Validate()
     {
-        if (Value.From > Value.To)
-            return GetValidationErrorResult($"Start date '{Value.From:d}' is greater than end date '{Value.To:d}'.");
+        if (Value.From.DayNumber > Value.To.DayNumber)
+            return GetValidationErrorResult($"Start date '{Value.From.ToIso8601String()}' is greater than end date '{Value.To.ToIso8601String()}'.");
 
-        if (Value.To.DayNumber - Value.From.DayNumber > MaxDateRange)
-            return GetValidationErrorResult($"Date range '{Value.From:d} : {Value.To:d}' should be less than {MaxDateRange} days.");
+        if (Value.To.DayNumber - Value.From.DayNumber > maxDays)
+            return GetValidationErrorResult($"Date range '{Value.From.ToIso8601String()} : {Value.To.ToIso8601String()}' should not exceed {maxDays} days.");
 
         return OpenUrzednikResult.Success();
     }

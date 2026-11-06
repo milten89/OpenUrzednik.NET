@@ -1,24 +1,35 @@
-﻿using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 
 namespace OpenUrzednik.Nbp.Gold;
 
 internal static class Mapper
 {
-    internal static GoldPrice[] MapToGoldPrice(GoldPriceDto[] dto)
+    internal static IReadOnlyList<GoldPrice> MapToGoldPrice(GoldPriceDto[] dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        
+        NbpPayload.EnsurePresent(dto, "item");
+
         var goldPrices = new GoldPrice[dto.Length];
         for (int i = 0; i < goldPrices.Length; i++)
             goldPrices[i] = MapToGoldPrice(dto[i]);
 
-        return goldPrices;
+        return Array.AsReadOnly(goldPrices);
+    }
+
+    /// <summary>The price with the latest date, or <see langword="null"/> when <paramref name="dto"/> is empty.</summary>
+    internal static GoldPrice? MapLastToGoldPrice(GoldPriceDto[] dto)
+    {
+        NbpPayload.EnsurePresent(dto, "item");
+
+        var last = NbpPayload.Latest(dto, static x => x.Date);
+        return last is null ? null : MapToGoldPrice(last);
     }
 
     internal static GoldPrice MapToGoldPrice(GoldPriceDto dto)
     {
-        ArgumentNullException.ThrowIfNull(dto);
-        
-        return new GoldPrice(dto.Date, dto.Price);
+        NbpPayload.EnsurePresent(dto, "item");
+
+        return new GoldPrice(dto.Date.ToPublicDate(), dto.Price);
     }
 }

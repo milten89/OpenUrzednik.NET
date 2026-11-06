@@ -1,5 +1,7 @@
-﻿using OpenUrzednik.Nbp.Currency;
+using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;
 
@@ -19,7 +21,7 @@ public partial class MapperTest
         var result = Mapper.MapToCurrencyExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode, []));
+        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName!, dto.CurrencyCode, []));
     }
 
     [Fact]
@@ -32,8 +34,8 @@ public partial class MapperTest
         var result = Mapper.MapToCurrencyExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [new ExchangeRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate, dto.Rates[0].Price)]));
+        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName!, dto.CurrencyCode,
+            [new CurrencyRate(dto.Rates[0].TableId, dto.Rates[0].PublicationDate.ToPublicDate(), dto.Rates[0].Price)]));
     }
 
     [Fact]
@@ -46,33 +48,49 @@ public partial class MapperTest
         var result = Mapper.MapToCurrencyExchangeRates(dto);
 
         // Assert
-        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName, dto.CurrencyCode,
-            [.. dto.Rates.Select(x => new ExchangeRate(x.TableId, x.PublicationDate, x.Price))]));
+        result.ShouldBe(new CurrencyExchangeRates(dto.CurrencyName!, dto.CurrencyCode,
+            [.. dto.Rates.Select(x => new CurrencyRate(x.TableId, x.PublicationDate.ToPublicDate(), x.Price))]));
     }
 
     [Fact]
-    public void MapToCurrencyExchangeRates_NullDto_ThrowsArgumentNullException()
+    public void MapToCurrencyExchangeRates_NullDto_ThrowsInvalidPayloadException()
     {
         // Arrange
         CurrencyExchangeRatesDto dto = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => Mapper.MapToCurrencyExchangeRates(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyExchangeRates(dto));
     }
 
     [Fact]
-    public void MapToCurrencyExchangeRates_RatesArrayContainingNullElement_ThrowsArgumentNullException()
+    public void MapToCurrencyExchangeRates_RatesArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var dtoBase = new CurrencyExchangeRatesDtoFaker(0).WithConstantSeed().Generate();
         var dto = new CurrencyExchangeRatesDto
         {
-            CurrencyName = dtoBase.CurrencyName, CurrencyCode = dtoBase.CurrencyCode, Rates = null!
+            CurrencyName = dtoBase.CurrencyName,
+            CurrencyCode = dtoBase.CurrencyCode,
+            Rates = null!
         };
 
         // Act && Assert
-        Should.Throw<ArgumentException>(() => Mapper.MapToCurrencyExchangeRates(dto))
-            .ParamName.ShouldBe("dto");
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyExchangeRates(dto));
+    }
+
+    [Fact]
+    public void MapToCurrencyExchangeRates_MissingCurrencyName_ReturnsEmptyCurrencyName()
+    {
+        // Arrange
+        // NBP answers before 2004-05-04 have no "currency" field.
+        var source = new CurrencyExchangeRatesDtoFaker(1).WithConstantSeed().Generate();
+        var dto = new CurrencyExchangeRatesDto { CurrencyCode = source.CurrencyCode, Rates = source.Rates };
+
+        // Act
+        var result = Mapper.MapToCurrencyExchangeRates(dto);
+
+        // Assert
+        result.ShouldBe(new CurrencyExchangeRates(string.Empty, source.CurrencyCode,
+            [new CurrencyRate(source.Rates[0].TableId, source.Rates[0].PublicationDate.ToPublicDate(), source.Rates[0].Price)]));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace OpenUrzednik.Nbp.Dto;
 
@@ -9,10 +9,10 @@ internal sealed class BuySellCurrencyExchangeRateDto
 
     [JsonPropertyName("effectiveDate")]
     public required DateOnly PublicationDate { get; init; }
-    
+
     [JsonPropertyName("bid")]
-    public required decimal Sell { get; init; }
+    public required decimal Bid { get; init; }
 
     [JsonPropertyName("ask")]
-    public required decimal Buy { get; init; }
+    public required decimal Ask { get; init; }
 }

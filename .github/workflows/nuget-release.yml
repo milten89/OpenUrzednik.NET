@@ -1,0 +1,128 @@
+name: NuGet - release
+
+on:
+  push:
+    # main, and the support branches of earlier majors (release/N.x, security fixes only; ADR-0008).
+    branches: [ main, 'release/*.x' ]
+
+permissions:
+  contents: read
+
+# Releases are queued, never cancelled: a half-finished publish/tag run must not be interrupted. One queue per branch, so a
+# release from main never waits for one from a support branch (they share no tag or package version).
+concurrency:
+  group: nuget-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Creating a support branch from a release tag pushes nothing new to release: skip that run.
+  build:
+    if: ${{ !github.event.created }}
+    uses: ./.github/workflows/build.yml
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: nuget-release
+    permissions:
+      id-token: write
+      contents: write   # needed to push tags and create GitHub Releases
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0   # NBGV needs full history to compute versions
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-pack-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj', '**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-pack-
+
+      - name: Restore & Build & Pack
+        run: |
+          # Only the packages (src/): the test projects also target net472, which this Linux job doesn't need to build.
+          dotnet restore OpenUrzednik.Packages.slnf
+          dotnet build OpenUrzednik.Packages.slnf --configuration Release --no-restore
+          dotnet pack OpenUrzednik.Packages.slnf --configuration Release --no-build --output ./artifacts
+
+      # Every package has the version of the root version.json (lockstep, ADR-0008). A release from main must be stable and
+      # not released before: a version tagged on another commit means the PR didn't change version.json, and the push
+      # would skip every package as a duplicate.
+      - name: Check the release version
+        id: version
+        run: |
+          core=$(ls ./artifacts/OpenUrzednik.Core.[0-9]*.nupkg)
+          version=${core#./artifacts/OpenUrzednik.Core.}
+          version=${version%.nupkg}
+          for package in ./artifacts/*.nupkg; do
+            if [[ "$package" != *".$version.nupkg" ]]; then
+              echo "::error::$package doesn't have the release version $version."
+              exit 1
+            fi
+          done
+          if [[ "$version" == *-* ]]; then
+            echo "::error::$version is a prerelease. A release needs a stable version in version.json (remove the -preview suffix)."
+            exit 1
+          fi
+          if tagged=$(git rev-parse -q --verify "refs/tags/v$version^{commit}"); then
+            if [ "$tagged" != "$(git rev-parse HEAD)" ]; then
+              echo "::error::v$version was already released from $tagged. Set the next version in version.json."
+              exit 1
+            fi
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # Nothing is published without release notes: /release-notes writes them on the release branch (docs/RELEASE-PROCESS.md).
+      - name: Check the release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          notes="docs/release-notes/v$VERSION.md"
+          if [ ! -f "$notes" ] || ! grep -q '[^[:space:]]' "$notes"; then
+            echo "::error::$notes is missing or empty. Run /release-notes on the release branch and commit the file."
+            exit 1
+          fi
+
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push release packages
+        run: |
+          dotnet nuget push "./artifacts/*.nupkg" \
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+      # One tag and one GitHub Release for all packages. Each part is skipped if it exists, so a failed run can be re-run.
+      # A release from a support branch (release/N.x) is never marked Latest: that stays the newest major.
+      - name: Tag and create the GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          tag="v$VERSION"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Tag $tag already exists, skipping."
+          else
+            git tag "$tag"
+            git push origin "$tag"
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists, skipping."
+          else
+            latest=true
+            [ "$GITHUB_REF_NAME" = main ] || latest=false
+            gh release create "$tag" ./artifacts/*.nupkg --verify-tag --title "$tag" --notes-file "docs/release-notes/$tag.md" --latest="$latest"
+          fi

@@ -1,0 +1,20 @@
+# Categories of the generated release notes: /release-notes drafts docs/release-notes/v<version>.md from them, and the
+# release-label workflow reads the release labels from this file (every category's labels plus the excluded ones).
+changelog:
+  exclude:
+    labels: [ "skip-changelog" ]
+  categories:
+    - title: 💥 Breaking changes
+      labels: [ "breaking-change" ]
+    - title: 🚀 Features
+      labels: [ "enhancement" ]
+    - title: 🐞 Bug fixes
+      labels: [ "bug" ]
+    - title: 📚 Documentation
+      labels: [ "documentation" ]
+    - title: 📦 Dependencies
+      labels: [ "dependencies" ]
+    - title: 🛠️ CI and tooling
+      labels: [ "ci" ]
+    - title: Other changes
+      labels: [ "*" ]

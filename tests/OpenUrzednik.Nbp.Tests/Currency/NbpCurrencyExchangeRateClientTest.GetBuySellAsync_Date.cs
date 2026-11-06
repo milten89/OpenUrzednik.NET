@@ -1,0 +1,180 @@
+using System.Net;
+
+using Bogus;
+
+using Microsoft.Extensions.Time.Testing;
+
+using NSubstitute;
+
+using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp.Currency;
+using OpenUrzednik.Nbp.Tests.Extensions;
+using OpenUrzednik.Nbp.Tests.Fakes;
+using OpenUrzednik.Nbp.UrlBuilder;
+using OpenUrzednik.TestCommon.Extensions;
+
+using Shouldly;
+
+namespace OpenUrzednik.Nbp.Tests.Currency;
+
+public partial class NbpCurrencyExchangeRateClientTest
+{
+    [Theory]
+    [InlineData("")]
+    [InlineData("US")]
+    public async Task GetBuySellAsync_Date_InvalidCurrency_ReturnsFailureWithoutSendingRequest(string? currency)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var date = faker.Date.AfterCurrencyMinDate();
+        Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetBuySellAsync(currency!, date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetBuySellAsync_Date_NullCurrency_ThrowsArgumentNullExceptionWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var date = faker.Date.AfterCurrencyMinDate();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = sut.GetBuySellAsync(null!, date, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("currency");
+        handler.Request.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(2002, 1, 1)]
+    [InlineData(2000, 1, 1)]
+    public async Task GetBuySellAsync_Date_DateBeforeMinDate_ReturnsFailureWithoutSendingRequest(int year, int month, int day)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetBuySellAsync(currency, new DateOnly(year, month, day), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetBuySellAsync_Date_InvalidCurrencyAndDateBeforeMinDate_ReturnsCombinedValidationErrorsWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var date = faker.Date.BeforeCurrencyMinDate();
+        Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>());
+
+        // Act
+        var result = await sut.GetBuySellAsync("US", date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(2);
+        result.Errors.ShouldAllBe(e => e is ValidationError);
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetBuySellAsync_Date_SuccessfulResponse_ReturnsMappedBuySellExchangeRates()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        var date = faker.Date.AfterCurrencyMinDate();
+        var dto = new BuySellCurrencyExchangeRatesDtoFaker().LinkRandomizerTo(faker).Generate();
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto), out _);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
+        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
+        var sut = CreateApiClient(httpClient, urlBuilderFactory);
+
+        // Act
+        var result = await sut.GetBuySellAsync(currency, date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(Mapper.MapToBuySellExchangeRates(dto));
+        urlBuilderFactory.Received(1).GetCurrencyBuilder(NbpTable.C, currency);
+        urlBuilder.Received(1).ForDate(date);
+    }
+
+    [Fact]
+    public async Task GetBuySellAsync_Date_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        var date = faker.Date.AfterCurrencyMinDate();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
+        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
+        var sut = CreateApiClient(httpClient, urlBuilderFactory);
+
+        // Act
+        var result = await sut.GetBuySellAsync(currency, date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<NotFoundError>();
+    }
+
+    [Fact]
+    public async Task GetBuySellAsync_Date_DateAfterTodayInWarsaw_ReturnsFailureWithoutSendingRequest()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, Substitute.For<INbpUrlBuilderFactory>(), timeProvider: new FakeTimeProvider(new DateTimeOffset(2026, 10, 1, 10, 0, 0, TimeSpan.Zero)));
+
+        // Act
+        var result = await sut.GetBuySellAsync("USD", new DateOnly(2026, 10, 2), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldContain(e => e is ValidationError && e.Message.Contains("later than today (2026-10-01"));
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetBuySellAsync_DateWithTimeOfDayAndKind_UsesOnlyTheDatePart()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDate(Arg.Any<DateOnly>()).Returns(faker.Internet.UrlRootedPath());
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, CreateUrlBuilderFactory(NbpTable.C, "USD", urlBuilder));
+
+        // Act
+        await sut.GetBuySellAsync("USD", new DateTime(2026, 10, 2, 23, 59, 59, DateTimeKind.Utc), TestContext.Current.CancellationToken);
+
+        // Assert
+        urlBuilder.Received(1).ForDate(new DateOnly(2026, 10, 2));
+    }
+}

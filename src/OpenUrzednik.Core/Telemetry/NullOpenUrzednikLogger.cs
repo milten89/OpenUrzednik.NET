@@ -1,11 +1,48 @@
 namespace OpenUrzednik.Core.Telemetry;
 
+/// <summary>
+/// Logger that discards every message: the default when no logger is passed.
+/// </summary>
 public sealed class NullOpenUrzednikLogger : IOpenUrzednikLogger
 {
+    /// <summary>The shared instance.</summary>
+    public static readonly NullOpenUrzednikLogger Instance = new();
+
+    private NullOpenUrzednikLogger() { }
+
+    /// <inheritdoc/>
+    /// <returns>Always <see langword="false"/>.</returns>
     public bool IsEnabled(OpenUrzednikLogLevel level) => false;
 
-    public void Log(OpenUrzednikLogLevel level, string messageTemplate) { }
-    public void Log<T1>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1) { }
-    public void Log<T1, T2>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1, T2 arg2) { }
-    public void Log<T1, T2, T3>(OpenUrzednikLogLevel level, string messageTemplate, T1 arg1, T2 arg2, T3 arg3) { }
+    /// <inheritdoc/>
+    public void Log(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate)
+    {
+    }
+
+    /// <inheritdoc/>
+    public void Log<T0>(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate,
+                        string name0, T0 value0)
+    {
+    }
+
+    /// <inheritdoc/>
+    public void Log<T0, T1>(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate,
+                            string name0, T0 value0,
+                            string name1, T1 value1)
+    {
+    }
+
+    /// <inheritdoc/>
+    public void Log<T0, T1, T2>(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate,
+                                string name0, T0 value0,
+                                string name1, T1 value1,
+                                string name2, T2 value2)
+    {
+    }
+
+    /// <inheritdoc/>
+    public void Log(OpenUrzednikLogLevel level, OpenUrzednikEventId eventId, Exception? exception, string messageTemplate,
+                    IReadOnlyList<KeyValuePair<string, object?>> properties)
+    {
+    }
 }

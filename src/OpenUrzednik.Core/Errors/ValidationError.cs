@@ -5,11 +5,23 @@ namespace OpenUrzednik.Core.Errors;
 /// <summary>
 /// Represents an error indicating that a validation error has occurred.
 /// </summary>
-public record ValidationError : OpenUrzednikError
+public sealed class ValidationError : OpenUrzednikError
 {
+    /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
+    public const string ErrorCode = "validation";
+
+    /// <summary>The <see cref="OpenUrzednikError.Metadata"/> key of the name of the rule that failed (always present).</summary>
+    public const string RuleNameMetadataKey = "ruleName";
+
+    /// <summary>The <see cref="OpenUrzednikError.Metadata"/> key of the name of the checked parameter or property, when known.</summary>
+    public const string NameMetadataKey = "name";
+
+    /// <summary>The <see cref="OpenUrzednikError.Metadata"/> key of the rejected value, when it isn't <see langword="null"/>.</summary>
+    public const string ValueMetadataKey = "value";
+
     private readonly string _ruleName;
     private readonly string? _name;
-    private readonly object _value;
+    private readonly object? _value;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ValidationError"/> class with a specified error message, variable name and value.
@@ -18,23 +30,23 @@ public record ValidationError : OpenUrzednikError
     /// <param name="ruleName">Rule name</param>
     /// <param name="name">Variable name</param>
     /// <param name="value">Variable value</param>
-    public ValidationError(string message, string ruleName, string? name, object value)
-        : base(message)
+    public ValidationError(string message, string ruleName, string? name, object? value)
+        : base(ErrorCode, message)
     {
-        ArgumentNullException.ThrowIfNull(ruleName, nameof(ruleName));
-        ArgumentException.ThrowIfNullOrWhiteSpace(ruleName, nameof(ruleName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(ruleName);
 
         _ruleName = ruleName;
         _name = name;
         _value = value;
 
-        AddMetadata("ruleName", ruleName);
+        AddMetadata(RuleNameMetadataKey, ruleName);
         if (name is not null)
-            AddMetadata("name", name);
-        AddMetadata("value", value);
+            AddMetadata(NameMetadataKey, name);
+        if (value is not null)
+            AddMetadata(ValueMetadataKey, value);
     }
 
     /// <inheritdoc />
-    public override Exception ToException()
-        => new ValidationException(Message, _ruleName, _name, _value);
+    protected override OpenUrzednikException CreateException()
+        => new OpenUrzednikValidationException(Message, _ruleName, _name, _value);
 }

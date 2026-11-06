@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Zgłoszenie luki bezpieczeństwa / Security vulnerability
+    url: https://github.com/milten89/OpenUrzednik.NET/security/advisories/new
+    about: Nie zgłaszaj podatności w publicznym issue – użyj prywatnego zgłoszenia. / Do not report vulnerabilities in public issues.

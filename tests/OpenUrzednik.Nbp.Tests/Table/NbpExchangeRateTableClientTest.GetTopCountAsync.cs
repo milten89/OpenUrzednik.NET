@@ -1,0 +1,153 @@
+using System.Net;
+
+using Bogus;
+
+using NSubstitute;
+
+using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.Nbp.Table;
+using OpenUrzednik.Nbp.Tests.Fakes;
+using OpenUrzednik.Nbp.UrlBuilder;
+using OpenUrzednik.Nbp.Validation;
+using OpenUrzednik.TestCommon.Extensions;
+
+using Shouldly;
+
+namespace OpenUrzednik.Nbp.Tests.Table;
+
+public partial class NbpExchangeRateTableClientTest
+{
+    [Theory]
+    [InlineData((TableType)99)]
+    [InlineData((TableType)(-1))]
+    public void GetTopCountAsync_InvalidTable_ThrowsArgumentOutOfRangeExceptionWithoutSendingRequest(TableType table)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        int count = faker.Random.Int(3, 10);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
+
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetTopCountAsync(table, count, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
+        handler.Request.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task GetTopCountAsync_InvalidTopCount_ReturnsFailureWithoutSendingRequest(int topCount)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
+
+        // Act
+        var result = await sut.GetTopCountAsync(TableType.A, topCount, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public void GetTopCountAsync_UndefinedTableAndInvalidTopCount_ThrowsBeforeValidating()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
+
+        // Act && Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => { _ = sut.GetTopCountAsync((TableType)99, 0, TestContext.Current.CancellationToken); })
+            .ParamName.ShouldBe("table");
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task GetTopCountAsync_SuccessfulResponse_ReturnsAllMappedExchangeRateTablesInOriginalOrder()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        int count = faker.Random.Int(3, 10);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
+        var dtos = new ExchangeRateTableDtoFaker().LinkRandomizerTo(faker).Generate(count).ToArray();
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dtos), out _);
+        var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
+
+        // Act
+        var result = await sut.GetTopCountAsync(TableType.A, count, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(Mapper.MapToExchangeRateTable(dtos));
+    }
+
+    [Fact]
+    public async Task GetTopCountAsync_HttpRequestFails_ReturnsFailureWithoutAttemptingMapping()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        int count = faker.Random.Int(3, 10);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.TooManyRequests), out _);
+        var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
+
+        // Act
+        var result = await sut.GetTopCountAsync(TableType.A, count, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.Count.ShouldBe(1);
+        result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
+    }
+
+    [Fact]
+    public async Task GetTopCountAsync_EmptyArrayResponse_ReturnsSuccessWithEmptyArray()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        int count = faker.Random.Int(3, 10);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForTopCount(count).Returns(faker.Internet.UrlRootedPath());
+        using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, Array.Empty<ExchangeRateTableDto>()), out _);
+        var sut = CreateApiClient(httpClient, NbpTable.A, urlBuilder);
+
+        // Act
+        var result = await sut.GetTopCountAsync(TableType.A, count, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(TableType.A, (int)NbpTable.A, TopCountValidator.MaxDailyTablesTopCount + 1)]
+    [InlineData(TableType.B, (int)NbpTable.B, TopCountValidator.MaxTableBTopCount + 1)]
+    public async Task GetTopCountAsync_TopCountAboveTableLimit_ReturnsFailureWithoutSendingRequest(TableType table, int nbpTableValue, int topCount)
+    {
+        // Arrange
+        var nbpTable = (NbpTable)nbpTableValue;
+        var faker = new Faker().WithConstantSeed();
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK), out var handler);
+        var sut = CreateApiClient(httpClient, nbpTable, Substitute.For<INbpUrlBuilder>());
+
+        // Act
+        var result = await sut.GetTopCountAsync(table, topCount, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        handler.Request.ShouldBeNull();
+    }
+}

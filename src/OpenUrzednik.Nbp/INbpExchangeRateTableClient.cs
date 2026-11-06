@@ -1,0 +1,164 @@
+using OpenUrzednik.Core;
+using OpenUrzednik.Nbp.Table;
+
+namespace OpenUrzednik.Nbp;
+
+/// <summary>
+/// Represents a client for interacting with the National Bank of Poland (NBP) API to retrieve table of currency exchange rate data.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Table A (common currencies) is published on business days between 11:45 and 12:15, table B (less common currencies) on Wednesdays between 11:45 and 12:15, or on the previous business day when Wednesday is a holiday (Europe/Warsaw time).
+/// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
+/// </para>
+/// <para>
+/// Dates are <see cref="System.DateTime"/> on every target: only the date part of an argument is used (its time of day and
+/// <see cref="System.DateTime.Kind"/> are ignored), and returned dates have the time 00:00 and <see cref="System.DateTimeKind.Unspecified"/>.
+/// On .NET 8 and later, <c>NbpDateOnlyExtensions</c> adds <c>DateOnly</c> overloads.
+/// </para>
+/// <para>
+/// Minor versions may add methods to this interface (ADR-0011). If you implement it yourself, e.g. as a decorator,
+/// a new method breaks your build until you add it; a <c>throw new NotImplementedException();</c> stub is enough for the
+/// methods your code doesn't call. Calling and mocking the interface aren't affected.
+/// </para>
+/// </remarks>
+public interface INbpExchangeRateTableClient
+{
+    /// <summary>
+    /// Gets the latest table of currency exchange rate for the specified table type.
+    /// </summary>
+    /// <remarks>
+    /// Table A (common currencies) is published on business days between 11:45 and 12:15, table B (less common currencies) on Wednesdays between 11:45 and 12:15, or on the previous business day when Wednesday is a holiday (Europe/Warsaw time).
+    /// Returns the most recently published value; until the next publication that is the previous one (for table B, usually last Wednesday's).
+    /// </remarks>
+    /// <param name="table">Table type</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
+    Task<OpenUrzednikResult<ExchangeRateTable>> GetLatestAsync(TableType table, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the series of the table of currency exchange rate for the specified table type starting from the latest.
+    /// </summary>
+    /// <param name="table">Table type</param>
+    /// <param name="topCount">Number of tables to retrieve: 1 to 67 for table A, 1 to 14 for table B; the API rejects larger counts.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
+    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetTopCountAsync(TableType table, int topCount, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets today's table of currency exchange rate for the specified table type. If the table is not published yet for today, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// </summary>
+    /// <remarks>
+    /// Table A (common currencies) is published on business days between 11:45 and 12:15, table B (less common currencies) on Wednesdays between 11:45 and 12:15, or on the previous business day when Wednesday is a holiday (Europe/Warsaw time).
+    /// Until today's publication, and on days without one, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>; use <see cref="GetLatestAsync"/> to get the most recent published value.
+    /// </remarks>
+    /// <param name="table">Table type</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
+    Task<OpenUrzednikResult<ExchangeRateTable>> GetTodayAsync(TableType table, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the table of currency exchange rate for the specified table type and date. If the table is not published yet for the given date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date can't be lower than 2002-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
+    /// </summary>
+    /// <param name="table">Table type</param>
+    /// <param name="date">Date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
+    Task<OpenUrzednikResult<ExchangeRateTable>> GetAsync(TableType table, DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the table of currency exchange rate for the specified table type and date range. If the tables are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date range can't exceed 93 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2002-01-02, because the NBP API doesn't support it.
+    /// </summary>
+    /// <param name="table">Table type</param>
+    /// <param name="from">Start date</param>
+    /// <param name="to">End date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
+    Task<OpenUrzednikResult<IReadOnlyList<ExchangeRateTable>>> GetAsync(TableType table, DateTime from, DateTime to, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the table of currency exchange rate of the last publication before the specified date, the "previous business day" rule of Polish tax and accounting.
+    /// If no table was published in the 14 days before the date (28 days for table B), the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date must be later than 2002-01-02 and not later than tomorrow (Europe/Warsaw date), because the day before it must be a date the NBP API supports. With tomorrow, the result is today's publication once it is out, and the one before until then.
+    /// </summary>
+    /// <remarks>
+    /// The date itself is excluded: for a Monday the result is usually the table of the previous Friday (for table B, of the last Wednesday before it), even when Monday's table is already published.
+    /// The client requests the 14 days before the date (28 days for table B, published weekly) in one range and returns the table with the latest publication date.
+    /// </remarks>
+    /// <param name="table">Table type</param>
+    /// <param name="date">Date; only tables published before it count</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of currency exchange rate or an error</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="table"/> isn't a value defined by <see cref="TableType"/>. Thrown before the task is returned.</exception>
+    Task<OpenUrzednikResult<ExchangeRateTable>> GetLastPublishedBeforeAsync(TableType table, DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the latest table of buy and sell currency exchange rate.
+    /// </summary>
+    /// <remarks>
+    /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
+    /// Returns the most recently published value; until the next publication that is the previous one.
+    /// </remarks>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
+    Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellLatestAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the series of table of buy and sell currency exchange rate starting from the latest.
+    /// </summary>
+    /// <param name="topCount">Number of tables to retrieve, from 1 to 67; the API rejects larger counts.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
+    Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellTopCountAsync(int topCount, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets today's table of buy and sell currency exchange rate. If the table is not published yet for today, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// </summary>
+    /// <remarks>
+    /// Table C (buy and sell rates) is published on business days between 7:45 and 8:15 (Europe/Warsaw time).
+    /// Until today's publication, and on days without one, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>; use <see cref="GetBuySellLatestAsync"/> to get the most recent published value.
+    /// </remarks>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
+    Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellTodayAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the table of buy and sell currency exchange rate for the specified date. If the table is not published yet for the given date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date can't be lower than 2002-01-02 or later than today (Europe/Warsaw date), because the NBP API doesn't support it.
+    /// </summary>
+    /// <param name="date">Date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
+    Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellAsync(DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the table of buy and sell currency exchange rate for the specified date range. If the tables are not published yet for the given date range, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date range can't exceed 93 days (<c>to - from</c>), start after the end, end in the future (Europe/Warsaw date) or finish before 2002-01-02, because the NBP API doesn't support it.
+    /// </summary>
+    /// <param name="from">Start date</param>
+    /// <param name="to">End date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
+    Task<OpenUrzednikResult<IReadOnlyList<BuySellExchangeRateTable>>> GetBuySellAsync(DateTime from, DateTime to, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the table of buy and sell currency exchange rate of the last publication before the specified date, the "previous business day" rule of Polish tax and accounting.
+    /// If no table was published in the 14 days before the date, the result is a <see cref="OpenUrzednik.Core.Errors.NotFoundError"/>.
+    /// Date must be later than 2002-01-02 and not later than tomorrow (Europe/Warsaw date), because the day before it must be a date the NBP API supports. With tomorrow, the result is today's publication once it is out, and the one before until then.
+    /// </summary>
+    /// <remarks>
+    /// The date itself is excluded: for a Monday the result is usually the table of the previous Friday, even when Monday's table is already published.
+    /// The client requests the 14 days before the date in one range and returns the table with the latest publication date (<see cref="BuySellExchangeRateTable.PublicationDate"/>, not the trading date).
+    /// </remarks>
+    /// <param name="date">Date; only tables published before it count</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Result containing the table of buy and sell currency exchange rate or an error</returns>
+    Task<OpenUrzednikResult<BuySellExchangeRateTable>> GetBuySellLastPublishedBeforeAsync(DateTime date, CancellationToken cancellationToken = default);
+}

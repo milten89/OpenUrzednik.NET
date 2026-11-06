@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 using OpenUrzednik.Nbp.Dto;
 
@@ -8,6 +8,5 @@ namespace OpenUrzednik.Nbp.Common;
 [JsonSerializable(typeof(ExchangeRateTableDto[]))]
 [JsonSerializable(typeof(BuySellExchangeRateTableDto[]))]
 [JsonSerializable(typeof(CurrencyExchangeRatesDto))]
-[JsonSerializable(typeof(CountryExchangeRatesDto))]
 [JsonSerializable(typeof(BuySellCurrencyExchangeRatesDto))]
 internal sealed partial class NbpJsonContext : JsonSerializerContext;
