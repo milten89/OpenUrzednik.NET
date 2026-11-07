@@ -38,7 +38,11 @@ internal static class NbpOptionsValidator
     /// </summary>
     internal static void ValidateTimeout(TimeSpan? timeout, string paramName)
     {
-        if (timeout is { } value && value != Timeout.InfiniteTimeSpan && (value <= TimeSpan.Zero || value.TotalMilliseconds > int.MaxValue))
+        // HasValue, not `timeout is { } value`, so that mutation testing checks the comparisons (ADR-0018): the pattern's `is not`
+        // mutant leaves `value` unassigned where it's used (CS0165), so the mutant doesn't compile, and Stryker discards the other
+        // mutants of that code with it.
+        var value = timeout.GetValueOrDefault();
+        if (timeout.HasValue && value != Timeout.InfiniteTimeSpan && (value <= TimeSpan.Zero || value.TotalMilliseconds > int.MaxValue))
             throw new ArgumentException($"Invalid NBP API timeout: {value}. It must be positive and at most {int.MaxValue} ms, or Timeout.InfiniteTimeSpan.", paramName);
     }
 }

@@ -14,7 +14,10 @@ internal static class ResultExceptions
     // several errors of other kinds -> the first error's exception. Errors always holds every error.
     internal static OpenUrzednikException Create(IReadOnlyList<OpenUrzednikError> errors)
     {
-        if (errors.Count == 1)
+        // A local, not `errors.Count` in the comparisons, so that mutation testing checks them (ADR-0018):
+        // Stryker's LINQ mutator turns the property into `errors.Sum`, which can't compile, and discards the mutants around it.
+        var count = errors.Count;
+        if (count == 1)
             return errors[0].ToException();
 
         if (errors.All(e => e is ValidationError))
@@ -29,7 +32,9 @@ internal static class ResultExceptions
     internal static InvalidOperationException CreateValueOfFailure(IReadOnlyList<OpenUrzednikError> errors)
     {
         var message = new StringBuilder("Cannot access the value of a failed result: ");
-        for (var i = 0; i < errors.Count; i++)
+        // A local, not `errors.Count` in the condition: see Create (ADR-0018).
+        var count = errors.Count;
+        for (var i = 0; i < count; i++)
         {
             if (i > 0)
                 message.Append("; ");

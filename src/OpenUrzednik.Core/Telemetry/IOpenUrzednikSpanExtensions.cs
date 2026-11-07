@@ -30,13 +30,17 @@ public static class IOpenUrzednikSpanExtensions
     /// <param name="errors">Errors to record.</param>
     public static void RecordErrors(this IOpenUrzednikSpan span, IReadOnlyList<OpenUrzednikError> errors)
     {
-        if (!span.IsRecording || errors.Count == 0) return;
+        if (!span.IsRecording) return;
+        // A local, not `errors.Count` in the comparisons, so that mutation testing checks them (ADR-0018): Stryker's LINQ mutator
+        // turns the property into `errors.Sum`, which can't compile, and discards the mutants around it.
+        var count = errors.Count;
+        if (count == 0) return;
 
         span.SetTag("error.type", errors[0].Code);
         foreach (var error in errors)
             span.AddEvent("error", "error.type", error.Code);
 
         span.SetStatus(OpenUrzednikSpanStatus.Error,
-            errors.Count == 1 ? errors[0].Message : $"{errors.Count} errors occurred");
+            count == 1 ? errors[0].Message : $"{count} errors occurred");
     }
 }

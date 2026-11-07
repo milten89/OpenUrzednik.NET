@@ -44,13 +44,16 @@ public sealed class OpenUrzednikValidationException : OpenUrzednikException
     private static string CreateMessage(IReadOnlyList<ValidationError> errors)
     {
         ArgumentNullException.ThrowIfNull(errors);
-        if (errors.Count == 0)
+        // A local, not `errors.Count` in the comparisons, so that mutation testing checks them (ADR-0018): Stryker's LINQ mutator
+        // turns the property into `errors.Sum`, which can't compile, and discards the mutants around it.
+        var count = errors.Count;
+        if (count == 0)
             throw new ArgumentException("At least one validation error is required.", nameof(errors));
         if (errors.Any(e => e is null))
             throw new ArgumentException("Validation errors must not contain null.", nameof(errors));
 
-        return errors.Count == 1
+        return count == 1
             ? errors[0].Message
-            : string.Create(CultureInfo.InvariantCulture, $"Validation failed with {errors.Count} errors: {string.Join("; ", errors.Select(e => e.Message))}");
+            : string.Create(CultureInfo.InvariantCulture, $"Validation failed with {count} errors: {string.Join("; ", errors.Select(e => e.Message))}");
     }
 }
