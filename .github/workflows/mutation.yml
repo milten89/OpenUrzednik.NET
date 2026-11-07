@@ -67,6 +67,11 @@ jobs:
     - name: Restore the tools
       run: dotnet tool restore
 
+    # Stryker's design-time build of each project needs restored packages. Without them it drops test projects silently
+    # (fewer tests, mutants without coverage) or compiles a project without its package references.
+    - name: Restore dependencies
+      run: dotnet restore OpenUrzednik.slnx
+
     - name: Run the mutation shards
       env:
         SHARDS: ${{ matrix.shards }}
