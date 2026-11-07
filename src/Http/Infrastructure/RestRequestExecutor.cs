@@ -70,7 +70,11 @@ internal sealed class RestRequestExecutor
         ArgumentNullException.ThrowIfNull(profile);
         if (!baseAddress.IsAbsoluteUri)
             throw new ArgumentException($"The base address must be absolute: {baseAddress}", nameof(baseAddress));
-        if (timeout is { } value && value != System.Threading.Timeout.InfiniteTimeSpan && (value <= TimeSpan.Zero || value.TotalMilliseconds > int.MaxValue))
+        // HasValue, not `timeout is { } value`, so that mutation testing checks the comparisons (ADR-0018): the pattern's `is not`
+        // mutant leaves `value` unassigned where it's used (CS0165), so the mutant doesn't compile, and Stryker discards the other
+        // mutants of that code with it.
+        var value = timeout.GetValueOrDefault();
+        if (timeout.HasValue && value != System.Threading.Timeout.InfiniteTimeSpan && (value <= TimeSpan.Zero || value.TotalMilliseconds > int.MaxValue))
             throw new ArgumentOutOfRangeException(nameof(timeout), value, "The timeout must be positive and at most int.MaxValue ms, or Timeout.InfiniteTimeSpan.");
 
         _httpClient = httpClient;
@@ -192,8 +196,9 @@ internal sealed class RestRequestExecutor
         // With ResponseHeadersRead, HttpClient.Timeout stops applying once the headers arrive,
         // so the deadline is applied to reading the body as well.
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        if (timeout is { } deadline)
-            timeoutSource.CancelAfter(deadline);
+        // HasValue, not `timeout is { } deadline`, so that mutation testing checks CancelAfter: see the constructor (ADR-0018).
+        if (timeout.HasValue)
+            timeoutSource.CancelAfter(timeout.GetValueOrDefault());
         var requestToken = timeoutSource.Token;
 
         var sendResult = await SendAsync(request, messagePath, timeout, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
@@ -278,7 +283,9 @@ internal sealed class RestRequestExecutor
         if (requestToken.IsCancellationRequested)
             return deadline;
 
-        return Finite(_httpClient.Timeout) is { } clientTimeout && LimitElapsed(Stopwatch.GetElapsedTime(started), clientTimeout) ? clientTimeout : null;
+        // HasValue, not `is { } clientTimeout`, so that mutation testing checks which limit is named: see the constructor (ADR-0018).
+        var clientTimeout = Finite(_httpClient.Timeout);
+        return clientTimeout.HasValue && LimitElapsed(Stopwatch.GetElapsedTime(started), clientTimeout.GetValueOrDefault()) ? clientTimeout : null;
     }
 
     // Whether a limit counts as elapsed: its timer may fire up to TimerResolution early, so an elapsed time that close counts too.
@@ -333,10 +340,13 @@ internal sealed class RestRequestExecutor
         Task<string?>? messageTask = null;
         Task<string?> ReadMessageOnceAsync() => messageTask ??= ReadServerMessageAsync(response, requestToken, cancellationToken);
 
-        if (_profile.MapErrorAsync is { } mapErrorAsync)
+        // Locals and `is not null`, not pattern variables, so that mutation testing checks this code: see the constructor (ADR-0018).
+        var mapErrorAsync = _profile.MapErrorAsync;
+        if (mapErrorAsync is not null)
         {
             var context = new ErrorResponseContext(response, path, delay, ReadMessageOnceAsync, requestToken);
-            if (await mapErrorAsync(context).ConfigureAwait(false) is { } customError)
+            var customError = await mapErrorAsync(context).ConfigureAwait(false);
+            if (customError is not null)
             {
                 _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ErrorResponse, null, "{provider} returned status {status} for {path}",
                     "provider", _profile.Name, "status", (int)response.StatusCode, "path", path);
