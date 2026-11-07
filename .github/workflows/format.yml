@@ -43,5 +43,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore OpenUrzednik.slnx
 
+    # The log shows "Found project reference without a matching metadata reference" for Core, Extensions.Logging and
+    # Diagnostics. It is harmless (#246): netstandard2.0 builds have no reference assembly, so Roslyn's workspace can't pair
+    # a reference first reached from a netstandard2.0 build and falls back to the referenced project's first target
+    # framework, netstandard2.0, the right one. That holds while netstandard2.0 is first in src/Directory.Build.props.
     - name: Check code format (dotnet format)
       run: dotnet format OpenUrzednik.slnx --verify-no-changes --no-restore --verbosity diagnostic

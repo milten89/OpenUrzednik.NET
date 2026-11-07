@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using OpenUrzednik.Core.Telemetry;
 
 namespace OpenUrzednik.Http.Infrastructure;
@@ -25,6 +27,7 @@ internal sealed class OpenUrzednikTelemetry(IOpenUrzednikLogger? logger = null, 
     public IOpenUrzednikTraceSource TraceSource { get; } = traceSource ?? DefaultTraceSource(sourceName);
 
     // netstandard2.0 has no ActivitySource without the System.Diagnostics.DiagnosticSource package, which Core and providers don't take.
+    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "The netstandard2.0 build returns one concrete type, the .NET build two; the shared signature needs the interface, and the result is stored once per client in an interface-typed property, so a concrete type devirtualizes nothing.")]
     private static IOpenUrzednikTraceSource DefaultTraceSource(string? sourceName)
 #if NET
         => sourceName is null ? NullOpenUrzednikTraceSource.Instance : SharedActivityTraceSource.Get(sourceName);
