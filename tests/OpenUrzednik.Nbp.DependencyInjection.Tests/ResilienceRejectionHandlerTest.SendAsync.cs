@@ -1,4 +1,5 @@
 using OpenUrzednik.Http.Infrastructure;
+using OpenUrzednik.TestCommon;
 
 using Polly;
 using Polly.CircuitBreaker;
@@ -36,7 +37,7 @@ public sealed partial class ResilienceRejectionHandlerTest
         using var response = new HttpResponseMessage();
         using var sut = new HttpMessageInvoker(new ResilienceRejectionHandler { InnerHandler = new PendingHandler(pending.Task) });
         using var request = CreateRequest();
-        var context = new RecordingSynchronizationContext();
+        var context = new CountingSynchronizationContext();
         var previous = SynchronizationContext.Current;
         Task<HttpResponseMessage> sending;
         SynchronizationContext.SetSynchronizationContext(context);

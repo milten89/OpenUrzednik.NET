@@ -6,6 +6,7 @@ using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Dto;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
@@ -94,7 +95,7 @@ public sealed partial class NbpRequestPipelineTest
         var sut = CreateAsyncSut("""[{"data":"2026-08-20","cena":522.32}]""");
 
         // Act
-        var posts = await PostCountingSynchronizationContext.CountPostsAsync(() => sut.GetFirstAsync<GoldPriceDto, decimal>(Substitute.For<IOpenUrzednikSpan>(),
+        var posts = await CountingSynchronizationContext.CountPostsAsync(() => sut.GetFirstAsync<GoldPriceDto, decimal>(Substitute.For<IOpenUrzednikSpan>(),
             "Operation", OpenUrzednikResult.Success(), () => "cenyzlota", JsonContext.GoldPriceDtoArray, dto => dto.Price, TestContext.Current.CancellationToken));
 
         // Assert

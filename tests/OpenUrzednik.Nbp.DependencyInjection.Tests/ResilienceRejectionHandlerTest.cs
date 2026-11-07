@@ -15,18 +15,4 @@ public sealed partial class ResilienceRejectionHandlerTest
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => response;
     }
-
-    // Counts the continuations posted to it, then runs them on the thread pool.
-    private sealed class RecordingSynchronizationContext : SynchronizationContext
-    {
-        private int _posts;
-
-        public int Posts => Volatile.Read(ref _posts);
-
-        public override void Post(SendOrPostCallback d, object? state)
-        {
-            Interlocked.Increment(ref _posts);
-            base.Post(d, state);
-        }
-    }
 }

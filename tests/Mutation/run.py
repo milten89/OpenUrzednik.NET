@@ -11,10 +11,11 @@ Usage (from the repository root):
 
 Each shard (tests/Mutation/shards.json) runs `dotnet stryker` with its config into artifacts/mutation/<shard>, then this script reads
 reports/mutation-report.json and fails the shard when:
-  * no mutant was tested (Stryker exits 0 when it can't compute a score),
+  * Stryker exits non-zero, or no mutant was tested (Stryker exits 0 when it can't compute a score),
+  * a strict glob matches no file of the report (a typo or a moved folder would turn its check off),
   * a mutant in a strict file survived or has no coverage, or
   * the mutation score is below the shard's `break` value.
-It appends a markdown summary to artifacts/mutation/summary.md (CI copies it into the job summary).
+It writes a markdown summary to artifacts/mutation/summary.md (CI copies it into the job summary).
 Exit codes: 0 every shard passed, 1 a gate failed, 2 a shard couldn't run or its report is missing.
 """
 
@@ -23,6 +24,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -51,6 +53,7 @@ class Result:
     counts: dict[str, int] = field(default_factory=dict)
     score: float | None = None
     strict_survivors: list[str] = field(default_factory=list)
+    unmatched_strict: list[str] = field(default_factory=list)
     other_survivors: int = 0
     error: str | None = None
 
@@ -64,6 +67,7 @@ class Result:
             self.error is None
             and self.tested > 0
             and not self.strict_survivors
+            and not self.unmatched_strict
             and self.score is not None
             and self.score >= self.shard.break_at
         )
@@ -129,12 +133,15 @@ def check(shard: Shard, report_path: Path) -> Result:
 
     report = json.loads(report_path.read_text(encoding="utf-8"))
     project_root = Path(report.get("projectRoot") or shard.workdir)
-    strict = [glob_to_regex(pattern) for pattern in shard.strict]
+    strict = {pattern: glob_to_regex(pattern) for pattern in shard.strict}
+    matched: set[str] = set()
     for file_name, file in report.get("files", {}).items():
         path = Path(file_name)
         absolute = path if path.is_absolute() else project_root / path
         relative = os.path.relpath(absolute.resolve(), ROOT).replace(os.sep, "/")
-        is_strict = any(regex.match(relative) for regex in strict)
+        hits = {pattern for pattern, regex in strict.items() if regex.match(relative)}
+        matched |= hits
+        is_strict = bool(hits)
         for mutant in file.get("mutants", []):
             status = mutant.get("status", "Unknown")
             result.counts[status] = result.counts.get(status, 0) + 1
@@ -147,6 +154,7 @@ def check(shard: Shard, report_path: Path) -> Result:
             else:
                 result.other_survivors += 1
 
+    result.unmatched_strict = [pattern for pattern in shard.strict if pattern not in matched]
     if result.tested:
         detected = sum(result.counts.get(status, 0) for status in DETECTED)
         result.score = 100.0 * detected / result.tested
@@ -170,6 +178,8 @@ def summary(results: list[Result]) -> str:
             lines += ["", f"**{r.shard.name}:** {r.error}"]
         elif r.tested == 0:
             lines += ["", f"**{r.shard.name}:** no mutant was tested (Stryker found no score)."]
+        if r.unmatched_strict:
+            lines += ["", f"**{r.shard.name}:** strict globs matching no mutated file: {', '.join(r.unmatched_strict)}"]
         if r.strict_survivors:
             lines += ["", f"**{r.shard.name}: undetected mutants in strict files**", ""]
             lines += [f"- {survivor}" for survivor in r.strict_survivors]
@@ -194,19 +204,21 @@ def main(argv: list[str]) -> int:
     for name in names:
         shard = shards[name]
         output = OUTPUT_ROOT / name
+        # A failed run must not leave an older report behind to be checked instead.
+        shutil.rmtree(output / "reports", ignore_errors=True)
         exit_code = run_stryker(shard, output)
         result = check(shard, output / "reports" / "mutation-report.json")
-        if exit_code != 0 and result.error is None and result.tested == 0:
+        if exit_code != 0:
+            # No Stryker threshold is configured (the break check is ours), so a non-zero exit is always a failed run.
             result.error = f"dotnet stryker exited with {exit_code}"
         results.append(result)
 
     text = summary(results)
     OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
-    with (OUTPUT_ROOT / "summary.md").open("a", encoding="utf-8") as handle:
-        handle.write(text)
+    (OUTPUT_ROOT / "summary.md").write_text(text, encoding="utf-8")
     print(text)
 
-    if any(r.error or r.tested == 0 for r in results):
+    if any(r.error or r.tested == 0 or r.unmatched_strict for r in results):
         return 2
     return 0 if all(r.passed for r in results) else 1
 

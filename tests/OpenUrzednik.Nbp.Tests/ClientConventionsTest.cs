@@ -6,7 +6,7 @@ namespace OpenUrzednik.Nbp.Tests;
 
 // ADR-0007: CancellationToken cancellationToken = default is the last parameter of every async method,
 // in both interfaces and implementations.
-public class ClientConventionsTest
+public partial class ClientConventionsTest
 {
     private static readonly Type[] AsyncReturnTypes =
         [typeof(Task), typeof(Task<>), typeof(ValueTask), typeof(ValueTask<>), typeof(IAsyncEnumerable<>)];

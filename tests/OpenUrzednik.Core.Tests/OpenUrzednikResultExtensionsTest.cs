@@ -1,3 +1,5 @@
+using OpenUrzednik.TestCommon;
+
 namespace OpenUrzednik.Core.Tests;
 
 // Shared helpers; tests are in one file per method.
@@ -24,19 +26,5 @@ public partial class OpenUrzednikResultExtensionsTest
         complete();
         await task;
         return context.Posts;
-    }
-
-    // Runs posted callbacks on the thread pool and counts them.
-    private sealed class CountingSynchronizationContext : SynchronizationContext
-    {
-        private int _posts;
-
-        public int Posts => Volatile.Read(ref _posts);
-
-        public override void Post(SendOrPostCallback d, object? state)
-        {
-            Interlocked.Increment(ref _posts);
-            base.Post(d, state);
-        }
     }
 }

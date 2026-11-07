@@ -198,26 +198,6 @@ public partial class RestRequestExecutorTest
         }
     }
 
-    // Counts the continuations queued to it: library code must never resume on the caller's context.
-    private sealed class CountingSynchronizationContext : SynchronizationContext
-    {
-        private int _posts;
-
-        public int Posts => Volatile.Read(ref _posts);
-
-        public override void Post(SendOrPostCallback d, object? state)
-        {
-            Interlocked.Increment(ref _posts);
-            base.Post(d, state);
-        }
-
-        public override void Send(SendOrPostCallback d, object? state)
-        {
-            Interlocked.Increment(ref _posts);
-            base.Send(d, state);
-        }
-    }
-
     private sealed class DisposeTrackingContent(string body) : StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json)
     {
         public bool IsDisposed { get; private set; }

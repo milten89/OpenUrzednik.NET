@@ -54,7 +54,6 @@ internal static class NbpCalendar
             TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1, 1, 1, 2, 0, 0), 3, 5, DayOfWeek.Sunday),
             TimeZoneInfo.TransitionTime.CreateFloatingDateRule(new DateTime(1, 1, 1, 3, 0, 0), 10, 5, DayOfWeek.Sunday));
 
-        // Stryker disable once String : low value, the display names of this internal zone are never shown; only its offsets are used
         return TimeZoneInfo.CreateCustomTimeZone("Europe/Warsaw", TimeSpan.FromHours(1), "Europe/Warsaw", "CET", "CEST", [summerTime]);
     }
 }

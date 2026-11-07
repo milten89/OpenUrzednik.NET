@@ -21,7 +21,10 @@ public sealed class ConnectionFailedError(string message, Exception? exception =
     /// <inheritdoc />
     /// <remarks>The returned exception keeps <see cref="Exception"/> as its <see cref="System.Exception.InnerException"/>.</remarks>
     protected override OpenUrzednikException CreateException()
-        => Exception is null
-            ? new ConnectionFailedException(Message)
-            : new ConnectionFailedException(Message, Exception);
+    {
+        // A statement, not a conditional expression: mutation testing skips mutants inside exception constructor calls (ADR-0018).
+        if (Exception is null)
+            return new ConnectionFailedException(Message);
+        return new ConnectionFailedException(Message, Exception);
+    }
 }

@@ -30,7 +30,7 @@ internal sealed class RestRequestExecutor
     private const string JsonMediaType = "application/json";
 
     // Timers can fire up to one system clock tick (about 15.6 ms on Windows) before their due time.
-    private static readonly TimeSpan TimerResolution = TimeSpan.FromMilliseconds(16);
+    internal static readonly TimeSpan TimerResolution = TimeSpan.FromMilliseconds(16);
 
     private readonly HttpClient _httpClient;
     private readonly TimeSpan? _timeout;
@@ -209,11 +209,8 @@ internal sealed class RestRequestExecutor
         var logger = _telemetry.Logger;
         try
         {
-            // .NET Framework leaves Content null when there is no body; .NET always sets one.
-            // Stryker disable once Conditional: equivalent on .NET, where Content is never null; Stryker mutates net10.0 only, and the net472 tests cover the null branch
-            var dto = response.Content is null
-                ? default
-                : await response.Content.ReadJsonAsync(typeInfo, requestToken).ConfigureAwait(false);
+            // .NET Framework leaves Content null when there is no body; ReadJsonAsync handles that.
+            var dto = await response.Content.ReadJsonAsync(typeInfo, requestToken).ConfigureAwait(false);
             if (dto is not null)
                 return OpenUrzednikResult.Success(dto);
 
@@ -281,10 +278,12 @@ internal sealed class RestRequestExecutor
         if (requestToken.IsCancellationRequested)
             return deadline;
 
-        var elapsed = Stopwatch.GetElapsedTime(started);
-        // Stryker disable once Equality: >= and > differ only when the real-clock elapsed time hits the limit minus TimerResolution to the tick, which no test can arrange
-        return Finite(_httpClient.Timeout) is { } clientTimeout && elapsed + TimerResolution >= clientTimeout ? clientTimeout : null;
+        return Finite(_httpClient.Timeout) is { } clientTimeout && LimitElapsed(Stopwatch.GetElapsedTime(started), clientTimeout) ? clientTimeout : null;
     }
+
+    // Whether a limit counts as elapsed: its timer may fire up to TimerResolution early, so an elapsed time that close counts too.
+    // A function of its own so the boundary is tested exactly, without a real clock.
+    internal static bool LimitElapsed(TimeSpan elapsed, TimeSpan limit) => elapsed + TimerResolution >= limit;
 
     // The caller's token is not cancelled, so the cancellation came from the request deadline, HttpClient.Timeout
     // or a handler's own timeout; timeout is null when the limit isn't known.
@@ -474,12 +473,12 @@ internal sealed class RestRequestExecutor
         var start = SkipLeadingSlashes(displayPath);
         var query = displayPath.IndexOf('?', start);
         var end = query < 0 ? displayPath.Length : query;
-        // Stryker disable once Assignment: equivalent, ??= only caches the base path; assigning it on every call gives the same text
+        // Stryker disable once Assignment : equivalent, ??= only caches the base path; assigning it on every call gives the same text
         return string.Concat((_basePath ??= BaseAddress.AbsolutePath).AsSpan(), displayPath.AsSpan(start, end - start));
     }
 
     // The status-error path of a display path: the base address, then the display path without leading '/', as GetAsync resolves it.
-    // Stryker disable once Assignment: equivalent, ??= only caches the base address text; assigning it on every call gives the same text
+    // Stryker disable once Assignment : equivalent, ??= only caches the base address text; assigning it on every call gives the same text
     private string DisplayUri(string displayPath)
         => string.Concat((_baseUri ??= BaseAddress.ToString()).AsSpan(), displayPath.AsSpan(SkipLeadingSlashes(displayPath)));
 

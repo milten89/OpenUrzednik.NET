@@ -42,4 +42,17 @@ public class NbpCalendarTest
         for (var instant = start; instant < start.AddYears(1); instant = instant.AddHours(1))
             fallback.GetUtcOffset(instant).ShouldBe(warsaw.GetUtcOffset(instant), $"at {instant:O}");
     }
+
+    [Fact]
+    public void CreateCentralEuropeanTime_Names_AreWarsawCetAndCest()
+    {
+        // Act
+        var fallback = NbpCalendar.CreateCentralEuropeanTime();
+
+        // Assert
+        fallback.Id.ShouldBe("Europe/Warsaw");
+        fallback.DisplayName.ShouldBe("Europe/Warsaw");
+        fallback.StandardName.ShouldBe("CET");
+        fallback.DaylightName.ShouldBe("CEST");
+    }
 }

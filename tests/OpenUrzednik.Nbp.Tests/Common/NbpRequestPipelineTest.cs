@@ -32,7 +32,7 @@ public sealed partial class NbpRequestPipelineTest : IDisposable
         return new NbpRequestPipeline(NbpConnection.Create(httpClient, null, telemetry, TimeProvider.System), telemetry);
     }
 
-    // The response arrives asynchronously, so the pipeline's awaits suspend (see PostCountingSynchronizationContext).
+    // The response arrives asynchronously, so the pipeline's awaits suspend (see CountingSynchronizationContext).
     private NbpRequestPipeline CreateAsyncSut(string body)
     {
         var httpClient = new HttpClient(new AsyncStubHttpMessageHandler(() => Json(body)));

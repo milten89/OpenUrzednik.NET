@@ -59,7 +59,7 @@ Targets `refs/heads/main` and `refs/heads/release/*.x`: the branches releases ar
 | Required status checks (strict, up to date; `do_not_enforce_on_create`, as in `protected-branches`) | `mutation` (GitHub Actions) |
 | Bypass | Repository role **Admin**, mode **pull requests only**, as in `protected-branches` |
 
-Check it with `gh api repos/milten89/OpenUrzednik.NET/rulesets` (the id is listed there). The workflow also runs every Monday on `develop`, on demand (`workflow_dispatch`), and through `mutation-tooling.yml` on PRs into `develop` that change the mutation tooling; those runs aren't required checks.
+Create it only once a release that contains `mutation.yml` (1.1.0) is merged into `main`. Before that, a hotfix branched from `v1.0.0` has no `mutation.yml`, so its PR into `main` would never get the check and couldn't merge without the admin bypass. A support branch `release/N.x` made from a later tag has the workflow, so its backport PRs get the check. Check it with `gh api repos/milten89/OpenUrzednik.NET/rulesets` (the id is listed there). The workflow also runs every Monday on `develop`, on demand (`workflow_dispatch`), and through `mutation-tooling.yml` on PRs into `develop` that change the mutation tooling; those runs aren't required checks.
 
 ## Environments
 
