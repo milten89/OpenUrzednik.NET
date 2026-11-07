@@ -75,6 +75,7 @@ public sealed partial class NbpServiceCollectionExtensionsTest
         // Arrange
         var services = new ServiceCollection();
         services.AddKeyedOpenUrzednikNbp("gateway", options => options.ApiUrl = "https://proxy.example.com/nbp/");
+        var registered = services.Count(descriptor => descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "gateway"));
         services.AddKeyedOpenUrzednikNbp("gateway", options => options.Timeout = TimeSpan.FromSeconds(5));
         using var provider = services.BuildServiceProvider();
 
@@ -82,11 +83,40 @@ public sealed partial class NbpServiceCollectionExtensionsTest
         var options = provider.GetRequiredService<IOptionsMonitor<NbpOptions>>().Get("gateway");
 
         // Assert
-        services.Count(descriptor => descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "gateway")
-            && descriptor.ServiceType == typeof(INbpGoldPriceClient)).ShouldBe(1);
+        // Nothing under the key is added again: neither the clients nor the key's own registration.
+        services.Count(descriptor => descriptor.IsKeyedService && Equals(descriptor.ServiceKey, "gateway")).ShouldBe(registered);
         options.ApiUrl.ShouldBe("https://proxy.example.com/nbp/");
         options.Timeout.ShouldBe(TimeSpan.FromSeconds(5));
         CountRejectionHandlers(provider, NbpServiceCollectionExtensions.HttpClientName + ":gateway").ShouldBe(1);
+    }
+
+    [Fact]
+    public void AddKeyedOpenUrzednikNbp_KeyUsedByAnotherService_RegistersTheClients()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddKeyedSingleton("gateway", "the app's own service under the same key");
+        services.AddKeyedOpenUrzednikNbp("gateway");
+        using var provider = services.BuildServiceProvider();
+
+        // Act & Assert
+        provider.GetRequiredKeyedService<INbpGoldPriceClient>("gateway").ShouldBeOfType<NbpGoldPriceClient>();
+    }
+
+    [Fact]
+    public void AddKeyedOpenUrzednikNbp_InvalidOptionsForKey_FailsStartupValidation()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddKeyedOpenUrzednikNbp("gateway", options => options.ApiUrl = "http://api.nbp.pl/api/");
+        using var provider = services.BuildServiceProvider();
+
+        // Act
+        var exception = Should.Throw<OptionsValidationException>(() => provider.GetRequiredService<IStartupValidator>().Validate());
+
+        // Assert
+        exception.OptionsName.ShouldBe("gateway");
+        exception.Message.ShouldContain("NBP API no longer supports HTTP");
     }
 
     [Fact]
@@ -193,5 +223,15 @@ public sealed partial class NbpServiceCollectionExtensionsTest
 
         // Act & Assert
         Should.Throw<ArgumentNullException>(() => services.AddKeyedOpenUrzednikNbp("gateway")).ParamName.ShouldBe("services");
+    }
+
+    [Fact]
+    public void AddKeyedOpenUrzednikNbp_NullServicesAndKey_ThrowsForServices()
+    {
+        // Arrange
+        IServiceCollection services = null!;
+
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => services.AddKeyedOpenUrzednikNbp(null!)).ParamName.ShouldBe("services");
     }
 }

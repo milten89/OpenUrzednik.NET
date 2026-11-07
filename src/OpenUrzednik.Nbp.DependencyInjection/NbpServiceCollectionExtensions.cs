@@ -51,6 +51,7 @@ public static class NbpServiceCollectionExtensions
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IHttpClientBuilder AddOpenUrzednikNbp(this IServiceCollection services, Action<NbpOptions>? configure = null)
     {
+        // Stryker disable once Statement : equivalent, AddOptions throws the same ArgumentNullException for services before anything is registered (checked by hand with Microsoft.Extensions 8 and 10)
         ArgumentNullException.ThrowIfNull(services);
 
         var options = services.AddOptions<NbpOptions>();
@@ -163,6 +164,7 @@ public static class NbpServiceCollectionExtensions
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static IHttpClientBuilder AddOpenUrzednikNbpRejectionHandler(this IHttpClientBuilder builder)
     {
+        // Stryker disable once Statement : equivalent, ConfigureAdditionalHttpMessageHandlers throws the same ArgumentNullException for builder (checked by hand with Microsoft.Extensions 8 and 10)
         ArgumentNullException.ThrowIfNull(builder);
 
         // Inserted first rather than appended, so it stays outside every resilience handler: one chained on the builder later,
