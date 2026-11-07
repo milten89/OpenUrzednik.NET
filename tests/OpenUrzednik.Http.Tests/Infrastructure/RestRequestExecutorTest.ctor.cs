@@ -64,6 +64,20 @@ public partial class RestRequestExecutorTest
     }
 
     [Fact]
+    public void Ctor_TimeoutOfIntMaxValueMilliseconds_KeepsIt()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var timeout = TimeSpan.FromTicks(int.MaxValue * TimeSpan.TicksPerMillisecond);
+
+        // Act
+        var sut = new RestRequestExecutor(httpClient, BaseAddress, Profile, timeout);
+
+        // Assert
+        sut.Timeout.ShouldBe(timeout);
+    }
+
+    [Fact]
     public void Ctor_NoTimeout_UsesHttpClientTimeout()
     {
         // Arrange
