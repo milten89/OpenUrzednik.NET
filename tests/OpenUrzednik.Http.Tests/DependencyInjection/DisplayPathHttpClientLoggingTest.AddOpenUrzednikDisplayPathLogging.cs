@@ -174,7 +174,11 @@ public partial class DisplayPathHttpClientLoggingTest
         // Arrange
         // As with Microsoft's default loggers: LogicalHandler wraps the app's handlers, ClientHandler sits next to the primary handler.
         var recorder = new RecordingLoggerProvider();
-        using var provider = BuildProvider(CreateOkHandler(), recorder, (_, builder) => builder.AddHttpMessageHandler(() => new AnsweringHandler()));
+        using var answer = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"name\":\"n\"}", System.Text.Encoding.UTF8, "application/json"),
+        };
+        using var provider = BuildProvider(CreateOkHandler(), recorder, (_, builder) => builder.AddHttpMessageHandler(() => new AnsweringHandler(answer)));
 
         // Act
         await CreateExecutor(provider).GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
@@ -207,14 +211,11 @@ public partial class DisplayPathHttpClientLoggingTest
         Categories(microsofts).ShouldBe(Categories(ours));
     }
 
-    // Answers every request itself, as a caching handler would, so the primary handler isn't reached.
-    private sealed class AnsweringHandler : DelegatingHandler
+    // Answers the request itself, as a caching handler would, so the primary handler isn't reached. The test owns the response.
+    private sealed class AnsweringHandler(HttpResponseMessage answer) : DelegatingHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            => Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent("{\"name\":\"n\"}", System.Text.Encoding.UTF8, "application/json"),
-            });
+            => Task.FromResult(answer);
     }
 
     // Counts the calls an app's own logger would get.

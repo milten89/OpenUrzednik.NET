@@ -1259,7 +1259,12 @@ public partial class RestRequestExecutorTest
     {
         // Arrange
         // Real handlers set the response's RequestMessage; the executor names its URI rather than the relative path.
-        var handler = new DelegatingStubHttpMessageHandler((request, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound) { RequestMessage = request }));
+        using var response = new HttpResponseMessage(HttpStatusCode.NotFound);
+        var handler = new DelegatingStubHttpMessageHandler((request, _) =>
+        {
+            response.RequestMessage = request;
+            return Task.FromResult(response);
+        });
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/api/") };
 
         // Act
