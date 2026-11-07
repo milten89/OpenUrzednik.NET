@@ -38,7 +38,7 @@ internal sealed class ErrorResponseContext
     public string RequestPath { get; }
 
     /// <summary>
-    /// Gets the delay from the <c>Retry-After</c> header, if any.
+    /// Gets the delay from the <c>Retry-After</c> header of a 429 response, if it has one; <see langword="null"/> for any other status.
     /// </summary>
     public TimeSpan? RetryAfter { get; }
 

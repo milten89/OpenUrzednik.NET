@@ -3,8 +3,11 @@
     "identifiers": {
       "workdir": "tests/OpenUrzednik.Identifiers.TestHost",
       "config": "tests/Mutation/stryker-identifiers.json",
-      "strict": [ "src/Identifiers/**", "src/Privacy/**" ],
-      "break": 0
+      "strict": [
+        "src/Identifiers/**",
+        "src/Privacy/**"
+      ],
+      "break": 100
     },
     "nbp": {
       "workdir": "src/OpenUrzednik.Nbp",
@@ -23,13 +26,15 @@
         "src/OpenUrzednik.Nbp/NbpOptionsValidator.cs",
         "src/OpenUrzednik.Nbp/NbpDateOnlyExtensions.cs"
       ],
-      "break": 0
+      "break": 100
     },
     "http-di": {
       "workdir": "tests/OpenUrzednik.Http.DependencyInjection.TestHost",
       "config": "tests/Mutation/stryker-http-di.json",
-      "strict": [ "src/Http/DependencyInjection/**" ],
-      "break": 0
+      "strict": [
+        "src/Http/DependencyInjection/**"
+      ],
+      "break": 100
     },
     "core": {
       "workdir": "src/OpenUrzednik.Core",
@@ -40,25 +45,28 @@
         "src/OpenUrzednik.Core/Exceptions/**",
         "src/OpenUrzednik.Core/Validation/**"
       ],
-      "break": 0
+      "break": 100
     },
     "di": {
       "workdir": "src/OpenUrzednik.Nbp.DependencyInjection",
       "config": "tests/Mutation/stryker-di.json",
-      "strict": [ "src/OpenUrzednik.Nbp.DependencyInjection/ResilienceRejectionHandler.cs", "src/Http/Infrastructure/ResilienceRejection.cs" ],
-      "break": 0
+      "strict": [
+        "src/OpenUrzednik.Nbp.DependencyInjection/ResilienceRejectionHandler.cs",
+        "src/Http/Infrastructure/ResilienceRejection.cs"
+      ],
+      "break": 86
     },
     "logging": {
       "workdir": "src/OpenUrzednik.Extensions.Logging",
       "config": "tests/Mutation/stryker-logging.json",
       "strict": [],
-      "break": 0
+      "break": 98
     },
     "diagnostics": {
       "workdir": "src/OpenUrzednik.Diagnostics",
       "config": "tests/Mutation/stryker-diagnostics.json",
       "strict": [],
-      "break": 0
+      "break": 100
     }
   }
 }
