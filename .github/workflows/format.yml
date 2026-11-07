@@ -11,6 +11,11 @@ concurrency:
   group: format-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+env:
+  # Nerdbank.GitVersioning exports its version variables to $GITHUB_ENV in every project build. Nothing reads them, and
+  # builds writing the file at once probably left a broken line in it (#241). The versions are still computed as MSBuild properties.
+  NBGV_SetCloudBuildVersionVars: 'false'
+
 jobs:
   format:
     # NOTE: "format" is a required status check in the "protected-branches" ruleset. Do not rename.
