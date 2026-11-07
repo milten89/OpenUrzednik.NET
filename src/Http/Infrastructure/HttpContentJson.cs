@@ -9,11 +9,16 @@ internal static class HttpContentJson
     /// <c>ReadFromJsonAsync</c>, bounded by the token on every target. .NET's response stream honours the token. .NET Framework's checks it
     /// only before a read starts, so there the wait is bounded with <c>WaitAsync</c>; the abandoned read ends when the response is disposed.
     /// </summary>
-    /// <remarks>A polyfill can't hide this difference: the method has the same signature as the library's own.</remarks>
+    /// <remarks>
+    /// A polyfill can't hide this difference: the method has the same signature as the library's own. .NET Framework also leaves
+    /// <c>HttpResponseMessage.Content</c> null when there is no body: that reads as no value (<see langword="default"/>), as an empty body does.
+    /// </remarks>
     internal static Task<T?> ReadJsonAsync<T>(this HttpContent content, JsonTypeInfo<T> typeInfo, CancellationToken cancellationToken)
 #if NET
         => content.ReadFromJsonAsync(typeInfo, cancellationToken);
 #else
-        => content.ReadFromJsonAsync(typeInfo, cancellationToken).WaitAsync(cancellationToken);
+        => content is null
+            ? Task.FromResult<T?>(default)
+            : content.ReadFromJsonAsync(typeInfo, cancellationToken).WaitAsync(cancellationToken);
 #endif
 }

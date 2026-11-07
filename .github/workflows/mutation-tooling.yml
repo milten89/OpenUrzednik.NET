@@ -1,0 +1,22 @@
+name: Mutation tests (tooling)
+
+# Runs the mutation tests on a PR into develop only when the mutation tooling itself changes, so the configs, the runner script
+# and the workflow are verified before they reach a release PR (ADR-0018). Not a required check.
+
+on:
+  pull_request:
+    branches: [ develop ]
+    paths:
+      - 'tests/Mutation/**'
+      - 'tests/OpenUrzednik.Identifiers.TestHost/**'
+      - 'tests/OpenUrzednik.Http.DependencyInjection.TestHost/**'
+      - '.github/workflows/mutation.yml'
+      - '.github/workflows/mutation-tooling.yml'
+      - '.config/dotnet-tools.json'
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    uses: ./.github/workflows/mutation.yml

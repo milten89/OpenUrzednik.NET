@@ -32,4 +32,11 @@ public partial class OpenUrzednikResultTest
         // Act && Assert
         Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Success().Match<int>(null!, errors => errors.Count));
     }
+
+    [Fact]
+    public void Match_SuccessWithNullOnFailure_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Success().Match(() => 0, null!)).ParamName.ShouldBe("onFailure");
+    }
 }

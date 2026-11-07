@@ -214,6 +214,7 @@ public readonly struct OpenUrzednikResult<TValue>
     // The state lives in _errors so the struct stays two fields wide (16 bytes for a reference-type TValue):
     //   success -> the shared empty array, failure -> a non-empty array, default -> null (an uninitialized failure).
     // Read-only, because it is shared by every default instance of this closed type.
+    // Stryker disable once String : false survivor, a static initializer runs once per test host, so Stryker activates its mutant only after a host restart; an empty message fails the tests of default instances
     private static readonly ReadOnlyCollection<OpenUrzednikError> UninitializedErrors = Array.AsReadOnly<OpenUrzednikError>(
         [new UnknownError($"The result was not initialized: default({nameof(OpenUrzednikResult)}<T>) was used instead of a result created with Success or Failure.")]);
 
@@ -289,6 +290,7 @@ public readonly struct OpenUrzednikResult<TValue>
     // It is private, so callers outside always get the public overloads.
     private OpenUrzednikResult(OpenUrzednikError[] errors)
     {
+        // Stryker disable once Statement,Equality,String : the assertion only documents an invariant (every caller passes a non-empty array) and Release builds drop it
         Debug.Assert(errors.Length > 0, "A failure needs at least one error.");
         _value = default;
         _errors = errors;

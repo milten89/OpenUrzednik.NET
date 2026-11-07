@@ -31,6 +31,7 @@ public partial class MapperTest
         CurrencyExchangeRateDto dto = null!;
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyRate(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToCurrencyRate(dto))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 }

@@ -93,4 +93,30 @@ public partial class OpenUrzednikResultExtensionsTest
         Should.Throw<ArgumentNullException>(() => { _ = task.EnsureSuccessAsync(); })
             .ParamName.ShouldBe("resultTask");
     }
+
+    [Fact]
+    public async Task EnsureSuccessAsync_CallerSynchronizationContext_DoesNotResumeOnIt()
+    {
+        // Arrange
+        var source = new TaskCompletionSource<OpenUrzednikResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Act
+        var posts = await CountCallerContextPostsAsync(() => source.Task.EnsureSuccessAsync(), () => source.SetResult(OpenUrzednikResult.Success()));
+
+        // Assert
+        posts.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task EnsureSuccessAsync_GenericTaskAndCallerSynchronizationContext_DoesNotResumeOnIt()
+    {
+        // Arrange
+        var source = new TaskCompletionSource<OpenUrzednikResult<int>>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Act
+        var posts = await CountCallerContextPostsAsync(() => source.Task.EnsureSuccessAsync(), () => source.SetResult(OpenUrzednikResult.Success(1)));
+
+        // Assert
+        posts.ShouldBe(0);
+    }
 }

@@ -1,0 +1,114 @@
+name: Mutation tests
+
+# Stryker.NET mutation testing (ADR-0018): before every release (PRs into main and support branches), every Monday on develop,
+# on demand, and from mutation-tooling.yml when the tooling itself changes. Shards are listed in tests/Mutation/shards.json and
+# run by tests/Mutation/run.py, which fails a shard on an untested run, an undetected mutant in a strict file, or a score below
+# the shard's break value.
+
+on:
+  pull_request:
+    branches: [ main, 'release/*.x' ]
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  shard:
+    name: shard (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      # One runner per project under test; Stryker runs single-threaded (concurrency 1, stryker-net #3832), so parallel
+      # runners are the speed-up. Split a shard by mutate globs when it grows past about 10 minutes.
+      matrix:
+        include:
+          - name: identifiers
+            shards: identifiers
+          - name: nbp
+            shards: nbp
+          - name: http-di
+            shards: http-di
+          - name: core
+            shards: core
+          - name: adapters
+            shards: di logging diagnostics
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        fetch-depth: 0   # NBGV needs full history to compute versions during Stryker's build
+
+    # Stryker 5 needs the .NET 10 runtime; the projects multi-target, so restore needs the newest SDK.
+    - name: Setup .NET SDKs
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: |
+          8.0.x
+          10.0.x
+
+    - name: Cache NuGet packages
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj', '**/packages.lock.json') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-
+
+    - name: Restore the tools
+      run: dotnet tool restore
+
+    # Stryker's design-time build of each project needs restored packages. Without them it drops test projects silently
+    # (fewer tests, mutants without coverage) or compiles a project without its package references.
+    - name: Restore dependencies
+      run: dotnet restore OpenUrzednik.slnx
+
+    - name: Run the mutation shards
+      env:
+        SHARDS: ${{ matrix.shards }}
+      run: python3 tests/Mutation/run.py $SHARDS
+
+    - name: Add the summary
+      if: ${{ !cancelled() }}
+      run: |
+        if [ -f artifacts/mutation/summary.md ]; then
+          cat artifacts/mutation/summary.md >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    - name: Upload the reports
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: mutation-${{ matrix.name }}
+        # Each shard's tmp folder is Stryker's private temp (NuGet scratch, logs): not part of the report.
+        path: |
+          artifacts/mutation
+          !artifacts/mutation/*/tmp
+        if-no-files-found: ignore
+        retention-days: 30
+
+  mutation:
+    # NOTE: "mutation" is a required status check in the "release-mutation" ruleset (main, release/*.x). If you rename this job,
+    # update the ruleset (see docs/GITHUB-SETUP.md).
+    name: mutation
+    needs: shard
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check every shard
+      env:
+        RESULT: ${{ needs.shard.result }}
+      run: |
+        if [ "$RESULT" != "success" ]; then
+          echo "::error::At least one mutation shard didn't pass ($RESULT). See the shard jobs' summaries and reports."
+          exit 1
+        fi

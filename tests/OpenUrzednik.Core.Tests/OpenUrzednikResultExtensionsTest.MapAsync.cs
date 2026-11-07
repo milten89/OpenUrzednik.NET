@@ -59,4 +59,17 @@ public partial class OpenUrzednikResultExtensionsTest
         Should.Throw<ArgumentNullException>(() => { _ = task.MapAsync<int, int>(null!); })
             .ParamName.ShouldBe("map");
     }
+
+    [Fact]
+    public async Task MapAsync_CallerSynchronizationContext_DoesNotResumeOnIt()
+    {
+        // Arrange
+        var source = new TaskCompletionSource<OpenUrzednikResult<int>>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Act
+        var posts = await CountCallerContextPostsAsync(() => source.Task.MapAsync(v => v + 1), () => source.SetResult(OpenUrzednikResult.Success(1)));
+
+        // Assert
+        posts.ShouldBe(0);
+    }
 }

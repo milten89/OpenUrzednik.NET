@@ -114,5 +114,45 @@ public partial class NbpDateOnlyExtensionsTest
         Should.Throw<ArgumentNullException>(() => { _ = ((INbpGoldPriceClient)null!).GetAsync(new DateOnly(2026, 10, 2)); })
             .ParamName.ShouldBe("client");
     }
+
+    [Fact]
+    public void GetAsync_NullGoldClientDateRange_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpGoldPriceClient)null!).GetAsync(new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 2)); })
+            .ParamName.ShouldBe("client");
+    }
+
+    [Fact]
+    public void GetAsync_NullCurrencyClientDate_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpCurrencyExchangeRateClient)null!).GetAsync("USD", new DateOnly(2026, 10, 2)); })
+            .ParamName.ShouldBe("client");
+    }
+
+    [Fact]
+    public void GetAsync_NullCurrencyClientDateRange_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpCurrencyExchangeRateClient)null!).GetAsync("USD", new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 2)); })
+            .ParamName.ShouldBe("client");
+    }
+
+    [Fact]
+    public void GetAsync_NullTableClientDate_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpExchangeRateTableClient)null!).GetAsync(TableType.A, new DateOnly(2026, 10, 2)); })
+            .ParamName.ShouldBe("client");
+    }
+
+    [Fact]
+    public void GetAsync_NullTableClientDateRange_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpExchangeRateTableClient)null!).GetAsync(TableType.A, new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 2)); })
+            .ParamName.ShouldBe("client");
+    }
 }
 #endif

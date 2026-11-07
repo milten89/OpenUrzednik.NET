@@ -116,6 +116,88 @@ public partial class RestRequestExecutorTest
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 
+    // A readable, non-seekable response body; subclasses implement the asynchronous read.
+    private abstract class AsyncReadStream : Stream
+    {
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override void Flush() { }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    }
+
+    // A response body that arrives only once the gate opens.
+    private sealed class GatedStream(Task gate, byte[] body) : AsyncReadStream
+    {
+        private int _position;
+
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            await gate.ConfigureAwait(false);
+            var read = Math.Min(count, body.Length - _position);
+            Array.Copy(body, _position, buffer, offset, read);
+            _position += read;
+            return read;
+        }
+    }
+
+    // A response body whose reads fail, as .NET's response stream does when the connection breaks while the body streams.
+    private sealed class FailingStream(Exception exception) : AsyncReadStream
+    {
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => Task.FromException<int>(exception);
+    }
+
+    // A response body that opens its stream only once the gate opens.
+    private sealed class GatedContent(Task gate, byte[] body) : HttpContent
+    {
+        protected override async Task<Stream> CreateContentReadStreamAsync()
+        {
+            await gate.ConfigureAwait(false);
+            return new MemoryStream(body);
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => stream.WriteAsync(body, 0, body.Length);
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = body.Length;
+            return true;
+        }
+    }
+
+    // A response body that delivers its first bytes, then lets the next read decide (wait until cancelled, fail).
+    private sealed class PartialStream(byte[] first, Func<CancellationToken, Task<int>> next) : AsyncReadStream
+    {
+        private bool _delivered;
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            if (_delivered)
+                return next(cancellationToken);
+
+            _delivered = true;
+            Array.Copy(first, 0, buffer, offset, first.Length);
+            return Task.FromResult(first.Length);
+        }
+    }
+
+    // Answers once the gate opens.
+    private sealed class GatedHttpMessageHandler(Task gate, HttpResponseMessage response) : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await gate.ConfigureAwait(false);
+            return response;
+        }
+    }
+
     private sealed class DisposeTrackingContent(string body) : StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json)
     {
         public bool IsDisposed { get; private set; }

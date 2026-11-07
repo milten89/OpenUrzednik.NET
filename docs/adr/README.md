@@ -21,3 +21,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0015](0015-log-and-trace-correlation.md) | Log entries are written inside the operation's span | accepted |
 | [0016](0016-next-providers-and-package-naming.md) | Next providers and package naming | accepted |
 | [0017](0017-http-client-logging-for-identifier-paths.md) | HttpClient logging in DI packages of identifier-carrying providers | accepted |
+| [0018](0018-mutation-testing-before-release.md) | Mutation testing as a required check before every release | accepted |

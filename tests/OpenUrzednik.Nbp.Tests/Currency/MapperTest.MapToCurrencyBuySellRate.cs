@@ -34,6 +34,6 @@ public partial class MapperTest
         var exception = Record.Exception(() => Mapper.MapToCurrencyBuySellRate(dto));
 
         // Assert
-        exception.ShouldBeOfType<InvalidPayloadException>();
+        exception.ShouldBeOfType<InvalidPayloadException>().Message.ShouldBe("NBP API response is missing 'item'.");
     }
 }

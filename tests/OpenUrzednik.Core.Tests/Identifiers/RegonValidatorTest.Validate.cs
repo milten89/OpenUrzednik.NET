@@ -34,13 +34,17 @@ public partial class RegonValidatorTest
     [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
-    public void Validate_NullEmptyOrWhitespace_ReturnsValidationError(string? value)
+    public void Validate_NullEmptyOrWhitespace_ReturnsValidationErrorAndEmptyNormalized(string? value)
     {
+        // Arrange
+        var validator = new RegonValidator(PropertyName, value!);
+
         // Act
-        var result = new RegonValidator(PropertyName, value!).Validate();
+        var result = validator.Validate();
 
         // Assert
         result.ShouldBeMaskedValidationError("regon", PropertyName, value, "is empty or whitespace.");
+        validator.Normalized.ShouldBeEmpty();
     }
 
     [Theory]

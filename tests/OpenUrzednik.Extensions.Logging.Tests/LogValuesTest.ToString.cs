@@ -124,4 +124,51 @@ public sealed partial class LogValuesTest
         // Assert
         message.ShouldBe("codes USD, (null), EUR rates 1.5, 2.25");
     }
+
+    [Theory]
+    [InlineData("value {a} {", "value 1 {")]
+    [InlineData("value {a} }", "value 1 }")]
+    public void ToString_LoneBraceAtEnd_WritesItAsWritten(string template, string expected)
+    {
+        // Arrange
+        var sut = Create(template, ("a", 1));
+
+        // Act
+        var message = sut.ToString();
+
+        // Assert
+        message.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void ToString_FormatWithoutName_AppliesIt()
+    {
+        // Arrange
+        var sut = Create("price {:0.00}", ("price", 3.5m));
+
+        // Act
+        var message = sut.ToString();
+
+        // Assert
+        message.ShouldBe("price 3.50");
+    }
+
+    [Fact]
+    public void ToString_CollectionItemWithoutText_WritesEmptyItem()
+    {
+        // Arrange
+        var sut = Create("items {items}", ("items", new object[] { new NoText(), "b" }));
+
+        // Act
+        var message = sut.ToString();
+
+        // Assert
+        message.ShouldBe("items , b");
+    }
+
+    // An item whose ToString() returns null.
+    private sealed class NoText
+    {
+        public override string? ToString() => null;
+    }
 }

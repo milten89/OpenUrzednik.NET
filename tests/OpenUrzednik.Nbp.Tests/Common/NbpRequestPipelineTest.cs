@@ -32,6 +32,15 @@ public sealed partial class NbpRequestPipelineTest : IDisposable
         return new NbpRequestPipeline(NbpConnection.Create(httpClient, null, telemetry, TimeProvider.System), telemetry);
     }
 
+    // The response arrives asynchronously, so the pipeline's awaits suspend (see CountingSynchronizationContext).
+    private NbpRequestPipeline CreateAsyncSut(string body)
+    {
+        var httpClient = new HttpClient(new AsyncStubHttpMessageHandler(() => Json(body)));
+        _httpClients.Add(httpClient);
+        var telemetry = new OpenUrzednikTelemetry();
+        return new NbpRequestPipeline(NbpConnection.Create(httpClient, null, telemetry, TimeProvider.System), telemetry);
+    }
+
     private static HttpResponseMessage Json(string body)
         => new(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 

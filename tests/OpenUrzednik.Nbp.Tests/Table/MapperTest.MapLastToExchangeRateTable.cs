@@ -38,7 +38,8 @@ public partial class MapperTest
     public void MapLastToExchangeRateTable_NullArray_ThrowsInvalidPayloadException()
     {
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToExchangeRateTable(null!));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToExchangeRateTable(null!))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]
@@ -48,6 +49,7 @@ public partial class MapperTest
         ExchangeRateTableDto[] dtos = [new ExchangeRateTableDtoFaker().WithConstantSeed().Generate(), null!];
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToExchangeRateTable(dtos));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToExchangeRateTable(dtos))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 }

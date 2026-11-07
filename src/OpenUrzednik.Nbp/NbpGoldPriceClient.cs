@@ -45,6 +45,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
     internal NbpGoldPriceClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, NbpOptions? options = null,
         TimeProvider? timeProvider = null, IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
     {
+        // Stryker disable once Statement : equivalent, NbpConnection.Create throws the same ArgumentNullException for httpClient before the client uses it
         ArgumentNullException.ThrowIfNull(httpClient);
 
         _timeProvider = timeProvider ?? TimeProvider.System;

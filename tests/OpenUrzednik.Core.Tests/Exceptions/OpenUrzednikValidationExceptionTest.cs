@@ -73,4 +73,48 @@ public class OpenUrzednikValidationExceptionTest
         Should.Throw<ArgumentException>(() => new OpenUrzednikValidationException([null!]))
             .ParamName.ShouldBe("errors");
     }
+
+    [Fact]
+    public void Ctor_NullElementAfterAnError_ThrowsArgumentException()
+    {
+        // Arrange
+        ValidationError[] errors = [new("First.", "rule", "first", null), null!];
+
+        // Act && Assert
+        Should.Throw<ArgumentException>(() => new OpenUrzednikValidationException(errors))
+            .ParamName.ShouldBe("errors");
+    }
+
+    [Fact]
+    public void Ctor_MessageRuleNameAndValue_PutsThemInData()
+    {
+        // Act
+        // The value as a validator reports an identifier: masked (ADR-0003).
+        var exception = new OpenUrzednikValidationException("message", "nip", "nip", "******7890");
+
+        // Assert
+        exception.Data["ruleName"].ShouldBe("nip");
+        exception.Data["name"].ShouldBe("nip");
+        exception.Data["value"].ShouldBe("******7890");
+    }
+
+    [Fact]
+    public void Ctor_NullNameAndValue_LeavesThemOutOfData()
+    {
+        // Act
+        var exception = new OpenUrzednikValidationException("message", "rule", null, null);
+
+        // Assert
+        exception.Data.Keys.Cast<object>().ShouldBe(["ruleName"]);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void Ctor_NullOrEmptyRuleName_ThrowsArgumentException(string? ruleName)
+    {
+        // Act && Assert
+        Should.Throw<ArgumentException>(() => new OpenUrzednikValidationException("message", ruleName!, "name", 1))
+            .ParamName.ShouldBe("ruleName");
+    }
 }

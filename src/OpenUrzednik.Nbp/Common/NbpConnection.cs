@@ -11,6 +11,7 @@ internal static class NbpConnection
     /// The NBP profile: spans are named <c>nbp.http.get</c>, messages start with <c>NBP API</c>. The default error mapping fits NBP,
     /// including its plain-text 400 messages, so there is no override.
     /// </summary>
+    // Stryker disable once String : false survivor, Stryker can't activate a static field initializer; an empty name or display name makes RestProviderProfile throw, which fails every client test (checked by hand)
     internal static readonly RestProviderProfile Profile = new("nbp", "NBP API");
 
     /// <summary>

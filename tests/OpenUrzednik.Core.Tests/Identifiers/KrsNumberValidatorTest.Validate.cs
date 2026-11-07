@@ -29,13 +29,17 @@ public partial class KrsNumberValidatorTest
     [InlineData(null)]
     [InlineData("")]
     [InlineData(" ")]
-    public void Validate_NullEmptyOrWhitespace_ReturnsValidationError(string? value)
+    public void Validate_NullEmptyOrWhitespace_ReturnsValidationErrorAndEmptyNormalized(string? value)
     {
+        // Arrange
+        var validator = new KrsNumberValidator(PropertyName, value!);
+
         // Act
-        var result = new KrsNumberValidator(PropertyName, value!).Validate();
+        var result = validator.Validate();
 
         // Assert
         result.ShouldBeMaskedValidationError("krs", PropertyName, value, "is empty or whitespace.");
+        validator.Normalized.ShouldBeEmpty();
     }
 
     [Theory]

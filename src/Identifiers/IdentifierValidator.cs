@@ -112,6 +112,7 @@ internal abstract class IdentifierValidator : ValueValidator<string>
         var i = 0;
 #if NET
         ArgumentOutOfRangeException.ThrowIfGreaterThan(start + weights.Length, digits.Length, nameof(weights));
+        // Stryker disable once Logical,Boolean,Equality : equivalent. This condition and the vector loop's bound only decide how many digits the vector part sums; the loop after #endif sums the rest, so the result is the same (performance only).
         if (Vector128.IsHardwareAccelerated && weights.Length >= Vector128<ushort>.Count)
         {
             ref var chars = ref Unsafe.As<char, ushort>(ref Unsafe.Add(ref MemoryMarshal.GetReference(digits.AsSpan()), start));

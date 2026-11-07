@@ -16,7 +16,9 @@ internal static class NbpCalendar
     private static TimeZoneInfo FindWarsaw()
     {
         // IANA id on Linux/macOS and on Windows with ICU; Windows id as a fallback.
+        // Stryker disable once String : equivalent, an id that isn't found ends in CreateCentralEuropeanTime, which has the Warsaw rules for every date NBP publishes (checked by hand: the tests pass with both ids empty)
         string[] ids = ["Europe/Warsaw", "Central European Standard Time"];
+        // Stryker disable once Block : equivalent, skipping the lookup ends in CreateCentralEuropeanTime, which has the Warsaw rules for every date NBP publishes
         foreach (var id in ids)
         {
             try

@@ -59,7 +59,8 @@ public partial class MapperTest
         ExchangeRateTableDto dto = null!;
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dto))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]
@@ -75,7 +76,8 @@ public partial class MapperTest
         };
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dto))
+            .Message.ShouldBe("NBP API response is missing 'rates'.");
     }
 
     [Fact]
@@ -112,7 +114,8 @@ public partial class MapperTest
         ExchangeRateTableDto[] dtos = null!;
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dtos));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dtos))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]
@@ -123,6 +126,7 @@ public partial class MapperTest
         var dtos = new[] { dto, null! };
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dtos));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToExchangeRateTable(dtos))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 }

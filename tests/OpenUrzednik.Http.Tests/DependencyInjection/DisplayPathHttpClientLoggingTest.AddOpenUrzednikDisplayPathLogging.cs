@@ -168,6 +168,56 @@ public partial class DisplayPathHttpClientLoggingTest
         HttpClientEntries(recorder).ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task AddOpenUrzednikDisplayPathLogging_HandlerAnswersBeforePrimaryHandler_LogsOnlyLogicalHandlerEntries()
+    {
+        // Arrange
+        // As with Microsoft's default loggers: LogicalHandler wraps the app's handlers, ClientHandler sits next to the primary handler.
+        var recorder = new RecordingLoggerProvider();
+        using var answer = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"name\":\"n\"}", System.Text.Encoding.UTF8, "application/json"),
+        };
+        using var provider = BuildProvider(CreateOkHandler(), recorder, (_, builder) => builder.AddHttpMessageHandler(() => new AnsweringHandler(answer)));
+
+        // Act
+        await CreateExecutor(provider).GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        HttpClientEntries(recorder).Select(entry => (entry.Category, entry.EventId.Name))
+            .ShouldBe([(LogicalCategory, "RequestPipelineStart"), (LogicalCategory, "RequestPipelineEnd")]);
+    }
+
+    [Fact]
+    public async Task AddOpenUrzednikDisplayPathLogging_UnnamedClient_UsesMicrosoftsDefaultCategories()
+    {
+        // Arrange
+        var ours = new RecordingLoggerProvider();
+        var microsofts = new RecordingLoggerProvider();
+        using var oursProvider = BuildProvider(CreateOkHandler(), ours, clientName: string.Empty);
+        using var microsoftsProvider = BuildProvider(CreateOkHandler(), microsofts, (_, builder) => builder.RemoveAllLoggers().AddDefaultLogger(), string.Empty);
+
+        // Act
+        await CreateExecutor(oursProvider, string.Empty).GetAsync("rates", TypeInfo, TestContext.Current.CancellationToken);
+        await CreateExecutor(microsoftsProvider, string.Empty).GetAsync("rates", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        const string logical = "System.Net.Http.HttpClient.Default.LogicalHandler";
+        const string client = "System.Net.Http.HttpClient.Default.ClientHandler";
+        static IEnumerable<string> Categories(RecordingLoggerProvider recorder) => HttpClientEntries(recorder)
+            .Where(entry => entry.EventId.Id is 100 or 101)
+            .Select(entry => entry.Category);
+        Categories(ours).ShouldBe([logical, client, client, logical]);
+        Categories(microsofts).ShouldBe(Categories(ours));
+    }
+
+    // Answers the request itself, as a caching handler would, so the primary handler isn't reached. The test owns the response.
+    private sealed class AnsweringHandler(HttpResponseMessage answer) : DelegatingHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(answer);
+    }
+
     // Counts the calls an app's own logger would get.
     private sealed class CountingHttpClientLogger : IHttpClientLogger
     {

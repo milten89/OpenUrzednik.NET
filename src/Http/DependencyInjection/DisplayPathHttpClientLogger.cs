@@ -14,17 +14,26 @@ internal sealed class DisplayPathHttpClientLogger : IHttpClientLogger
 {
     // The templates, ids and names of Microsoft.Extensions.Http's LogHelper (dotnet/runtime, release/10.0). LogRequestStart checks
     // IsEnabled itself, before building the URI, so its delegates skip the second check.
+    // Stryker disable once Boolean : performance only, a second IsEnabled check changes no entry
     private static readonly LogDefineOptions SkipEnabledCheck = new() { SkipEnabledCheck = true };
+    // The names and templates are false survivors in mutation testing: a static initializer runs once per test host, so Stryker
+    // activates its mutants only after a host restart (order-dependent). Replaced by hand, each one fails the tests.
+    // Stryker disable once String : static initializer, see above
     private static readonly Action<ILogger, HttpMethod, string?, Exception?> PipelineStart = LoggerMessage.Define<HttpMethod, string?>(
         LogLevel.Information, new EventId(100, "RequestPipelineStart"), "Start processing HTTP request {HttpMethod} {Uri}", SkipEnabledCheck);
+    // Stryker disable once String : static initializer, see above
     private static readonly Action<ILogger, double, int, Exception?> PipelineEnd = LoggerMessage.Define<double, int>(
         LogLevel.Information, new EventId(101, "RequestPipelineEnd"), "End processing HTTP request after {ElapsedMilliseconds}ms - {StatusCode}");
+    // Stryker disable once String : static initializer, see above
     private static readonly Action<ILogger, double, Exception?> PipelineFailed = LoggerMessage.Define<double>(
         LogLevel.Information, new EventId(104, "RequestPipelineFailed"), "HTTP request failed after {ElapsedMilliseconds}ms");
+    // Stryker disable once String : static initializer, see above
     private static readonly Action<ILogger, HttpMethod, string?, Exception?> ClientStart = LoggerMessage.Define<HttpMethod, string?>(
         LogLevel.Information, new EventId(100, "RequestStart"), "Sending HTTP request {HttpMethod} {Uri}", SkipEnabledCheck);
+    // Stryker disable once String : static initializer, see above
     private static readonly Action<ILogger, double, int, Exception?> ClientEnd = LoggerMessage.Define<double, int>(
         LogLevel.Information, new EventId(101, "RequestEnd"), "Received HTTP response headers after {ElapsedMilliseconds}ms - {StatusCode}");
+    // Stryker disable once String : static initializer, see above
     private static readonly Action<ILogger, double, Exception?> ClientFailed = LoggerMessage.Define<double>(
         LogLevel.Information, new EventId(104, "RequestFailed"), "HTTP request failed after {ElapsedMilliseconds}ms");
 

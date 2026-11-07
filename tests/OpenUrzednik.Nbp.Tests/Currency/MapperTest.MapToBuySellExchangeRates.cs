@@ -62,7 +62,7 @@ public partial class MapperTest
         var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRates(dto));
 
         // Assert
-        exception.ShouldBeOfType<InvalidPayloadException>();
+        exception.ShouldBeOfType<InvalidPayloadException>().Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public partial class MapperTest
         var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRates(dto));
 
         // Assert
-        exception.ShouldBeOfType<InvalidPayloadException>();
+        exception.ShouldBeOfType<InvalidPayloadException>().Message.ShouldBe("NBP API response is missing 'rates'.");
     }
 
     [Fact]

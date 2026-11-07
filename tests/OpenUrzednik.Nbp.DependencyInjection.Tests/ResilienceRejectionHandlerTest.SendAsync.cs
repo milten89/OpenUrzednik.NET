@@ -1,4 +1,5 @@
 using OpenUrzednik.Http.Infrastructure;
+using OpenUrzednik.TestCommon;
 
 using Polly;
 using Polly.CircuitBreaker;
@@ -24,6 +25,38 @@ public sealed partial class ResilienceRejectionHandlerTest
 
         // Assert
         result.ShouldBeSameAs(response);
+    }
+
+    [Fact]
+    public async Task SendAsync_CallerHasSynchronizationContext_DoesNotResumeOnIt()
+    {
+        // Arrange
+        // A caller that blocks on the task in a single-threaded context (WinForms, classic ASP.NET) would deadlock if the handler
+        // resumed there.
+        var pending = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var response = new HttpResponseMessage();
+        using var sut = new HttpMessageInvoker(new ResilienceRejectionHandler { InnerHandler = new PendingHandler(pending.Task) });
+        using var request = CreateRequest();
+        var context = new CountingSynchronizationContext();
+        var previous = SynchronizationContext.Current;
+        Task<HttpResponseMessage> sending;
+        SynchronizationContext.SetSynchronizationContext(context);
+        try
+        {
+            sending = sut.SendAsync(request, TestContext.Current.CancellationToken);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        // Act
+        pending.SetResult(response);
+        var result = await sending;
+
+        // Assert
+        result.ShouldBeSameAs(response);
+        context.Posts.ShouldBe(0);
     }
 
     [Fact]

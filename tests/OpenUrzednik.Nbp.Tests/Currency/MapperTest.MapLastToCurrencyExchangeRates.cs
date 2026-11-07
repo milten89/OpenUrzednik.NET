@@ -40,6 +40,14 @@ public partial class MapperTest
     }
 
     [Fact]
+    public void MapLastToCurrencyExchangeRates_NullDto_ThrowsInvalidPayloadException()
+    {
+        // Act && Assert
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToCurrencyExchangeRates(null!))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
+    }
+
+    [Fact]
     public void MapLastToCurrencyExchangeRates_NullRates_ThrowsInvalidPayloadException()
     {
         // Arrange
@@ -47,7 +55,8 @@ public partial class MapperTest
         var dto = new CurrencyExchangeRatesDto { CurrencyName = dtoBase.CurrencyName, CurrencyCode = dtoBase.CurrencyCode, Rates = null! };
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToCurrencyExchangeRates(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToCurrencyExchangeRates(dto))
+            .Message.ShouldBe("NBP API response is missing 'rates'.");
     }
 
     [Fact]
@@ -58,7 +67,8 @@ public partial class MapperTest
         var dto = new CurrencyExchangeRatesDto { CurrencyName = dtoBase.CurrencyName, CurrencyCode = dtoBase.CurrencyCode, Rates = [dtoBase.Rates[0], null!] };
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToCurrencyExchangeRates(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToCurrencyExchangeRates(dto))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]

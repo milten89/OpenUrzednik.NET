@@ -25,6 +25,8 @@ public partial class IOpenUrzednikSpanExtensionsTest
         // Assert
         _ = error.DidNotReceive().Code;
         _ = error.DidNotReceive().Message;
+        span.DidNotReceiveWithAnyArgs().SetTag<string>(default!, default!);
+        span.DidNotReceiveWithAnyArgs().SetStatus(default);
     }
 
     [Fact]

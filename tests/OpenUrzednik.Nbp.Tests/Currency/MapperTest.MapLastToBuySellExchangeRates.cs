@@ -43,7 +43,8 @@ public partial class MapperTest
     public void MapLastToBuySellExchangeRates_NullDto_ThrowsInvalidPayloadException()
     {
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToBuySellExchangeRates(null!));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToBuySellExchangeRates(null!))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]
@@ -54,7 +55,8 @@ public partial class MapperTest
         var dto = new BuySellCurrencyExchangeRatesDto { CurrencyName = dtoBase.CurrencyName, CurrencyCode = dtoBase.CurrencyCode, Rates = null! };
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToBuySellExchangeRates(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToBuySellExchangeRates(dto))
+            .Message.ShouldBe("NBP API response is missing 'rates'.");
     }
 
     [Fact]
