@@ -59,8 +59,10 @@
     "logging": {
       "workdir": "src/OpenUrzednik.Extensions.Logging",
       "config": "tests/Mutation/stryker-logging.json",
-      "strict": [],
-      "break": 98
+      "strict": [
+        "src/OpenUrzednik.Extensions.Logging/**"
+      ],
+      "break": 100
     },
     "diagnostics": {
       "workdir": "src/OpenUrzednik.Diagnostics",
