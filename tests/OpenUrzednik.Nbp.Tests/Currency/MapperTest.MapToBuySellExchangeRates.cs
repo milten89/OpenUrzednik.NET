@@ -66,7 +66,7 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToBuySellExchangeRates_RatesArrayContainingNullElement_ThrowsInvalidPayloadException()
+    public void MapToBuySellExchangeRates_NullRates_ThrowsInvalidPayloadException()
     {
         // Arrange
         var dtoBase = new BuySellCurrencyExchangeRatesDtoFaker(0).WithConstantSeed().Generate();
@@ -82,6 +82,25 @@ public partial class MapperTest
 
         // Assert
         exception.ShouldBeOfType<InvalidPayloadException>().Message.ShouldBe("NBP API response is missing 'rates'.");
+    }
+
+    [Fact]
+    public void MapToBuySellExchangeRates_RatesContainingNullElement_ThrowsInvalidPayloadException()
+    {
+        // Arrange
+        var dtoBase = new BuySellCurrencyExchangeRatesDtoFaker(1).WithConstantSeed().Generate();
+        var dto = new BuySellCurrencyExchangeRatesDto()
+        {
+            CurrencyName = dtoBase.CurrencyName,
+            CurrencyCode = dtoBase.CurrencyCode,
+            Rates = [dtoBase.Rates[0], null!]
+        };
+
+        // Act
+        var exception = Record.Exception(() => Mapper.MapToBuySellExchangeRates(dto));
+
+        // Assert
+        exception.ShouldBeOfType<InvalidPayloadException>().Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]

@@ -60,6 +60,18 @@ public partial class MapperTest
     }
 
     [Fact]
+    public void MapLastToBuySellExchangeRates_RatesContainingNullElement_ThrowsInvalidPayloadException()
+    {
+        // Arrange
+        var dtoBase = new BuySellCurrencyExchangeRatesDtoFaker(1).WithConstantSeed().Generate();
+        var dto = new BuySellCurrencyExchangeRatesDto { CurrencyName = dtoBase.CurrencyName, CurrencyCode = dtoBase.CurrencyCode, Rates = [dtoBase.Rates[0], null!] };
+
+        // Act && Assert
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToBuySellExchangeRates(dto))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
+    }
+
+    [Fact]
     public void MapLastToBuySellExchangeRates_MissingCurrencyName_ReturnsEmptyCurrencyName()
     {
         // Arrange
