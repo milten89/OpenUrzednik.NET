@@ -12,7 +12,8 @@
     "mutate": [
       "**/*.cs",
       "!**/Polyfills/**",
-      "!**/Dto/**"
+      "!**/Dto/**",
+      "!**/Http/**"
     ],
     "ignore-methods": [
       "*Log",

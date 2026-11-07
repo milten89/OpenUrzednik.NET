@@ -28,13 +28,16 @@ jobs:
     strategy:
       fail-fast: false
       # One runner per project under test; Stryker runs single-threaded (concurrency 1, stryker-net #3832), so parallel
-      # runners are the speed-up. Split a shard by mutate globs when it grows past about 10 minutes.
+      # runners are the speed-up. Shared source (src/Identifiers, src/Privacy, src/Http) is mutated once, in its test-only
+      # host's shard, by its own tests; a provider's shards mutate only the provider's code (!**/Http/**).
       matrix:
         include:
           - name: identifiers
             shards: identifiers
           - name: nbp
             shards: nbp
+          - name: http
+            shards: http
           - name: http-di
             shards: http-di
           - name: core

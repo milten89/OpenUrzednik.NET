@@ -9,6 +9,7 @@ on:
     paths:
       - 'tests/Mutation/**'
       - 'tests/OpenUrzednik.Identifiers.TestHost/**'
+      - 'tests/OpenUrzednik.Http.TestHost/**'
       - 'tests/OpenUrzednik.Http.DependencyInjection.TestHost/**'
       - '.github/workflows/mutation.yml'
       - '.github/workflows/mutation-tooling.yml'

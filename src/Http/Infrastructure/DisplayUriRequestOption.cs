@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
-/// Carries the display URI of a request whose path or query holds personal identifiers (ADR-0006) from the executor to the
+/// Carries the display URI of a request whose path or query holds personal identifiers (ADR-0019) from the executor to the
 /// DI package's HttpClient logger, which writes it instead of the request URI (ADR-0017). The DI package compiles this file too.
 /// </summary>
 /// <remarks>

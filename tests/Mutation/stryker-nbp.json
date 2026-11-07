@@ -2,8 +2,7 @@
   "stryker-config": {
     "project": "OpenUrzednik.Nbp.csproj",
     "test-projects": [
-      "../../tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj",
-      "../../tests/OpenUrzednik.Http.Tests/OpenUrzednik.Http.Tests.csproj"
+      "../../tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj"
     ],
     "test-runner": "mtp",
     "target-framework": "net10.0",
@@ -13,7 +12,8 @@
     "mutate": [
       "**/*.cs",
       "!**/Polyfills/**",
-      "!**/Dto/**"
+      "!**/Dto/**",
+      "!**/Http/**"
     ],
     "ignore-methods": [
       "*Log",

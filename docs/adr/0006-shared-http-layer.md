@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0019
 date: 2026-11-05
 confidence: high
 decision-makers: milten89
@@ -83,6 +83,7 @@ REST/JSON provider packages contain no direct `HttpClient.SendAsync` calls; all 
 
 ## More Information
 
+* Superseded by [ADR-0019](0019-shared-http-layer-tested-through-test-host.md).
 * Follow-up: deprecating the no longer published `OpenUrzednik.Http` package on nuget.org ([#116](https://github.com/milten89/OpenUrzednik.NET/issues/116)).
 
 ### Changes before 1.0

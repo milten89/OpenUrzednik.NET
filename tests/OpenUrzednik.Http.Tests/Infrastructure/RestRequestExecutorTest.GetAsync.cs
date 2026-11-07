@@ -1437,7 +1437,7 @@ public partial class RestRequestExecutorTest
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>().Exception.ShouldBeSameAs(thrown);
     }
 
-    // A fake identifier carried by the request URI, and the display path that hides it (ADR-0003, ADR-0006).
+    // A fake identifier carried by the request URI, and the display path that hides it (ADR-0003, ADR-0019).
     private const string Identifier = "9876543210";
     private const string IdentifierPath = "search/nip/" + Identifier + "?date=2026-11-06";
     private const string DisplayPath = "search/nip/{nip}?date=2026-11-06";

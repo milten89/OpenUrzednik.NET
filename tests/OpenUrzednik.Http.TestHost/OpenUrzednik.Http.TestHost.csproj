@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Test-only library: compiles the shared HTTP layer (src/Http, ADR-0019) on its own, so Stryker.NET mutates it once, in the
+       http shard, and no provider's shard pays for it again; it never mutates files compiled into a test project (ADR-0018).
+       Http.Tests tests the layer through this copy. Not packed. -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- tests/Directory.Build.props adds a global using for xUnit, which this library doesn't reference. -->
+  <ItemGroup>
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\Http\Http.props" />
+
+  <!-- net472 runs the libraries' netstandard2.0 build: the packages a REST provider references there (ADR-0004), and the
+       src/Polyfills files that tests/Directory.Build.props doesn't link already. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="System.Net.Http.Json" />
+    <PackageReference Include="System.Text.Json" />
+    <Compile Include="..\..\src\Polyfills\*.cs" Exclude="..\..\src\Polyfills\CompilerAttributes.cs;..\..\src\Polyfills\NullableAttributes.cs" Link="Polyfills\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Http.Tests" />
+    <!-- The DI packages' HttpClient logging uses the request option the executor sets. -->
+    <InternalsVisibleTo Include="OpenUrzednik.Http.DependencyInjection.TestHost" />
+  </ItemGroup>
+
+</Project>

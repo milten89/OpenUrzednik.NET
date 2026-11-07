@@ -3,7 +3,7 @@ using OpenUrzednik.Http.Infrastructure;
 namespace OpenUrzednik.Nbp.Common;
 
 /// <summary>
-/// Creates the <see cref="RestRequestExecutor"/> the NBP clients send requests with (ADR-0006).
+/// Creates the <see cref="RestRequestExecutor"/> the NBP clients send requests with (ADR-0019).
 /// </summary>
 internal static class NbpConnection
 {
