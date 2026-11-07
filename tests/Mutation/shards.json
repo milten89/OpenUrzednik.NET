@@ -51,10 +51,10 @@
       "workdir": "src/OpenUrzednik.Nbp.DependencyInjection",
       "config": "tests/Mutation/stryker-di.json",
       "strict": [
-        "src/OpenUrzednik.Nbp.DependencyInjection/ResilienceRejectionHandler.cs",
+        "src/OpenUrzednik.Nbp.DependencyInjection/**",
         "src/Http/Infrastructure/ResilienceRejection.cs"
       ],
-      "break": 86
+      "break": 100
     },
     "logging": {
       "workdir": "src/OpenUrzednik.Extensions.Logging",
