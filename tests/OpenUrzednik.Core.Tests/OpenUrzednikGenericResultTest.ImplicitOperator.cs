@@ -42,7 +42,7 @@ public partial class OpenUrzednikGenericResultTest
         var source = OpenUrzednikResult.Success();
 
         // Act && Assert
-        Should.Throw<InvalidOperationException>(() => { OpenUrzednikResult<int> _ = source; })
+        Should.Throw<InvalidOperationException>(() => (OpenUrzednikResult<int>)source)
             .Message.ShouldBe("Cannot convert a successful Result to Result<TValue>.");
     }
 }
