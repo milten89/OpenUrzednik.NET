@@ -25,6 +25,11 @@ concurrency:
   group: nuget-pre-release
   cancel-in-progress: false
 
+env:
+  # Nerdbank.GitVersioning exports its version variables to $GITHUB_ENV in every project build. Nothing reads them, and
+  # builds writing the file at once probably left a broken line in it (#241). The versions are still computed as MSBuild properties.
+  NBGV_SetCloudBuildVersionVars: 'false'
+
 jobs:
   build:
     permissions:
