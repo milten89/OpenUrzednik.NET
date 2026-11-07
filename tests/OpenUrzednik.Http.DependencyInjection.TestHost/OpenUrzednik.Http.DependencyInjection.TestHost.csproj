@@ -2,7 +2,8 @@
 
   <!-- Test-only library: compiles the DI packages' HttpClient logging (src/Http/DependencyInjection, ADR-0017), so Stryker.NET can
        mutate it; it never mutates files compiled into a test project (ADR-0018). Http.Tests tests it through this copy. Not packed.
-       Not through DependencyInjection.props: its DisplayUriRequestOption.cs would clash with Nbp's copy, which this library uses. -->
+       Not through DependencyInjection.props: its DisplayUriRequestOption.cs would clash with the copy in OpenUrzednik.Http.TestHost,
+       which this library uses (with, on net472, its polyfills). -->
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <IsTestProject>false</IsTestProject>
@@ -15,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.Http.TestHost\OpenUrzednik.Http.TestHost.csproj" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <Compile Include="..\..\src\Http\DependencyInjection\*.cs" Link="Http\DependencyInjection\%(Filename)%(Extension)" />
   </ItemGroup>

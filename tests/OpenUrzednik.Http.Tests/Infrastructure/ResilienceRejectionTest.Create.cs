@@ -4,7 +4,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Http.Tests.Infrastructure;
 
-// The providers' copy of src/Http/Infrastructure/ResilienceRejection.cs (reached through OpenUrzednik.Nbp). The DI packages compile
+// The providers' copy of src/Http/Infrastructure/ResilienceRejection.cs (reached through OpenUrzednik.Http.TestHost). The DI packages compile
 // their own copy, tested in their test projects; both must write the same marker.
 public sealed partial class ResilienceRejectionTest
 {

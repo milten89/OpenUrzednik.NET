@@ -13,7 +13,6 @@
       "workdir": "src/OpenUrzednik.Nbp",
       "config": "tests/Mutation/stryker-nbp.json",
       "strict": [
-        "src/Http/Infrastructure/**",
         "src/OpenUrzednik.Nbp/Validation/**",
         "src/OpenUrzednik.Nbp/UrlBuilder/**",
         "src/OpenUrzednik.Nbp/Extensions/**",
@@ -25,6 +24,14 @@
         "src/OpenUrzednik.Nbp/NbpOptions.cs",
         "src/OpenUrzednik.Nbp/NbpOptionsValidator.cs",
         "src/OpenUrzednik.Nbp/NbpDateOnlyExtensions.cs"
+      ],
+      "break": 100
+    },
+    "http": {
+      "workdir": "tests/OpenUrzednik.Http.TestHost",
+      "config": "tests/Mutation/stryker-http.json",
+      "strict": [
+        "src/Http/Infrastructure/**"
       ],
       "break": 100
     },
@@ -51,8 +58,7 @@
       "workdir": "src/OpenUrzednik.Nbp.DependencyInjection",
       "config": "tests/Mutation/stryker-di.json",
       "strict": [
-        "src/OpenUrzednik.Nbp.DependencyInjection/**",
-        "src/Http/Infrastructure/ResilienceRejection.cs"
+        "src/OpenUrzednik.Nbp.DependencyInjection/**"
       ],
       "break": 100
     },

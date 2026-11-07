@@ -12,7 +12,7 @@ using OpenUrzednik.Core.Telemetry;
 namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
-/// Sends requests to a REST/JSON API and turns every response into an <see cref="OpenUrzednikResult{TValue}"/> (ADR-0002, ADR-0006).
+/// Sends requests to a REST/JSON API and turns every response into an <see cref="OpenUrzednikResult{TValue}"/> (ADR-0002, ADR-0019).
 /// For provider authors; applications use the provider clients.
 /// </summary>
 /// <remarks>
@@ -120,7 +120,7 @@ internal sealed class RestRequestExecutor
 
     /// <summary>
     /// Sends a GET request for <paramref name="relativePath"/>, like <see cref="GetAsync{TDto}(string, JsonTypeInfo{TDto}, CancellationToken)"/>,
-    /// for a request whose path or query carries personal identifiers or secrets (ADR-0003, ADR-0006). <paramref name="displayPath"/> replaces
+    /// for a request whose path or query carries personal identifiers or secrets (ADR-0003, ADR-0019). <paramref name="displayPath"/> replaces
     /// the request URI everywhere the executor writes it: the <c>url.path</c> tag (the base address path plus the display path, without its query),
     /// logs, error messages and <see cref="ErrorResponseContext.RequestPath"/> (the base address plus the display path).
     /// The default mapping of a 400 leaves out the server's message, which may echo the identifier; a provider that needs it reads it in
@@ -355,7 +355,7 @@ internal sealed class RestRequestExecutor
             }
         }
 
-        // A display path means the request carries identifiers, which a 400's server message may echo (ADR-0006).
+        // A display path means the request carries identifiers, which a 400's server message may echo (ADR-0019).
         var result = await MapDefaultErrorAsync(response, path, delay, traceSpan, displayUri is null ? ReadMessageOnceAsync : null).ConfigureAwait(false);
         traceSpan.SetTag("error.type", result.Errors[0].Code);
         return result;
