@@ -437,10 +437,16 @@ internal sealed class RestRequestExecutor
         {
             using var stream = await response.Content.ReadAsStreamAsync(requestToken).ConfigureAwait(false);
             using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-            int read;
-            while (length < buffer.Length &&
-                   (read = await reader.ReadAsync(buffer.AsMemory(length), requestToken).ConfigureAwait(false)) > 0)
+            // The same loop as `while (length < buffer.Length && (read = await …) > 0)`, written so that mutation testing can check it
+            // (ADR-0018): with the assignment inside the condition, one mutant leaves `read` unassigned and Stryker skips the whole
+            // method, and `<` would leave an equivalent `<=` mutant. A read never fills past the buffer, so `!=` stops at the same point.
+            while (length != buffer.Length)
+            {
+                var read = await reader.ReadAsync(buffer.AsMemory(length), requestToken).ConfigureAwait(false);
+                if (read == 0)
+                    break;
                 length += read;
+            }
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {

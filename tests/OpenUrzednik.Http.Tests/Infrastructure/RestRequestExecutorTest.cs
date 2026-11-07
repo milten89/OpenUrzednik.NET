@@ -154,6 +154,40 @@ public partial class RestRequestExecutorTest
             => Task.FromException<int>(exception);
     }
 
+    // A response body that opens its stream only once the gate opens.
+    private sealed class GatedContent(Task gate, byte[] body) : HttpContent
+    {
+        protected override async Task<Stream> CreateContentReadStreamAsync()
+        {
+            await gate.ConfigureAwait(false);
+            return new MemoryStream(body);
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => stream.WriteAsync(body, 0, body.Length);
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = body.Length;
+            return true;
+        }
+    }
+
+    // A response body that delivers its first bytes, then lets the next read decide (wait until cancelled, fail).
+    private sealed class PartialStream(byte[] first, Func<CancellationToken, Task<int>> next) : AsyncReadStream
+    {
+        private bool _delivered;
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            if (_delivered)
+                return next(cancellationToken);
+
+            _delivered = true;
+            Array.Copy(first, 0, buffer, offset, first.Length);
+            return Task.FromResult(first.Length);
+        }
+    }
+
     // Answers once the gate opens.
     private sealed class GatedHttpMessageHandler(Task gate, HttpResponseMessage response) : HttpMessageHandler
     {

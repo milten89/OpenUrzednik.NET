@@ -91,7 +91,7 @@ public partial class RestRequestExecutorTest
         tracer.DidNotReceive().StartSpan(Arg.Any<string>());
     }
 
-    public static TheoryData<string> AsynchronousSteps => new() { "send", "body", "error-body", "override" };
+    public static TheoryData<string> AsynchronousSteps => new() { "send", "body", "error-stream", "error-body", "override" };
 
     [Theory]
     [MemberData(nameof(AsynchronousSteps))]
@@ -107,6 +107,10 @@ public partial class RestRequestExecutorTest
             "body" => new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StreamContent(new GatedStream(gate.Task, Encoding.UTF8.GetBytes("""{"name":"n","value":1}""")))
+            }),
+            "error-stream" => new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadRequest)
+            {
+                Content = new GatedContent(gate.Task, Encoding.UTF8.GetBytes("Invalid date range"))
             }),
             "error-body" => new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadRequest)
             {
@@ -1087,6 +1091,66 @@ public partial class RestRequestExecutorTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldNotContain(": ");
+    }
+
+    [Fact]
+    public async Task GetAsync_BadRequestBodyReadTimesOutAfterPartialData_ReturnsBadRequestErrorWithoutServerMessage()
+    {
+        // Arrange
+        // A message cut off by the deadline is dropped, not returned truncated.
+        var faker = new Faker().WithConstantSeed();
+        var body = new PartialStream(Encoding.UTF8.GetBytes("Invalid"), async ct =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return 0;
+        });
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StreamContent(body) };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider, TimeSpan.FromMilliseconds(100))
+            .GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        var message = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message;
+        message.ShouldNotContain("Invalid");
+        message.ShouldEndWith(".");
+    }
+
+    [Fact]
+    public async Task GetAsync_BadRequestBodyReadFailsAfterPartialData_ReturnsBadRequestErrorWithoutServerMessage()
+    {
+        // Arrange
+        // A message cut off by a broken connection is dropped, not returned truncated.
+        var faker = new Faker().WithConstantSeed();
+        var body = new PartialStream(Encoding.UTF8.GetBytes("Invalid"), _ => Task.FromException<int>(new IOException("Connection reset.")));
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StreamContent(body) };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        var message = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message;
+        message.ShouldNotContain("Invalid");
+        message.ShouldEndWith(".");
+    }
+
+    [Fact]
+    public async Task GetAsync_BadRequestBodyInUtf16WithByteOrderMark_ReturnsDecodedServerMessage()
+    {
+        // Arrange
+        // The body is read as UTF-8 unless its byte order mark names another encoding.
+        var faker = new Faker().WithConstantSeed();
+        byte[] body = [.. Encoding.Unicode.GetPreamble(), .. Encoding.Unicode.GetBytes("Invalid date range")];
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new ByteArrayContent(body) };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldEndWith(": Invalid date range");
     }
 
     [Fact]
