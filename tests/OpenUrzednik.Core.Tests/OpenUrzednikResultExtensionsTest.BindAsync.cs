@@ -84,4 +84,48 @@ public partial class OpenUrzednikResultExtensionsTest
         Should.Throw<ArgumentNullException>(() => { _ = task.BindAsync((Func<int, Task<OpenUrzednikResult<int>>>)null!); })
             .ParamName.ShouldBe("next");
     }
+
+    [Fact]
+    public async Task BindAsync_CallerSynchronizationContext_DoesNotResumeOnIt()
+    {
+        // Arrange
+        var source = new TaskCompletionSource<OpenUrzednikResult<int>>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Act
+        var posts = await CountCallerContextPostsAsync(() => source.Task.BindAsync(v => OpenUrzednikResult.Success(v + 1)), () => source.SetResult(OpenUrzednikResult.Success(1)));
+
+        // Assert
+        posts.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task BindAsync_AsyncNextAndCallerSynchronizationContextWhileResultIsPending_DoesNotResumeOnIt()
+    {
+        // Arrange
+        var source = new TaskCompletionSource<OpenUrzednikResult<int>>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Act
+        var posts = await CountCallerContextPostsAsync(
+            () => source.Task.BindAsync(v => Task.FromResult(OpenUrzednikResult.Success(v + 1))),
+            () => source.SetResult(OpenUrzednikResult.Success(1)));
+
+        // Assert
+        posts.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task BindAsync_AsyncNextAndCallerSynchronizationContextWhileNextIsPending_DoesNotResumeOnIt()
+    {
+        // Arrange
+        // The result is already there, so the method reaches the await on next() on the caller's thread.
+        var next = new TaskCompletionSource<OpenUrzednikResult<int>>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Act
+        var posts = await CountCallerContextPostsAsync(
+            () => Task.FromResult(OpenUrzednikResult.Success(1)).BindAsync(_ => next.Task),
+            () => next.SetResult(OpenUrzednikResult.Success(2)));
+
+        // Assert
+        posts.ShouldBe(0);
+    }
 }

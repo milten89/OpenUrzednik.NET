@@ -68,6 +68,6 @@ public partial class OpenUrzednikResultTest
         IEnumerable<OpenUrzednikError> errors = null!;
 
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Failure(errors));
+        Should.Throw<ArgumentNullException>(() => OpenUrzednikResult.Failure(errors)).ParamName.ShouldBe("errors");
     }
 }

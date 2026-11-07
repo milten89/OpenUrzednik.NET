@@ -31,19 +31,20 @@ public partial class DisplayPathHttpClientLoggingTest
 
     // The provider's named client with the display-path logging, a stub primary handler and a recording logger.
     // configure runs after AddOpenUrzednikDisplayPathLogging, as an app's own configuration would.
-    private static ServiceProvider BuildProvider(HttpMessageHandler primaryHandler, RecordingLoggerProvider recorder, Action<IServiceCollection, IHttpClientBuilder>? configure = null)
+    private static ServiceProvider BuildProvider(HttpMessageHandler primaryHandler, RecordingLoggerProvider recorder, Action<IServiceCollection, IHttpClientBuilder>? configure = null,
+        string clientName = ClientName)
     {
         var services = new ServiceCollection();
         services.AddLogging(logging => logging.AddProvider(recorder).SetMinimumLevel(LogLevel.Trace));
-        var builder = services.AddHttpClient(ClientName)
+        var builder = services.AddHttpClient(clientName)
             .ConfigurePrimaryHttpMessageHandler(() => primaryHandler)
             .AddOpenUrzednikDisplayPathLogging();
         configure?.Invoke(services, builder);
         return services.BuildServiceProvider();
     }
 
-    private static RestRequestExecutor CreateExecutor(ServiceProvider provider)
-        => new(provider.GetRequiredService<IHttpClientFactory>().CreateClient(ClientName), new Uri(BaseAddress), new RestProviderProfile("test", "Test API"));
+    private static RestRequestExecutor CreateExecutor(ServiceProvider provider, string clientName = ClientName)
+        => new(provider.GetRequiredService<IHttpClientFactory>().CreateClient(clientName), new Uri(BaseAddress), new RestProviderProfile("test", "Test API"));
 
     private static HttpMessageHandler CreateOkHandler()
         => new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"name\":\"n\"}", System.Text.Encoding.UTF8, "application/json") });
