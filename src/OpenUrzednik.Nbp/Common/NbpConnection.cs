@@ -23,10 +23,13 @@ internal static class NbpConnection
     {
         ArgumentNullException.ThrowIfNull(httpClient);
 
+        // Locals and `is not null`, not pattern variables, so that mutation testing checks this method: see NbpOptionsValidator (ADR-0018).
+        var apiUrl = options?.ApiUrl;
+        var clientBaseAddress = httpClient.BaseAddress;
         Uri baseAddress;
-        if (options?.ApiUrl is { } apiUrl)
+        if (apiUrl is not null)
             baseAddress = NbpOptionsValidator.ParseApiUrl(apiUrl, nameof(options));
-        else if (httpClient.BaseAddress is { } clientBaseAddress)
+        else if (clientBaseAddress is not null)
             baseAddress = NbpOptionsValidator.ParseApiUrl(clientBaseAddress.OriginalString, nameof(httpClient));
         else
             baseAddress = new Uri(NbpOptions.DefaultApiUrl);

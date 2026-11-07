@@ -11,6 +11,28 @@ namespace OpenUrzednik.Core.Tests.Telemetry;
 public partial class IOpenUrzednikSpanExtensionsTest
 {
     [Fact]
+    public void RecordErrors_WhenNotRecording_DoesNothing()
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var span = Substitute.For<IOpenUrzednikSpan>();
+        span.IsRecording.Returns(false);
+        var errors = new[]
+        {
+            Substitute.For<OpenUrzednikError>(faker.Random.String2(10), faker.Lorem.Sentence()),
+            Substitute.For<OpenUrzednikError>(faker.Random.String2(10), faker.Lorem.Sentence()),
+        };
+
+        // Act
+        span.RecordErrors(errors);
+
+        // Assert
+        span.DidNotReceive().AddEvent(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        span.DidNotReceive().SetTag(Arg.Any<string>(), Arg.Any<string>());
+        span.DidNotReceive().SetStatus(Arg.Any<OpenUrzednikSpanStatus>(), Arg.Any<string>());
+    }
+
+    [Fact]
     public void RecordErrors_EmptyList_DoesNothing()
     {
         // Arrange

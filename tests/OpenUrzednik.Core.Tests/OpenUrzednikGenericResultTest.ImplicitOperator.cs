@@ -34,4 +34,15 @@ public partial class OpenUrzednikGenericResultTest
         // Assert
         result.Errors.ShouldBe(errors);
     }
+
+    [Fact]
+    public void ImplicitOperator_SuccessfulNonGenericResult_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var source = OpenUrzednikResult.Success();
+
+        // Act && Assert
+        Should.Throw<InvalidOperationException>(() => { OpenUrzednikResult<int> _ = source; })
+            .Message.ShouldBe("Cannot convert a successful Result to Result<TValue>.");
+    }
 }
