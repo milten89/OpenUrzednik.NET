@@ -1,8 +1,13 @@
+using System.Net;
+
 using Microsoft.Extensions.Time.Testing;
+
+using NSubstitute;
 
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
@@ -174,6 +179,24 @@ public partial class NbpConnectionTest
 
         // Assert
         connection.Timeout.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Create_Always_NamesHttpSpanAndErrorsAfterNbp()
+    {
+        // Arrange
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
+        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
+        tracer.StartSpan(Arg.Any<string>()).Returns(Substitute.For<IOpenUrzednikSpan>());
+        var connection = NbpConnection.Create(httpClient, null, new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, tracer), new FakeTimeProvider());
+
+        // Act
+        var result = await connection.GetAsync("cenyzlota", NbpJsonContext.Default.GoldPriceDtoArray, TestContext.Current.CancellationToken);
+
+        // Assert
+        // The span name is part of the telemetry contract (ADR-0003).
+        tracer.Received(1).StartSpan("nbp.http.get");
+        result.Errors.ShouldHaveSingleItem().Message.ShouldBe("NBP API is unavailable, status 503.");
     }
 
     [Fact]

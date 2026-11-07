@@ -84,4 +84,18 @@ public sealed partial class NbpRequestPipelineTest
         result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
         span.Received(1).AddEvent("error", "error.type", ServiceUnavailableError.ErrorCode);
     }
+
+    [Fact]
+    public async Task GetAsync_CallerSynchronizationContext_DoesNotResumeOnIt()
+    {
+        // Arrange
+        var sut = CreateAsyncSut("""[{"data":"2026-08-20","cena":522.32}]""");
+
+        // Act
+        var posts = await PostCountingSynchronizationContext.CountPostsAsync(() => sut.GetAsync(Substitute.For<IOpenUrzednikSpan>(), "Operation",
+            OpenUrzednikResult.Success(), () => "cenyzlota", JsonContext.GoldPriceDtoArray, dtos => dtos.Length, TestContext.Current.CancellationToken));
+
+        // Assert
+        posts.ShouldBe(0);
+    }
 }

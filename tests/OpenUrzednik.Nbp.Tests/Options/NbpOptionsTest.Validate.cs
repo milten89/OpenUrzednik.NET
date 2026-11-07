@@ -39,12 +39,52 @@ public sealed partial class NbpOptionsTest
     }
 
     [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void Validate_EmptyApiUrl_ThrowsArgumentExceptionSayingItIsEmpty(string apiUrl)
+    {
+        // Arrange
+        var sut = new NbpOptions { ApiUrl = apiUrl };
+
+        // Act
+        var exception = Should.Throw<ArgumentException>(sut.Validate);
+
+        // Assert
+        exception.ParamName.ShouldBe(nameof(NbpOptions.ApiUrl));
+        exception.Message.ShouldStartWith("NBP API url must not be empty.");
+    }
+
+    [Theory]
     [InlineData(0)]
     [InlineData(-5)]
     public void Validate_NonPositiveTimeout_ThrowsArgumentExceptionForTimeout(int seconds)
     {
         // Arrange
         var sut = new NbpOptions { Timeout = TimeSpan.FromSeconds(seconds) };
+
+        // Act
+        var exception = Should.Throw<ArgumentException>(sut.Validate);
+
+        // Assert
+        exception.ParamName.ShouldBe(nameof(NbpOptions.Timeout));
+    }
+
+    [Fact]
+    public void Validate_MaximumTimeout_DoesNotThrow()
+    {
+        // Arrange
+        // HttpClient.Timeout accepts at most int.MaxValue milliseconds, and so does the option.
+        var sut = new NbpOptions { Timeout = TimeSpan.FromMilliseconds(int.MaxValue) };
+
+        // Act & Assert
+        Should.NotThrow(sut.Validate);
+    }
+
+    [Fact]
+    public void Validate_TimeoutAboveMaximum_ThrowsArgumentExceptionForTimeout()
+    {
+        // Arrange
+        var sut = new NbpOptions { Timeout = TimeSpan.FromMilliseconds(int.MaxValue) + TimeSpan.FromMilliseconds(1) };
 
         // Act
         var exception = Should.Throw<ArgumentException>(sut.Validate);

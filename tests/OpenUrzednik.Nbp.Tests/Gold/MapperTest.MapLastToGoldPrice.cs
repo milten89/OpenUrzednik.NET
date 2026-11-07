@@ -39,7 +39,8 @@ public partial class MapperTest
     public void MapLastToGoldPrice_NullArray_ThrowsInvalidPayloadException()
     {
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToGoldPrice(null!));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToGoldPrice(null!))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]
@@ -49,6 +50,7 @@ public partial class MapperTest
         GoldPriceDto[] dtos = [new GoldPriceDtoFaker().WithConstantSeed().Generate(), null!];
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToGoldPrice(dtos));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToGoldPrice(dtos))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 }

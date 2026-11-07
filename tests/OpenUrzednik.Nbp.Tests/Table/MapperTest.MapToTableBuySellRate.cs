@@ -30,7 +30,8 @@ public partial class MapperTest
         BuySellExchangeRateDto dto = null!;
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToTableBuySellRate(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToTableBuySellRate(dto))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]

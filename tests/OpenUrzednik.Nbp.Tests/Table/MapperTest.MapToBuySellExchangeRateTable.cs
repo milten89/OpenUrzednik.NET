@@ -59,7 +59,26 @@ public partial class MapperTest
         BuySellExchangeRateTableDto dto = null!;
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
+    }
+
+    [Fact]
+    public void MapToBuySellExchangeRateTable_NullRates_ThrowsInvalidPayloadException()
+    {
+        // Arrange
+        var dtoBase = new BuySellExchangeRateTableDtoFaker(0).WithConstantSeed().Generate();
+        var dto = new BuySellExchangeRateTableDto
+        {
+            TableId = dtoBase.TableId,
+            PublicationDate = dtoBase.PublicationDate,
+            TradingDate = dtoBase.TradingDate,
+            Rates = null!
+        };
+
+        // Act && Assert
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
+            .Message.ShouldBe("NBP API response is missing 'rates'.");
     }
 
     [Fact]
@@ -77,7 +96,8 @@ public partial class MapperTest
         };
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dto))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]
@@ -114,7 +134,8 @@ public partial class MapperTest
         BuySellExchangeRateTableDto[] dtos = null!;
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dtos));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dtos))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 
     [Fact]
@@ -125,6 +146,7 @@ public partial class MapperTest
         var dtos = new[] { dto, null! };
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dtos));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapToBuySellExchangeRateTable(dtos))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 }

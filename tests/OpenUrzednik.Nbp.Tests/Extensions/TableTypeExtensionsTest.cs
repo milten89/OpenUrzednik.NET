@@ -18,4 +18,14 @@ public class TableTypeExtensionsTest
         // Assert
         result.ShouldBe(expected);
     }
+
+    [Fact]
+    public void ToTagValue_UndefinedTable_ReturnsUnknown()
+    {
+        // Act
+        var result = ((TableType)99).ToTagValue();
+
+        // Assert
+        result.ShouldBe("unknown");
+    }
 }

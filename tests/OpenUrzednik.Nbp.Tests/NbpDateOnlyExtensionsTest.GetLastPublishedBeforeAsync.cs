@@ -67,5 +67,21 @@ public partial class NbpDateOnlyExtensionsTest
         Should.Throw<ArgumentNullException>(() => { _ = ((INbpGoldPriceClient)null!).GetLastPublishedBeforeAsync(new DateOnly(2026, 10, 5)); })
             .ParamName.ShouldBe("client");
     }
+
+    [Fact]
+    public void GetLastPublishedBeforeAsync_NullCurrencyClient_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpCurrencyExchangeRateClient)null!).GetLastPublishedBeforeAsync("USD", new DateOnly(2026, 10, 5)); })
+            .ParamName.ShouldBe("client");
+    }
+
+    [Fact]
+    public void GetLastPublishedBeforeAsync_NullTableClient_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpExchangeRateTableClient)null!).GetLastPublishedBeforeAsync(TableType.A, new DateOnly(2026, 10, 5)); })
+            .ParamName.ShouldBe("client");
+    }
 }
 #endif

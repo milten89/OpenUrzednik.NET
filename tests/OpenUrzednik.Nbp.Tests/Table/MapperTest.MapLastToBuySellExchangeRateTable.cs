@@ -35,12 +35,21 @@ public partial class MapperTest
     }
 
     [Fact]
+    public void MapLastToBuySellExchangeRateTable_NullArray_ThrowsInvalidPayloadException()
+    {
+        // Act && Assert
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToBuySellExchangeRateTable(null!))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
+    }
+
+    [Fact]
     public void MapLastToBuySellExchangeRateTable_ArrayContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         BuySellExchangeRateTableDto[] dtos = [new BuySellExchangeRateTableDtoFaker().WithConstantSeed().Generate(), null!];
 
         // Act && Assert
-        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToBuySellExchangeRateTable(dtos));
+        Should.Throw<InvalidPayloadException>(() => Mapper.MapLastToBuySellExchangeRateTable(dtos))
+            .Message.ShouldBe("NBP API response is missing 'item'.");
     }
 }

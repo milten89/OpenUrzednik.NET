@@ -51,5 +51,13 @@ public partial class NbpDateOnlyExtensionsTest
         Should.Throw<ArgumentNullException>(() => { _ = ((INbpCurrencyExchangeRateClient)null!).GetBuySellLastPublishedBeforeAsync("USD", new DateOnly(2026, 10, 5)); })
             .ParamName.ShouldBe("client");
     }
+
+    [Fact]
+    public void GetBuySellLastPublishedBeforeAsync_NullTableClient_ThrowsArgumentNullException()
+    {
+        // Act && Assert
+        Should.Throw<ArgumentNullException>(() => { _ = ((INbpExchangeRateTableClient)null!).GetBuySellLastPublishedBeforeAsync(new DateOnly(2026, 10, 5)); })
+            .ParamName.ShouldBe("client");
+    }
 }
 #endif
