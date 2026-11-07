@@ -135,7 +135,7 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToGoldPrice_NullArray_ThrowsNullReferenceException()
+    public void MapToGoldPrice_NullArray_ThrowsInvalidPayloadException()
     {
         // Arrange
         GoldPriceDto[] dtos = null!;

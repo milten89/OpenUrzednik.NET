@@ -82,7 +82,7 @@ public partial class MapperTest
     }
 
     [Fact]
-    public void MapToBuySellExchangeRateTable_RatesArrayContainingNullElement_ThrowsInvalidPayloadException()
+    public void MapToBuySellExchangeRateTable_RatesContainingNullElement_ThrowsInvalidPayloadException()
     {
         // Arrange
         var rateDto = new BuySellExchangeRateDtoFaker().WithConstantSeed().Generate();
