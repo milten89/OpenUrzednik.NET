@@ -31,10 +31,10 @@ internal sealed class LastPublishedBeforeDateValidator(string propertyName, Date
     {
         // DayNumber ignores the time of day a DateTime can carry on netstandard2.0.
         if (Value.DayNumber <= minDate.DayNumber)
-            return GetValidationErrorResult($"'{PropertyName}' should be later than {minDate.ToIso8601String()}.");
+            return DateValidation.Failure($"'{PropertyName}' should be later than {minDate.ToIso8601String()}.", Name, PropertyName, Value);
 
         if (Value.DayNumber > today.DayNumber + 1)
-            return GetValidationErrorResult($"'{PropertyName}' should not be later than tomorrow ({today.AddDays(1).ToIso8601String()}, Europe/Warsaw).");
+            return DateValidation.Failure($"'{PropertyName}' should not be later than tomorrow ({today.AddDays(1).ToIso8601String()}, Europe/Warsaw).", Name, PropertyName, Value);
 
         return OpenUrzednikResult.Success();
     }

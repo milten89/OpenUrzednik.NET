@@ -2,11 +2,16 @@ using OpenUrzednik.Core.Errors;
 
 using Shouldly;
 
+// These tests cover the obsolete HttpErrorMetadata, which keeps working until 2.0 (ADR-0021).
+#pragma warning disable CS0618
+
 namespace OpenUrzednik.Core.Tests.Errors;
 
+// The HTTP subclasses (OpenUrzednik.Transport.Http) are tested in OpenUrzednik.Transport.Http.Tests.
 public class StatusCodeMetadataTest
 {
-    public static TheoryData<OpenUrzednikError, int> ErrorsWithStatusCode => new()
+    // The obsolete constructors keep storing the status until 2.0 (ADR-0021).
+    public static TheoryData<OpenUrzednikError, int> ObsoleteErrorsWithStatusCode => new()
     {
         { new BadRequestError("message", 400), 400 },
         { new UnauthorizedError("message", 403), 403 },
@@ -23,13 +28,23 @@ public class StatusCodeMetadataTest
         new UnauthorizedError("message"),
         new NotFoundError("message"),
         new RequestTimeoutError("message"),
+        new RequestTimeoutError("message", TimeSpan.FromSeconds(1)),
+        new RequestTimeoutError("message", TimeSpan.FromSeconds(1), new TimeoutException()),
         new RateLimitExceededError("message", null),
         new ServiceUnavailableError("message"),
+        new ServiceUnavailableError("message", new InvalidOperationException()),
         new UnknownError("message"),
+        new BadRequestError("message", statusCode: null),
+        new UnauthorizedError("message", statusCode: null),
+        new NotFoundError("message", statusCode: null),
+        new RequestTimeoutError("message", statusCode: null),
+        new RateLimitExceededError("message", null, statusCode: null),
+        new ServiceUnavailableError("message", statusCode: null),
+        new UnknownError("message", statusCode: null),
     };
 
     [Theory]
-    [MemberData(nameof(ErrorsWithStatusCode))]
+    [MemberData(nameof(ObsoleteErrorsWithStatusCode))]
     public void Ctor_WithStatusCode_StoresStatusCodeInMetadata(OpenUrzednikError error, int expectedStatusCode)
     {
         // Assert

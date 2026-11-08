@@ -10,6 +10,7 @@ using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -65,7 +66,7 @@ public partial class NbpCurrencyExchangeRateClientTest
 
         // Assert
         pastHandler.Request.ShouldNotBeNull();
-        future.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        future.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         futureHandler.Request.ShouldBeNull();
     }
 
@@ -116,7 +117,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var result = await sut.GetAsync("USD", futureForTheSystemClock, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>(); // from the stub
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>(); // from the stub
         handler.Request.ShouldNotBeNull();
     }
 

@@ -36,6 +36,7 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | ✅ Stable | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | ✅ Stable | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | ✅ Stable | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Transport.Http**](src/OpenUrzednik.Transport.Http/README.md) | 🆕 1.1 | The errors caused by HTTP responses (`HttpNotFoundError` and the others) and `IOpenUrzednikHttpStatusCode`; installed with every REST provider | `netstandard2.0`, `net8.0`, `net10.0` |
 
 ## Supported platforms
 

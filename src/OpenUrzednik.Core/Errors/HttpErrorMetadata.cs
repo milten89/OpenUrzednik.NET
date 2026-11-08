@@ -4,10 +4,12 @@ namespace OpenUrzednik.Core.Errors;
 /// The HTTP details an error can carry in its <see cref="OpenUrzednikError.Metadata"/>, with typed accessors.
 /// </summary>
 /// <remarks>
-/// Error types describe the condition (not found, rate limited, unavailable), whatever the transport (ADR-0012), so the
-/// status code isn't a property of a type: the same <see cref="NotFoundError"/> comes from a 404, from a response with no
-/// data, or from a provider that doesn't use HTTP. Errors caused by an HTTP response store its status code here.
+/// Obsolete: Core describes conditions, whatever the transport (ADR-0021). An error caused by an HTTP response is the condition's
+/// HTTP subclass in the <c>OpenUrzednik.Transport.Http</c> package (e.g. <c>HttpNotFoundError</c>), which implements
+/// <c>IOpenUrzednikHttpStatusCode</c>; that package's <c>GetHttpStatus()</c> and <c>TryGetHttpStatus()</c> replace these accessors.
+/// Until 2.0 these keep working: the HTTP errors store their status under <see cref="StatusCodeKey"/> as an <see cref="int"/>.
 /// </remarks>
+[Obsolete("Use GetHttpStatus() / TryGetHttpStatus() or IOpenUrzednikHttpStatusCode from the OpenUrzednik.Transport.Http package (ADR-0021). Removed in 2.0.")]
 public static class HttpErrorMetadata
 {
     /// <summary>

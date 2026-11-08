@@ -32,7 +32,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
-      # One runner per project under test; Stryker runs single-threaded (concurrency 1, stryker-net #3832), so parallel
+      # One runner per project under test (core also runs the small transport-http shard); Stryker runs single-threaded (concurrency 1, stryker-net #3832), so parallel
       # runners are the speed-up. Shared source (src/Identifiers, src/Privacy, src/Http) is mutated in its test-only host's
       # shard, by its own tests, and its netstandard2.0 branches in the -netstandard shard on the same runner (ADR-0020); a
       # provider's shards mutate only the provider's code (!**/Http/**).
@@ -47,7 +47,7 @@ jobs:
           - name: http-di
             shards: http-di
           - name: core
-            shards: core
+            shards: core transport-http
           - name: adapters
             shards: di logging diagnostics
 

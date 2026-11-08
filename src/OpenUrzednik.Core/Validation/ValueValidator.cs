@@ -39,9 +39,12 @@ public abstract class ValueValidator<T>
     protected OpenUrzednikResult GetValidationErrorResult(string message, string? propertyName, object value)
             => OpenUrzednikResult.Failure(new ValidationError(message, Name, propertyName, value));
 
-    /// <summary>Creates a failed result with a <see cref="ValidationError"/> for this rule, <see cref="PropertyName"/> and <see cref="Value"/>.</summary>
+    /// <summary>
+    /// Creates a failed result with a <see cref="ValidationError{T}"/> for this rule, <see cref="PropertyName"/> and <see cref="Value"/>,
+    /// which keeps the value's exact type (ADR-0021).
+    /// </summary>
     /// <param name="message">Error message.</param>
     /// <returns>The failed result.</returns>
     protected OpenUrzednikResult GetValidationErrorResult(string message)
-            => GetValidationErrorResult(message, PropertyName, Value!);
+            => OpenUrzednikResult.Failure(new ValidationError<T>(message, Name, PropertyName, Value));
 }

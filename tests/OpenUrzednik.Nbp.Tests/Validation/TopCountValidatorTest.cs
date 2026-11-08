@@ -69,7 +69,7 @@ public class TopCountValidatorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<int>>();
         error.Metadata["ruleName"].ShouldBe(RuleName);
         error.Metadata["name"].ShouldBe(PropertyName);
         error.Metadata["value"].ShouldBe(value);
@@ -102,7 +102,7 @@ public class TopCountValidatorTest
         var result = validator.Validate();
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>()
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<int>>()
             .Message.ShouldBe($"'{PropertyName}' should be between 1 and {max}.");
     }
 

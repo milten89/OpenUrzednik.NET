@@ -8,6 +8,7 @@ using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.TestCommon;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -63,7 +64,7 @@ public sealed partial class NbpRequestPipelineTest
 
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
-        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
+        error.Metadata.ContainsKey(HttpStatusExtensions.StatusCodeMetadataKey).ShouldBeFalse();
         span.Received(1).SetTag("error.type", NotFoundError.ErrorCode);
     }
 
@@ -97,7 +98,7 @@ public sealed partial class NbpRequestPipelineTest
         }, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>();
         mapped.ShouldBeFalse();
         span.Received(1).AddEvent("error", "error.type", ServiceUnavailableError.ErrorCode);
     }

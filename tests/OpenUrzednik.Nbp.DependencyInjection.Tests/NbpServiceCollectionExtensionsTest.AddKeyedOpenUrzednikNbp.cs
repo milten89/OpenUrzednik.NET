@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.TestCommon;
+using OpenUrzednik.Transport.Http;
 
 using Polly.CircuitBreaker;
 
@@ -190,7 +191,7 @@ public sealed partial class NbpServiceCollectionExtensionsTest
         var result = await provider.GetRequiredKeyedService<INbpGoldPriceClient>("gateway").GetLatestAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>().GetHttpStatusCode().ShouldBeNull();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>().GetHttpStatus().ShouldBeNull();
     }
 
     [Theory]

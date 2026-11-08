@@ -4,6 +4,7 @@ using System.Net;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Table;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -88,9 +89,9 @@ public partial class NbpExchangeRateTableClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        var error = errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
+        var error = errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 93 dni / Limit of 93 days has been exceeded");
-        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
+        error.Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(400);
     }
 
     [Theory]
@@ -106,7 +107,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
+        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>().Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(404);
     }
 
     [Theory]
@@ -121,7 +122,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
+        errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Metadata.ContainsKey(HttpStatusExtensions.StatusCodeMetadataKey).ShouldBeFalse();
     }
 
     [Theory]
@@ -136,7 +137,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        errors.ShouldHaveSingleItem().ShouldBeOfType<UnauthorizedError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
+        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpUnauthorizedError>().Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe((int)statusCode);
     }
 
     [Theory]
@@ -151,9 +152,9 @@ public partial class NbpExchangeRateTableClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        var error = errors.ShouldHaveSingleItem().ShouldBeOfType<RateLimitExceededError>();
+        var error = errors.ShouldHaveSingleItem().ShouldBeOfType<HttpRateLimitExceededError>();
         error.RetryAfter.ShouldBe(TimeSpan.FromSeconds(30));
-        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(429);
+        error.Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(429);
     }
 
     [Theory]
@@ -168,7 +169,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
+        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>().Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe((int)statusCode);
     }
 
     [Theory]

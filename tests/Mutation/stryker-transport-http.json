@@ -1,0 +1,25 @@
+{
+  "stryker-config": {
+    "project": "OpenUrzednik.Transport.Http.csproj",
+    "test-projects": [
+      "../../tests/OpenUrzednik.Transport.Http.Tests/OpenUrzednik.Transport.Http.Tests.csproj"
+    ],
+    "test-runner": "mtp",
+    "target-framework": "net10.0",
+    "concurrency": 1,
+    "coverage-analysis": "perTest",
+    "mutation-level": "Standard",
+    "mutate": [
+      "**/*.cs"
+    ],
+    "ignore-methods": [
+      "*Exception.ctor"
+    ],
+    "reporters": [
+      "html",
+      "json",
+      "markdown",
+      "progress"
+    ]
+  }
+}

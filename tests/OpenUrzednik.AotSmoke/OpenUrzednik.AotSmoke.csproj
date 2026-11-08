@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\src\OpenUrzednik.Extensions.Logging\OpenUrzednik.Extensions.Logging.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Nbp.DependencyInjection\OpenUrzednik.Nbp.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Transport.Http\OpenUrzednik.Transport.Http.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
     <TrimmerRootAssembly Include="OpenUrzednik.Extensions.Logging" />
     <TrimmerRootAssembly Include="OpenUrzednik.Nbp" />
     <TrimmerRootAssembly Include="OpenUrzednik.Nbp.DependencyInjection" />
+    <TrimmerRootAssembly Include="OpenUrzednik.Transport.Http" />
   </ItemGroup>
 
   <!-- Bodies captured from the real NBP API, shared with the WireMock tests. -->

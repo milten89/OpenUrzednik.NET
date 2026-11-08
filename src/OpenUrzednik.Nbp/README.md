@@ -14,7 +14,7 @@
 dotnet add package OpenUrzednik.Nbp
 ```
 
-Requires [OpenUrzednik.Core](https://www.nuget.org/packages/OpenUrzednik.Core) (NuGet installs it as a dependency).
+Requires [OpenUrzednik.Core](https://www.nuget.org/packages/OpenUrzednik.Core) and [OpenUrzednik.Transport.Http](https://www.nuget.org/packages/OpenUrzednik.Transport.Http) (NuGet installs them as dependencies).
 
 ## Usage
 
@@ -73,7 +73,7 @@ The currency client returns one currency's rates (`CurrencyExchangeRates`, with 
 
 `Get…TodayAsync` returns a `NotFoundError` until the day's publication, and on days without one. `GetLatestAsync` returns the most recent published value.
 
-**Limits.** The client checks these before it sends a request; a violation comes back as a `ValidationError`.
+**Limits.** The client checks these before it sends a request; a violation comes back as a `ValidationError` with the rejected value's type: `ValidationError<DateTime>` for a date, `ValidationError<int>` for a top count, `ValidationError<string>` for a currency code, and `RangeValidationError<DateTime>` naming `from` and `to` for a date range.
 
 | What | Limit |
 |---|---|
@@ -85,7 +85,7 @@ The currency client returns one currency's rates (`CurrencyExchangeRates`, with 
 
 In a range method, `from` may be earlier than the earliest date: only `to` is checked against the earliest date and against today. `from` later than `to` is a validation error. In `Get…LastPublishedBeforeAsync`, the client checks the day before `date` the same way, so `date` must be later than the earliest date and not later than tomorrow. With tomorrow, the result is today's publication once it is out (see the publication times above), and the one before until then.
 
-**Empty answers.** A date or range with no publication (a weekend, a holiday, a date before the table existed) is a `NotFoundError`: NBP answers it with an HTTP 404 (the error then carries the status code) or with an empty list. See [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors) for the other error types. NBP describes its API in the [official documentation](https://api.nbp.pl/en.html).
+**Empty answers.** A date or range with no publication (a weekend, a holiday, a date before the table existed) is a `NotFoundError`: NBP answers it with an HTTP 404 (the error is then an `HttpNotFoundError`, with the status code) or with an empty list. See [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors) for the other error types. NBP describes its API in the [official documentation](https://api.nbp.pl/en.html).
 
 **Currency names before 2004-05-04.** Tables A and C published before 2004-05-04 (up to 85/A/NBP/2004 and 85/C/NBP/2004) give the country, not the currency name, so `CurrencyName` is an empty string there; `CurrencyCode` and the rates are filled in as usual. Table B always has the name. In `CurrencyExchangeRates` and `BuySellExchangeRates`, NBP takes the name from the earliest rate in the answer: a range or a `Get…LastPublishedBeforeAsync` window whose earliest rate was published before 2004-05-04 has an empty name for all its rates, including the later ones.
 

@@ -13,6 +13,7 @@ using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -40,7 +41,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        result.Errors[0].ShouldBeOfType<ValidationError<string>>();
         handler.Request.ShouldBeNull();
     }
 
@@ -94,7 +95,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        result.Errors[0].ShouldBeOfType<ValidationError<DateTime>>();
         handler.Request.ShouldBeNull();
     }
 
@@ -115,7 +116,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        result.Errors[0].ShouldBeOfType<RangeValidationError<DateTime>>();
         handler.Request.ShouldBeNull();
     }
 
@@ -189,7 +190,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<RateLimitExceededError>();
+        result.Errors[0].ShouldBeOfType<HttpRateLimitExceededError>();
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Transport.Http;
 
 using Polly.CircuitBreaker;
 using Polly.Timeout;
@@ -37,7 +38,7 @@ public sealed partial class NbpServiceCollectionExtensionsTest
 
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
-        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
+        error.Metadata.ContainsKey(HttpStatusExtensions.StatusCodeMetadataKey).ShouldBeFalse();
     }
 
     [Fact]

@@ -16,6 +16,7 @@ using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.TestCommon;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -196,7 +197,7 @@ public partial class RestRequestExecutorTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<NotFoundError>();
+        result.Errors[0].ShouldBeOfType<HttpNotFoundError>();
     }
 
     [Fact]
@@ -215,7 +216,7 @@ public partial class RestRequestExecutorTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<RateLimitExceededError>()
+        result.Errors[0].ShouldBeOfType<HttpRateLimitExceededError>()
             .RetryAfter.ShouldBe(retryDelay);
     }
 
@@ -238,7 +239,7 @@ public partial class RestRequestExecutorTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<RateLimitExceededError>()
+        result.Errors[0].ShouldBeOfType<HttpRateLimitExceededError>()
             .RetryAfter.ShouldBe(retryDelay);
     }
 
@@ -261,7 +262,7 @@ public partial class RestRequestExecutorTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<RateLimitExceededError>()
+        result.Errors[0].ShouldBeOfType<HttpRateLimitExceededError>()
             .RetryAfter.ShouldBe(retryDelay);
     }
 
@@ -279,24 +280,24 @@ public partial class RestRequestExecutorTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<RateLimitExceededError>()
+        result.Errors[0].ShouldBeOfType<HttpRateLimitExceededError>()
             .RetryAfter.ShouldBeNull();
     }
 
     [Theory]
-    [InlineData(HttpStatusCode.BadRequest, BadRequestError.ErrorCode)]
-    [InlineData(HttpStatusCode.Unauthorized, UnauthorizedError.ErrorCode)]
-    [InlineData(HttpStatusCode.Forbidden, UnauthorizedError.ErrorCode)]
-    [InlineData(HttpStatusCode.NotFound, NotFoundError.ErrorCode)]
-    [InlineData(HttpStatusCode.RequestTimeout, RequestTimeoutError.ErrorCode)]
-    [InlineData((HttpStatusCode)429, RateLimitExceededError.ErrorCode)]
-    [InlineData(HttpStatusCode.InternalServerError, ServiceUnavailableError.ErrorCode)]
-    [InlineData(HttpStatusCode.BadGateway, ServiceUnavailableError.ErrorCode)]
-    [InlineData(HttpStatusCode.ServiceUnavailable, ServiceUnavailableError.ErrorCode)]
-    [InlineData(HttpStatusCode.GatewayTimeout, ServiceUnavailableError.ErrorCode)]
-    [InlineData(HttpStatusCode.Conflict, UnknownError.ErrorCode)]
-    [InlineData(HttpStatusCode.MultipleChoices, UnknownError.ErrorCode)]
-    public async Task GetAsync_UnsuccessfulStatusCode_ReturnsMappedErrorWithStatusCode(HttpStatusCode statusCode, string expectedErrorCode)
+    [InlineData(HttpStatusCode.BadRequest, BadRequestError.ErrorCode, typeof(HttpBadRequestError))]
+    [InlineData(HttpStatusCode.Unauthorized, UnauthorizedError.ErrorCode, typeof(HttpUnauthorizedError))]
+    [InlineData(HttpStatusCode.Forbidden, UnauthorizedError.ErrorCode, typeof(HttpUnauthorizedError))]
+    [InlineData(HttpStatusCode.NotFound, NotFoundError.ErrorCode, typeof(HttpNotFoundError))]
+    [InlineData(HttpStatusCode.RequestTimeout, RequestTimeoutError.ErrorCode, typeof(HttpRequestTimeoutError))]
+    [InlineData((HttpStatusCode)429, RateLimitExceededError.ErrorCode, typeof(HttpRateLimitExceededError))]
+    [InlineData(HttpStatusCode.InternalServerError, ServiceUnavailableError.ErrorCode, typeof(HttpServiceUnavailableError))]
+    [InlineData(HttpStatusCode.BadGateway, ServiceUnavailableError.ErrorCode, typeof(HttpServiceUnavailableError))]
+    [InlineData(HttpStatusCode.ServiceUnavailable, ServiceUnavailableError.ErrorCode, typeof(HttpServiceUnavailableError))]
+    [InlineData(HttpStatusCode.GatewayTimeout, ServiceUnavailableError.ErrorCode, typeof(HttpServiceUnavailableError))]
+    [InlineData(HttpStatusCode.Conflict, UnknownError.ErrorCode, typeof(HttpUnknownError))]
+    [InlineData(HttpStatusCode.MultipleChoices, UnknownError.ErrorCode, typeof(HttpUnknownError))]
+    public async Task GetAsync_UnsuccessfulStatusCode_ReturnsMappedErrorWithStatusCode(HttpStatusCode statusCode, string expectedErrorCode, Type expectedType)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -308,9 +309,10 @@ public partial class RestRequestExecutorTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
+        result.Errors[0].GetType().ShouldBe(expectedType);
         result.Errors[0].Code.ShouldBe(expectedErrorCode);
-        result.Errors[0].Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
-        result.Errors[0].GetHttpStatusCode().ShouldBe((int)statusCode);
+        result.Errors[0].Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe((int)statusCode);
+        result.Errors[0].GetHttpStatus().ShouldBe(statusCode);
     }
 
     [Fact]
@@ -330,7 +332,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
+        var error = result.Errors[0].ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith($": {serverMessage}");
     }
 
@@ -347,7 +349,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
+        var error = result.Errors[0].ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldStartWith("Test API rejected the request to ");
         error.Message.ShouldEndWith($"{relativePath}.");
     }
@@ -366,7 +368,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
+        var error = result.Errors[0].ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith($": {new string('x', 500)}");
         error.Message.ShouldNotContain(new string('x', 501));
     }
@@ -389,7 +391,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors[0].ShouldBeOfType<BadRequestError>();
+        var error = result.Errors[0].ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith(".");
         logger.Received(1).Log(OpenUrzednikLogLevel.Debug, RestLogEvents.ErrorBodyUnreadable, Arg.Any<Exception>(), "Could not read {provider} error response body.", "provider", "test");
     }
@@ -1090,7 +1092,7 @@ public partial class RestRequestExecutorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldNotContain(": ");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>().Message.ShouldNotContain(": ");
     }
 
     [Fact]
@@ -1112,7 +1114,7 @@ public partial class RestRequestExecutorTest
             .GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        var message = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message;
+        var message = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>().Message;
         message.ShouldNotContain("Invalid");
         message.ShouldEndWith(".");
     }
@@ -1131,7 +1133,7 @@ public partial class RestRequestExecutorTest
         var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        var message = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message;
+        var message = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>().Message;
         message.ShouldNotContain("Invalid");
         message.ShouldEndWith(".");
     }
@@ -1150,7 +1152,7 @@ public partial class RestRequestExecutorTest
         var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldEndWith(": Invalid date range");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>().Message.ShouldEndWith(": Invalid date range");
     }
 
     [Fact]
@@ -1178,7 +1180,7 @@ public partial class RestRequestExecutorTest
         span.IsRecording.Returns(true);
         ErrorResponseContext? received = null;
         string? body = null;
-        var custom = new BadRequestError("Custom.", 422);
+        var custom = new HttpBadRequestError("Custom.", (HttpStatusCode)422);
 
         // Act
         var result = await CreateConnectionWithOverride(httpClient, async context =>
@@ -1208,7 +1210,7 @@ public partial class RestRequestExecutorTest
             .GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>();
     }
 
     [Fact]
@@ -1271,7 +1273,7 @@ public partial class RestRequestExecutorTest
         var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync("/rates", TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Message.ShouldBe("Resource at https://api.example.com/api/rates was not found.");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>().Message.ShouldBe("Resource at https://api.example.com/api/rates was not found.");
     }
 
     [Fact]
@@ -1356,7 +1358,7 @@ public partial class RestRequestExecutorTest
         var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnknownError>().Message.ShouldBe("Test API returned unexpected status 409.");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpUnknownError>().Message.ShouldBe("Test API returned unexpected status 409.");
     }
 
     [Fact]
@@ -1380,7 +1382,7 @@ public partial class RestRequestExecutorTest
         // Assert
         first.ShouldBe("400 BadRequest - Błędny zakres dat");
         second.ShouldBe(first);
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldEndWith(": 400 BadRequest - Błędny zakres dat");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>().Message.ShouldEndWith(": 400 BadRequest - Błędny zakres dat");
     }
 
     [Fact]
@@ -1413,8 +1415,8 @@ public partial class RestRequestExecutorTest
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
         error.Exception.ShouldBeSameAs(thrown);
-        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
-        error.GetHttpStatusCode().ShouldBeNull();
+        error.Metadata.ContainsKey(HttpStatusExtensions.StatusCodeMetadataKey).ShouldBeFalse();
+        error.GetHttpStatus().ShouldBeNull();
         span.Received(1).SetTag("error.type", ServiceUnavailableError.ErrorCode);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Rejected");
         logger.Received(1).Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestRejected, thrown, "{provider} request to {path} was rejected", "provider", "test", "path", Arg.Any<string>());
@@ -1542,7 +1544,7 @@ public partial class RestRequestExecutorTest
         var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Message.ShouldBe($"Resource at {DisplayBaseAddress}{DisplayPath} was not found.");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>().Message.ShouldBe($"Resource at {DisplayBaseAddress}{DisplayPath} was not found.");
     }
 
     [Fact]
@@ -1555,7 +1557,7 @@ public partial class RestRequestExecutorTest
         var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(IdentifierPath, DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>().Message.ShouldBe($"Test API rejected the request to {DisplayBaseAddress}{DisplayPath}.");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>().Message.ShouldBe($"Test API rejected the request to {DisplayBaseAddress}{DisplayPath}.");
     }
 
     [Fact]

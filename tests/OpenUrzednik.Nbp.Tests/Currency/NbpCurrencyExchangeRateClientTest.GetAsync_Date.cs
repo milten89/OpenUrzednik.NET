@@ -12,6 +12,7 @@ using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -38,7 +39,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        result.Errors[0].ShouldBeOfType<ValidationError<string>>();
         handler.Request.ShouldBeNull();
     }
 
@@ -90,7 +91,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        result.Errors[0].ShouldBeOfType<ValidationError<DateTime>>();
         handler.Request.ShouldBeNull();
     }
 
@@ -159,7 +160,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<NotFoundError>();
+        result.Errors[0].ShouldBeOfType<HttpNotFoundError>();
     }
 
     [Fact]
@@ -175,7 +176,7 @@ public partial class NbpCurrencyExchangeRateClientTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>().Message.ShouldContain("later than today (2026-10-01");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>().Message.ShouldContain("later than today (2026-10-01");
         handler.Request.ShouldBeNull();
     }
 

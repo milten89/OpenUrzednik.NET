@@ -77,7 +77,7 @@ internal abstract class IdentifierValidator : ValueValidator<string>
 
     /// <summary>A failure for this rule and parameter, with the value masked.</summary>
     protected OpenUrzednikResult Failure(string message)
-        => OpenUrzednikResult.Failure(new ValidationError(message, Name, PropertyName, SensitiveValue.Mask(Value)));
+        => OpenUrzednikResult.Failure(new ValidationError<string>(message, Name, PropertyName, SensitiveValue.Mask(Value)));
 
     /// <summary>A failure for a wrong check digit.</summary>
     protected OpenUrzednikResult InvalidCheckDigit() => Failure($"'{PropertyName}' has an invalid check digit.");

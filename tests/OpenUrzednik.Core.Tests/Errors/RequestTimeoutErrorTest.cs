@@ -3,6 +3,9 @@ using OpenUrzednik.Core.Exceptions;
 
 using Shouldly;
 
+// These tests cover the obsolete HttpErrorMetadata, which keeps working until 2.0 (ADR-0021).
+#pragma warning disable CS0618
+
 namespace OpenUrzednik.Core.Tests.Errors;
 
 public partial class RequestTimeoutErrorTest
@@ -32,6 +35,17 @@ public partial class RequestTimeoutErrorTest
 
         // Assert
         exception.ShouldBeOfType<RequestTimeoutException>().InnerException.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Ctor_WithTimeout_KeepsItWithoutException()
+    {
+        // Act
+        var error = new RequestTimeoutError("message", TimeSpan.FromSeconds(5));
+
+        // Assert
+        error.Timeout.ShouldBe(TimeSpan.FromSeconds(5));
+        error.Exception.ShouldBeNull();
     }
 
     [Fact]
