@@ -5,7 +5,7 @@ using OpenUrzednik.Core.Errors;
 namespace OpenUrzednik.Transport.Http;
 
 /// <summary>
-/// Reads the HTTP status code of any error without a type check (ADR-0022).
+/// Reads the HTTP status code of any error without a type check (ADR-0021).
 /// </summary>
 public static class HttpStatusExtensions
 {

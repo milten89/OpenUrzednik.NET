@@ -42,7 +42,7 @@ internal sealed class RestProviderProfile
     /// <summary>
     /// Gets the optional override for non-success responses. It runs before the default mapping; a <see langword="null"/> result falls back to it.
     /// An error it returns for a response is the HTTP subclass of its condition from <c>OpenUrzednik.Transport.Http</c> (e.g. <c>HttpBadRequestError</c>,
-    /// with the response's status code) or a provider's subclass of it, never the plain condition type (ADR-0022).
+    /// with the response's status code) or a provider's subclass of it, never the plain condition type (ADR-0021).
     /// Exceptions it throws aren't caught: they reach the caller and mark the span as failed.
     /// </summary>
     public Func<ErrorResponseContext, Task<OpenUrzednikError?>>? MapErrorAsync { get; }

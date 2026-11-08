@@ -8,7 +8,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Transport.Http.Tests;
 
-// A provider derives its own error types from the HTTP subclasses to add typed details of its API (ADR-0022). The types below stand in
+// A provider derives its own error types from the HTTP subclasses to add typed details of its API (ADR-0021). The types below stand in
 // for such provider types: each adds one detail and one key, and keeps the condition's and the transport's details.
 public partial class HttpErrorTest
 {

@@ -5,7 +5,7 @@ using OpenUrzednik.Core.Errors;
 namespace OpenUrzednik.Transport.Http;
 
 /// <summary>
-/// A <see cref="ServiceUnavailableError"/> caused by an HTTP response: the server answered with a 5xx status, or a provider mapped another status to it (ADR-0022).
+/// A <see cref="ServiceUnavailableError"/> caused by an HTTP response: the server answered with a 5xx status, or a provider mapped another status to it (ADR-0021).
 /// </summary>
 /// <remarks>
 /// It keeps the <see cref="OpenUrzednikError.Code"/> and exception of <see cref="ServiceUnavailableError"/>, so code that checks <c>is ServiceUnavailableError</c> or the
@@ -13,7 +13,7 @@ namespace OpenUrzednik.Transport.Http;
 /// with <see cref="HttpStatusExtensions.GetHttpStatus"/>; <see cref="OpenUrzednikError.Metadata"/> holds it as an <see cref="int"/> under
 /// <see cref="HttpStatusExtensions.StatusCodeMetadataKey"/>.
 /// It isn't sealed: a provider derives its own error type from it to add typed details of its API; that error is still this type and
-/// its condition (ADR-0022).
+/// its condition (ADR-0021).
 /// </remarks>
 public class HttpServiceUnavailableError : ServiceUnavailableError, IOpenUrzednikHttpStatusCode
 {

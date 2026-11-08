@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Core.Tests.Errors;
 
-// Durations are ISO 8601 strings written by Core's own formatter; System.Xml's XmlConvert writes the same text (ADR-0022).
+// Durations are ISO 8601 strings written by Core's own formatter; System.Xml's XmlConvert writes the same text (ADR-0021).
 public class DurationMetadataTest
 {
     public static TheoryData<TimeSpan, string> Durations => new()

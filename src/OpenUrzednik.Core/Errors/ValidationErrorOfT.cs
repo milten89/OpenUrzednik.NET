@@ -2,7 +2,7 @@ namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
 /// A <see cref="ValidationError"/> that carries the rejected value with its exact type, e.g. <c>ValidationError&lt;int&gt;</c> for a top
-/// count (ADR-0022). The value isn't boxed unless <see cref="OpenUrzednikError.Metadata"/> is read or an exception is created.
+/// count (ADR-0021). The value isn't boxed unless <see cref="OpenUrzednikError.Metadata"/> is read or an exception is created.
 /// </summary>
 /// <typeparam name="T">The type of the rejected value. Public dates are <see cref="DateTime"/> on every target (ADR-0005).</typeparam>
 public sealed class ValidationError<T> : ValidationError
@@ -30,7 +30,7 @@ public sealed class ValidationError<T> : ValidationError
     {
         base.CollectMetadata(metadata);
         // A value with no metadata form stays as passed, as with the 1.0 constructor: a ValueValidator<T> of an app's own type kept
-        // its value key in 1.0 (ADR-0022). The library's own errors never pass one.
+        // its value key in 1.0 (ADR-0021). The library's own errors never pass one.
         if (Value is not null)
         {
             var hasForm = MetadataValue.TryConvert(Value, out var converted);

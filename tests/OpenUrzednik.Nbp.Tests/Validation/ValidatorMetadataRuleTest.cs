@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Nbp.Tests.Validation;
 
-// ADR-0022: the errors of every NBP validator keep their metadata to JSON-shaped values (no DateOnly, no tuples).
+// ADR-0021: the errors of every NBP validator keep their metadata to JSON-shaped values (no DateOnly, no tuples).
 public class ValidatorMetadataRuleTest
 {
     private static readonly DateOnly Today = new(2026, 11, 8);

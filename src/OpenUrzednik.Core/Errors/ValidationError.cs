@@ -4,7 +4,7 @@ namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
 /// Represents an error indicating that a validation error has occurred. <see cref="ValidationError{T}"/> carries the rejected value with
-/// its exact type, and <see cref="RangeValidationError{T}"/> a rejected range (ADR-0022).
+/// its exact type, and <see cref="RangeValidationError{T}"/> a rejected range (ADR-0021).
 /// </summary>
 public class ValidationError : OpenUrzednikError
 {
@@ -62,7 +62,7 @@ public class ValidationError : OpenUrzednikError
             metadata[NameMetadataKey] = Name;
         if (_value is not null)
         {
-            // A value with no metadata form stays as passed, as in 1.0; the library's own errors never pass one (ADR-0022).
+            // A value with no metadata form stays as passed, as in 1.0; the library's own errors never pass one (ADR-0021).
             var hasForm = MetadataValue.TryConvert(_value, out var converted);
             metadata[ValueMetadataKey] = hasForm ? converted : _value;
         }

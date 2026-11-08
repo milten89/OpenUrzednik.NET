@@ -3,7 +3,7 @@ using OpenUrzednik.TestCommon;
 
 namespace OpenUrzednik.Core.Tests.Errors;
 
-// ADR-0022: every error Core creates keeps its metadata to JSON-shaped values.
+// ADR-0021: every error Core creates keeps its metadata to JSON-shaped values.
 public class MetadataRuleTest
 {
     public static TheoryData<OpenUrzednikError> CoreErrors => new()

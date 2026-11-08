@@ -2,7 +2,7 @@ namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
 /// A <see cref="RangeValidationError"/> that carries the range's bounds with their exact type, e.g.
-/// <c>RangeValidationError&lt;DateTime&gt;</c> for a date range (ADR-0022). The bounds aren't boxed unless
+/// <c>RangeValidationError&lt;DateTime&gt;</c> for a date range (ADR-0021). The bounds aren't boxed unless
 /// <see cref="OpenUrzednikError.Metadata"/> is read.
 /// </summary>
 /// <typeparam name="T">The type of the bounds. Public dates are <see cref="DateTime"/> on every target (ADR-0005).</typeparam>

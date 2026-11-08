@@ -5,7 +5,7 @@ using OpenUrzednik.Nbp.Extensions;
 
 namespace OpenUrzednik.Nbp.Validation;
 
-// The error is a RangeValidationError<DateTime> naming both parameters, not a tuple value (ADR-0022).
+// The error is a RangeValidationError<DateTime> naming both parameters, not a tuple value (ADR-0021).
 internal sealed class DateRangeValidator(string startName, string endName, (DateOnly From, DateOnly To) value, int maxDays)
     : ValueValidator<(DateOnly From, DateOnly To)>(startName, value)
 {
