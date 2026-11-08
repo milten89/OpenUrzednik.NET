@@ -1,5 +1,6 @@
 ---
-status: accepted
+status: released
+released-in: v1.0.0
 date: 2026-11-06
 confidence: high
 decision-makers: milten89
