@@ -377,7 +377,7 @@ internal sealed class RestRequestExecutor
                     if (logger.IsEnabled(OpenUrzednikLogLevel.Debug))
                         logger.Log(OpenUrzednikLogLevel.Debug, RestLogEvents.NotFound, null, "{provider} resource not found: {path}.", "provider", name, "path", path);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Not found");
-                    return new HttpNotFoundError($"Resource at {path} was not found.", statusCode);
+                    return new HttpNotFoundError($"Resource at {path} was not found.", response.StatusCode);
                 }
             case TooManyRequests:
                 {
@@ -389,7 +389,7 @@ internal sealed class RestRequestExecutor
                             logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RateLimited, null, "{provider} rate limit hit.", "provider", name);
                     }
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
-                    return new HttpRateLimitExceededError("Too many requests.", delay, statusCode);
+                    return new HttpRateLimitExceededError("Too many requests.", delay, response.StatusCode);
                 }
             case HttpStatusCode.BadRequest:
                 {
@@ -400,32 +400,32 @@ internal sealed class RestRequestExecutor
                         serverMessage is null
                             ? $"{displayName} rejected the request to {path}."
                             : $"{displayName} rejected the request to {path}: {serverMessage}",
-                        statusCode);
+                        response.StatusCode);
                 }
             case HttpStatusCode.RequestTimeout:
                 {
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestTimeoutStatus, null, "{provider} timed out on {path} with status {status}", "provider", name, "path", path, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
-                    return new HttpRequestTimeoutError($"{displayName} timed out on {path} with status {statusCode}.", statusCode);
+                    return new HttpRequestTimeoutError($"{displayName} timed out on {path} with status {statusCode}.", response.StatusCode);
                 }
             case HttpStatusCode.Unauthorized:
             case HttpStatusCode.Forbidden:
                 {
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.Unauthorized, null, "{provider} denied access to {path} with status {status}", "provider", name, "path", path, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unauthorized");
-                    return new HttpUnauthorizedError($"{displayName} denied access to {path} with status {statusCode}.", statusCode);
+                    return new HttpUnauthorizedError($"{displayName} denied access to {path} with status {statusCode}.", response.StatusCode);
                 }
             case >= HttpStatusCode.InternalServerError:
                 {
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ServiceUnavailable, null, "{provider} is unavailable, status {status}", "provider", name, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Service unavailable");
-                    return new HttpServiceUnavailableError($"{displayName} is unavailable, status {statusCode}.", statusCode);
+                    return new HttpServiceUnavailableError($"{displayName} is unavailable, status {statusCode}.", response.StatusCode);
                 }
             default:
                 {
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.UnexpectedStatus, null, "{provider} returned unexpected status {status}", "provider", name, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected status");
-                    return new HttpUnknownError($"{displayName} returned unexpected status {statusCode}.", statusCode);
+                    return new HttpUnknownError($"{displayName} returned unexpected status {statusCode}.", response.StatusCode);
                 }
         }
     }

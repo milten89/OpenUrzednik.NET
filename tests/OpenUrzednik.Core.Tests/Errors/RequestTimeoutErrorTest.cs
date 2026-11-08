@@ -3,6 +3,9 @@ using OpenUrzednik.Core.Exceptions;
 
 using Shouldly;
 
+// These tests cover the obsolete HttpErrorMetadata, which keeps working until 2.0 (ADR-0021).
+#pragma warning disable CS0618
+
 namespace OpenUrzednik.Core.Tests.Errors;
 
 public partial class RequestTimeoutErrorTest
@@ -49,9 +52,7 @@ public partial class RequestTimeoutErrorTest
     public void Ctor_WithStatusCode_StoresItAsMetadata()
     {
         // Act
-#pragma warning disable CS0618 // the obsolete constructor keeps working until 2.0 (ADR-0021)
         var error = new RequestTimeoutError("message", statusCode: 408);
-#pragma warning restore CS0618
 
         // Assert
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(408);

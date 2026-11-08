@@ -311,8 +311,8 @@ public partial class RestRequestExecutorTest
         result.Errors.Count.ShouldBe(1);
         result.Errors[0].GetType().ShouldBe(expectedType);
         result.Errors[0].Code.ShouldBe(expectedErrorCode);
-        result.Errors[0].Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
-        result.Errors[0].GetHttpStatusCode().ShouldBe((int)statusCode);
+        result.Errors[0].Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe((int)statusCode);
+        result.Errors[0].GetHttpStatus().ShouldBe(statusCode);
     }
 
     [Fact]
@@ -1180,7 +1180,7 @@ public partial class RestRequestExecutorTest
         span.IsRecording.Returns(true);
         ErrorResponseContext? received = null;
         string? body = null;
-        var custom = new HttpBadRequestError("Custom.", 422);
+        var custom = new HttpBadRequestError("Custom.", (HttpStatusCode)422);
 
         // Act
         var result = await CreateConnectionWithOverride(httpClient, async context =>
@@ -1415,8 +1415,8 @@ public partial class RestRequestExecutorTest
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
         error.Exception.ShouldBeSameAs(thrown);
-        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
-        error.GetHttpStatusCode().ShouldBeNull();
+        error.Metadata.ContainsKey(HttpStatusExtensions.StatusCodeMetadataKey).ShouldBeFalse();
+        error.GetHttpStatus().ShouldBeNull();
         span.Received(1).SetTag("error.type", ServiceUnavailableError.ErrorCode);
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Rejected");
         logger.Received(1).Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestRejected, thrown, "{provider} request to {path} was rejected", "provider", "test", "path", Arg.Any<string>());

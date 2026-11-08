@@ -24,4 +24,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0018](0018-mutation-testing-before-release.md) | Mutation testing as a required check before every release | superseded by [ADR-0020](0020-mutation-testing-of-every-target-branch.md) |
 | [0019](0019-shared-http-layer-tested-through-test-host.md) | Shared HTTP layer for REST providers, tested through a test-only host | accepted |
 | [0020](0020-mutation-testing-of-every-target-branch.md) | Mutation testing as a required check before every release, on every target branch | accepted |
-| [0021](0021-transport-subclasses-of-condition-errors.md) | Transport details in transport packages: subclasses and interfaces of the condition errors | accepted |
+| [0021](0021-transport-subclasses-of-condition-errors.md) | Error details: transport packages, typed subclasses and a JSON-shaped metadata view | accepted |

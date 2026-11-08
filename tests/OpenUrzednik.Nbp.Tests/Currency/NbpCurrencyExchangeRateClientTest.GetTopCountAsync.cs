@@ -37,7 +37,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        result.Errors[0].ShouldBeOfType<ValidationError<string>>();
         handler.Request.ShouldBeNull();
     }
 
@@ -89,7 +89,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<ValidationError>();
+        result.Errors[0].ShouldBeOfType<ValidationError<int>>();
         handler.Request.ShouldBeNull();
     }
 
@@ -172,7 +172,7 @@ public partial class NbpCurrencyExchangeRateClientTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<int>>();
         handler.Request.ShouldBeNull();
     }
 }

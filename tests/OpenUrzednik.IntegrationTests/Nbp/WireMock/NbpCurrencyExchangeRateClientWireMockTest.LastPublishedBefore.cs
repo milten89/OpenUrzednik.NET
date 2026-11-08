@@ -95,7 +95,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         var error = errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 367 dni / Limit of 367 days has been exceeded");
-        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
+        error.Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(400);
     }
 
     [Theory]
@@ -111,7 +111,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
+        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>().Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(404);
     }
 
     [Theory]
@@ -127,7 +127,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
+        errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Metadata.ContainsKey(HttpStatusExtensions.StatusCodeMetadataKey).ShouldBeFalse();
     }
 
     [Theory]
@@ -142,7 +142,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpUnauthorizedError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
+        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpUnauthorizedError>().Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe((int)statusCode);
     }
 
     [Theory]
@@ -159,7 +159,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         // Assert
         var error = errors.ShouldHaveSingleItem().ShouldBeOfType<HttpRateLimitExceededError>();
         error.RetryAfter.ShouldBe(TimeSpan.FromSeconds(30));
-        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(429);
+        error.Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(429);
     }
 
     [Theory]
@@ -174,7 +174,7 @@ public partial class NbpCurrencyExchangeRateClientWireMockTest
         var errors = await GetLastPublishedBeforeErrorsAsync(CreateSut(), table);
 
         // Assert
-        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
+        errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>().Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe((int)statusCode);
     }
 
     [Theory]

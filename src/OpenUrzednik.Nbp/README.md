@@ -73,7 +73,7 @@ The currency client returns one currency's rates (`CurrencyExchangeRates`, with 
 
 `Get…TodayAsync` returns a `NotFoundError` until the day's publication, and on days without one. `GetLatestAsync` returns the most recent published value.
 
-**Limits.** The client checks these before it sends a request; a violation comes back as a `ValidationError`.
+**Limits.** The client checks these before it sends a request; a violation comes back as a `ValidationError` with the rejected value's type: `ValidationError<DateTime>` for a date, `ValidationError<int>` for a top count, `ValidationError<string>` for a currency code, and `RangeValidationError<DateTime>` naming `from` and `to` for a date range.
 
 | What | Limit |
 |---|---|

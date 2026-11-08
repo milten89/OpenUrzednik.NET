@@ -19,15 +19,16 @@ dotnet add package OpenUrzednik.Transport.Http
 ## Użycie
 
 ```csharp
-using OpenUrzednik.Core.Errors;
+using System.Net;
+
 using OpenUrzednik.Transport.Http;
 
 var result = await client.GetAsync(date);
 if (result.IsFailure && result.Errors[0] is IOpenUrzednikHttpStatusCode http)
-    Console.WriteLine($"HTTP {http.StatusCode}");
+    Console.WriteLine($"HTTP {(int)http.StatusCode}");
 
 // Albo bez sprawdzania typu: null, gdy błędu nie spowodowała odpowiedź HTTP.
-int? status = result.Errors[0].GetHttpStatusCode();
+HttpStatusCode? status = result.Errors[0].GetHttpStatus();
 ```
 
 ## Więcej po angielsku

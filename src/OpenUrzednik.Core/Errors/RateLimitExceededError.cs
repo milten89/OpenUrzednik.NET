@@ -11,8 +11,18 @@ public class RateLimitExceededError : OpenUrzednikError
     /// <summary>The <see cref="OpenUrzednikError.Code"/> of this error.</summary>
     public const string ErrorCode = "rateLimitExceeded";
 
-    /// <summary>The <see cref="OpenUrzednikError.Metadata"/> key of <see cref="RetryAfter"/>.</summary>
+    /// <summary>
+    /// The <see cref="OpenUrzednikError.Metadata"/> key of <see cref="RetryAfter"/> as a <see cref="TimeSpan"/> (always present;
+    /// <see langword="null"/> when the service didn't say). Kept from 1.0; planned to be removed in 2.0: read
+    /// <see cref="RetryAfterDurationMetadataKey"/> instead (ADR-0021).
+    /// </summary>
     public const string RetryAfterMetadataKey = "retryAfter";
+
+    /// <summary>
+    /// The <see cref="OpenUrzednikError.Metadata"/> key of <see cref="RetryAfter"/> as an ISO 8601 duration (e.g. <c>"PT30S"</c>; always
+    /// present, <see langword="null"/> when the service didn't say).
+    /// </summary>
+    public const string RetryAfterDurationMetadataKey = "retryAfterDuration";
 
     /// <summary>
     /// How long to wait before retrying; <see langword="null"/> when the service didn't say. From HTTP, it is the response's
@@ -30,7 +40,6 @@ public class RateLimitExceededError : OpenUrzednikError
         : base(ErrorCode, message)
     {
         RetryAfter = retryAfter;
-        AddMetadata(RetryAfterMetadataKey, retryAfter);
     }
 
     /// <summary>
@@ -45,6 +54,16 @@ public class RateLimitExceededError : OpenUrzednikError
     {
         if (statusCode.HasValue)
             AddMetadata(HttpErrorMetadata.StatusCodeKey, statusCode.Value);
+    }
+
+    /// <inheritdoc />
+    protected override void CollectMetadata(IDictionary<string, object?> metadata)
+    {
+        // Stryker disable once Statement : equivalent, OpenUrzednikError.CollectMetadata adds nothing; the call keeps a later base key
+        base.CollectMetadata(metadata);
+        var retryAfter = RetryAfter;
+        metadata[RetryAfterMetadataKey] = retryAfter;
+        metadata[RetryAfterDurationMetadataKey] = retryAfter.HasValue ? MetadataValue.FormatDuration(retryAfter.Value) : null;
     }
 
     /// <inheritdoc />

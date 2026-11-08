@@ -65,7 +65,7 @@ public class Iso4217ValidatorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<string>>();
         error.Metadata["ruleName"].ShouldBe(RuleName);
         error.Message.ShouldContain("empty or whitespace");
     }
@@ -89,7 +89,7 @@ public class Iso4217ValidatorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<string>>();
         error.Metadata["ruleName"].ShouldBe(RuleName);
         error.Metadata["value"].ShouldBe(currency);
         error.Message.ShouldContain("not proper ISO 4217 currency code");

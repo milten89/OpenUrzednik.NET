@@ -13,6 +13,12 @@ public class RequestTimeoutError : OpenUrzednikError
     public const string ErrorCode = "requestTimeout";
 
     /// <summary>
+    /// The <see cref="OpenUrzednikError.Metadata"/> key of <see cref="Timeout"/> as an ISO 8601 duration (e.g. <c>"PT30S"</c>; always
+    /// present, <see langword="null"/> when unknown).
+    /// </summary>
+    public const string TimeoutMetadataKey = "timeout";
+
+    /// <summary>
     /// Gets the timeout that elapsed, if known.
     /// </summary>
     public TimeSpan? Timeout { get; }
@@ -63,6 +69,15 @@ public class RequestTimeoutError : OpenUrzednikError
     {
         if (statusCode.HasValue)
             AddMetadata(HttpErrorMetadata.StatusCodeKey, statusCode.Value);
+    }
+
+    /// <inheritdoc />
+    protected override void CollectMetadata(IDictionary<string, object?> metadata)
+    {
+        // Stryker disable once Statement : equivalent, OpenUrzednikError.CollectMetadata adds nothing; the call keeps a later base key
+        base.CollectMetadata(metadata);
+        var timeout = Timeout;
+        metadata[TimeoutMetadataKey] = timeout.HasValue ? MetadataValue.FormatDuration(timeout.Value) : null;
     }
 
     /// <inheritdoc />

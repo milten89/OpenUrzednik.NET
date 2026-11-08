@@ -66,7 +66,7 @@ public partial class NbpCurrencyExchangeRateClientTest
 
         // Assert
         pastHandler.Request.ShouldNotBeNull();
-        future.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        future.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         futureHandler.Request.ShouldBeNull();
     }
 

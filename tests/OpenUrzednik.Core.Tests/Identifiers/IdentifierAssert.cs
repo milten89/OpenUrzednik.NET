@@ -14,7 +14,7 @@ internal static class IdentifierAssert
     /// </summary>
     internal static void ShouldBeMaskedValidationError(this OpenUrzednikResult result, string ruleName, string propertyName, string? value, string messageEnd)
     {
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<string>>();
         error.Message.ShouldEndWith(messageEnd);
         error.Metadata[ValidationError.RuleNameMetadataKey].ShouldBe(ruleName);
         error.Metadata[ValidationError.NameMetadataKey].ShouldBe(propertyName);

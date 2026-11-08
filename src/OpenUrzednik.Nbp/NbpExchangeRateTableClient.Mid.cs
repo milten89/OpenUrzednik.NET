@@ -101,7 +101,7 @@ public sealed partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 
         var validation = new CurrencyDateValidator(nameof(to), toDay, NbpCalendar.Today(_timeProvider)).Validate()
-            .And(new DateRangeValidator((fromDay, toDay), DateRangeValidator.MaxTablesDateRange).Validate());
+            .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxTablesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForDateRange(fromDay, toDay), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);

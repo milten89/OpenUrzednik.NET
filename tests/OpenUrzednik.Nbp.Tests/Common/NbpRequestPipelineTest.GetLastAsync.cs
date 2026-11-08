@@ -64,7 +64,7 @@ public sealed partial class NbpRequestPipelineTest
 
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
-        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
+        error.Metadata.ContainsKey(HttpStatusExtensions.StatusCodeMetadataKey).ShouldBeFalse();
         span.Received(1).SetTag("error.type", NotFoundError.ErrorCode);
     }
 

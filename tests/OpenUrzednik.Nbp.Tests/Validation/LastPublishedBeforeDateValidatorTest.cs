@@ -1,4 +1,5 @@
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Validation;
 using OpenUrzednik.TestCommon;
@@ -53,11 +54,13 @@ public class LastPublishedBeforeDateValidatorTest
         var result = validator.Validate();
 
         // Assert
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         error.Message.ShouldBe("'date' should be later than 2002-01-02.");
         error.Metadata["ruleName"].ShouldBe(RuleName);
         error.Metadata["name"].ShouldBe(PropertyName);
-        error.Metadata["value"].ShouldBe(date);
+        error.Metadata["value"].ShouldBe(date.ToIso8601String());
+        error.Value.ShouldBe(date.ToPublicDate());
+        error.Value.Kind.ShouldBe(DateTimeKind.Unspecified);
     }
 
     [Theory]
@@ -72,7 +75,7 @@ public class LastPublishedBeforeDateValidatorTest
         var result = validator.Validate();
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>()
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>()
             .Message.ShouldBe("'date' should not be later than tomorrow (2026-10-02, Europe/Warsaw).");
     }
 

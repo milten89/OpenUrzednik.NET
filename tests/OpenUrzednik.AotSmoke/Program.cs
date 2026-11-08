@@ -65,6 +65,12 @@ using (var httpClient = new HttpClient(new FixtureHandler()))
 
     var invalid = await rates.GetTopCountAsync("USD", 0);
     Check("validation: returned as ValidationError", invalid.IsFailure && invalid.Errors[0] is ValidationError, Describe(invalid));
+    Check("validation: a top count is ValidationError<int> with its value in Metadata",
+        invalid.IsFailure && invalid.Errors[0] is ValidationError<int> { Value: 0 } && Equals(invalid.Errors[0].Metadata["value"], 0), Describe(invalid));
+    var reversed = await new NbpGoldPriceClient(httpClient).GetAsync(new DateTime(2026, 2, 2), new DateTime(2026, 1, 5));
+    Check("validation: a reversed range is RangeValidationError<DateTime> with ISO 8601 bounds in Metadata",
+        reversed.IsFailure && reversed.Errors[0] is RangeValidationError<DateTime> { StartName: "from", EndName: "to" }
+            && Equals(reversed.Errors[0].Metadata["start"], "2026-02-02") && Equals(reversed.Errors[0].Metadata["end"], "2026-01-05"), Describe(reversed));
     Check("logging: entries with an event id, a message and structured state",
         logs.Entries.Any(e => e.EventId.Id != 0 && e.Message.Length > 0 && e.StateKeys.Contains("{OriginalFormat}")),
         string.Join("; ", logs.Entries.Select(e => $"{e.EventId} {e.Message}")));
@@ -75,9 +81,9 @@ using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.NotFoun
 {
     var notFound = await new NbpGoldPriceClient(httpClient).GetLatestAsync();
     Check("error: 404 is NotFoundError with the status code",
-        notFound.IsFailure && notFound.Errors[0] is NotFoundError && notFound.Errors[0].GetHttpStatusCode() == 404, Describe(notFound));
+        notFound.IsFailure && notFound.Errors[0] is NotFoundError && notFound.Errors[0].GetHttpStatus() == HttpStatusCode.NotFound, Describe(notFound));
     Check("error: 404 is HttpNotFoundError with IOpenUrzednikHttpStatusCode",
-        notFound.IsFailure && notFound.Errors[0] is HttpNotFoundError { StatusCode: 404 } && notFound.Errors[0] is IOpenUrzednikHttpStatusCode { StatusCode: 404 }, Describe(notFound));
+        notFound.IsFailure && notFound.Errors[0] is HttpNotFoundError { StatusCode: HttpStatusCode.NotFound } && notFound.Errors[0] is IOpenUrzednikHttpStatusCode { StatusCode: HttpStatusCode.NotFound }, Describe(notFound));
     try
     {
         notFound.EnsureSuccess();
@@ -95,6 +101,14 @@ using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, bod
     Check("error: malformed JSON is a serialization error",
         malformed.IsFailure && malformed.Errors[0].Code == SerializationError.ErrorCode, Describe(malformed));
 }
+
+// Metadata forms under Native AOT: ISO 8601 durations from Core's formatter, the HTTP status as an int (ADR-0021).
+var rateLimited = new HttpRateLimitExceededError("Too many requests.", TimeSpan.FromSeconds(90), (HttpStatusCode)429);
+var timedOut = new RequestTimeoutError("Timed out.", TimeSpan.FromMilliseconds(500));
+Check("metadata: durations are ISO 8601 and the HTTP status an int",
+    Equals(rateLimited.Metadata["retryAfterDuration"], "PT1M30S") && Equals(rateLimited.Metadata["statusCode"], 429)
+        && Equals(timedOut.Metadata["timeout"], "PT0.5S"),
+    $"{rateLimited.Metadata["retryAfterDuration"]} {rateLimited.Metadata["statusCode"]} {timedOut.Metadata["timeout"]}");
 
 // 3. Dependency injection: the default and a keyed registration, with logging.
 var services = new ServiceCollection();

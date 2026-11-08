@@ -1,4 +1,5 @@
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Validation;
 using OpenUrzednik.TestCommon;
 
@@ -53,10 +54,12 @@ public class GoldDateValidatorTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         error.Metadata["ruleName"].ShouldBe(RuleName);
         error.Metadata["name"].ShouldBe(PropertyName);
-        error.Metadata["value"].ShouldBe(date);
+        error.Metadata["value"].ShouldBe(date.ToIso8601String());
+        error.Value.ShouldBe(date.ToPublicDate());
+        error.Value.Kind.ShouldBe(DateTimeKind.Unspecified);
     }
 
     [Fact]
@@ -111,7 +114,7 @@ public class GoldDateValidatorTest
         var result = validator.Validate();
 
         // Assert
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         error.Message.ShouldBe("'date' should not be later than today (2026-10-01, Europe/Warsaw).");
     }
 

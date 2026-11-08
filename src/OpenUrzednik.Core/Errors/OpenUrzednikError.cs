@@ -13,7 +13,14 @@ public abstract class OpenUrzednikError
 {
     private static readonly IReadOnlyDictionary<string, object?> EmptyMetadata = ReadOnlyDictionary<string, object?>.Empty;
 
-    private Dictionary<string, object?>? _metadata;
+    // Entries added with AddMetadata, in order (1.0 behaviour).
+    private Dictionary<string, object?>? _added;
+
+    // Metadata is built on first read (ADR-0021): CollectMetadata, then the AddMetadata entries.
+    private IReadOnlyDictionary<string, object?>? _metadata;
+
+    // Counts AddMetadata calls, so a build that overlapped one is never cached.
+    private int _version;
 
     /// <summary>
     /// Gets the identification code associated with this error.
@@ -26,9 +33,13 @@ public abstract class OpenUrzednikError
     public string Message { get; }
 
     /// <summary>
-    /// Gets the metadata associated with this error.
+    /// Gets the metadata associated with this error: the error's details as values that serialize the same way everywhere
+    /// (JSON, logs, OpenTelemetry attributes), e.g. to copy into a ProblemDetails response (ADR-0021). The error types' own keys hold
+    /// strings, booleans, numbers (<see cref="int"/>, <see cref="long"/>, <see cref="double"/>), <see langword="null"/>, arrays of
+    /// one of these, ISO 8601 strings for dates, times and durations, and invariant strings for <see cref="decimal"/> values.
+    /// It is built on first read.
     /// </summary>
-    public IReadOnlyDictionary<string, object?> Metadata => _metadata ?? EmptyMetadata;
+    public IReadOnlyDictionary<string, object?> Metadata => Volatile.Read(ref _metadata) ?? BuildMetadata();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenUrzednikError"/> class with the specified error message.
@@ -45,12 +56,28 @@ public abstract class OpenUrzednikError
     }
 
     /// <summary>
-    /// Adds metadata to the error with the specified key and value.
+    /// Adds metadata to the error with the specified key and value. The value is stored as passed; prefer the value types listed on
+    /// <see cref="Metadata"/>. Call it from the constructor: like a <see cref="Dictionary{TKey, TValue}"/>, it isn't safe to call while
+    /// another thread reads <see cref="Metadata"/>.
     /// </summary>
     /// <param name="key">Metadata key.</param>
     /// <param name="value">Metadata value.</param>
+    /// <exception cref="ArgumentException">An entry with the same key was already added.</exception>
     protected void AddMetadata(string key, object? value)
-        => (_metadata ??= []).Add(key, value);
+    {
+        (_added ??= []).Add(key, value);
+        // A later read rebuilds the metadata with this entry; a build running now isn't cached.
+        Interlocked.Increment(ref _version);
+        Volatile.Write(ref _metadata, null);
+    }
+
+    /// <summary>
+    /// Adds the error's own metadata when <see cref="Metadata"/> is first read, so a value that is never read is never converted or
+    /// boxed. An override calls the base method first, then adds its entries in the forms listed on <see cref="Metadata"/>.
+    /// Entries added with <see cref="AddMetadata"/> follow and replace an entry with the same key.
+    /// </summary>
+    /// <param name="metadata">The metadata being built.</param>
+    protected virtual void CollectMetadata(IDictionary<string, object?> metadata) { }
 
     /// <summary>
     /// Creates an exception that represents this error. The exception keeps this error in
@@ -72,6 +99,29 @@ public abstract class OpenUrzednikError
     /// </summary>
     /// <returns>A new exception that represents this error.</returns>
     protected abstract OpenUrzednikException CreateException();
+
+    private IReadOnlyDictionary<string, object?> BuildMetadata()
+    {
+        var version = Volatile.Read(ref _version);
+        var metadata = new Dictionary<string, object?>();
+        CollectMetadata(metadata);
+        var added = _added;
+        if (added is not null)
+        {
+            foreach (var entry in added)
+                metadata[entry.Key] = entry.Value;
+        }
+
+        // A local, not the property in the comparison, so that mutation testing can compile its mutants (ADR-0020).
+        var count = metadata.Count;
+        IReadOnlyDictionary<string, object?> built = count == 0 ? EmptyMetadata : metadata;
+        // Two threads may both build it; the first one stored wins, and both results hold the same entries.
+        var stored = Interlocked.CompareExchange(ref _metadata, built, null) ?? built;
+        // An AddMetadata call during the build may have missed this result: drop it from the cache, so the next read rebuilds.
+        if (Volatile.Read(ref _version) != version)
+            Interlocked.CompareExchange(ref _metadata, null, stored);
+        return stored;
+    }
 
     /// <inheritdoc />
     public override string ToString()

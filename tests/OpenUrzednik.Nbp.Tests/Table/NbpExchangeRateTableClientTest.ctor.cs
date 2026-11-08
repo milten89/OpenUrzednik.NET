@@ -67,7 +67,7 @@ public partial class NbpExchangeRateTableClientTest
 
         // Assert
         pastHandler.Request.ShouldNotBeNull();
-        future.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        future.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         futureHandler.Request.ShouldBeNull();
     }
 

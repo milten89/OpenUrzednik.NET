@@ -98,9 +98,10 @@ public partial class NbpGoldPriceClientTest
         var result = await sut.GetLastPublishedBeforeAsync(date, TestContext.Current.CancellationToken);
 
         // Assert
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         error.Metadata["name"].ShouldBe("date");
-        error.Metadata["value"].ShouldBe(date);
+        error.Metadata["value"].ShouldBe(date.ToIso8601String());
+        error.Value.ShouldBe(date.ToPublicDate());
         error.Message.ShouldBe("'date' should be later than 2013-01-02.");
         handler.Request.ShouldBeNull();
         urlBuilder.DidNotReceiveWithAnyArgs().ForDateRange(default, default);
@@ -136,7 +137,7 @@ public partial class NbpGoldPriceClientTest
         var result = await sut.GetLastPublishedBeforeAsync(new DateOnly(2026, 10, 3), TestContext.Current.CancellationToken);
 
         // Assert
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         error.Message.ShouldBe("'date' should not be later than tomorrow (2026-10-02, Europe/Warsaw).");
         handler.Request.ShouldBeNull();
     }
@@ -157,7 +158,7 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
-        error.Metadata.ContainsKey(HttpErrorMetadata.StatusCodeKey).ShouldBeFalse();
+        error.Metadata.ContainsKey(HttpStatusExtensions.StatusCodeMetadataKey).ShouldBeFalse();
         span.Received(1).SetTag("error.type", NotFoundError.ErrorCode);
     }
 
@@ -176,7 +177,7 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>();
-        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
+        error.Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(404);
     }
 
     [Fact]

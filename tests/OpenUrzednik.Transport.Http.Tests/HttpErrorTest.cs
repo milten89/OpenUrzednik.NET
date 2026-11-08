@@ -1,5 +1,8 @@
+using System.Net;
+
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
@@ -8,37 +11,37 @@ namespace OpenUrzednik.Transport.Http.Tests;
 // The seven HTTP subclasses share one shape, so one class covers them, like Core's StatusCodeMetadataTest (ADR-0021).
 public class HttpErrorTest
 {
-    public static TheoryData<OpenUrzednikError, int> ErrorsWithStatusCode => new()
+    public static TheoryData<OpenUrzednikError, HttpStatusCode> ErrorsWithStatusCode => new()
     {
-        { new HttpBadRequestError("message", 400), 400 },
-        { new HttpUnauthorizedError("message", 403), 403 },
-        { new HttpNotFoundError("message", 404), 404 },
-        { new HttpRequestTimeoutError("message", 408), 408 },
-        { new HttpRateLimitExceededError("message", null, 429), 429 },
-        { new HttpServiceUnavailableError("message", 503), 503 },
-        { new HttpUnknownError("message", 409), 409 },
+        { new HttpBadRequestError("message", HttpStatusCode.BadRequest), HttpStatusCode.BadRequest },
+        { new HttpUnauthorizedError("message", HttpStatusCode.Forbidden), HttpStatusCode.Forbidden },
+        { new HttpNotFoundError("message", HttpStatusCode.NotFound), HttpStatusCode.NotFound },
+        { new HttpRequestTimeoutError("message", HttpStatusCode.RequestTimeout), HttpStatusCode.RequestTimeout },
+        { new HttpRateLimitExceededError("message", null, (HttpStatusCode)429), (HttpStatusCode)429 },
+        { new HttpServiceUnavailableError("message", HttpStatusCode.ServiceUnavailable), HttpStatusCode.ServiceUnavailable },
+        { new HttpUnknownError("message", HttpStatusCode.Conflict), HttpStatusCode.Conflict },
     };
 
     public static TheoryData<OpenUrzednikError, Type, string> ErrorsWithCondition => new()
     {
-        { new HttpBadRequestError("message", 400), typeof(BadRequestError), BadRequestError.ErrorCode },
-        { new HttpUnauthorizedError("message", 401), typeof(UnauthorizedError), UnauthorizedError.ErrorCode },
-        { new HttpNotFoundError("message", 404), typeof(NotFoundError), NotFoundError.ErrorCode },
-        { new HttpRequestTimeoutError("message", 408), typeof(RequestTimeoutError), RequestTimeoutError.ErrorCode },
-        { new HttpRateLimitExceededError("message", null, 429), typeof(RateLimitExceededError), RateLimitExceededError.ErrorCode },
-        { new HttpServiceUnavailableError("message", 502), typeof(ServiceUnavailableError), ServiceUnavailableError.ErrorCode },
-        { new HttpUnknownError("message", 418), typeof(UnknownError), UnknownError.ErrorCode },
+        { new HttpBadRequestError("message", HttpStatusCode.BadRequest), typeof(BadRequestError), BadRequestError.ErrorCode },
+        { new HttpUnauthorizedError("message", HttpStatusCode.Unauthorized), typeof(UnauthorizedError), UnauthorizedError.ErrorCode },
+        { new HttpNotFoundError("message", HttpStatusCode.NotFound), typeof(NotFoundError), NotFoundError.ErrorCode },
+        { new HttpRequestTimeoutError("message", HttpStatusCode.RequestTimeout), typeof(RequestTimeoutError), RequestTimeoutError.ErrorCode },
+        { new HttpRateLimitExceededError("message", null, (HttpStatusCode)429), typeof(RateLimitExceededError), RateLimitExceededError.ErrorCode },
+        { new HttpServiceUnavailableError("message", HttpStatusCode.BadGateway), typeof(ServiceUnavailableError), ServiceUnavailableError.ErrorCode },
+        { new HttpUnknownError("message", (HttpStatusCode)418), typeof(UnknownError), UnknownError.ErrorCode },
     };
 
     public static TheoryData<OpenUrzednikError, Type> ErrorsWithException => new()
     {
-        { new HttpBadRequestError("message", 400), typeof(BadRequestException) },
-        { new HttpUnauthorizedError("message", 401), typeof(UnauthorizedException) },
-        { new HttpNotFoundError("message", 404), typeof(NotFoundException) },
-        { new HttpRequestTimeoutError("message", 408), typeof(RequestTimeoutException) },
-        { new HttpRateLimitExceededError("message", null, 429), typeof(RateLimitExceededException) },
-        { new HttpServiceUnavailableError("message", 502), typeof(ServiceUnavailableException) },
-        { new HttpUnknownError("message", 418), typeof(UnknownException) },
+        { new HttpBadRequestError("message", HttpStatusCode.BadRequest), typeof(BadRequestException) },
+        { new HttpUnauthorizedError("message", HttpStatusCode.Unauthorized), typeof(UnauthorizedException) },
+        { new HttpNotFoundError("message", HttpStatusCode.NotFound), typeof(NotFoundException) },
+        { new HttpRequestTimeoutError("message", HttpStatusCode.RequestTimeout), typeof(RequestTimeoutException) },
+        { new HttpRateLimitExceededError("message", null, (HttpStatusCode)429), typeof(RateLimitExceededException) },
+        { new HttpServiceUnavailableError("message", HttpStatusCode.BadGateway), typeof(ServiceUnavailableException) },
+        { new HttpUnknownError("message", (HttpStatusCode)418), typeof(UnknownException) },
     };
 
     [Theory]
@@ -53,21 +56,41 @@ public class HttpErrorTest
 
     [Theory]
     [MemberData(nameof(ErrorsWithStatusCode))]
-    public void Ctor_Always_ImplementsStatusCodeInterface(OpenUrzednikError error, int statusCode)
+    public void Ctor_Always_ImplementsStatusCodeInterface(OpenUrzednikError error, HttpStatusCode statusCode)
     {
         // Assert
         error.ShouldBeAssignableTo<IOpenUrzednikHttpStatusCode>().ShouldNotBeNull().StatusCode.ShouldBe(statusCode);
+        error.GetHttpStatus().ShouldBe(statusCode);
     }
 
     [Theory]
     [MemberData(nameof(ErrorsWithStatusCode))]
-    public void Ctor_Always_StoresStatusCodeForCoreAccessors(OpenUrzednikError error, int statusCode)
+    public void Metadata_Always_HoldsTheStatusCodeAsAnInt(OpenUrzednikError error, HttpStatusCode statusCode)
+    {
+        // Act
+        var value = error.Metadata[HttpStatusExtensions.StatusCodeMetadataKey];
+
+        // Assert
+        value.ShouldBeOfType<int>().ShouldBe((int)statusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(ErrorsWithStatusCode))]
+    public void Metadata_Always_FollowsTheMetadataRule(OpenUrzednikError error, HttpStatusCode statusCode)
     {
         // Assert
-        error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(statusCode);
-        error.TryGetHttpStatusCode(out var found).ShouldBeTrue();
-        found.ShouldBe(statusCode);
-        error.GetHttpStatusCode().ShouldBe(statusCode);
+        _ = statusCode;
+        error.ShouldFollowTheMetadataRule();
+    }
+
+    [Theory]
+    [MemberData(nameof(ErrorsWithStatusCode))]
+    public void Metadata_Always_IsReadByCoresObsoleteAccessors(OpenUrzednikError error, HttpStatusCode statusCode)
+    {
+        // Assert: code written against 1.0 keeps reading the status (ADR-0021)
+#pragma warning disable CS0618
+        error.GetHttpStatusCode().ShouldBe((int)statusCode);
+#pragma warning restore CS0618
     }
 
     [Theory]
@@ -84,14 +107,26 @@ public class HttpErrorTest
     }
 
     [Fact]
+    public void Metadata_RequestTimeout_KeepsTheConditionsTimeoutKey()
+    {
+        // Act
+        var metadata = new HttpRequestTimeoutError("message", HttpStatusCode.RequestTimeout).Metadata;
+
+        // Assert
+        metadata.ContainsKey(RequestTimeoutError.TimeoutMetadataKey).ShouldBeTrue();
+        metadata[RequestTimeoutError.TimeoutMetadataKey].ShouldBeNull();
+        metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(408);
+    }
+
+    [Fact]
     public void Ctor_RateLimitWithRetryAfter_KeepsIt()
     {
         // Act
-        var error = new HttpRateLimitExceededError("message", TimeSpan.FromSeconds(30), 429);
+        var error = new HttpRateLimitExceededError("message", TimeSpan.FromSeconds(30), (HttpStatusCode)429);
 
         // Assert
         error.RetryAfter.ShouldBe(TimeSpan.FromSeconds(30));
-        error.Metadata[RateLimitExceededError.RetryAfterMetadataKey].ShouldBe(TimeSpan.FromSeconds(30));
-        error.StatusCode.ShouldBe(429);
+        error.Metadata[RateLimitExceededError.RetryAfterDurationMetadataKey].ShouldBe("PT30S");
+        error.Metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(429);
     }
 }

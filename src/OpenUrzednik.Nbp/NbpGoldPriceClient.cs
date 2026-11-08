@@ -107,7 +107,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 
         var validation = new GoldDateValidator(nameof(to), toDay, NbpCalendar.Today(_timeProvider)).Validate()
-            .And(new DateRangeValidator((fromDay, toDay), DateRangeValidator.MaxRatesDateRange).Validate());
+            .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxRatesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilder.ForDateRange(fromDay, toDay), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);

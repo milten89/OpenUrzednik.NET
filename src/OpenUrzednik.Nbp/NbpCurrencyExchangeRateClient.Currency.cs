@@ -119,7 +119,7 @@ public sealed partial class NbpCurrencyExchangeRateClient
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
             .And(new CurrencyDateValidator(nameof(to), toDay, NbpCalendar.Today(_timeProvider)).Validate())
-            .And(new DateRangeValidator((fromDay, toDay), DateRangeValidator.MaxRatesDateRange).Validate());
+            .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxRatesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDateRange(fromDay, toDay), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);

@@ -100,7 +100,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var result = await sut.GetBuySellLastPublishedBeforeAsync(currency, new DateOnly(2026, 10, 5), TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>().Metadata["name"].ShouldBe("currency");
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<string>>().Metadata["name"].ShouldBe("currency");
         handler.Request.ShouldBeNull();
     }
 
@@ -136,7 +136,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var result = await sut.GetBuySellLastPublishedBeforeAsync("USD", new DateOnly(year, month, day), TestContext.Current.CancellationToken);
 
         // Assert
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>();
         error.Metadata["name"].ShouldBe("date");
         error.Message.ShouldBe("'date' should be later than 2002-01-02.");
         handler.Request.ShouldBeNull();
@@ -174,7 +174,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var result = await sut.GetBuySellLastPublishedBeforeAsync("USD", new DateOnly(2026, 10, 3), TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError>()
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ValidationError<DateTime>>()
             .Message.ShouldBe("'date' should not be later than tomorrow (2026-10-02, Europe/Warsaw).");
         handler.Request.ShouldBeNull();
     }
