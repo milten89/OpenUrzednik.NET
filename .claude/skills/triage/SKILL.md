@@ -47,7 +47,7 @@ Work from the latest `origin/develop` (`git fetch origin`; read files with `git 
 - **Still true?** A bug may be fixed already, or a snippet may have moved (an earlier run found a broken README snippet that had moved into the packed Core README).
 - **Duplicate?** Search open issues: `gh issue list -R milten89/OpenUrzednik.NET --state open --search "<keywords>"`.
 - **Blocked?** Note issues it depends on; a blocked issue stays in `Backlog`.
-- **Against an ADR?** An issue that contradicts an accepted ADR needs `/adr` first; say so in the notes.
+- **Against an ADR?** An issue that contradicts an accepted or released ADR needs `/adr` first; say so in the notes.
 
 ## 3. Propose one table
 

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0022
 date: 2026-11-05
 confidence: high
 decision-makers: milten89
@@ -66,6 +66,7 @@ Within the chosen option, how a decision changes:
 
 ## More Information
 
+* Superseded by [ADR-0022](0022-record-architecture-decisions-frozen-at-release.md).
 * Microsoft, [Maintain an architecture decision record (ADR)](https://learn.microsoft.com/azure/well-architected/architect-role/architecture-decision-record): the basis for the append-only rule and for recording confidence.
 * [MADR](https://adr.github.io/madr/).
 
