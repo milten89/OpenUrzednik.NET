@@ -27,7 +27,7 @@ decision-makers: milten89
 * Transport subclasses with the details only in `Metadata` (the later option of ADR-0012)
 * Keep the status-code constructor parameters (ADR-0012)
 * An interface on the condition types themselves (`NotFoundError : IHasHttpStatusCode`)
-* Any .NET value in `Metadata`, a range as a tuple or a `"from/to"` string
+* Any .NET value in `Metadata`, a range as a tuple or a bounds string (`"from/to"`, `"min/max"`, etc.)
 
 ## Decision Outcome
 
@@ -43,7 +43,7 @@ Chosen option: the first, because it takes the transport out of Core, gives type
 **Validation details**
 
 * `ValidationError` gains `RuleName` and `Name`. `ValidationError<T>` (sealed) carries the rejected value as `T Value`, unboxed; its exception boxes it only when created. The 1.0 constructor taking `object? value` stays, and its value is reachable only through `Metadata`, as in 1.0.
-* A rule over two parameters is a `RangeValidationError` (abstract, with a `private protected` constructor, so only Core derives from it: it isn't an extension point) carrying `StartName` and `EndName`, and `RangeValidationError<T>` (sealed) with `T Start` and `T End`. Its `Name` is `null`. A range is never a tuple, in a property or in `Metadata`.
+* A rule over two parameters is a `RangeValidationError` (abstract, with a `private protected` constructor, so only Core derives from it: it isn't an extension point) carrying `StartName` and `EndName`, and `RangeValidationError<T>` (sealed) with `T Start` and `T End`. Start and end name the lower and upper bound of any pair (`from`/`to`, `min`/`max`, etc.); the parameters' own names are in `StartName` and `EndName`. Its `Name` is `null`. A range is never a tuple, in a property or in `Metadata`.
 * `ValueValidator<T>.GetValidationErrorResult(string message)` returns a `ValidationError<T>`; the overload taking an `object` value still returns a plain `ValidationError`.
 * Public dates are `DateTime` on every target ([ADR-0005](0005-target-frameworks.md)), so a provider reports a date as `ValidationError<DateTime>` or `RangeValidationError<DateTime>`, never with its internal `DateOnly`.
 
@@ -113,10 +113,10 @@ Chosen option: the first, because it takes the transport out of Core, gives type
 * Good, because a property pattern reads the status.
 * Bad, because the interface is declared by the type, while only some instances come from HTTP (a `NotFoundError` from an empty answer has no status), and it puts a transport into Core.
 
-### Any .NET value in `Metadata`, a range as a tuple or a `"from/to"` string
+### Any .NET value in `Metadata`, a range as a tuple or a bounds string (`"from/to"`, `"min/max"`, etc.)
 
 * Good, because no conversion and no new types.
-* Bad, because logs and OpenTelemetry write `TimeSpan`, `DateTime`, `DateOnly` and tuples with `ToString()` (US date order, and a tuple in the server's culture), System.Text.Json writes a tuple as `{}`, and Native AOT needs every runtime type registered for ProblemDetails; a `"from/to"` string is still a tuple, which a consumer has to split.
+* Bad, because logs and OpenTelemetry write `TimeSpan`, `DateTime`, `DateOnly` and tuples with `ToString()` (US date order, and a tuple in the server's culture), System.Text.Json writes a tuple as `{}`, and Native AOT needs every runtime type registered for ProblemDetails; a bounds string (`"from/to"`, `"min/max"`, etc.) is still a tuple, which a consumer has to split.
 
 ## More Information
 
