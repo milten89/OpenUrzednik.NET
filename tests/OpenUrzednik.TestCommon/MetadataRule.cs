@@ -15,11 +15,8 @@ public static class MetadataRule
 
     public static void ShouldFollowTheMetadataRule(this OpenUrzednikError error)
     {
-        foreach (var entry in error.Metadata)
+        foreach (var entry in error.Metadata.Where(entry => Array.IndexOf(OneZeroExceptions, entry.Key) < 0))
         {
-            if (Array.IndexOf(OneZeroExceptions, entry.Key) >= 0)
-                continue;
-
             IsAllowed(entry.Value).ShouldBeTrue($"{error.GetType().Name}.Metadata[\"{entry.Key}\"] is a {entry.Value?.GetType().Name}");
         }
     }

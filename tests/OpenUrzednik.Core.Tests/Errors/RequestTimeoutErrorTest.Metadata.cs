@@ -25,8 +25,8 @@ public partial class RequestTimeoutErrorTest
         var error = new RequestTimeoutError("message");
 
         // Assert
-        error.Metadata.ContainsKey(RequestTimeoutError.TimeoutMetadataKey).ShouldBeTrue();
-        error.Metadata[RequestTimeoutError.TimeoutMetadataKey].ShouldBeNull();
+        error.Metadata.TryGetValue(RequestTimeoutError.TimeoutMetadataKey, out var timeout).ShouldBeTrue();
+        timeout.ShouldBeNull();
     }
 
     [Fact]

@@ -113,8 +113,8 @@ public class HttpErrorTest
         var metadata = new HttpRequestTimeoutError("message", HttpStatusCode.RequestTimeout).Metadata;
 
         // Assert
-        metadata.ContainsKey(RequestTimeoutError.TimeoutMetadataKey).ShouldBeTrue();
-        metadata[RequestTimeoutError.TimeoutMetadataKey].ShouldBeNull();
+        metadata.TryGetValue(RequestTimeoutError.TimeoutMetadataKey, out var timeout).ShouldBeTrue();
+        timeout.ShouldBeNull();
         metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(408);
     }
 

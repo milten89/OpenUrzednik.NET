@@ -26,10 +26,10 @@ public class RateLimitExceededErrorTest
         var error = new RateLimitExceededError("message", null);
 
         // Assert
-        error.Metadata.ContainsKey(RateLimitExceededError.RetryAfterMetadataKey).ShouldBeTrue();
-        error.Metadata[RateLimitExceededError.RetryAfterMetadataKey].ShouldBeNull();
-        error.Metadata.ContainsKey(RateLimitExceededError.RetryAfterDurationMetadataKey).ShouldBeTrue();
-        error.Metadata[RateLimitExceededError.RetryAfterDurationMetadataKey].ShouldBeNull();
+        error.Metadata.TryGetValue(RateLimitExceededError.RetryAfterMetadataKey, out var retryAfter).ShouldBeTrue();
+        retryAfter.ShouldBeNull();
+        error.Metadata.TryGetValue(RateLimitExceededError.RetryAfterDurationMetadataKey, out var retryAfterDuration).ShouldBeTrue();
+        retryAfterDuration.ShouldBeNull();
     }
 
     [Fact]
