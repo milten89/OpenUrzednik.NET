@@ -70,7 +70,7 @@ internal sealed class RestRequestExecutor
         ArgumentNullException.ThrowIfNull(profile);
         if (!baseAddress.IsAbsoluteUri)
             throw new ArgumentException($"The base address must be absolute: {baseAddress}", nameof(baseAddress));
-        // HasValue, not `timeout is { } value`, so that mutation testing checks the comparisons (ADR-0018): the pattern's `is not`
+        // HasValue, not `timeout is { } value`, so that mutation testing checks the comparisons (ADR-0020): the pattern's `is not`
         // mutant leaves `value` unassigned where it's used (CS0165), so the mutant doesn't compile, and Stryker discards the other
         // mutants of that code with it.
         var value = timeout.GetValueOrDefault();
@@ -196,7 +196,7 @@ internal sealed class RestRequestExecutor
         // With ResponseHeadersRead, HttpClient.Timeout stops applying once the headers arrive,
         // so the deadline is applied to reading the body as well.
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        // HasValue, not `timeout is { } deadline`, so that mutation testing checks CancelAfter: see the constructor (ADR-0018).
+        // HasValue, not `timeout is { } deadline`, so that mutation testing checks CancelAfter: see the constructor (ADR-0020).
         if (timeout.HasValue)
             timeoutSource.CancelAfter(timeout.GetValueOrDefault());
         var requestToken = timeoutSource.Token;
@@ -283,7 +283,7 @@ internal sealed class RestRequestExecutor
         if (requestToken.IsCancellationRequested)
             return deadline;
 
-        // HasValue, not `is { } clientTimeout`, so that mutation testing checks which limit is named: see the constructor (ADR-0018).
+        // HasValue, not `is { } clientTimeout`, so that mutation testing checks which limit is named: see the constructor (ADR-0020).
         var clientTimeout = Finite(_httpClient.Timeout);
         return clientTimeout.HasValue && LimitElapsed(Stopwatch.GetElapsedTime(started), clientTimeout.GetValueOrDefault()) ? clientTimeout : null;
     }
@@ -340,7 +340,7 @@ internal sealed class RestRequestExecutor
         Task<string?>? messageTask = null;
         Task<string?> ReadMessageOnceAsync() => messageTask ??= ReadServerMessageAsync(response, requestToken, cancellationToken);
 
-        // Locals and `is not null`, not pattern variables, so that mutation testing checks this code: see the constructor (ADR-0018).
+        // Locals and `is not null`, not pattern variables, so that mutation testing checks this code: see the constructor (ADR-0020).
         var mapErrorAsync = _profile.MapErrorAsync;
         if (mapErrorAsync is not null)
         {
@@ -447,7 +447,7 @@ internal sealed class RestRequestExecutor
             using var stream = await response.Content.ReadAsStreamAsync(requestToken).ConfigureAwait(false);
             using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
             // The same loop as `while (length < buffer.Length && (read = await …) > 0)`, written so that mutation testing can check it
-            // (ADR-0018): with the assignment inside the condition, one mutant leaves `read` unassigned and Stryker skips the whole
+            // (ADR-0020): with the assignment inside the condition, one mutant leaves `read` unassigned and Stryker skips the whole
             // method, and `<` would leave an equivalent `<=` mutant. A read never fills past the buffer, so `!=` stops at the same point.
             while (length != buffer.Length)
             {

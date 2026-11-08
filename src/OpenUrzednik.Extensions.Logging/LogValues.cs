@@ -67,7 +67,7 @@ internal sealed class LogValues : IReadOnlyList<KeyValuePair<string, object?>>
             if (c == '{')
             {
                 var end = template.IndexOf('}', i + 1);
-                // `== -1`, not `< 0`, so that mutation testing has no equivalent mutant here (ADR-0018): `end` is -1 or at least 1,
+                // `== -1`, not `< 0`, so that mutation testing has no equivalent mutant here (ADR-0020): `end` is -1 or at least 1,
                 // so `< 0` → `<= 0` changes nothing.
                 if (end == -1)
                 {

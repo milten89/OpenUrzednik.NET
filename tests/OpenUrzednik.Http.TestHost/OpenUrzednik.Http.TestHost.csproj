@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Test-only library: compiles the shared HTTP layer (src/Http, ADR-0019) on its own, so Stryker.NET mutates it once, in the
-       http shard, and no provider's shard pays for it again; it never mutates files compiled into a test project (ADR-0018).
+  <!-- Test-only library: compiles the shared HTTP layer (src/Http, ADR-0019) on its own, so Stryker.NET mutates it in the http
+       shard (its netstandard2.0 build again in http-netstandard), and no provider's shard pays for it; it never mutates files compiled into a test project (ADR-0020).
        Http.Tests tests the layer through this copy. Not packed. -->
   <PropertyGroup>
     <OutputType>Library</OutputType>

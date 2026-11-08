@@ -34,10 +34,11 @@ internal static class DisplayUriRequestOption
 #if NET
         return request.Options.TryGetValue(OptionKey, out displayUri);
 #else
-        if (request.Properties.TryGetValue(Key, out var value) && value is string text)
+        // No pattern variable in the condition: its mutants wouldn't compile and Stryker would discard them (ADR-0020).
+        if (request.Properties.TryGetValue(Key, out var value))
         {
-            displayUri = text;
-            return true;
+            displayUri = value as string;
+            return displayUri is not null;
         }
 
         displayUri = null;

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Http.Tests' tests of the shared HTTP layer (Infrastructure/), run against OpenUrzednik.Http.NetStandardBranch.TestHost (ADR-0020).
+       Without the NET symbol too, so the tests' own #if NET expectations match the netstandard2.0 branches they test. -->
+  <PropertyGroup>
+    <DisableImplicitFrameworkDefines>true</DisableImplicitFrameworkDefines>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\OpenUrzednik.Http.Tests\Infrastructure\**\*.cs" Link="Infrastructure\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.Http.NetStandardBranch.TestHost\OpenUrzednik.Http.NetStandardBranch.TestHost.csproj" />
+  </ItemGroup>
+
+</Project>

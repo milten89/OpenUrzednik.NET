@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Core.Tests' identifier and masking tests, run against OpenUrzednik.Identifiers.NetStandardBranch.TestHost (ADR-0020). Without the NET
+       symbol too, so the tests' own #if NET expectations match the netstandard2.0 branches they test. -->
+  <PropertyGroup>
+    <DisableImplicitFrameworkDefines>true</DisableImplicitFrameworkDefines>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\OpenUrzednik.Core.Tests\Identifiers\*.cs" Link="Identifiers\%(Filename)%(Extension)" />
+    <Compile Include="..\OpenUrzednik.Core.Tests\Privacy\*.cs" Link="Privacy\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.Identifiers.NetStandardBranch.TestHost\OpenUrzednik.Identifiers.NetStandardBranch.TestHost.csproj" />
+  </ItemGroup>
+
+</Project>

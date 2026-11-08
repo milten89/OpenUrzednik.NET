@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Test-only library: compiles the shared identifier validators and masking helper (src/Identifiers, src/Privacy) without the NET
+       symbol, so their netstandard2.0 branches (#if NET ... #else) compile on net10.0 and Stryker.NET can mutate them in the
+       identifiers-netstandard shard; it can't run the net472 tests (ADR-0020). Not packed. -->
+  <PropertyGroup>
+    <DisableImplicitFrameworkDefines>true</DisableImplicitFrameworkDefines>
+    <OutputType>Library</OutputType>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- tests/Directory.Build.props adds a global using for xUnit, which this library doesn't reference. -->
+  <ItemGroup>
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\Identifiers\Identifiers.props" />
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Identifiers.NetStandardBranch.Tests" />
+  </ItemGroup>
+
+</Project>

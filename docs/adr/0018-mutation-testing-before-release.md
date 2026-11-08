@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0020
 date: 2026-11-07
 confidence: medium
 decision-makers: milten89
@@ -75,4 +75,5 @@ Chosen option: "Stryker.NET on every release PR as a required check, plus a week
 
 ## More Information
 
+* Superseded by [ADR-0020](0020-mutation-testing-of-every-target-branch.md).
 * Issue [#227](https://github.com/milten89/OpenUrzednik.NET/issues/227). Revisit `concurrency` when stryker-net #3897 ships, and PR runs when the MTP runner leaves preview.

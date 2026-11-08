@@ -36,7 +36,7 @@ public sealed class NbpOptions
     /// or <see cref="Timeout"/> isn't positive (at most <see cref="int.MaxValue"/> milliseconds) or <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>.</exception>
     public void Validate()
     {
-        // A local and `is not null`, not a pattern variable, so that mutation testing checks the call: see NbpOptionsValidator (ADR-0018).
+        // A local and `is not null`, not a pattern variable, so that mutation testing checks the call: see NbpOptionsValidator (ADR-0020).
         var apiUrl = ApiUrl;
         if (apiUrl is not null)
             NbpOptionsValidator.ParseApiUrl(apiUrl, nameof(ApiUrl));

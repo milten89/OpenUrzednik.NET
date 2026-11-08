@@ -22,7 +22,7 @@
     <InternalsVisibleTo Include="OpenUrzednik.Diagnostics" />
     <InternalsVisibleTo Include="OpenUrzednik.Nbp" />
     <InternalsVisibleTo Include="OpenUrzednik.Diagnostics.Tests" />
-    <!-- Test-only: the library that compiles the shared HTTP layer for its tests and mutation testing (ADR-0018). -->
+    <!-- Test-only: the library that compiles the shared HTTP layer for its tests and mutation testing (ADR-0020). -->
     <InternalsVisibleTo Include="OpenUrzednik.Http.TestHost" />
   </ItemGroup>
 
