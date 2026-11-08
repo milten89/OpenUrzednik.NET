@@ -44,7 +44,7 @@ public sealed class OpenUrzednikValidationException : OpenUrzednikException
     private static string CreateMessage(IReadOnlyList<ValidationError> errors)
     {
         ArgumentNullException.ThrowIfNull(errors);
-        // A local, not `errors.Count` in the comparisons, so that mutation testing checks them (ADR-0018): Stryker's LINQ mutator
+        // A local, not `errors.Count` in the comparisons, so that mutation testing checks them (ADR-0020): Stryker's LINQ mutator
         // turns the property into `errors.Sum`, which can't compile, and discards the mutants around it.
         var count = errors.Count;
         if (count == 0)

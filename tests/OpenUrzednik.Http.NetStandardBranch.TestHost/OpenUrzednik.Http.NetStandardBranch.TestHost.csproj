@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Test-only library: compiles the shared HTTP layer (src/Http) without the NET symbol, so its netstandard2.0 branches
+       (#if NET ... #else) compile on net10.0 and Stryker.NET can mutate them in the http-netstandard shard; it can't run the
+       net472 tests (ADR-0020). Not packed. -->
+  <PropertyGroup>
+    <DisableImplicitFrameworkDefines>true</DisableImplicitFrameworkDefines>
+    <OutputType>Library</OutputType>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <!-- The netstandard2.0 branch of DisplayUriRequestOption uses HttpRequestMessage.Properties, obsolete on .NET 5+. -->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+  </PropertyGroup>
+
+  <!-- tests/Directory.Build.props adds a global using for xUnit, which this library doesn't reference. -->
+  <ItemGroup>
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\Http\Http.props" />
+
+  <!-- net472 runs the libraries' netstandard2.0 build: the packages a REST provider references there (ADR-0004), and the
+       src/Polyfills files that tests/Directory.Build.props doesn't link already. As in OpenUrzednik.Http.TestHost. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="System.Net.Http.Json" />
+    <PackageReference Include="System.Text.Json" />
+    <Compile Include="..\..\src\Polyfills\*.cs" Exclude="..\..\src\Polyfills\CompilerAttributes.cs;..\..\src\Polyfills\NullableAttributes.cs" Link="Polyfills\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Http.NetStandardBranch.Tests" />
+  </ItemGroup>
+
+</Project>

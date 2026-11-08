@@ -9,6 +9,15 @@
       ],
       "break": 100
     },
+    "identifiers-netstandard": {
+      "workdir": "tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost",
+      "config": "tests/Mutation/stryker-identifiers-netstandard.json",
+      "strict": [
+        "src/Identifiers/**",
+        "src/Privacy/**"
+      ],
+      "break": 100
+    },
     "nbp": {
       "workdir": "src/OpenUrzednik.Nbp",
       "config": "tests/Mutation/stryker-nbp.json",
@@ -30,6 +39,14 @@
     "http": {
       "workdir": "tests/OpenUrzednik.Http.TestHost",
       "config": "tests/Mutation/stryker-http.json",
+      "strict": [
+        "src/Http/Infrastructure/**"
+      ],
+      "break": 100
+    },
+    "http-netstandard": {
+      "workdir": "tests/OpenUrzednik.Http.NetStandardBranch.TestHost",
+      "config": "tests/Mutation/stryker-http-netstandard.json",
       "strict": [
         "src/Http/Infrastructure/**"
       ],

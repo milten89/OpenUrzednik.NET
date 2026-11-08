@@ -45,7 +45,7 @@ public static class HttpErrorMetadata
     /// <exception cref="ArgumentNullException"><paramref name="error"/> is <see langword="null"/>.</exception>
     public static int? GetHttpStatusCode(this OpenUrzednikError error)
     {
-        // A local, not the call as the condition, so that mutation testing checks the conditional (ADR-0018): replacing the
+        // A local, not the call as the condition, so that mutation testing checks the conditional (ADR-0020): replacing the
         // condition with `true` or `false` would remove the `out var` declaration, so those mutants couldn't compile.
         var hasStatusCode = error.TryGetHttpStatusCode(out var statusCode);
         return hasStatusCode ? statusCode : null;

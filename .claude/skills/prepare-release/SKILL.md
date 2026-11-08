@@ -98,7 +98,7 @@ gh pr create -R milten89/OpenUrzednik.NET --base main --head release/<major>.<mi
   --label skip-changelog --title "Release <version>" --body-file <scratch body file>
 ```
 
-The body lists, as a checklist for the maintainer: the milestone, the notes file, the check results, the `mutation` check (required on `main`, ADR-0018; a few minutes), and the steps after the merge (merge with a merge commit; approve the `nuget-release` deployment; then `/prepare-release after`). Release PRs don't close issues (`Closes` works only on the default branch): the maintainer moves the milestone's issues to Done.
+The body lists, as a checklist for the maintainer: the milestone, the notes file, the check results, the `mutation` check (required on `main`, ADR-0020; a few minutes), and the steps after the merge (merge with a merge commit; approve the `nuget-release` deployment; then `/prepare-release after`). Release PRs don't close issues (`Closes` works only on the default branch): the maintainer moves the milestone's issues to Done.
 
 ### 6. Stop
 

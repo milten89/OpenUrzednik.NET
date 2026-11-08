@@ -1,7 +1,7 @@
 name: Mutation tests (tooling)
 
 # Runs the mutation tests on a PR into develop only when the mutation tooling itself changes, so the configs, the runner script
-# and the workflow are verified before they reach a release PR (ADR-0018). Not a required check.
+# and the workflow are verified before they reach a release PR (ADR-0020). Not a required check.
 
 on:
   pull_request:
@@ -11,6 +11,11 @@ on:
       - 'tests/OpenUrzednik.Identifiers.TestHost/**'
       - 'tests/OpenUrzednik.Http.TestHost/**'
       - 'tests/OpenUrzednik.Http.DependencyInjection.TestHost/**'
+      - 'tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost/**'
+      - 'tests/OpenUrzednik.Http.NetStandardBranch.TestHost/**'
+      # Their test projects exist only for the shards; their link globs decide which tests a shard runs.
+      - 'tests/OpenUrzednik.Identifiers.NetStandardBranch.Tests/**'
+      - 'tests/OpenUrzednik.Http.NetStandardBranch.Tests/**'
       - '.github/workflows/mutation.yml'
       - '.github/workflows/mutation-tooling.yml'
       - '.config/dotnet-tools.json'

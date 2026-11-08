@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Run the Stryker.NET mutation shards and check them against their gates (ADR-0018).
+"""Run the Stryker.NET mutation shards and check them against their gates (ADR-0020).
 
 Usage (from the repository root):
     uv run tests/Mutation/run.py <shard> [<shard> ...]    # locally
@@ -187,6 +187,8 @@ def summary(results: list[Result]) -> str:
 
 
 def main(argv: list[str]) -> int:
+    # The summary has emoji; a redirected stdout on Windows uses the ANSI code page (cp1250), which can't encode them.
+    sys.stdout.reconfigure(encoding="utf-8")
     shards = load_shards()
     if not argv or argv == ["--help"]:
         print(__doc__)

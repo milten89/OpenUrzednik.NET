@@ -51,7 +51,7 @@ Not used:
 
 ## Ruleset `release-mutation`
 
-Targets `refs/heads/main` and `refs/heads/release/*.x`: the branches releases are published from. It requires one status check, `mutation` (the last job of `.github/workflows/mutation.yml`, which fails unless every mutation shard passed), on every release, hotfix and backport PR ([ADR-0018](adr/0018-mutation-testing-before-release.md)). It is a separate ruleset because the workflow doesn't run on PRs into `develop`, and a required check that never reports blocks the merge.
+Targets `refs/heads/main` and `refs/heads/release/*.x`: the branches releases are published from. It requires one status check, `mutation` (the last job of `.github/workflows/mutation.yml`, which fails unless every mutation shard passed), on every release, hotfix and backport PR ([ADR-0020](adr/0020-mutation-testing-of-every-target-branch.md)). It is a separate ruleset because the workflow doesn't run on PRs into `develop`, and a required check that never reports blocks the merge.
 
 | Setting | Value |
 |---|---|

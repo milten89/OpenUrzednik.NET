@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Test-only library: compiles the shared identifier validators and the masking helper they bring (src/Identifiers, src/Privacy),
-       so Stryker.NET can mutate them; it never mutates files compiled into a test project (ADR-0018). Core.Tests tests them through
+       so Stryker.NET can mutate them; it never mutates files compiled into a test project (ADR-0020). Core.Tests tests them through
        this copy. Not packed. -->
   <PropertyGroup>
     <OutputType>Library</OutputType>

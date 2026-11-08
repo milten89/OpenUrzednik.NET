@@ -1,12 +1,12 @@
 ---
 name: stryker
-description: Run, read and fix Stryker.NET mutation tests in OpenUrzednik.NET - the shards and their gate (tests/Mutation, ADR-0018), scoped runs of one file, reading mutation-report.json, triaging survivors, NoCoverage and equivalent mutants, freeing compile-error collateral (mutants Stryker discards next to a CompileError), // Stryker disable comments, Stryker configs and shards, and known Stryker.NET 5 / MTP bugs. Use whenever a mutation shard fails, a report lists survivors or compile errors, code in a strict file changes, a Stryker config, shard or the mutation workflow is edited, or Stryker.NET's version changes and its known issues need updating.
+description: Run, read and fix Stryker.NET mutation tests in OpenUrzednik.NET - the shards and their gate (tests/Mutation, ADR-0020), scoped runs of one file, reading mutation-report.json, triaging survivors, NoCoverage and equivalent mutants, freeing compile-error collateral (mutants Stryker discards next to a CompileError), // Stryker disable comments, Stryker configs and shards, and known Stryker.NET 5 / MTP bugs. Use whenever a mutation shard fails, a report lists survivors or compile errors, code in a strict file changes, a Stryker config, shard or the mutation workflow is edited, or Stryker.NET's version changes and its known issues need updating.
 argument-hint: "[shard | src file | path to mutation-report.json]"
 ---
 
 # Mutation testing with Stryker.NET
 
-[ADR-0018](../../../docs/adr/0018-mutation-testing-before-release.md) is binding; this skill is the working manual. Stryker.NET is a local tool pinned to **5.0.0** (`.config/dotnet-tools.json`, `rollForward: false`). Facts about Stryker cite the 5.0.0 source (tag `dotnet-stryker@5.0.0`, commit `6e77a34`; short paths such as `Compiling/…` are under `src/Stryker.Core/Stryker.Core/`, other projects' paths start with the project folder), its docs, or an issue (`sn#N` = stryker-mutator/stryker-net#N).
+[ADR-0020](../../../docs/adr/0020-mutation-testing-of-every-target-branch.md) is binding; this skill is the working manual. Stryker.NET is a local tool pinned to **5.0.0** (`.config/dotnet-tools.json`, `rollForward: false`). Facts about Stryker cite the 5.0.0 source (tag `dotnet-stryker@5.0.0`, commit `6e77a34`; short paths such as `Compiling/…` are under `src/Stryker.Core/Stryker.Core/`, other projects' paths start with the project folder), its docs, or an issue (`sn#N` = stryker-mutator/stryker-net#N).
 
 Read a reference file only when its case comes up:
 
@@ -30,8 +30,10 @@ uv run tests/Mutation/run.py --all
 | Shard | Workdir (project mutated) | Strict globs (`tests/Mutation/shards.json`) |
 |---|---|---|
 | `identifiers` | `tests/OpenUrzednik.Identifiers.TestHost` | `src/Identifiers/**`, `src/Privacy/**` |
+| `identifiers-netstandard` | `tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost` (no `NET` symbol) | the same, all of it again, built with the netstandard2.0 branches |
 | `nbp` | `src/OpenUrzednik.Nbp` | validation, URL builders, extensions, models, payload, pipeline, options, `NbpDateOnlyExtensions.cs` (11 globs) |
 | `http` | `tests/OpenUrzednik.Http.TestHost` | `src/Http/Infrastructure/**` |
+| `http-netstandard` | `tests/OpenUrzednik.Http.NetStandardBranch.TestHost` (no `NET` symbol) | the same, all of it again, built with the netstandard2.0 branches |
 | `http-di` | `tests/OpenUrzednik.Http.DependencyInjection.TestHost` | `src/Http/DependencyInjection/**` |
 | `core` | `src/OpenUrzednik.Core` | results, `Errors/`, `Exceptions/`, `Validation/` |
 | `di`, `logging` | the package's `src/` folder | the whole package |
@@ -63,7 +65,7 @@ One file of the core shard took 41 s this way (2026-11-07); other files' mutants
 
 `run.py` reads each shard's JSON report and fails it when Stryker exits non-zero, when **no mutant was tested** (Stryker exits 0 when it can't compute a score, PR sn#3672), when a strict glob matches no file, when a mutant in a strict file is **Survived or NoCoverage**, or when the score is below the shard's `break`. Score = (Killed + Timeout) / (Killed + Timeout + Survived + NoCoverage); CompileError, RuntimeError and Ignored don't count (`Mutants/Mutant.cs:26`). Today every shard has `break: 100`.
 
-- **Strict** files: code whose broken behaviour would harm users (ADR-0018 lists them). No undetected mutant may stay. **Ratchet** code: its `break` is the floor of its last score, raised when tests improve, until it turns strict.
+- **Strict** files: code whose broken behaviour would harm users (ADR-0020 lists them). No undetected mutant may stay. **Ratchet** code: its `break` is the floor of its last score, raised when tests improve, until it turns strict.
 - CI runs it as the required check `mutation` on PRs into `main` and `release/*.x` and weekly on `develop`, not on PRs into `develop` that change only `src/`: run the shards locally. Triggers, artifacts and the shared config settings: [setup.md](references/setup.md).
 
 ## 3. Read the report
@@ -96,8 +98,8 @@ Keep the "before" report: copy `artifacts/mutation/<shard>/reports/mutation-repo
 Work file by file from `mutants.py list`. For each Survived or NoCoverage mutant (and each CompileError, section 5), decide:
 
 1. **Missing test** (the usual case). Write a test that fails with the mutant: follow CLAUDE.md's testing conventions (one partial test class file per method, `Method_Condition_ExpectedResult`, deterministic data, `StubHttpMessageHandler`). Rerun a scoped run and check with `--tests` that the new test is in `killedBy`. NoCoverage means no test reaches the line at all; check first that the code is reachable on `net10.0`.
-2. **Equivalent mutant** (no observable change, e.g. a performance-only path or a cache). Prefer **rewriting the code so the mutant doesn't exist**, at the same cost: PR #240 changed `end < 0` after `IndexOf` to `end == -1`, removing the equivalent `<= 0` mutant without hiding the killable `> 0`. Add a short comment citing ADR-0018 so the code doesn't drift back.
-3. Only when no such rewrite exists: `// Stryker disable once <Mutator> : <reason>` on the line before the narrowest statement (mutator names: [setup.md](references/setup.md)). Rules (ADR-0018, and the `reviewer` agent checks them):
+2. **Equivalent mutant** (no observable change, e.g. a performance-only path or a cache). Prefer **rewriting the code so the mutant doesn't exist**, at the same cost: PR #240 changed `end < 0` after `IndexOf` to `end == -1`, removing the equivalent `<= 0` mutant without hiding the killable `> 0`. Add a short comment citing ADR-0020 so the code doesn't drift back.
+3. Only when no such rewrite exists: `// Stryker disable once <Mutator> : <reason>` on the line before the narrowest statement (mutator names: [setup.md](references/setup.md)). Rules (ADR-0020, and the `reviewer` agent checks them):
    - Only for an equivalent mutant or one Stryker can't activate (item 5), never for a missing test.
    - It covers every mutant of the listed kinds in the **whole following statement** (a block statement included). After adding it, diff the reports: only the intended mutants may turn `Ignored`; a killed one turning `Ignored` means the comment hides a test.
 4. **Timeout** counts as detected, but the MTP runner produces false timeouts (sn#3956, sn#3915). A loop that no longer ends (a removed `i++`) is a real one; for any other Timeout in strict code, make the change by hand and check that a test fails, or add one.
@@ -119,12 +121,12 @@ Stryker compiles all mutants together. When that fails, it rolls back the mutant
 
 How to tell genuine from collateral: for each CompileError ask **"would this mutant compile on its own?"** If yes (`errors.Count != 1`, `!=` → `==`, a removed statement), it is collateral; find the uncompilable mutant at or inside the same expression or statement (`mutants.py list --file X --all`, then `--diag --verbosity trace` if unclear) and restructure that code. The remaining CompileErrors must be genuinely uncompilable and must not wrap anything; state that in the PR.
 
-Configuration (`ignore-mutations`, `ignore-methods`) can't free collateral; only a `// Stryker disable` comment acts before compilation. Prefer the code rewrite. A comment is allowed only under ADR-0018's second reason, a mutant Stryker can't activate: its reason must say the mutant can't compile, and the report diff must show that it hides no mutant a test kills.
+Configuration (`ignore-mutations`, `ignore-methods`) can't free collateral; only a `// Stryker disable` comment acts before compilation. Prefer the code rewrite. A comment is allowed only under ADR-0020's second reason, a mutant Stryker can't activate: its reason must say the mutant can't compile, and the report diff must show that it hides no mutant a test kills.
 
 ## 6. MTP and xUnit v3 specifics
 
 - `test-runner: mtp` is required (VSTest can't run xUnit v3) and is a preview: if a Stryker bug fails a shard, rerun it, and if it persists, fix or pin the tool before releasing. `concurrency: 1` stays until sn#3897 ships (sn#3832: parallel runs under-report kills).
-- Only `net10.0` is mutated: netstandard2.0-only code (`#if !NET`, `Polyfills/`) and net8.0-only branches never are. Tests still run that code on net472 in the normal test jobs.
+- Only `net10.0` is mutated; Stryker can't run the net472 tests (MTP: sn#3421; VSTest with xUnit v3 activates no mutant, sn#3920). The netstandard2.0 branches of shared source are mutated anyway: the `-netstandard` hosts compile them on net10.0 without the `NET` symbol ([setup.md](references/setup.md), ADR-0020). A test there runs on .NET's runtime, so a branch only .NET Framework reaches (`HttpContentJson`'s `null` content) needs a direct test. `Polyfills/` and net8.0-only branches aren't mutated; the net472 test jobs run the real netstandard2.0 build.
 - Stryker 5 needs the .NET 10 runtime, and restore needs the newest SDK. Restore the solution before running: without restored packages Stryker's design-time build drops test projects silently (fewer tests, false NoCoverage). CI does this.
 - A run that tested nothing exits 0 (in a shallow clone, Nerdbank.GitVersioning makes every mutant a RuntimeError); check the summary, not only the exit code, when running Stryker by hand. Keep the test suite green: under MTP one failing test aborts the run.
 

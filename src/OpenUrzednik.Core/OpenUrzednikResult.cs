@@ -387,7 +387,7 @@ public readonly struct OpenUrzednikResult<TValue>
     /// <returns>A failed <see cref="OpenUrzednikResult{TValue}"/> instance.</returns>
     public static implicit operator OpenUrzednikResult<TValue>(OpenUrzednikResult result)
     {
-        // A local and `is not null`, not a pattern variable, so that mutation testing checks the conditional (ADR-0018): replacing
+        // A local and `is not null`, not a pattern variable, so that mutation testing checks the conditional (ADR-0020): replacing
         // the condition with `true` or `false` would remove the declaration of `errors`, so those mutants couldn't compile.
         var errors = result.ErrorArray;
         return errors is not null ? FromErrors(errors) : throw new InvalidOperationException("Cannot convert a successful Result to Result<TValue>.");

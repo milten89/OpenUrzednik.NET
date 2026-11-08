@@ -1,6 +1,6 @@
 name: Mutation tests
 
-# Stryker.NET mutation testing (ADR-0018): before every release (PRs into main and support branches), every Monday on develop,
+# Stryker.NET mutation testing (ADR-0020): before every release (PRs into main and support branches), every Monday on develop,
 # on demand, and from mutation-tooling.yml when the tooling itself changes. Shards are listed in tests/Mutation/shards.json and
 # run by tests/Mutation/run.py, which fails a shard on an untested run, an undetected mutant in a strict file, or a score below
 # the shard's break value.
@@ -33,16 +33,17 @@ jobs:
     strategy:
       fail-fast: false
       # One runner per project under test; Stryker runs single-threaded (concurrency 1, stryker-net #3832), so parallel
-      # runners are the speed-up. Shared source (src/Identifiers, src/Privacy, src/Http) is mutated once, in its test-only
-      # host's shard, by its own tests; a provider's shards mutate only the provider's code (!**/Http/**).
+      # runners are the speed-up. Shared source (src/Identifiers, src/Privacy, src/Http) is mutated in its test-only host's
+      # shard, by its own tests, and its netstandard2.0 branches in the -netstandard shard on the same runner (ADR-0020); a
+      # provider's shards mutate only the provider's code (!**/Http/**).
       matrix:
         include:
           - name: identifiers
-            shards: identifiers
+            shards: identifiers identifiers-netstandard
           - name: nbp
             shards: nbp
           - name: http
-            shards: http
+            shards: http http-netstandard
           - name: http-di
             shards: http-di
           - name: core
