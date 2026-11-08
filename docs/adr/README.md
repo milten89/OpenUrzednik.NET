@@ -1,10 +1,10 @@
 # Architecture Decision Records
 
-Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0001](0001-record-architecture-decisions.md). The log is append-only: an accepted record isn't edited, and a changed decision gets a new record that supersedes the old one. Start new records from [`template.md`](template.md) (or run the `/adr` skill in Claude Code).
+Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0022](0022-record-architecture-decisions-frozen-at-release.md). An accepted record is binding and is corrected in place, with a dated line, until a release ships it; then it is `released` and frozen, and a changed decision gets a new record that supersedes the old one. Start new records from [`template.md`](template.md) (or run the `/adr` skill in Claude Code).
 
 | # | Title | Status |
 |---|---|---|
-| [0001](0001-record-architecture-decisions.md) | Record architecture decisions | accepted |
+| [0001](0001-record-architecture-decisions.md) | Record architecture decisions | superseded by [ADR-0022](0022-record-architecture-decisions-frozen-at-release.md) |
 | [0002](0002-result-pattern-and-error-handling.md) | Result pattern and error handling | accepted |
 | [0003](0003-telemetry-abstractions.md) | Telemetry abstractions and adapter packages | accepted |
 | [0004](0004-dependency-policy.md) | Dependency policy | accepted |
@@ -25,3 +25,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0019](0019-shared-http-layer-tested-through-test-host.md) | Shared HTTP layer for REST providers, tested through a test-only host | accepted |
 | [0020](0020-mutation-testing-of-every-target-branch.md) | Mutation testing as a required check before every release, on every target branch | accepted |
 | [0021](0021-transport-subclasses-of-condition-errors.md) | Error details: transport packages, typed subclasses and a JSON-shaped metadata view | accepted |
+| [0022](0022-record-architecture-decisions-frozen-at-release.md) | Record architecture decisions, frozen at release | accepted |

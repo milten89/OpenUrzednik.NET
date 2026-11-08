@@ -66,7 +66,8 @@ git switch -c release/<major>.<minor> origin/develop
 
 - `version.json`: set `"version"` to the release version; change nothing else.
 - Root `README.md` and `README.pl.md` (ADR-0009: the table is an informational part), the package table: `🧪 Preview` → `✅ Stable` for each published package, and drop text that only fits a preview ("The public API may still change", "API publiczne może się jeszcze zmienić", a "(preview)" after a client list). The package READMEs aren't edited here: their wording is checked in step 4.
-- Commit with explicit paths, `git add` and `git commit` as separate commands: `git add version.json README.md README.pl.md`, message `Set the version to <version>`.
+- **ADRs** ([ADR-0022](../../../docs/adr/0022-record-architecture-decisions-frozen-at-release.md)): every ADR with `status: accepted` ships in this release. Set `status: released`, add `released-in: v<version>` under it, and change its row in `docs/adr/README.md` to `released (v<version>)`; change nothing else in the file. A `proposed` ADR on `develop` is a stop: ask the maintainer to accept or reject it first. Afterwards `git grep -lE '^status: (accepted|proposed)' docs/adr` must print nothing.
+- Commit with explicit paths, `git add` and `git commit` as separate commands: `git add version.json README.md README.pl.md` plus the changed `docs/adr/` files, message `Set the version to <version>`.
 - **Release notes:** run `/release-notes <version> <commit>`, where `<commit>` is the full id of `origin/develop` the branch was made from: the branch isn't pushed yet, and the merged PRs are the same. Then commit `docs/release-notes/v<version>.md` (explicit path). `/release-notes` also checks that every PR in the range has a release label.
 
 ### 4. Checks on the branch

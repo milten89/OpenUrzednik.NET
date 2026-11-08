@@ -42,6 +42,8 @@ With Claude Code, `/prepare-release` runs steps 1–5 with extra checks, and `/p
    + "version": "1.1.0",
    ```
 
+   In the same commit, mark the ADRs the release ships ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)): every `accepted` ADR gets `status: released` and `released-in: v1.1.0`, and its row in `docs/adr/README.md` says `released (v1.1.0)`. From the moment the branch is cut they are frozen, also on `develop` until the back-merge.
+
 3. Check the packages locally. Builds of the release branch still get `1.1.0-g<commit id>`, because `release/X.Y` isn't a public ref, so pack with `PublicRelease=true` into a folder that doesn't exist yet (delete `artifacts/release` first):
 
    ```bash
@@ -67,7 +69,7 @@ branch-naming**. For the previous major version, see [Support for the previous m
    ```
 
 2. Set the root `version.json` to the next patch, `"1.0.1"`. NBGV doesn't raise the patch by itself: a version with three parts is used as written, and the git height goes only into the assembly file version. Set `PackageValidationBaselineVersion` in `src/Directory.Build.props` to the tag's version (`1.0.0`): at the tag it still names the release before, because the back-merge raises it only on `develop`. Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)).
-3. Fix the bug and open a PR **hotfix → `main`** (required, since `main` is protected), labelled `bug`. Then run `/release-notes 1.0.1`, and commit and push `docs/release-notes/v1.0.1.md`: the notes list the hotfix PR itself, so it must exist first, and the PR's `build (net10.0)` job fails until the file is there. The PR waits for the required `mutation` check too ([ADR-0020](adr/0020-mutation-testing-of-every-target-branch.md)): the fix comes with tests that kill its mutants.
+3. Fix the bug and open a PR **hotfix → `main`** (required, since `main` is protected), labelled `bug`. An ADR the hotfix adds or ships is marked `released` with `released-in: v1.0.1` in the same PR ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)). Then run `/release-notes 1.0.1`, and commit and push `docs/release-notes/v1.0.1.md`: the notes list the hotfix PR itself, so it must exist first, and the PR's `build (net10.0)` job fails until the file is there. The PR waits for the required `mutation` check too ([ADR-0020](adr/0020-mutation-testing-of-every-target-branch.md)): the fix comes with tests that kill its mutants.
 4. Merge (merge commit) → `nuget-release.yml` publishes `1.0.1`, tags `v1.0.1`, creates the GitHub Release.
 5. Back-merge (below), so the fix reaches `develop`. `develop` keeps its own version (e.g. `"1.1.0-preview.{height}"`).
 
@@ -131,7 +133,7 @@ git push origin "$(git tag --list 'v1.*' --sort=-v:refname | head -n 1)^{commit}
    ```
 
 2. Set the root `version.json` to the next patch of that line (e.g. `"1.4.3"` after `v1.4.2`), and `PackageValidationBaselineVersion` in `src/Directory.Build.props` to that line's latest release (`1.4.2`). Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)).
-3. Open a PR **hotfix → `release/1.x`**, labelled `bug`. Then run `/release-notes 1.4.3`, and commit and push `docs/release-notes/v1.4.3.md`; the PR's `build (net10.0)` job fails until the file is there.
+3. Open a PR **hotfix → `release/1.x`**, labelled `bug`. An ADR the backport adds is marked `released` with `released-in: v1.4.3` in the same PR ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)). Then run `/release-notes 1.4.3`, and commit and push `docs/release-notes/v1.4.3.md`; the PR's `build (net10.0)` job fails until the file is there.
 4. Merge (merge commit) → `nuget-release.yml` publishes `1.4.3`, tags `v1.4.3` and creates the GitHub Release (not marked Latest).
 5. **No back-merge:** `release/1.x` is never merged into `main` or `develop`, which carry the newer major and already have the fix. Its release notes stay on `release/1.x` and in the GitHub Release.
 

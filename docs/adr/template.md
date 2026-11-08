@@ -1,5 +1,6 @@
 ---
-status: proposed # proposed | accepted | rejected | superseded by ADR-NNNN
+status: proposed # proposed | accepted | released | rejected | superseded by ADR-NNNN
+# released-in: vX.Y.Z (added when a release ships it, ADR-0022)
 date: YYYY-MM-DD
 confidence: # high | medium | low
 decision-makers: milten89
@@ -43,4 +44,4 @@ How compliance with this decision is checked (review checklist, analyzer, test, 
 
 ## More Information
 
-Links, follow-ups, open questions. An accepted record isn't edited later ([ADR-0001](0001-record-architecture-decisions.md)): a changed decision gets a new record that supersedes this one.
+Links, follow-ups, open questions. Until a release ships it, an accepted record is corrected in place, with a dated line under `Corrections before release`; a released record isn't edited ([ADR-0022](0022-record-architecture-decisions-frozen-at-release.md)): a changed decision gets a new record that supersedes this one.
