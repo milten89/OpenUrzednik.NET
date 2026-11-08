@@ -8,8 +8,8 @@ using Shouldly;
 
 namespace OpenUrzednik.Transport.Http.Tests;
 
-// The seven HTTP subclasses share one shape, so one class covers them, like Core's StatusCodeMetadataTest (ADR-0021).
-public class HttpErrorTest
+// The seven HTTP subclasses share one shape, so one class covers them, like Core's StatusCodeMetadataTest (ADR-0022).
+public partial class HttpErrorTest
 {
     public static TheoryData<OpenUrzednikError, HttpStatusCode> ErrorsWithStatusCode => new()
     {
@@ -87,7 +87,7 @@ public class HttpErrorTest
     [MemberData(nameof(ErrorsWithStatusCode))]
     public void Metadata_Always_IsReadByCoresObsoleteAccessors(OpenUrzednikError error, HttpStatusCode statusCode)
     {
-        // Assert: code written against 1.0 keeps reading the status (ADR-0021)
+        // Assert: code written against 1.0 keeps reading the status (ADR-0022)
 #pragma warning disable CS0618
         error.GetHttpStatusCode().ShouldBe((int)statusCode);
 #pragma warning restore CS0618

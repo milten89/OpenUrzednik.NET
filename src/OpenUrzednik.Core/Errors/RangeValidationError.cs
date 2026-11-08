@@ -1,7 +1,7 @@
 namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
-/// A <see cref="ValidationError"/> for a rejected range of two parameters, e.g. a <c>from</c> date later than <c>to</c> (ADR-0021).
+/// A <see cref="ValidationError"/> for a rejected range of two parameters, e.g. a <c>from</c> date later than <c>to</c> (ADR-0022).
 /// Check for it with <c>is RangeValidationError</c> to read the parameter names and metadata, or with <c>is RangeValidationError&lt;T&gt;</c>
 /// for the bounds with their exact type. <see cref="ValidationError.Name"/> is <see langword="null"/>: the rule spans two parameters.
 /// </summary>
@@ -45,7 +45,7 @@ public abstract class RangeValidationError : ValidationError
     {
         base.CollectMetadata(metadata);
         metadata[StartNameMetadataKey] = StartName;
-        // Bounds with no metadata form (ADR-0021) are left out; RangeValidationError<T>'s Start and End still have them.
+        // Bounds with no metadata form (ADR-0022) are left out; RangeValidationError<T>'s Start and End still have them.
         if (TryGetStartMetadata(out var start))
             metadata[StartMetadataKey] = start;
         metadata[EndNameMetadataKey] = EndName;

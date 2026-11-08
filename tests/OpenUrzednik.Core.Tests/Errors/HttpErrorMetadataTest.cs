@@ -1,6 +1,6 @@
 using OpenUrzednik.Core.Errors;
 
-// These tests cover the obsolete HttpErrorMetadata, which keeps working until 2.0 (ADR-0021).
+// These tests cover the obsolete HttpErrorMetadata, which keeps working until 2.0 (ADR-0022).
 #pragma warning disable CS0618
 
 namespace OpenUrzednik.Core.Tests.Errors;

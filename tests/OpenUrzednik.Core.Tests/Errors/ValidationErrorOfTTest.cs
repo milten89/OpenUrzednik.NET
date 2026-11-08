@@ -69,7 +69,7 @@ public class ValidationErrorOfTTest
     [Fact]
     public void Metadata_ValueWithoutAForm_IsKeptAsPassed()
     {
-        // Arrange: an app's ValueValidator<T> of its own type kept its value key in 1.0 (ADR-0021)
+        // Arrange: an app's ValueValidator<T> of its own type kept its value key in 1.0 (ADR-0022)
         var tuple = (1, 2);
 
         // Act

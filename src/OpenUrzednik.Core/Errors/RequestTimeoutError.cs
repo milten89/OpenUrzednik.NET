@@ -4,7 +4,7 @@ namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
 /// Represents an error indicating that the service did not respond within the configured timeout, or said that the request timed out,
-/// whatever the transport (ADR-0021). An HTTP <c>408 Request Timeout</c> response makes it an <c>HttpRequestTimeoutError</c> (<c>OpenUrzednik.Transport.Http</c>).
+/// whatever the transport (ADR-0022). An HTTP <c>408 Request Timeout</c> response makes it an <c>HttpRequestTimeoutError</c> (<c>OpenUrzednik.Transport.Http</c>).
 /// Cancellation requested by the caller is not an error; it throws <see cref="OperationCanceledException"/>.
 /// </summary>
 public class RequestTimeoutError : OpenUrzednikError
@@ -63,7 +63,7 @@ public class RequestTimeoutError : OpenUrzednikError
     /// <param name="timeout">The timeout that elapsed, if known.</param>
     /// <param name="exception">The exception that signalled the timeout, if any.</param>
     /// <param name="statusCode">HTTP status code of the response that caused the error (408), if any; read it with <see cref="HttpErrorMetadata.GetHttpStatusCode"/>.</param>
-    [Obsolete("A condition type takes no transport details: use a RequestTimeoutError constructor without statusCode (for an exception only: new RequestTimeoutError(message, null, exception)), or HttpRequestTimeoutError (OpenUrzednik.Transport.Http) for an error caused by an HTTP response (ADR-0021). Removed in 2.0.")]
+    [Obsolete("A condition type takes no transport details: use a RequestTimeoutError constructor without statusCode (for an exception only: new RequestTimeoutError(message, null, exception)), or HttpRequestTimeoutError (OpenUrzednik.Transport.Http) for an error caused by an HTTP response (ADR-0022). Removed in 2.0.")]
     public RequestTimeoutError(string message, TimeSpan? timeout = null, Exception? exception = null, int? statusCode = null)
         : this(message, timeout, exception)
     {

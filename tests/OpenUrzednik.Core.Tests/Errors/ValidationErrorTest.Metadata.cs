@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Core.Tests.Errors;
 
-// The metadata forms of ADR-0021, through the value of a ValidationError: the 1.0 constructor (object) and ValidationError<T>.
+// The metadata forms of ADR-0022, through the value of a ValidationError: the 1.0 constructor (object) and ValidationError<T>.
 public partial class ValidationErrorTest
 {
     public static TheoryData<object, object> ValuesAndForms => new()

@@ -5,15 +5,17 @@ using OpenUrzednik.Core.Errors;
 namespace OpenUrzednik.Transport.Http;
 
 /// <summary>
-/// A <see cref="BadRequestError"/> caused by an HTTP response: the server answered <c>400 Bad Request</c>, or a provider mapped another status to it (ADR-0021).
+/// A <see cref="BadRequestError"/> caused by an HTTP response: the server answered <c>400 Bad Request</c>, or a provider mapped another status to it (ADR-0022).
 /// </summary>
 /// <remarks>
 /// It keeps the <see cref="OpenUrzednikError.Code"/> and exception of <see cref="BadRequestError"/>, so code that checks <c>is BadRequestError</c> or the
 /// code handles it like any other. Read the status from <see cref="StatusCode"/>, through <see cref="IOpenUrzednikHttpStatusCode"/>, or
 /// with <see cref="HttpStatusExtensions.GetHttpStatus"/>; <see cref="OpenUrzednikError.Metadata"/> holds it as an <see cref="int"/> under
 /// <see cref="HttpStatusExtensions.StatusCodeMetadataKey"/>.
+/// It isn't sealed: a provider derives its own error type from it to add typed details of its API; that error is still this type and
+/// its condition (ADR-0022).
 /// </remarks>
-public sealed class HttpBadRequestError : BadRequestError, IOpenUrzednikHttpStatusCode
+public class HttpBadRequestError : BadRequestError, IOpenUrzednikHttpStatusCode
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpBadRequestError"/> class.

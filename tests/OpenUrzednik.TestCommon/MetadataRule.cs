@@ -5,12 +5,12 @@ using Shouldly;
 namespace OpenUrzednik.TestCommon;
 
 /// <summary>
-/// Checks ADR-0021's rule for metadata values: strings, booleans, <see cref="int"/>, <see cref="long"/>, <see cref="double"/>,
+/// Checks ADR-0022's rule for metadata values: strings, booleans, <see cref="int"/>, <see cref="long"/>, <see cref="double"/>,
 /// <see langword="null"/>, or arrays of one of these. Dates, times and durations are ISO 8601 strings, so they pass as strings.
 /// </summary>
 public static class MetadataRule
 {
-    /// <summary>The 1.0 key kept with a <see cref="TimeSpan"/> value until 2.0 (ADR-0021).</summary>
+    /// <summary>The 1.0 key kept with a <see cref="TimeSpan"/> value until 2.0 (ADR-0022).</summary>
     private static readonly string[] OneZeroExceptions = [RateLimitExceededError.RetryAfterMetadataKey];
 
     public static void ShouldFollowTheMetadataRule(this OpenUrzednikError error)

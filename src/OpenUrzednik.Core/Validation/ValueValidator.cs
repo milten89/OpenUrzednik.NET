@@ -41,7 +41,7 @@ public abstract class ValueValidator<T>
 
     /// <summary>
     /// Creates a failed result with a <see cref="ValidationError{T}"/> for this rule, <see cref="PropertyName"/> and <see cref="Value"/>,
-    /// which keeps the value's exact type (ADR-0021).
+    /// which keeps the value's exact type (ADR-0022).
     /// </summary>
     /// <param name="message">Error message.</param>
     /// <returns>The failed result.</returns>

@@ -102,7 +102,7 @@ using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, bod
         malformed.IsFailure && malformed.Errors[0].Code == SerializationError.ErrorCode, Describe(malformed));
 }
 
-// Metadata forms under Native AOT: ISO 8601 durations from Core's formatter, the HTTP status as an int (ADR-0021).
+// Metadata forms under Native AOT: ISO 8601 durations from Core's formatter, the HTTP status as an int (ADR-0022).
 var rateLimited = new HttpRateLimitExceededError("Too many requests.", TimeSpan.FromSeconds(90), (HttpStatusCode)429);
 var timedOut = new RequestTimeoutError("Timed out.", TimeSpan.FromMilliseconds(500));
 Check("metadata: durations are ISO 8601 and the HTTP status an int",

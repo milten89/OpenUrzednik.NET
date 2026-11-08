@@ -3,7 +3,7 @@ using OpenUrzednik.Core.Exceptions;
 namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
-/// Represents an error indicating that a requested resource was not found, whatever the transport (ADR-0021).
+/// Represents an error indicating that a requested resource was not found, whatever the transport (ADR-0022).
 /// An HTTP response that caused it makes it an <c>HttpNotFoundError</c> (<c>OpenUrzednik.Transport.Http</c>).
 /// </summary>
 public class NotFoundError : OpenUrzednikError
@@ -23,7 +23,7 @@ public class NotFoundError : OpenUrzednikError
     /// </summary>
     /// <param name="message">The message associated with the error.</param>
     /// <param name="statusCode">HTTP status code of the response that caused the error, if any; read it with <see cref="HttpErrorMetadata.GetHttpStatusCode"/>.</param>
-    [Obsolete("A condition type takes no transport details: use NotFoundError(string), or HttpNotFoundError (OpenUrzednik.Transport.Http) for an error caused by an HTTP response (ADR-0021). Removed in 2.0.")]
+    [Obsolete("A condition type takes no transport details: use NotFoundError(string), or HttpNotFoundError (OpenUrzednik.Transport.Http) for an error caused by an HTTP response (ADR-0022). Removed in 2.0.")]
     public NotFoundError(string message, int? statusCode = null)
         : this(message)
     {

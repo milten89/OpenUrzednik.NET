@@ -4,7 +4,7 @@ using System.Text;
 namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
-/// Converts a value to its <see cref="OpenUrzednikError.Metadata"/> form (ADR-0021): strings, booleans, <see cref="int"/>,
+/// Converts a value to its <see cref="OpenUrzednikError.Metadata"/> form (ADR-0022): strings, booleans, <see cref="int"/>,
 /// <see cref="long"/> and <see cref="double"/> as they are; other integers and <see cref="float"/> widened (a <see cref="ulong"/> above
 /// <see cref="long.MaxValue"/> as a string); <see cref="decimal"/>, <see cref="char"/> and <see cref="Guid"/> as invariant strings; dates,
 /// times and durations as ISO 8601 strings; enums by member name; arrays of an allowed type as they are, and other one-dimensional,

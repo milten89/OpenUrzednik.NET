@@ -7,7 +7,7 @@ namespace OpenUrzednik.Core.Errors;
 /// <summary>
 /// Represents a base class for errors in the OpenUrzednik application. Error types describe the condition, whatever the
 /// transport, and take no transport details; an error caused by an HTTP response is the condition's HTTP subclass in the
-/// <c>OpenUrzednik.Transport.Http</c> package (e.g. <c>HttpNotFoundError</c>, ADR-0021).
+/// <c>OpenUrzednik.Transport.Http</c> package (e.g. <c>HttpNotFoundError</c>, ADR-0022).
 /// </summary>
 public abstract class OpenUrzednikError
 {
@@ -16,7 +16,7 @@ public abstract class OpenUrzednikError
     // Entries added with AddMetadata, in order (1.0 behaviour).
     private Dictionary<string, object?>? _added;
 
-    // Metadata is built on first read (ADR-0021): CollectMetadata, then the AddMetadata entries.
+    // Metadata is built on first read (ADR-0022): CollectMetadata, then the AddMetadata entries.
     private IReadOnlyDictionary<string, object?>? _metadata;
 
     // Counts AddMetadata calls, so a build that overlapped one is never cached.
@@ -34,7 +34,7 @@ public abstract class OpenUrzednikError
 
     /// <summary>
     /// Gets the metadata associated with this error: the error's details as values that serialize the same way everywhere
-    /// (JSON, logs, OpenTelemetry attributes), e.g. to copy into a ProblemDetails response (ADR-0021). The error types' own keys hold
+    /// (JSON, logs, OpenTelemetry attributes), e.g. to copy into a ProblemDetails response (ADR-0022). The error types' own keys hold
     /// strings, booleans, numbers (<see cref="int"/>, <see cref="long"/>, <see cref="double"/>), <see langword="null"/>, arrays of
     /// one of these, ISO 8601 strings for dates, times and durations, and invariant strings for <see cref="decimal"/> values.
     /// It is built on first read.

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0022
 date: 2026-11-08
 confidence: high
 decision-makers: milten89
@@ -120,6 +120,7 @@ Chosen option: the first, because it takes the transport out of Core, gives type
 
 ## More Information
 
+* Superseded by [ADR-0022](0022-provider-subclasses-of-transport-errors.md).
 * Supersedes [ADR-0012](0012-error-types-describe-conditions.md), which listed transport subclasses as a later option and chose the constructor parameters and metadata for 1.0.
 * Related: [ADR-0002](0002-result-pattern-and-error-handling.md) (the error contract), [ADR-0004](0004-dependency-policy.md) (dependencies), [ADR-0005](0005-target-frameworks.md) (public dates), [ADR-0019](0019-shared-http-layer-tested-through-test-host.md) (the shared HTTP layer that maps responses to errors; it stays internal shared source).
 * Facts checked on 2026-11-08: OpenTelemetry's attribute value types and `http.response.status_code` (an int); how OpenTelemetry .NET's `TagWriter` and the JSON console logger write other types (`Convert.ToString` with the invariant culture); System.Text.Json's output for `TimeSpan`, `DateTime`, `DateOnly` and a tuple, and its refusal to serialize `object` values without registered types under AOT defaults (run locally on .NET 10); netstandard2.0's `HttpStatusCode` lacking `TooManyRequests` (its reference assembly).
