@@ -6,7 +6,8 @@ namespace OpenUrzednik.Core.Errors;
 
 /// <summary>
 /// Represents a base class for errors in the OpenUrzednik application. Error types describe the condition, whatever the
-/// transport; transport details such as an HTTP status code are in <see cref="Metadata"/> (<see cref="HttpErrorMetadata"/>, ADR-0012).
+/// transport, and take no transport details; an error caused by an HTTP response is the condition's HTTP subclass in the
+/// <c>OpenUrzednik.Transport.Http</c> package (e.g. <c>HttpNotFoundError</c>, ADR-0021).
 /// </summary>
 public abstract class OpenUrzednikError
 {

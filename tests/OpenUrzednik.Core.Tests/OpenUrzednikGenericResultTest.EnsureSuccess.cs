@@ -85,15 +85,15 @@ public partial class OpenUrzednikGenericResultTest
     public void EnsureSuccess_WhenResultHasSingleError_ExceptionKeepsError()
     {
         // Arrange
-        var error = new NotFoundError("Not found.", 404);
+        var error = new RateLimitExceededError("Too many requests.", TimeSpan.FromSeconds(30));
         var result = OpenUrzednikResult.Failure<int>(error);
 
         // Act
-        var exception = Should.Throw<NotFoundException>(() => result.EnsureSuccess());
+        var exception = Should.Throw<RateLimitExceededException>(() => result.EnsureSuccess());
 
         // Assert
         exception.Error.ShouldBeSameAs(error);
-        exception.Error!.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
+        exception.Error!.Metadata[RateLimitExceededError.RetryAfterMetadataKey].ShouldBe(TimeSpan.FromSeconds(30));
         exception.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
     }
 

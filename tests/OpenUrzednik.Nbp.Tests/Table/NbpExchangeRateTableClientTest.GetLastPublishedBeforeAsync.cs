@@ -13,6 +13,7 @@ using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -186,7 +187,7 @@ public partial class NbpExchangeRateTableClientTest
         var result = await sut.GetLastPublishedBeforeAsync(TableType.A, new DateOnly(2026, 10, 5), TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
     }
 
     [Fact]

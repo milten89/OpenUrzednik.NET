@@ -5,6 +5,7 @@
     <Project Path="src/OpenUrzednik.Extensions.Logging/OpenUrzednik.Extensions.Logging.csproj" />
     <Project Path="src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />
     <Project Path="src/OpenUrzednik.Nbp.DependencyInjection/OpenUrzednik.Nbp.DependencyInjection.csproj" />
+    <Project Path="src/OpenUrzednik.Transport.Http/OpenUrzednik.Transport.Http.csproj" />
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/OpenUrzednik.Samples.Console/OpenUrzednik.Samples.Console.csproj" />
@@ -27,5 +28,6 @@
     <Project Path="tests/OpenUrzednik.Nbp.DependencyInjection.Tests/OpenUrzednik.Nbp.DependencyInjection.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.TestCommon/OpenUrzednik.TestCommon.csproj" />
+    <Project Path="tests/OpenUrzednik.Transport.Http.Tests/OpenUrzednik.Transport.Http.Tests.csproj" />
   </Folder>
 </Solution>

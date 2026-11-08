@@ -7,6 +7,7 @@ using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.TestCommon;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -82,7 +83,7 @@ public sealed partial class NbpRequestPipelineTest
             () => "cenyzlota", JsonContext.GoldPriceDtoArray, dtos => dtos.Length, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>();
         span.Received(1).AddEvent("error", "error.type", ServiceUnavailableError.ErrorCode);
     }
 

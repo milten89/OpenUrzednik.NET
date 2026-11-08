@@ -29,7 +29,7 @@ The design is flat on purpose: no gradients, shadows or outlines. It has to read
 
 | Package | Icon |
 |---|---|
-| `OpenUrzednik.Core`, `.Extensions.Logging`, `.Diagnostics` | `icon.png` |
+| `OpenUrzednik.Core`, `.Extensions.Logging`, `.Diagnostics`, `.Transport.Http` | `icon.png` |
 | `OpenUrzednik.Nbp`, `OpenUrzednik.Nbp.DependencyInjection` | `icon-nbp.png` |
 
 A provider gets its icon when it becomes ready (ADR-0016), by adding its entry to `branding.toml`.

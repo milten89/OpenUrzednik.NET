@@ -12,7 +12,7 @@ public partial class OpenUrzednikGenericResultTest
     public void Value_Failure_ThrowsInvalidOperationExceptionListingTheErrors()
     {
         // Arrange
-        var first = new NotFoundError("No data for 2026-10-03.", 404);
+        var first = new NotFoundError("No data for 2026-10-03.");
         var second = new TestError("Second error");
         var result = OpenUrzednikResult.Failure<int>([first, second]);
 

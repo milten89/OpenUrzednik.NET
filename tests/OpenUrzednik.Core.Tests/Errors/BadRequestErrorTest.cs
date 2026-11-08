@@ -11,7 +11,7 @@ public class BadRequestErrorTest
     public void ToException_ReturnsBadRequestExceptionWithMessageAndCode()
     {
         // Arrange
-        var error = new BadRequestError("message", 400);
+        var error = new BadRequestError("message");
 
         // Act
         var exception = error.ToException();

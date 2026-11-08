@@ -3,6 +3,12 @@
   <!-- The shared REST/JSON layer (ADR-0019), compiled into each REST provider as internal source, like src/Polyfills.
        A provider imports this file and references, on netstandard2.0 only, Microsoft.Bcl.TimeProvider, System.Net.Http.Json
        and System.Text.Json (ADR-0004). HttpPolyfills.cs holds its own #if, so both folders are linked on every target. -->
+  <!-- The public HTTP transport types the executor returns (HttpNotFoundError and the others, ADR-0021): a package every REST
+       provider depends on, as on Core. -->
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\OpenUrzednik.Transport.Http\OpenUrzednik.Transport.Http.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Infrastructure\**\*.cs" Link="Http\Infrastructure\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="$(MSBuildThisFileDirectory)Polyfills\**\*.cs" Link="Http\Polyfills\%(RecursiveDir)%(Filename)%(Extension)" />

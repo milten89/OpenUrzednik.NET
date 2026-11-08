@@ -13,6 +13,7 @@ using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -78,7 +79,7 @@ public partial class NbpExchangeRateTableClientTest
         // Assert
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<NotFoundError>();
+        result.Errors[0].ShouldBeOfType<HttpNotFoundError>();
     }
 
     [Fact]

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Http.Resilience;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Transport.Http;
 
 using Polly;
 using Polly.CircuitBreaker;
@@ -66,7 +67,7 @@ public sealed class NbpDependencyInjectionWireMockTest : IDisposable
         var result = await CreateSut().GetLatestAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>()
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>()
             .Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(503);
         _server.LogEntries.Count().ShouldBe(1);
     }

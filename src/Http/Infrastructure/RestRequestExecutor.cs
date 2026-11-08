@@ -8,6 +8,7 @@ using System.Text.Json.Serialization.Metadata;
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.Transport.Http;
 
 namespace OpenUrzednik.Http.Infrastructure;
 
@@ -376,7 +377,7 @@ internal sealed class RestRequestExecutor
                     if (logger.IsEnabled(OpenUrzednikLogLevel.Debug))
                         logger.Log(OpenUrzednikLogLevel.Debug, RestLogEvents.NotFound, null, "{provider} resource not found: {path}.", "provider", name, "path", path);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Not found");
-                    return new NotFoundError($"Resource at {path} was not found.", statusCode);
+                    return new HttpNotFoundError($"Resource at {path} was not found.", statusCode);
                 }
             case TooManyRequests:
                 {
@@ -388,14 +389,14 @@ internal sealed class RestRequestExecutor
                             logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RateLimited, null, "{provider} rate limit hit.", "provider", name);
                     }
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Rate limited");
-                    return new RateLimitExceededError("Too many requests.", delay, statusCode);
+                    return new HttpRateLimitExceededError("Too many requests.", delay, statusCode);
                 }
             case HttpStatusCode.BadRequest:
                 {
                     var serverMessage = readMessageAsync is null ? null : await readMessageAsync().ConfigureAwait(false);
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.BadRequest, null, "{provider} rejected the request to {path}", "provider", name, "path", path);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Bad request");
-                    return new BadRequestError(
+                    return new HttpBadRequestError(
                         serverMessage is null
                             ? $"{displayName} rejected the request to {path}."
                             : $"{displayName} rejected the request to {path}: {serverMessage}",
@@ -405,26 +406,26 @@ internal sealed class RestRequestExecutor
                 {
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.RequestTimeoutStatus, null, "{provider} timed out on {path} with status {status}", "provider", name, "path", path, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Timeout");
-                    return new RequestTimeoutError($"{displayName} timed out on {path} with status {statusCode}.", statusCode: statusCode);
+                    return new HttpRequestTimeoutError($"{displayName} timed out on {path} with status {statusCode}.", statusCode);
                 }
             case HttpStatusCode.Unauthorized:
             case HttpStatusCode.Forbidden:
                 {
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.Unauthorized, null, "{provider} denied access to {path} with status {status}", "provider", name, "path", path, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unauthorized");
-                    return new UnauthorizedError($"{displayName} denied access to {path} with status {statusCode}.", statusCode);
+                    return new HttpUnauthorizedError($"{displayName} denied access to {path} with status {statusCode}.", statusCode);
                 }
             case >= HttpStatusCode.InternalServerError:
                 {
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.ServiceUnavailable, null, "{provider} is unavailable, status {status}", "provider", name, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Service unavailable");
-                    return new ServiceUnavailableError($"{displayName} is unavailable, status {statusCode}.", statusCode);
+                    return new HttpServiceUnavailableError($"{displayName} is unavailable, status {statusCode}.", statusCode);
                 }
             default:
                 {
                     logger.Log(OpenUrzednikLogLevel.Warning, RestLogEvents.UnexpectedStatus, null, "{provider} returned unexpected status {status}", "provider", name, "status", statusCode);
                     traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected status");
-                    return new UnknownError($"{displayName} returned unexpected status {statusCode}.", statusCode);
+                    return new HttpUnknownError($"{displayName} returned unexpected status {statusCode}.", statusCode);
                 }
         }
     }

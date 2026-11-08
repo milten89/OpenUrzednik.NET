@@ -13,6 +13,7 @@ using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -170,7 +171,7 @@ public partial class NbpExchangeRateTableClientTest
         var result = await sut.GetBuySellLastPublishedBeforeAsync(new DateOnly(2026, 10, 5), TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>();
     }
 
     [Fact]

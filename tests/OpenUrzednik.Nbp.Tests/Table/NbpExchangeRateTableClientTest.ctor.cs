@@ -11,6 +11,7 @@ using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -102,7 +103,7 @@ public partial class NbpExchangeRateTableClientTest
         var result = await sut.GetAsync(TableType.A, futureForTheSystemClock, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>(); // from the stub
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>(); // from the stub
         handler.Request.ShouldNotBeNull();
     }
 

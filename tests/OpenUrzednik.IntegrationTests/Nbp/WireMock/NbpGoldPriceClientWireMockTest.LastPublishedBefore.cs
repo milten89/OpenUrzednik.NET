@@ -3,6 +3,7 @@ using System.Net;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Gold;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -40,7 +41,7 @@ public partial class NbpGoldPriceClientWireMockTest
         var result = await CreateSut().GetLastPublishedBeforeAsync(LastBeforeDate, TestContext.Current.CancellationToken);
 
         // Assert
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 367 dni / Limit of 367 days has been exceeded");
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
     }
@@ -56,7 +57,7 @@ public partial class NbpGoldPriceClientWireMockTest
         var result = await CreateSut().GetLastPublishedBeforeAsync(LastBeforeDate, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
     }
 
     [Fact]
@@ -84,7 +85,7 @@ public partial class NbpGoldPriceClientWireMockTest
         var result = await CreateSut().GetLastPublishedBeforeAsync(LastBeforeDate, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnauthorizedError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpUnauthorizedError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
     }
 
     [Fact]
@@ -97,7 +98,7 @@ public partial class NbpGoldPriceClientWireMockTest
         var result = await CreateSut().GetLastPublishedBeforeAsync(LastBeforeDate, TestContext.Current.CancellationToken);
 
         // Assert
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RateLimitExceededError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpRateLimitExceededError>();
         error.RetryAfter.ShouldBe(TimeSpan.FromSeconds(30));
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(429);
     }
@@ -114,7 +115,7 @@ public partial class NbpGoldPriceClientWireMockTest
         var result = await CreateSut().GetLastPublishedBeforeAsync(LastBeforeDate, TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>().Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
     }
 
     [Fact]

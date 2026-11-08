@@ -14,6 +14,7 @@ using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Table;
+using OpenUrzednik.Transport.Http;
 
 var failures = 0;
 
@@ -75,6 +76,8 @@ using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.NotFoun
     var notFound = await new NbpGoldPriceClient(httpClient).GetLatestAsync();
     Check("error: 404 is NotFoundError with the status code",
         notFound.IsFailure && notFound.Errors[0] is NotFoundError && notFound.Errors[0].GetHttpStatusCode() == 404, Describe(notFound));
+    Check("error: 404 is HttpNotFoundError with IOpenUrzednikHttpStatusCode",
+        notFound.IsFailure && notFound.Errors[0] is HttpNotFoundError { StatusCode: 404 } && notFound.Errors[0] is IOpenUrzednikHttpStatusCode { StatusCode: 404 }, Describe(notFound));
     try
     {
         notFound.EnsureSuccess();

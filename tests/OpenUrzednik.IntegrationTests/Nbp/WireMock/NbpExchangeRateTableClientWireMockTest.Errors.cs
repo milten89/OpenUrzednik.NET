@@ -3,6 +3,7 @@ using System.Net;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Nbp.Table;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -23,7 +24,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 67 wyników / Maximum size of 67 data series has been exceeded");
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
     }
@@ -42,7 +43,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 93 dni / Limit of 93 days has been exceeded");
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
     }
@@ -60,7 +61,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>();
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
     }
 
@@ -105,7 +106,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnauthorizedError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpUnauthorizedError>();
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
     }
 
@@ -120,7 +121,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RateLimitExceededError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpRateLimitExceededError>();
         error.RetryAfter.ShouldBe(TimeSpan.FromSeconds(30));
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(429);
     }
@@ -140,7 +141,7 @@ public partial class NbpExchangeRateTableClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>();
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
     }
 

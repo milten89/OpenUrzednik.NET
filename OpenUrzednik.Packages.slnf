@@ -6,7 +6,8 @@
       "src/OpenUrzednik.Diagnostics/OpenUrzednik.Diagnostics.csproj",
       "src/OpenUrzednik.Extensions.Logging/OpenUrzednik.Extensions.Logging.csproj",
       "src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj",
-      "src/OpenUrzednik.Nbp.DependencyInjection/OpenUrzednik.Nbp.DependencyInjection.csproj"
+      "src/OpenUrzednik.Nbp.DependencyInjection/OpenUrzednik.Nbp.DependencyInjection.csproj",
+      "src/OpenUrzednik.Transport.Http/OpenUrzednik.Transport.Http.csproj"
     ]
   }
 }

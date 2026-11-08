@@ -1,6 +1,7 @@
 using System.Net;
 
 using OpenUrzednik.Core.Errors;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -21,7 +22,7 @@ public partial class NbpGoldPriceClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 255 wyników / Maximum size of 255 data series has been exceeded");
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
     }
@@ -40,7 +41,7 @@ public partial class NbpGoldPriceClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<BadRequestError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>();
         error.Message.ShouldEndWith(": 400 BadRequest - Przekroczony limit 367 dni / Limit of 367 days has been exceeded");
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(400);
     }
@@ -58,7 +59,7 @@ public partial class NbpGoldPriceClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>();
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
     }
 
@@ -89,7 +90,7 @@ public partial class NbpGoldPriceClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<UnauthorizedError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpUnauthorizedError>();
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
     }
 
@@ -104,7 +105,7 @@ public partial class NbpGoldPriceClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RateLimitExceededError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpRateLimitExceededError>();
         error.RetryAfter.ShouldBe(TimeSpan.FromSeconds(30));
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(429);
     }
@@ -124,7 +125,7 @@ public partial class NbpGoldPriceClientWireMockTest
 
         // Assert
         result.IsFailure.ShouldBeTrue();
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<ServiceUnavailableError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpServiceUnavailableError>();
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe((int)statusCode);
     }
 

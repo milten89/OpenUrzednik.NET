@@ -50,7 +50,7 @@ All of these must hold:
   ```
 
   If any are listed, the version must raise the major (`1.4.0` → `2.0.0`). Otherwise stop and ask the user: a breaking change in a minor violates [ADR-0011](../../../docs/adr/0011-compatibility-policy.md).
-- **Above nuget.org:** the version must sort above every **listed** version of every published package (the five packages in `OpenUrzednik.Packages.slnf`):
+- **Above nuget.org:** the version must sort above every **listed** version of every published package (the six packages in `OpenUrzednik.Packages.slnf`):
 
   ```bash
   python .claude/skills/prepare-release/scripts/check_nuget.py before <version>
@@ -108,7 +108,7 @@ Tell the user the PR link and that the next steps are theirs: wait for the requi
 
 Run after `nuget-release.yml` finished. The version is the argument, or the one in `origin/main`'s `version.json`.
 
-1. **Published:** `python .claude/skills/prepare-release/scripts/check_nuget.py after <version>` reports the version listed for each of the five packages. The index can lag a few minutes behind the publish: wait and retry before reporting a failure.
+1. **Published:** `python .claude/skills/prepare-release/scripts/check_nuget.py after <version>` reports the version listed for each of the six packages. The index can lag a few minutes behind the publish: wait and retry before reporting a failure.
 2. **Smoke test** in a new folder in the scratchpad (not in the repo), before the back-merge is merged, while `develop` previews still sort below the release:
 
    ```bash

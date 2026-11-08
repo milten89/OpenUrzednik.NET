@@ -14,6 +14,7 @@ using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Tests.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -174,7 +175,7 @@ public partial class NbpGoldPriceClientTest
         var result = await sut.GetLastPublishedBeforeAsync(new DateOnly(2026, 10, 5), TestContext.Current.CancellationToken);
 
         // Assert
-        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<NotFoundError>();
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>();
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(404);
     }
 

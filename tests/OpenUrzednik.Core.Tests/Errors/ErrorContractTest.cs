@@ -28,7 +28,7 @@ public class ErrorContractTest
     public void RateLimitExceededError_WithRetryAfter_StoresItUnderRetryAfterMetadataKey()
     {
         // Act
-        var error = new RateLimitExceededError("message", TimeSpan.FromSeconds(30), 429);
+        var error = new RateLimitExceededError("message", TimeSpan.FromSeconds(30));
 
         // Assert
         RateLimitExceededError.RetryAfterMetadataKey.ShouldBe("retryAfter");

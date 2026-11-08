@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Unofficial OpenUrzednik.NET HTTP transport types: the errors caused by HTTP responses (HttpNotFoundError and the others, subclasses of Core's condition errors) and their status code, for the REST providers and the apps that use them.</Description>
+    <PackageTags>HTTP;ErrorHandling;ResultPattern;API;Poland;Gov</PackageTags>
+    <!-- First release with 1.1: no baseline to validate against yet (src/Directory.Build.props). -->
+    <PackageValidationBaselineVersion></PackageValidationBaselineVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+</Project>

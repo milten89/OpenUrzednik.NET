@@ -35,10 +35,23 @@ public partial class RequestTimeoutErrorTest
     }
 
     [Fact]
+    public void Ctor_WithTimeout_KeepsItWithoutException()
+    {
+        // Act
+        var error = new RequestTimeoutError("message", TimeSpan.FromSeconds(5));
+
+        // Assert
+        error.Timeout.ShouldBe(TimeSpan.FromSeconds(5));
+        error.Exception.ShouldBeNull();
+    }
+
+    [Fact]
     public void Ctor_WithStatusCode_StoresItAsMetadata()
     {
         // Act
+#pragma warning disable CS0618 // the obsolete constructor keeps working until 2.0 (ADR-0021)
         var error = new RequestTimeoutError("message", statusCode: 408);
+#pragma warning restore CS0618
 
         // Assert
         error.Metadata[HttpErrorMetadata.StatusCodeKey].ShouldBe(408);

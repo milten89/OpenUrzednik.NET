@@ -15,7 +15,7 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0009](0009-documentation-language.md) | Documentation language | accepted |
 | [0010](0010-provider-readiness-gate.md) | Framework first: NBP as the reference provider | superseded by [ADR-0016](0016-next-providers-and-package-naming.md) |
 | [0011](0011-compatibility-policy.md) | Compatibility policy | accepted |
-| [0012](0012-error-types-describe-conditions.md) | Error types describe conditions, not transports | accepted |
+| [0012](0012-error-types-describe-conditions.md) | Error types describe conditions, not transports | superseded by [ADR-0021](0021-transport-subclasses-of-condition-errors.md) |
 | [0013](0013-version-support-policy.md) | Version support policy | accepted |
 | [0014](0014-trimming-and-native-aot.md) | Trimming and Native AOT compatibility | accepted |
 | [0015](0015-log-and-trace-correlation.md) | Log entries are written inside the operation's span | accepted |
@@ -24,3 +24,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0018](0018-mutation-testing-before-release.md) | Mutation testing as a required check before every release | superseded by [ADR-0020](0020-mutation-testing-of-every-target-branch.md) |
 | [0019](0019-shared-http-layer-tested-through-test-host.md) | Shared HTTP layer for REST providers, tested through a test-only host | accepted |
 | [0020](0020-mutation-testing-of-every-target-branch.md) | Mutation testing as a required check before every release, on every target branch | accepted |
+| [0021](0021-transport-subclasses-of-condition-errors.md) | Transport details in transport packages: subclasses and interfaces of the condition errors | accepted |

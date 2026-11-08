@@ -60,6 +60,14 @@
       ],
       "break": 100
     },
+    "transport-http": {
+      "workdir": "src/OpenUrzednik.Transport.Http",
+      "config": "tests/Mutation/stryker-transport-http.json",
+      "strict": [
+        "src/OpenUrzednik.Transport.Http/**"
+      ],
+      "break": 100
+    },
     "core": {
       "workdir": "src/OpenUrzednik.Core",
       "config": "tests/Mutation/stryker-core.json",

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0021
 date: 2026-11-05
 confidence: high
 decision-makers: milten89
@@ -66,6 +66,8 @@ Chosen option: "Transport details in metadata, with typed extension accessors in
 * Bad, because seven HTTP subclasses now and as many again per transport later, all frozen from 1.0, before anyone needs them. They stay possible later (above).
 
 ## More Information
+
+Superseded by [ADR-0021](0021-transport-subclasses-of-condition-errors.md).
 
 Decided with the maintainer on 2026-11-05 in #123. Related: [ADR-0002](0002-result-pattern-and-error-handling.md) (the error contract), [ADR-0006](0006-shared-http-layer.md) (the shared HTTP layer that maps responses to errors), [ADR-0010](0010-provider-readiness-gate.md) (provider ADRs, which name their transport's keys).
 

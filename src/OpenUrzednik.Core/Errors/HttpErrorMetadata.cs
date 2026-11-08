@@ -4,9 +4,10 @@ namespace OpenUrzednik.Core.Errors;
 /// The HTTP details an error can carry in its <see cref="OpenUrzednikError.Metadata"/>, with typed accessors.
 /// </summary>
 /// <remarks>
-/// Error types describe the condition (not found, rate limited, unavailable), whatever the transport (ADR-0012), so the
-/// status code isn't a property of a type: the same <see cref="NotFoundError"/> comes from a 404, from a response with no
-/// data, or from a provider that doesn't use HTTP. Errors caused by an HTTP response store its status code here.
+/// Error types describe the condition, whatever the transport (ADR-0021): an error caused by an HTTP response is the condition's
+/// HTTP subclass in the <c>OpenUrzednik.Transport.Http</c> package (e.g. <c>HttpNotFoundError</c>), which implements
+/// <c>IOpenUrzednikHttpStatusCode</c> and, in 1.x, also stores its status under <see cref="StatusCodeKey"/>, so these accessors
+/// read it from any error. They are planned to move to that package in 2.0, reading the interface, with the metadata key removed (ADR-0021).
 /// </remarks>
 public static class HttpErrorMetadata
 {

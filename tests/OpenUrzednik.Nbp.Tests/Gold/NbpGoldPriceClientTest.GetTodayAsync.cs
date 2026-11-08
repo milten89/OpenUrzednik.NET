@@ -10,6 +10,7 @@ using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -68,6 +69,6 @@ public partial class NbpGoldPriceClientTest
 
         result.IsFailure.ShouldBeTrue();
         result.Errors.Count.ShouldBe(1);
-        result.Errors[0].ShouldBeOfType<NotFoundError>();
+        result.Errors[0].ShouldBeOfType<HttpNotFoundError>();
     }
 }

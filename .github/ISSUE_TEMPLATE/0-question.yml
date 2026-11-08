@@ -18,6 +18,7 @@ body:
         - OpenUrzednik.Diagnostics
         - OpenUrzednik.Nbp
         - OpenUrzednik.Nbp.DependencyInjection
+        - OpenUrzednik.Transport.Http
         - Inny / Other
     validations:
       required: true

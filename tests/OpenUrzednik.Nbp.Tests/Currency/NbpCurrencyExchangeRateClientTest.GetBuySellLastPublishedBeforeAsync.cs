@@ -13,6 +13,7 @@ using OpenUrzednik.Nbp.Dto;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.TestCommon.Extensions;
+using OpenUrzednik.Transport.Http;
 
 using Shouldly;
 
@@ -212,7 +213,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var result = await sut.GetBuySellLastPublishedBeforeAsync("USD", new DateOnly(2026, 10, 5), TestContext.Current.CancellationToken);
 
         // Assert
-        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RateLimitExceededError>();
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpRateLimitExceededError>();
     }
 
     [Fact]
