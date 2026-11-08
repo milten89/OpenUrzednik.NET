@@ -12,8 +12,10 @@ namespace OpenUrzednik.Transport.Http;
 /// code handles it like any other. Read the status from <see cref="StatusCode"/>, through <see cref="IOpenUrzednikHttpStatusCode"/>, or
 /// with <see cref="HttpStatusExtensions.GetHttpStatus"/>; <see cref="OpenUrzednikError.Metadata"/> holds it as an <see cref="int"/> under
 /// <see cref="HttpStatusExtensions.StatusCodeMetadataKey"/>.
+/// It isn't sealed: a provider derives its own error type from it to add typed details of its API; that error is still this type and
+/// its condition (ADR-0021).
 /// </remarks>
-public sealed class HttpRequestTimeoutError : RequestTimeoutError, IOpenUrzednikHttpStatusCode
+public class HttpRequestTimeoutError : RequestTimeoutError, IOpenUrzednikHttpStatusCode
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpRequestTimeoutError"/> class.

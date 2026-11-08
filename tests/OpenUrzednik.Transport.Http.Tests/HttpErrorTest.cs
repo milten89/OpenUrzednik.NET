@@ -9,7 +9,7 @@ using Shouldly;
 namespace OpenUrzednik.Transport.Http.Tests;
 
 // The seven HTTP subclasses share one shape, so one class covers them, like Core's StatusCodeMetadataTest (ADR-0021).
-public class HttpErrorTest
+public partial class HttpErrorTest
 {
     public static TheoryData<OpenUrzednikError, HttpStatusCode> ErrorsWithStatusCode => new()
     {

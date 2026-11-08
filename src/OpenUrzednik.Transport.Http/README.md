@@ -30,7 +30,7 @@ dotnet add package OpenUrzednik.Transport.Http
 | 5xx | `HttpServiceUnavailableError` | `ServiceUnavailableError` |
 | another status | `HttpUnknownError` | `UnknownError` |
 
-A provider may map a status to another condition (e.g. a quota answered with 400); the error is then that condition's HTTP subclass. Every subclass keeps its condition's `Code` and exception, so your `is NotFoundError` and `Code` checks handle an `HttpNotFoundError` like any other `NotFoundError`. Read the status through `IOpenUrzednikHttpStatusCode`:
+A provider may map a status to another condition (e.g. a quota answered with 400); the error is then that condition's HTTP subclass. Every subclass keeps its condition's `Code` and exception, so your `is NotFoundError` and `Code` checks handle an `HttpNotFoundError` like any other `NotFoundError`. A provider can derive its own type from an HTTP subclass to add details of its API, such as its error code; its README names those types, and they pass the same checks. Read the status through `IOpenUrzednikHttpStatusCode`:
 
 ```csharp
 using System.Net;
@@ -45,7 +45,7 @@ if (result.IsFailure && result.Errors[0] is IOpenUrzednikHttpStatusCode http)
 HttpStatusCode? status = result.Errors[0].GetHttpStatus();
 ```
 
-An error with no HTTP response behind it is Core's plain type: an empty answer (`NotFoundError`), a client-side timeout (`RequestTimeoutError`), a resilience handler's rejection (`ServiceUnavailableError`) or a network failure (`ConnectionFailedError`).
+An error with no HTTP response behind it is Core's plain type (or a provider's subclass of it): an empty answer (`NotFoundError`), a client-side timeout (`RequestTimeoutError`), a resilience handler's rejection (`ServiceUnavailableError`) or a network failure (`ConnectionFailedError`).
 
 The status is a `System.Net.HttpStatusCode`. 429 Too Many Requests (RFC 6585) has no named member on netstandard2.0 and .NET Framework, so compare with `(HttpStatusCode)429` there. `TryGetHttpStatus(out var status)` is the non-nullable form of `GetHttpStatus()`.
 
@@ -55,7 +55,7 @@ Core's `GetHttpStatusCode()` and `TryGetHttpStatusCode()` (`HttpErrorMetadata`) 
 
 ## Compatibility
 
-`IOpenUrzednikHttpStatusCode` never gets a new member: a further HTTP detail comes as a separate interface. Code that compares the exact type (`error.GetType() == typeof(NotFoundError)`) doesn't match an HTTP error; use `is` or `Code`.
+`IOpenUrzednikHttpStatusCode` never gets a new member: a further HTTP detail comes as a separate interface. The HTTP error types stay unsealed, so providers can derive from them. Code that compares the exact type (`error.GetType() == typeof(NotFoundError)`, or `typeof(HttpNotFoundError)`, which a provider's subclass doesn't match) misses them; use `is` or `Code`.
 
 ## Dependencies
 
