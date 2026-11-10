@@ -53,7 +53,7 @@ Run Stryker directly from the shard's workdir with the shard's config and an out
 ```bash
 cd src/OpenUrzednik.Nbp
 TEMP=<scratch>/tmp TMP=<scratch>/tmp TMPDIR=<scratch>/tmp dotnet stryker --config-file ../../tests/Mutation/stryker-nbp.json \
-  -m "**/NbpOptionsValidator.cs" --output <scratch>/nbp-options -r json --verbosity warning --skip-version-check
+  -m "**/NbpOptions.cs" --output <scratch>/nbp-options -r json --verbosity warning --skip-version-check
 uv run ../../.claude/skills/stryker/references/mutants.py list <scratch>/nbp-options/reports/mutation-report.json
 ```
 

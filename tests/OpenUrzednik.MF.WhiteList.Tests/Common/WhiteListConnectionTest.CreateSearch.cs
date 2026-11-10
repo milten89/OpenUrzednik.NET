@@ -84,62 +84,6 @@ public sealed partial class WhiteListConnectionTest
     }
 
     [Theory]
-    [InlineData("https://api.example.com", "https://api.example.com/api/")]
-    [InlineData("https://api.example.com/", "https://api.example.com/api/")]
-    [InlineData("https://api.example.com/v1", "https://api.example.com/v1/api/")]
-    [InlineData("https://api.example.com/v1/", "https://api.example.com/v1/api/")]
-    public void CreateSearch_ValidApiUrl_AddsTrailingSlashOnlyWhenMissing(string apiUrl, string expected)
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-
-        // Act
-        var connection = CreateSearch(httpClient, new WhiteListOptions { ApiUrl = apiUrl });
-
-        // Assert
-        connection.BaseAddress.ToString().ShouldBe(expected);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("api.example.com")]
-    [InlineData("www.example.com/api")]
-    [InlineData("/api/v1/")]
-    [InlineData("ftp://example.com/")]
-    [InlineData("http://example.com/")]
-    [InlineData("https://")]
-    [InlineData("https:/example.com")]
-    [InlineData("htt ps://example.com")]
-    [InlineData("https://example.com:abc/")]
-    [InlineData("https://exa mple.com/")]
-    [InlineData("https://gateway.example.com/api?key=1")]
-    [InlineData("https://gateway.example.com/api/#fragment")]
-    [InlineData("https://gateway.example.com/white-list?key=1")]
-    [InlineData("https://gateway.example.com/white-list/#fragment")]
-    public void CreateSearch_InvalidApiUrl_ThrowsArgumentException(string apiUrl)
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-
-        // Act && Assert
-        Should.Throw<ArgumentException>(() => CreateSearch(httpClient, new WhiteListOptions { ApiUrl = apiUrl }))
-            .ParamName.ShouldBe("options");
-    }
-
-    [Fact]
-    public void CreateSearch_HttpBaseAddress_ThrowsArgumentException()
-    {
-        // Arrange
-        using var httpClient = new HttpClient { BaseAddress = new Uri("http://wykazpodatnikowvat.mf.gov.pl/") };
-
-        // Act && Assert
-        var exception = Should.Throw<ArgumentException>(() => CreateSearch(httpClient, null));
-        exception.ParamName.ShouldBe("httpClient");
-        exception.Message.ShouldContain("supports only HTTPS");
-    }
-
-    [Theory]
     [InlineData("https://wykazpodatnikowvat.mf.gov.pl/api/")]
     [InlineData("https://gateway.example.com/white-list/API2")]
     public void CreateSearch_BaseAddressEndingWithAnApiPath_ThrowsArgumentExceptionAskingForTheHostRoot(string baseAddress)
@@ -178,43 +122,15 @@ public sealed partial class WhiteListConnectionTest
     }
 
     [Fact]
-    public void CreateSearch_InfiniteTimeout_HasNoOwnDeadline()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-
-        // Act
-        var connection = CreateSearch(httpClient, new WhiteListOptions { Timeout = Timeout.InfiniteTimeSpan });
-
-        // Assert
-        connection.Timeout.ShouldBeNull();
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-5)]
-    [InlineData(60 * 60 * 24 * 60)] // more than int.MaxValue ms, which CancelAfter rejects
-    public void CreateSearch_InvalidTimeout_ThrowsArgumentException(double seconds)
+    public void CreateSearch_InvalidTimeout_ThrowsArgumentExceptionForOptions()
     {
         // Arrange
         using var httpClient = new HttpClient();
 
         // Act && Assert
-        Should.Throw<ArgumentException>(() => CreateSearch(httpClient, new WhiteListOptions { Timeout = TimeSpan.FromSeconds(seconds) }))
-            .ParamName.ShouldBe("options");
-    }
-
-    [Fact]
-    public void CreateSearch_InfiniteHttpClientTimeoutAndNoOption_HasNoDeadline()
-    {
-        // Arrange
-        using var httpClient = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
-
-        // Act
-        var connection = CreateSearch(httpClient, null);
-
-        // Assert
-        connection.Timeout.ShouldBeNull();
+        var exception = Should.Throw<ArgumentException>(() => CreateSearch(httpClient, new WhiteListOptions { Timeout = TimeSpan.Zero }));
+        exception.ParamName.ShouldBe("options");
+        exception.Message.ShouldStartWith("Invalid MF White List API timeout: ");
     }
 
     [Fact]

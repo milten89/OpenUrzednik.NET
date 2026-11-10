@@ -1,3 +1,6 @@
+using OpenUrzednik.Http.Infrastructure;
+using OpenUrzednik.Nbp.Common;
+
 namespace OpenUrzednik.Nbp;
 
 /// <summary>
@@ -36,11 +39,11 @@ public sealed class NbpOptions
     /// or <see cref="Timeout"/> isn't positive (at most <see cref="int.MaxValue"/> milliseconds) or <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>.</exception>
     public void Validate()
     {
-        // A local and `is not null`, not a pattern variable, so that mutation testing checks the call: see NbpOptionsValidator (ADR-0020).
+        // A local and `is not null`, not a pattern variable, so that mutation testing checks the call: see RestOptions (ADR-0020).
         var apiUrl = ApiUrl;
         if (apiUrl is not null)
-            NbpOptionsValidator.ParseApiUrl(apiUrl, nameof(ApiUrl));
+            NbpConnection.ParseApiUrl(apiUrl, nameof(ApiUrl));
 
-        NbpOptionsValidator.ValidateTimeout(Timeout, nameof(Timeout));
+        RestOptions.ValidateTimeout(Timeout, NbpConnection.DisplayName, nameof(Timeout));
     }
 }

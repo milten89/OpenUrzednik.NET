@@ -75,7 +75,7 @@ public sealed partial class NbpServiceCollectionExtensionsTest
         var exception = Should.Throw<OptionsValidationException>(() => provider.GetRequiredService<IStartupValidator>().Validate());
 
         // Assert
-        exception.Message.ShouldContain("NBP API no longer supports HTTP");
+        exception.Message.ShouldContain("NBP API supports only HTTPS");
     }
 
     [Fact]

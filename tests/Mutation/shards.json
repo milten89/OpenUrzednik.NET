@@ -39,7 +39,6 @@
         "src/OpenUrzednik.Nbp/Common/NbpPayload.cs",
         "src/OpenUrzednik.Nbp/Common/NbpRequestPipeline.cs",
         "src/OpenUrzednik.Nbp/NbpOptions.cs",
-        "src/OpenUrzednik.Nbp/NbpOptionsValidator.cs",
         "src/OpenUrzednik.Nbp/NbpDateOnlyExtensions.cs"
       ],
       "break": 100

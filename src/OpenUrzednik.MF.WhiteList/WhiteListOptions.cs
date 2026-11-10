@@ -1,3 +1,6 @@
+using OpenUrzednik.Http.Infrastructure;
+using OpenUrzednik.MF.WhiteList.Common;
+
 namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
@@ -46,11 +49,11 @@ public sealed class WhiteListOptions
     /// or <see cref="Timeout"/> isn't positive (at most <see cref="int.MaxValue"/> milliseconds) or <see cref="System.Threading.Timeout.InfiniteTimeSpan"/>.</exception>
     public void Validate()
     {
-        // A local and `is not null`, not a pattern variable, so that mutation testing checks the call: see WhiteListOptionsValidator (ADR-0020).
+        // A local and `is not null`, not a pattern variable, so that mutation testing checks the call: see RestOptions (ADR-0020).
         var apiUrl = ApiUrl;
         if (apiUrl is not null)
             WhiteListOptionsValidator.ParseApiUrl(apiUrl, nameof(ApiUrl));
 
-        WhiteListOptionsValidator.ValidateTimeout(Timeout, nameof(Timeout));
+        RestOptions.ValidateTimeout(Timeout, WhiteListConnection.DisplayName, nameof(Timeout));
     }
 }

@@ -74,46 +74,16 @@ public partial class NbpConnectionTest
         httpClient.Timeout.ShouldBe(timeout);
     }
 
-    [Theory]
-    [InlineData("https://api.example.com", "https://api.example.com/")]
-    [InlineData("https://api.example.com/", "https://api.example.com/")]
-    [InlineData("https://api.example.com/v1", "https://api.example.com/v1/")]
-    [InlineData("https://api.example.com/v1/", "https://api.example.com/v1/")]
-    public void Create_ValidApiUrl_AddsTrailingSlashOnlyWhenMissing(string apiUrl, string expected)
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-
-        // Act
-        var connection = Create(httpClient, new NbpOptions { ApiUrl = apiUrl });
-
-        // Assert
-        connection.BaseAddress.ToString().ShouldBe(expected);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("api.example.com")]
-    [InlineData("www.example.com/api")]
-    [InlineData("/api/v1/")]
-    [InlineData("ftp://example.com/")]
-    [InlineData("http://example.com/")]
-    [InlineData("https://")]
-    [InlineData("https:/example.com")]
-    [InlineData("htt ps://example.com")]
-    [InlineData("https://example.com:abc/")]
-    [InlineData("https://exa mple.com/")]
-    [InlineData("https://gateway.example.com/api?key=1")]
-    [InlineData("https://gateway.example.com/api/#fragment")]
-    public void Create_InvalidApiUrl_ThrowsArgumentException(string apiUrl)
+    [Fact]
+    public void Create_InvalidApiUrl_ThrowsArgumentExceptionForOptions()
     {
         // Arrange
         using var httpClient = new HttpClient();
 
         // Act && Assert
-        Should.Throw<ArgumentException>(() => Create(httpClient, new NbpOptions { ApiUrl = apiUrl }))
-            .ParamName.ShouldBe("options");
+        var exception = Should.Throw<ArgumentException>(() => Create(httpClient, new NbpOptions { ApiUrl = "https://gateway.example.com/api?key=1" }));
+        exception.ParamName.ShouldBe("options");
+        exception.Message.ShouldStartWith("Invalid NBP API url: https://gateway.example.com/api?key=1.");
     }
 
     [Fact]
@@ -125,7 +95,7 @@ public partial class NbpConnectionTest
         // Act && Assert
         var exception = Should.Throw<ArgumentException>(() => Create(httpClient, null));
         exception.ParamName.ShouldBe("httpClient");
-        exception.Message.ShouldContain("no longer supports HTTP");
+        exception.Message.ShouldContain("NBP API supports only HTTPS");
     }
 
     [Fact]
@@ -142,43 +112,15 @@ public partial class NbpConnectionTest
     }
 
     [Fact]
-    public void Create_InfiniteTimeout_HasNoOwnDeadline()
-    {
-        // Arrange
-        using var httpClient = new HttpClient();
-
-        // Act
-        var connection = Create(httpClient, new NbpOptions { Timeout = Timeout.InfiniteTimeSpan });
-
-        // Assert
-        connection.Timeout.ShouldBeNull();
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-5)]
-    [InlineData(60 * 60 * 24 * 60)] // more than int.MaxValue ms, which CancelAfter rejects
-    public void Create_InvalidTimeout_ThrowsArgumentException(double seconds)
+    public void Create_InvalidTimeout_ThrowsArgumentExceptionForOptions()
     {
         // Arrange
         using var httpClient = new HttpClient();
 
         // Act && Assert
-        Should.Throw<ArgumentException>(() => Create(httpClient, new NbpOptions { Timeout = TimeSpan.FromSeconds(seconds) }))
-            .ParamName.ShouldBe("options");
-    }
-
-    [Fact]
-    public void Create_InfiniteHttpClientTimeoutAndNoOption_HasNoDeadline()
-    {
-        // Arrange
-        using var httpClient = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
-
-        // Act
-        var connection = Create(httpClient, null);
-
-        // Assert
-        connection.Timeout.ShouldBeNull();
+        var exception = Should.Throw<ArgumentException>(() => Create(httpClient, new NbpOptions { Timeout = TimeSpan.Zero }));
+        exception.ParamName.ShouldBe("options");
+        exception.Message.ShouldStartWith("Invalid NBP API timeout: ");
     }
 
     [Fact]
