@@ -7,12 +7,15 @@ namespace OpenUrzednik.Nbp.Common;
 /// </summary>
 internal static class NbpConnection
 {
+    /// <summary>The name that starts the error messages and the options' messages.</summary>
+    internal const string DisplayName = "NBP API";
+
     /// <summary>
     /// The NBP profile: spans are named <c>nbp.http.get</c>, messages start with <c>NBP API</c>. The default error mapping fits NBP,
     /// including its plain-text 400 messages, so there is no override.
     /// </summary>
-    // Stryker disable once String : false survivor, Stryker can't activate a static field initializer; an empty name or display name makes RestProviderProfile throw, which fails every client test (checked by hand)
-    internal static readonly RestProviderProfile Profile = new("nbp", "NBP API");
+    // Stryker disable once String : false survivor, Stryker can't activate a static field initializer; an empty name makes RestProviderProfile throw, which fails every client test (checked by hand)
+    internal static readonly RestProviderProfile Profile = new("nbp", DisplayName);
 
     /// <summary>
     /// Creates the executor for a client: base address from <paramref name="options"/>, then
@@ -23,19 +26,12 @@ internal static class NbpConnection
     {
         ArgumentNullException.ThrowIfNull(httpClient);
 
-        // Locals and `is not null`, not pattern variables, so that mutation testing checks this method: see NbpOptionsValidator (ADR-0020).
-        var apiUrl = options?.ApiUrl;
-        var clientBaseAddress = httpClient.BaseAddress;
-        Uri baseAddress;
-        if (apiUrl is not null)
-            baseAddress = NbpOptionsValidator.ParseApiUrl(apiUrl, nameof(options));
-        else if (clientBaseAddress is not null)
-            baseAddress = NbpOptionsValidator.ParseApiUrl(clientBaseAddress.OriginalString, nameof(httpClient));
-        else
-            baseAddress = new Uri(NbpOptions.DefaultApiUrl);
-
-        NbpOptionsValidator.ValidateTimeout(options?.Timeout, nameof(options));
+        var baseAddress = RestOptions.ResolveBaseAddress(options?.ApiUrl, httpClient, NbpOptions.DefaultApiUrl, ParseApiUrl);
+        RestOptions.ValidateTimeout(options?.Timeout, DisplayName, nameof(options));
 
         return new RestRequestExecutor(httpClient, baseAddress, Profile, options?.Timeout, telemetry, timeProvider);
     }
+
+    /// <summary>Checks an NBP base URL: NBP has no rules beyond the shared ones.</summary>
+    internal static Uri ParseApiUrl(string apiUrl, string paramName) => RestOptions.ParseBaseUrl(apiUrl, DisplayName, paramName);
 }

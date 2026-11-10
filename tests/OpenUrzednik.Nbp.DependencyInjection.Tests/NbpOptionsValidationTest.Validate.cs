@@ -22,7 +22,7 @@ public sealed partial class NbpOptionsValidationTest
 
         // Assert
         result.Failed.ShouldBeTrue();
-        result.FailureMessage.ShouldStartWith("Invalid NBP API url scheme: http://api.nbp.pl/api/. NBP API no longer supports HTTP.");
+        result.FailureMessage.ShouldStartWith("Invalid NBP API url scheme: http://api.nbp.pl/api/. NBP API supports only HTTPS.");
     }
 
     [Fact]

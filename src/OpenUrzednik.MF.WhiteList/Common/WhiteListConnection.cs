@@ -17,7 +17,7 @@ internal static class WhiteListConnection
     /// <summary>The short name in span names (<c>mf_white_list.http.get</c>) and the <c>{provider}</c> log property (ADR-0016).</summary>
     internal const string ProviderName = "mf_white_list";
 
-    /// <summary>The name that starts the error messages.</summary>
+    /// <summary>The name that starts the error messages and the options' messages.</summary>
     internal const string DisplayName = "MF White List API";
 
     /// <summary>
@@ -41,18 +41,8 @@ internal static class WhiteListConnection
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(timeProvider);
 
-        // Locals and `is not null`, not pattern variables, so that mutation testing checks this method: see WhiteListOptionsValidator (ADR-0020).
-        var apiUrl = options?.ApiUrl;
-        var clientBaseAddress = httpClient.BaseAddress;
-        Uri root;
-        if (apiUrl is not null)
-            root = WhiteListOptionsValidator.ParseApiUrl(apiUrl, nameof(options));
-        else if (clientBaseAddress is not null)
-            root = WhiteListOptionsValidator.ParseApiUrl(clientBaseAddress.OriginalString, nameof(httpClient));
-        else
-            root = new Uri(WhiteListOptions.DefaultApiUrl);
-
-        WhiteListOptionsValidator.ValidateTimeout(options?.Timeout, nameof(options));
+        var root = RestOptions.ResolveBaseAddress(options?.ApiUrl, httpClient, WhiteListOptions.DefaultApiUrl, WhiteListOptionsValidator.ParseApiUrl);
+        RestOptions.ValidateTimeout(options?.Timeout, DisplayName, nameof(options));
 
         var profile = new RestProviderProfile(ProviderName, DisplayName, context => WhiteListErrorMapping.MapAsync(context, timeProvider));
         return new RestRequestExecutor(httpClient, new Uri(root, apiPath), profile, options?.Timeout, telemetry, timeProvider);

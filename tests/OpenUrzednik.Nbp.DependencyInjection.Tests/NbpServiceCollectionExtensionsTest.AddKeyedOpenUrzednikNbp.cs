@@ -117,7 +117,7 @@ public sealed partial class NbpServiceCollectionExtensionsTest
 
         // Assert
         exception.OptionsName.ShouldBe("gateway");
-        exception.Message.ShouldContain("NBP API no longer supports HTTP");
+        exception.Message.ShouldContain("NBP API supports only HTTPS");
     }
 
     [Fact]

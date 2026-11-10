@@ -2,6 +2,8 @@ using Shouldly;
 
 namespace OpenUrzednik.MF.WhiteList.Tests.Options;
 
+// The shared URL and timeout rules are tested in OpenUrzednik.Http.Tests (RestOptionsTest); these tests check that Validate applies them
+// and the White List rule on top of them.
 public sealed partial class WhiteListOptionsTest
 {
     [Fact]
@@ -24,21 +26,18 @@ public sealed partial class WhiteListOptionsTest
         Should.NotThrow(sut.Validate);
     }
 
-    [Theory]
-    [InlineData("http://wykazpodatnikowvat.mf.gov.pl/")]
-    [InlineData("wykazpodatnikowvat.mf.gov.pl")]
-    [InlineData("https://wykazpodatnikowvat.mf.gov.pl/?format=json")]
-    [InlineData(" ")]
-    public void Validate_InvalidApiUrl_ThrowsArgumentExceptionForApiUrl(string apiUrl)
+    [Fact]
+    public void Validate_InvalidApiUrl_ThrowsArgumentExceptionForApiUrl()
     {
         // Arrange
-        var sut = new WhiteListOptions { ApiUrl = apiUrl };
+        var sut = new WhiteListOptions { ApiUrl = "http://wykazpodatnikowvat.mf.gov.pl/" };
 
         // Act
         var exception = Should.Throw<ArgumentException>(sut.Validate);
 
         // Assert
         exception.ParamName.ShouldBe(nameof(WhiteListOptions.ApiUrl));
+        exception.Message.ShouldStartWith("Invalid MF White List API url scheme: http://wykazpodatnikowvat.mf.gov.pl/. MF White List API supports only HTTPS.");
     }
 
     [Theory]
@@ -76,68 +75,17 @@ public sealed partial class WhiteListOptionsTest
         Should.NotThrow(sut.Validate);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void Validate_EmptyApiUrl_ThrowsArgumentExceptionSayingItIsEmpty(string apiUrl)
+    [Fact]
+    public void Validate_InvalidTimeout_ThrowsArgumentExceptionForTimeout()
     {
         // Arrange
-        var sut = new WhiteListOptions { ApiUrl = apiUrl };
-
-        // Act
-        var exception = Should.Throw<ArgumentException>(sut.Validate);
-
-        // Assert
-        exception.ParamName.ShouldBe(nameof(WhiteListOptions.ApiUrl));
-        exception.Message.ShouldStartWith("MF White List API url must not be empty.");
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-5)]
-    public void Validate_NonPositiveTimeout_ThrowsArgumentExceptionForTimeout(int seconds)
-    {
-        // Arrange
-        var sut = new WhiteListOptions { Timeout = TimeSpan.FromSeconds(seconds) };
+        var sut = new WhiteListOptions { Timeout = TimeSpan.Zero };
 
         // Act
         var exception = Should.Throw<ArgumentException>(sut.Validate);
 
         // Assert
         exception.ParamName.ShouldBe(nameof(WhiteListOptions.Timeout));
-    }
-
-    [Fact]
-    public void Validate_MaximumTimeout_DoesNotThrow()
-    {
-        // Arrange
-        // HttpClient.Timeout accepts at most int.MaxValue milliseconds, and so does the option.
-        var sut = new WhiteListOptions { Timeout = TimeSpan.FromMilliseconds(int.MaxValue) };
-
-        // Act & Assert
-        Should.NotThrow(sut.Validate);
-    }
-
-    [Fact]
-    public void Validate_TimeoutAboveMaximum_ThrowsArgumentExceptionForTimeout()
-    {
-        // Arrange
-        var sut = new WhiteListOptions { Timeout = TimeSpan.FromMilliseconds(int.MaxValue) + TimeSpan.FromMilliseconds(1) };
-
-        // Act
-        var exception = Should.Throw<ArgumentException>(sut.Validate);
-
-        // Assert
-        exception.ParamName.ShouldBe(nameof(WhiteListOptions.Timeout));
-    }
-
-    [Fact]
-    public void Validate_InfiniteTimeout_DoesNotThrow()
-    {
-        // Arrange
-        var sut = new WhiteListOptions { Timeout = Timeout.InfiniteTimeSpan };
-
-        // Act & Assert
-        Should.NotThrow(sut.Validate);
+        exception.Message.ShouldStartWith("Invalid MF White List API timeout: ");
     }
 }
