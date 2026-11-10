@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Time.Testing;
 
-using OpenUrzednik.Nbp.Common;
+using OpenUrzednik.Dates;
 
 using Shouldly;
 
-namespace OpenUrzednik.Nbp.Tests.Common;
+namespace OpenUrzednik.Core.Tests.Dates;
 
-public class NbpCalendarTest
+public class WarsawCalendarTest
 {
     [Theory]
     [InlineData("2026-10-01T21:59:00Z", "2026-10-01")] // CEST (UTC+2): 23:59 in Warsaw
@@ -19,7 +19,7 @@ public class NbpCalendarTest
         var timeProvider = new FakeTimeProvider(DateTimeOffset.Parse(utcNow, System.Globalization.CultureInfo.InvariantCulture));
 
         // Act
-        var today = NbpCalendar.Today(timeProvider);
+        var today = WarsawCalendar.Today(timeProvider);
 
         // Assert
         today.ShouldBe(DateOnly.Parse(expected, System.Globalization.CultureInfo.InvariantCulture));
@@ -29,7 +29,7 @@ public class NbpCalendarTest
     public void CreateCentralEuropeanTime_MatchesSystemWarsawZoneOverAYear()
     {
         // Arrange
-        var fallback = NbpCalendar.CreateCentralEuropeanTime();
+        var fallback = WarsawCalendar.CreateCentralEuropeanTime();
         // .NET Framework only knows the Windows id.
 #if NET
         var warsaw = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
@@ -47,7 +47,7 @@ public class NbpCalendarTest
     public void CreateCentralEuropeanTime_Names_AreWarsawCetAndCest()
     {
         // Act
-        var fallback = NbpCalendar.CreateCentralEuropeanTime();
+        var fallback = WarsawCalendar.CreateCentralEuropeanTime();
 
         // Assert
         fallback.Id.ShouldBe("Europe/Warsaw");

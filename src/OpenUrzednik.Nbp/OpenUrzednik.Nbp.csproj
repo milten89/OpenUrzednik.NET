@@ -13,10 +13,11 @@
   <!-- The shared HTTP layer, compiled in as internal source (ADR-0019). -->
   <Import Project="..\Http\Http.props" />
 
+  <!-- The shared date helpers and the DateOnly alias for netstandard2.0 (ADR-0005), compiled in as internal source. -->
+  <Import Project="..\Dates\Dates.props" />
+
   <!-- netstandard2.0 only: these types are built into .NET (ADR-0004, ADR-0005). -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <!-- Internally the code says DateOnly; on netstandard2.0 it is an alias for DateTime (ADR-0005). -->
-    <Using Include="System.DateTime" Alias="DateOnly" />
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
     <PackageReference Include="System.Net.Http.Json" />

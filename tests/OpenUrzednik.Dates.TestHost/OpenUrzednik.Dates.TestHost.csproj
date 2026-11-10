@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Test-only library: compiles the shared date helpers (src/Dates), so Stryker.NET can mutate them; it never mutates files
+       compiled into a test project (ADR-0020). Core.Tests tests them through this copy. src/Dates has no #if outside its polyfills,
+       so it needs no host without the NET symbol. Not packed. -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- tests/Directory.Build.props adds a global using for xUnit, which this library doesn't reference. -->
+  <ItemGroup>
+    <Using Remove="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\Dates\Dates.props" />
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenUrzednik.Core.Tests" />
+  </ItemGroup>
+
+</Project>

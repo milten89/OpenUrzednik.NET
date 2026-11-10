@@ -1,5 +1,4 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
@@ -92,7 +91,7 @@ public sealed partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
-            .And(new CurrencyDateValidator(nameof(date), day, NbpCalendar.Today(_timeProvider)).Validate());
+            .And(new CurrencyDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDate(day), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);
@@ -118,7 +117,7 @@ public sealed partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
-            .And(new CurrencyDateValidator(nameof(to), toDay, NbpCalendar.Today(_timeProvider)).Validate())
+            .And(new CurrencyDateValidator(nameof(to), toDay, WarsawCalendar.Today(_timeProvider)).Validate())
             .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxRatesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
@@ -143,7 +142,7 @@ public sealed partial class NbpCurrencyExchangeRateClient
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
-            .And(new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, NbpCalendar.Today(_timeProvider)).Validate());
+            .And(new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, WarsawCalendar.Today(_timeProvider)).Validate());
 
         return await _pipeline.GetLastAsync(traceSpan, nameof(GetLastPublishedBeforeAsync), validation,
             () => _urlBuilderFactory.GetCurrencyBuilder(Table.Mapper.MapToNbpTable(table), currency).ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.WindowForTable(table)), day.AddDays(-1)), JsonContext.CurrencyExchangeRatesDto, Currency.Mapper.MapLastToCurrencyExchangeRates, cancellationToken).ConfigureAwait(false);

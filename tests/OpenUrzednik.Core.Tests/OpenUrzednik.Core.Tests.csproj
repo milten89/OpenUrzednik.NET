@@ -6,6 +6,8 @@
     <!-- The identifier validators (src/Identifiers) and the masking helper they bring (src/Privacy) are internal source that Core
          doesn't contain; the tests reach them through this test-only library, which Stryker.NET can mutate (ADR-0020). -->
     <ProjectReference Include="..\OpenUrzednik.Identifiers.TestHost\OpenUrzednik.Identifiers.TestHost.csproj" />
+    <!-- The shared date helpers (src/Dates), the same way. -->
+    <ProjectReference Include="..\OpenUrzednik.Dates.TestHost\OpenUrzednik.Dates.TestHost.csproj" />
   </ItemGroup>
 
 </Project>

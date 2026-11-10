@@ -1,6 +1,5 @@
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Validation;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 
 namespace OpenUrzednik.Nbp.Validation;

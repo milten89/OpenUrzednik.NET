@@ -1,6 +1,4 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Nbp.Common;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
@@ -46,7 +44,7 @@ public sealed partial class NbpExchangeRateTableClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_date");
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
-        var validation = new CurrencyDateValidator(nameof(date), day, NbpCalendar.Today(_timeProvider)).Validate();
+        var validation = new CurrencyDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate();
 
         return await _pipeline.GetFirstAsync(traceSpan, nameof(GetBuySellAsync), validation,
             () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForDate(day), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);
@@ -61,7 +59,7 @@ public sealed partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 
-        var validation = new CurrencyDateValidator(nameof(to), toDay, NbpCalendar.Today(_timeProvider)).Validate()
+        var validation = new CurrencyDateValidator(nameof(to), toDay, WarsawCalendar.Today(_timeProvider)).Validate()
             .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxTablesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetBuySellAsync), validation,
@@ -75,7 +73,7 @@ public sealed partial class NbpExchangeRateTableClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.table.buy_sell_last_published_before");
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
-        var validation = new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, NbpCalendar.Today(_timeProvider)).Validate();
+        var validation = new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, WarsawCalendar.Today(_timeProvider)).Validate();
 
         return await _pipeline.GetLastAsync(traceSpan, nameof(GetBuySellLastPublishedBeforeAsync), validation,
             () => _urlBuilderFactory.GetTableBuilder(NbpTable.C).ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), day.AddDays(-1)), JsonContext.BuySellExchangeRateTableDtoArray, Mapper.MapLastToBuySellExchangeRateTable, cancellationToken).ConfigureAwait(false);

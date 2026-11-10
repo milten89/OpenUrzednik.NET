@@ -1,5 +1,4 @@
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Validation;
 using OpenUrzednik.TestCommon;
 

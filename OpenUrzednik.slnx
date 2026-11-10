@@ -16,6 +16,7 @@
     <Project Path="tests/OpenUrzednik.Core.Tests/OpenUrzednik.Core.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Diagnostics.Tests/OpenUrzednik.Diagnostics.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Extensions.Logging.Tests/OpenUrzednik.Extensions.Logging.Tests.csproj" />
+    <Project Path="tests/OpenUrzednik.Dates.TestHost/OpenUrzednik.Dates.TestHost.csproj" />
     <Project Path="tests/OpenUrzednik.Http.DependencyInjection.TestHost/OpenUrzednik.Http.DependencyInjection.TestHost.csproj" />
     <Project Path="tests/OpenUrzednik.Http.NetStandardBranch.TestHost/OpenUrzednik.Http.NetStandardBranch.TestHost.csproj" />
     <Project Path="tests/OpenUrzednik.Http.NetStandardBranch.Tests/OpenUrzednik.Http.NetStandardBranch.Tests.csproj" />

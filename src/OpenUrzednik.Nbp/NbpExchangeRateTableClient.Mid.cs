@@ -1,5 +1,4 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Validation;
@@ -77,7 +76,7 @@ public sealed partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.table", table.ToTagValue());
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
-        var validation = new CurrencyDateValidator(nameof(date), day, NbpCalendar.Today(_timeProvider)).Validate();
+        var validation = new CurrencyDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate();
 
         return await _pipeline.GetFirstAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForDate(day), JsonContext.ExchangeRateTableDtoArray, Mapper.MapToExchangeRateTable, cancellationToken).ConfigureAwait(false);
@@ -100,7 +99,7 @@ public sealed partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 
-        var validation = new CurrencyDateValidator(nameof(to), toDay, NbpCalendar.Today(_timeProvider)).Validate()
+        var validation = new CurrencyDateValidator(nameof(to), toDay, WarsawCalendar.Today(_timeProvider)).Validate()
             .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxTablesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
@@ -122,7 +121,7 @@ public sealed partial class NbpExchangeRateTableClient
         traceSpan.SetTag("nbp.table", table.ToTagValue());
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
-        var validation = new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, NbpCalendar.Today(_timeProvider)).Validate();
+        var validation = new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, WarsawCalendar.Today(_timeProvider)).Validate();
 
         return await _pipeline.GetLastAsync(traceSpan, nameof(GetLastPublishedBeforeAsync), validation,
             () => _urlBuilderFactory.GetTableBuilder(Mapper.MapToNbpTable(table)).ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.WindowForTable(table)), day.AddDays(-1)), JsonContext.ExchangeRateTableDtoArray, Mapper.MapLastToExchangeRateTable, cancellationToken).ConfigureAwait(false);

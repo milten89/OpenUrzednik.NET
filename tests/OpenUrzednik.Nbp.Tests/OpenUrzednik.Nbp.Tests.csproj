@@ -5,4 +5,9 @@
     <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
   </ItemGroup>
 
+  <!-- The shared date helpers come with NBP's internals (src/Dates); Dates.props gives NBP this global using, the tests need it too. -->
+  <ItemGroup>
+    <Using Include="OpenUrzednik.Dates" />
+  </ItemGroup>
+
 </Project>

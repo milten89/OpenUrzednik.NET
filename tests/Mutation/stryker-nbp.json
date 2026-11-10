@@ -13,7 +13,8 @@
       "**/*.cs",
       "!**/Polyfills/**",
       "!**/Dto/**",
-      "!**/Http/**"
+      "!**/Http/**",
+      "!**/Dates/**"
     ],
     "ignore-methods": [
       "*Log",
