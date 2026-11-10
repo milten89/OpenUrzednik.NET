@@ -1,12 +1,12 @@
 using System.Security;
 
-namespace OpenUrzednik.Nbp.Common;
+namespace OpenUrzednik.Dates;
 
 /// <summary>
-/// NBP publishes in Polish time, so "today" and "future" are decided by the date in Europe/Warsaw,
+/// Polish public APIs publish and validate dates in Polish time, so "today" and "future" are decided by the date in Europe/Warsaw,
 /// not by the caller's local time zone or UTC.
 /// </summary>
-internal static class NbpCalendar
+internal static class WarsawCalendar
 {
     private static readonly TimeZoneInfo Warsaw = FindWarsaw();
 
@@ -16,9 +16,9 @@ internal static class NbpCalendar
     private static TimeZoneInfo FindWarsaw()
     {
         // IANA id on Linux/macOS and on Windows with ICU; Windows id as a fallback.
-        // Stryker disable once String : equivalent, an id that isn't found ends in CreateCentralEuropeanTime, which has the Warsaw rules for every date NBP publishes (checked by hand: the tests pass with both ids empty)
+        // Stryker disable once String : equivalent, an id that isn't found ends in CreateCentralEuropeanTime, which has the Warsaw rules for every date since 1996 (checked by hand: the tests pass with both ids empty)
         string[] ids = ["Europe/Warsaw", "Central European Standard Time"];
-        // Stryker disable once Block : equivalent, skipping the lookup ends in CreateCentralEuropeanTime, which has the Warsaw rules for every date NBP publishes
+        // Stryker disable once Block : equivalent, skipping the lookup ends in CreateCentralEuropeanTime, which has the Warsaw rules for every date since 1996
         foreach (var id in ids)
         {
             try

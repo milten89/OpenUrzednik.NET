@@ -1,7 +1,6 @@
 #if NET
 using OpenUrzednik.Core;
 using OpenUrzednik.Nbp.Currency;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.Table;
 

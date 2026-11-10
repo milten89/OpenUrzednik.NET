@@ -18,6 +18,14 @@
       ],
       "break": 100
     },
+    "dates": {
+      "workdir": "tests/OpenUrzednik.Dates.TestHost",
+      "config": "tests/Mutation/stryker-dates.json",
+      "strict": [
+        "src/Dates/*.cs"
+      ],
+      "break": 100
+    },
     "nbp": {
       "workdir": "src/OpenUrzednik.Nbp",
       "config": "tests/Mutation/stryker-nbp.json",

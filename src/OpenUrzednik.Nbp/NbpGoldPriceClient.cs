@@ -2,7 +2,6 @@ using OpenUrzednik.Core;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Common;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Gold;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
@@ -91,7 +90,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.date");
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
-        var validation = new GoldDateValidator(nameof(date), day, NbpCalendar.Today(_timeProvider)).Validate();
+        var validation = new GoldDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate();
 
         return await _pipeline.GetFirstAsync(traceSpan, nameof(GetAsync), validation,
             () => _urlBuilder.ForDate(day), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
@@ -106,7 +105,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 
-        var validation = new GoldDateValidator(nameof(to), toDay, NbpCalendar.Today(_timeProvider)).Validate()
+        var validation = new GoldDateValidator(nameof(to), toDay, WarsawCalendar.Today(_timeProvider)).Validate()
             .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxRatesDateRange).Validate());
 
         return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
@@ -120,7 +119,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.last_published_before");
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
-        var validation = new LastPublishedBeforeDateValidator(nameof(date), day, GoldDateValidator.MinDate, NbpCalendar.Today(_timeProvider)).Validate();
+        var validation = new LastPublishedBeforeDateValidator(nameof(date), day, GoldDateValidator.MinDate, WarsawCalendar.Today(_timeProvider)).Validate();
 
         return await _pipeline.GetLastAsync(traceSpan, nameof(GetLastPublishedBeforeAsync), validation,
             () => _urlBuilder.ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), day.AddDays(-1)), JsonContext.GoldPriceDtoArray, Mapper.MapLastToGoldPrice, cancellationToken).ConfigureAwait(false);

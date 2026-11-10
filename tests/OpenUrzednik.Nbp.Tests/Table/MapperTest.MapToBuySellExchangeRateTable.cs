@@ -1,6 +1,5 @@
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.Tests.Fakes;
 using OpenUrzednik.TestCommon.Extensions;

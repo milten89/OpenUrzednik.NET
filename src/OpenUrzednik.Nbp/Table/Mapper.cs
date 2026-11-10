@@ -1,6 +1,5 @@
 using OpenUrzednik.Nbp.Common;
 using OpenUrzednik.Nbp.Dto;
-using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.UrlBuilder;
 
 namespace OpenUrzednik.Nbp.Table;

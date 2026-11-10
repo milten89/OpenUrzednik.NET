@@ -1,0 +1,18 @@
+<Project>
+
+  <!-- Date helpers shared by the providers that take or return dates (ADR-0005), compiled into each as internal source, like
+       src/Identifiers. Opt-in: a provider imports this file. Internally the code says DateOnly; on netstandard2.0 it is an alias
+       for DateTime, and Polyfills/DateOnlyPolyfills.cs adds the DateOnly members the code uses. The global using makes the helpers
+       visible without a using per file. Like src/Privacy, the files must not reach an assembly twice through InternalsVisibleTo
+       (CS0436): a project that sees a provider's internals doesn't import them too. WarsawCalendar needs TimeProvider: on netstandard2.0 the
+       importing project references Microsoft.Bcl.TimeProvider, as every REST provider does. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" Link="Dates\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Using Include="OpenUrzednik.Dates" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Using Include="System.DateTime" Alias="DateOnly" />
+  </ItemGroup>
+
+</Project>

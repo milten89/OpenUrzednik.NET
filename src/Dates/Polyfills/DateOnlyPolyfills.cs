@@ -1,8 +1,8 @@
 #if !NET
-namespace OpenUrzednik.Nbp;
+namespace OpenUrzednik.Dates;
 
 /// <summary>
-/// On netstandard2.0, <c>DateOnly</c> is an alias for <see cref="DateTime"/> (see the project file, ADR-0005).
+/// On netstandard2.0, <c>DateOnly</c> is an alias for <see cref="DateTime"/> (see <c>Dates.props</c>, ADR-0005).
 /// These members give it the <c>DateOnly</c> API the code uses, so call sites need no <c>#if</c>.
 /// </summary>
 internal static class DateOnlyPolyfills

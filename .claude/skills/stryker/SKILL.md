@@ -31,6 +31,7 @@ uv run tests/Mutation/run.py --all
 |---|---|---|
 | `identifiers` | `tests/OpenUrzednik.Identifiers.TestHost` | `src/Identifiers/**`, `src/Privacy/**` |
 | `identifiers-netstandard` | `tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost` (no `NET` symbol) | the same, all of it again, built with the netstandard2.0 branches |
+| `dates` | `tests/OpenUrzednik.Dates.TestHost` | `src/Dates/*.cs` (the polyfills aren't mutated) |
 | `nbp` | `src/OpenUrzednik.Nbp` | validation, URL builders, extensions, models, payload, pipeline, options, `NbpDateOnlyExtensions.cs` (11 globs) |
 | `http` | `tests/OpenUrzednik.Http.TestHost` | `src/Http/Infrastructure/**` |
 | `http-netstandard` | `tests/OpenUrzednik.Http.NetStandardBranch.TestHost` (no `NET` symbol) | the same, all of it again, built with the netstandard2.0 branches |

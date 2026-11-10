@@ -1,9 +1,9 @@
-using OpenUrzednik.Nbp.Extensions;
+using OpenUrzednik.Dates;
 using OpenUrzednik.TestCommon;
 
 using Shouldly;
 
-namespace OpenUrzednik.Nbp.Tests.Extensions;
+namespace OpenUrzednik.Core.Tests.Dates;
 
 public class DateOnlyExtensionsTest
 {
@@ -36,4 +36,24 @@ public class DateOnlyExtensionsTest
         result.TimeOfDay.ShouldBe(TimeSpan.Zero);
         result.Kind.ShouldBe(DateTimeKind.Unspecified);
     }
+
+#if !NET
+    // On .NET Framework DateOnly is DateTime, so a value can carry a time of day and a Kind; ToPublicDate drops both (ADR-0005).
+    [Theory]
+    [InlineData(DateTimeKind.Local)]
+    [InlineData(DateTimeKind.Utc)]
+    [InlineData(DateTimeKind.Unspecified)]
+    public void ToPublicDate_DateTimeWithTimeAndKind_ReturnsMidnightWithUnspecifiedKind(DateTimeKind kind)
+    {
+        // Arrange
+        var value = new DateTime(2026, 1, 5, 23, 59, 59, kind).AddTicks(9_999_999);
+
+        // Act
+        var result = value.ToPublicDate();
+
+        // Assert
+        result.ShouldBe(new DateTime(2026, 1, 5));
+        result.Kind.ShouldBe(DateTimeKind.Unspecified);
+    }
+#endif
 }
