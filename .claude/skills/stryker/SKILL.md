@@ -33,6 +33,7 @@ uv run tests/Mutation/run.py --all
 | `identifiers-netstandard` | `tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost` (no `NET` symbol) | the same, all of it again, built with the netstandard2.0 branches |
 | `dates` | `tests/OpenUrzednik.Dates.TestHost` | `src/Dates/*.cs` (the polyfills aren't mutated) |
 | `nbp` | `src/OpenUrzednik.Nbp` | validation, URL builders, extensions, models, payload, pipeline, options, `NbpDateOnlyExtensions.cs` (11 globs) |
+| `mf-white-list` | `src/OpenUrzednik.MF.WhiteList` | options, validator, `Common/**`, the `WhiteList…Error` types (shared source excluded) |
 | `http` | `tests/OpenUrzednik.Http.TestHost` | `src/Http/Infrastructure/**` |
 | `http-netstandard` | `tests/OpenUrzednik.Http.NetStandardBranch.TestHost` (no `NET` symbol) | the same, all of it again, built with the netstandard2.0 branches |
 | `http-di` | `tests/OpenUrzednik.Http.DependencyInjection.TestHost` | `src/Http/DependencyInjection/**` |

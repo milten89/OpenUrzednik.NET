@@ -3,6 +3,7 @@
     <Project Path="src/OpenUrzednik.Core/OpenUrzednik.Core.csproj" />
     <Project Path="src/OpenUrzednik.Diagnostics/OpenUrzednik.Diagnostics.csproj" />
     <Project Path="src/OpenUrzednik.Extensions.Logging/OpenUrzednik.Extensions.Logging.csproj" />
+    <Project Path="src/OpenUrzednik.MF.WhiteList/OpenUrzednik.MF.WhiteList.csproj" />
     <Project Path="src/OpenUrzednik.Nbp/OpenUrzednik.Nbp.csproj" />
     <Project Path="src/OpenUrzednik.Nbp.DependencyInjection/OpenUrzednik.Nbp.DependencyInjection.csproj" />
     <Project Path="src/OpenUrzednik.Transport.Http/OpenUrzednik.Transport.Http.csproj" />
@@ -25,6 +26,7 @@
     <Project Path="tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost/OpenUrzednik.Identifiers.NetStandardBranch.TestHost.csproj" />
     <Project Path="tests/OpenUrzednik.Identifiers.NetStandardBranch.Tests/OpenUrzednik.Identifiers.NetStandardBranch.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Identifiers.TestHost/OpenUrzednik.Identifiers.TestHost.csproj" />
+    <Project Path="tests/OpenUrzednik.MF.WhiteList.Tests/OpenUrzednik.MF.WhiteList.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.IntegrationTests/OpenUrzednik.IntegrationTests.csproj" Id="43a404a5-1ece-4e8a-ade7-d8f5fc3b7858"/>
     <Project Path="tests/OpenUrzednik.Nbp.DependencyInjection.Tests/OpenUrzednik.Nbp.DependencyInjection.Tests.csproj" />
     <Project Path="tests/OpenUrzednik.Nbp.Tests/OpenUrzednik.Nbp.Tests.csproj" />
