@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.MF.WhiteList\OpenUrzednik.MF.WhiteList.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Nbp.DependencyInjection\OpenUrzednik.Nbp.DependencyInjection.csproj" />
     <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />

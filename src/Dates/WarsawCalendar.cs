@@ -13,6 +13,18 @@ internal static class WarsawCalendar
     internal static DateOnly Today(TimeProvider timeProvider)
         => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(timeProvider.GetUtcNow(), Warsaw).DateTime);
 
+    /// <summary>
+    /// The time from now until 00:00 of the next day in Warsaw. Midnight never falls in a daylight saving time change there (the clocks
+    /// change at 02:00 and 03:00), so it has one offset, taken for that midnight itself. The result is the real duration: on the days the
+    /// clocks change, a day lasts 23 or 25 hours.
+    /// </summary>
+    internal static TimeSpan UntilNextMidnight(TimeProvider timeProvider)
+    {
+        var now = timeProvider.GetUtcNow();
+        var nextMidnight = TimeZoneInfo.ConvertTime(now, Warsaw).Date.AddDays(1);
+        return new DateTimeOffset(nextMidnight, Warsaw.GetUtcOffset(nextMidnight)) - now;
+    }
+
     private static TimeZoneInfo FindWarsaw()
     {
         // IANA id on Linux/macOS and on Windows with ICU; Windows id as a fallback.

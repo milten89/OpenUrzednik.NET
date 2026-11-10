@@ -44,6 +44,17 @@
       ],
       "break": 100
     },
+    "mf-white-list": {
+      "workdir": "src/OpenUrzednik.MF.WhiteList",
+      "config": "tests/Mutation/stryker-mf-white-list.json",
+      "strict": [
+        "src/OpenUrzednik.MF.WhiteList/Common/**",
+        "src/OpenUrzednik.MF.WhiteList/WhiteListOptions.cs",
+        "src/OpenUrzednik.MF.WhiteList/WhiteListOptionsValidator.cs",
+        "src/OpenUrzednik.MF.WhiteList/WhiteList*Error.cs"
+      ],
+      "break": 100
+    },
     "http": {
       "workdir": "tests/OpenUrzednik.Http.TestHost",
       "config": "tests/Mutation/stryker-http.json",

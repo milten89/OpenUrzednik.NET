@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.MF.WhiteList\OpenUrzednik.MF.WhiteList.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
+  </ItemGroup>
+
+  <!-- The shared date helpers come with the provider's internals (src/Dates); Dates.props gives the provider this global using, the tests need it too. -->
+  <ItemGroup>
+    <Using Include="OpenUrzednik.Dates" />
+  </ItemGroup>
+
+</Project>

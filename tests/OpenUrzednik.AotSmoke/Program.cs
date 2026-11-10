@@ -12,6 +12,7 @@ using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Extensions.Logging;
+using OpenUrzednik.MF.WhiteList;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Transport.Http;
@@ -109,6 +110,22 @@ Check("metadata: durations are ISO 8601 and the HTTP status an int",
     Equals(rateLimited.Metadata["retryAfterDuration"], "PT1M30S") && Equals(rateLimited.Metadata["statusCode"], 429)
         && Equals(timedOut.Metadata["timeout"], "PT0.5S"),
     $"{rateLimited.Metadata["retryAfterDuration"]} {rateLimited.Metadata["statusCode"]} {timedOut.Metadata["timeout"]}");
+
+// MF White List (ADR-0023): the skeleton has no client yet, so its public error types are built directly and read as an app would,
+// through the provider's detail interface, the HTTP status accessor and Metadata.
+var whiteListBadRequest = new WhiteListBadRequestError("MF White List API rejected the request: WL-115 Invalid NIP.", HttpStatusCode.BadRequest, "WL-115");
+Check("mf white list: a 400 with WL-115 is WhiteListBadRequestError with its code and status",
+    whiteListBadRequest is BadRequestError and IWhiteListErrorCode { WhiteListCode: "WL-115" }
+        && whiteListBadRequest.GetHttpStatus() == HttpStatusCode.BadRequest
+        && Equals(whiteListBadRequest.Metadata[WhiteListErrorMetadata.WhiteListCodeMetadataKey], "WL-115")
+        && Equals(whiteListBadRequest.Metadata["statusCode"], 400),
+    $"{whiteListBadRequest.Metadata[WhiteListErrorMetadata.WhiteListCodeMetadataKey]} {whiteListBadRequest.Metadata["statusCode"]}");
+var whiteListNotFound = new WhiteListNotFoundError("Not on the list.", "Ab12c-3d4ef5g", new DateTimeOffset(2026, 11, 8, 14, 5, 9, TimeSpan.FromHours(1)));
+Check("mf white list: the proof of a check is in Metadata, the time as ISO 8601 with the offset",
+    whiteListNotFound is NotFoundError
+        && Equals(whiteListNotFound.Metadata[WhiteListNotFoundError.RequestIdMetadataKey], "Ab12c-3d4ef5g")
+        && Equals(whiteListNotFound.Metadata[WhiteListNotFoundError.RequestDateTimeMetadataKey], "2026-11-08T14:05:09+01:00"),
+    $"{whiteListNotFound.Metadata[WhiteListNotFoundError.RequestDateTimeMetadataKey]}");
 
 // 3. Dependency injection: the default and a keyed registration, with logging.
 var services = new ServiceCollection();
