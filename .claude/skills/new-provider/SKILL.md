@@ -6,7 +6,7 @@ argument-hint: "<package id, e.g. OpenUrzednik.MF.WhiteList>"
 
 # Add a provider package
 
-A provider PR ticks off every item below. Some fail the build or CI when missed (the allow-list, the AOT smoke app); others fail only at release or not at all (the solution filter, the release filters, the issue forms). The rules live in the ADRs and `CLAUDE.md`: this list says **where** each one applies. Endpoints follow `/new-endpoint`; fixtures follow `/verify-api`.
+A provider PR ticks off every item below. Some fail the build or CI when missed (the allow-list, the AOT smoke app); others fail only at release or not at all (the solution filter, the release filters, the issue forms). The rules live in the ADRs, `CLAUDE.md` and `.claude/rules/`: this list says **where** each one applies. Endpoints follow `/new-endpoint`; fixtures follow `/verify-api`.
 
 Notation, with MF White List as the example:
 

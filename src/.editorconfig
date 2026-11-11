@@ -4,4 +4,4 @@
 [*.cs]
 
 dotnet_diagnostic.CA1031.severity = warning   # no catch (Exception) or bare catch (ADR-0002)
-dotnet_diagnostic.CA2007.severity = warning   # ConfigureAwait(false) on every await (CLAUDE.md)
+dotnet_diagnostic.CA2007.severity = warning   # ConfigureAwait(false) on every await (.claude/rules/code-conventions.md)

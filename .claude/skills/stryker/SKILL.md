@@ -60,7 +60,7 @@ uv run ../../.claude/skills/stryker/references/mutants.py list <scratch>/nbp-opt
 One file of the core shard took 41 s this way (2026-11-07); other files' mutants show as `Ignored` (`Removed by mutate filter`), and compile-error collateral is the same as in a full run.
 
 - A CLI option **replaces** the config's value. With `-m` the config's exclusions are gone, so keep the pattern narrow or repeat them; once you pass one `-r`, pass `-r json` too, or the JSON report isn't written. Details: [debugging.md](references/debugging.md).
-- A scoped run is for iterating. The gate is `run.py` on the whole shard: run it before the PR when strict code changed (CLAUDE.md, Testing conventions).
+- A scoped run is for iterating. The gate is `run.py` on the whole shard: run it before the PR when strict code changed (`.claude/rules/testing.md`).
 - Agent-friendly flags, adapted from Stryker's own `run-stryker` skill (see the end): `--verbosity warning` (also hides the banner), `--skip-version-check`, `-r json`. Its other suggestion, `-r cleartext`, prints a row for every file of the project, excluded ones included: skip it and read the JSON.
 
 ## 2. The gate
@@ -99,7 +99,7 @@ Keep the "before" report: copy `artifacts/mutation/<shard>/reports/mutation-repo
 
 Work file by file from `mutants.py list`. For each Survived or NoCoverage mutant (and each CompileError, section 5), decide:
 
-1. **Missing test** (the usual case). Write a test that fails with the mutant: follow CLAUDE.md's testing conventions (one partial test class file per method, `Method_Condition_ExpectedResult`, deterministic data, `StubHttpMessageHandler`). Rerun a scoped run and check with `--tests` that the new test is in `killedBy`. NoCoverage means no test reaches the line at all; check first that the code is reachable on `net10.0`.
+1. **Missing test** (the usual case). Write a test that fails with the mutant: follow the testing conventions in `.claude/rules/testing.md` (one partial test class file per method, `Method_Condition_ExpectedResult`, deterministic data, `StubHttpMessageHandler`). Rerun a scoped run and check with `--tests` that the new test is in `killedBy`. NoCoverage means no test reaches the line at all; check first that the code is reachable on `net10.0`.
 2. **Equivalent mutant** (no observable change, e.g. a performance-only path or a cache). Prefer **rewriting the code so the mutant doesn't exist**, at the same cost: PR #240 changed `end < 0` after `IndexOf` to `end == -1`, removing the equivalent `<= 0` mutant without hiding the killable `> 0`. Add a short comment citing ADR-0020 so the code doesn't drift back.
 3. Only when no such rewrite exists: `// Stryker disable once <Mutator> : <reason>` on the line before the narrowest statement (mutator names: [setup.md](references/setup.md)). Rules (ADR-0020, and the `reviewer` agent checks them):
    - Only for an equivalent mutant or one Stryker can't activate (item 5), never for a missing test.
