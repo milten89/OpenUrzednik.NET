@@ -9,7 +9,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Nbp.Tests;
 
-// Library code awaits with ConfigureAwait(false) (CLAUDE.md), so no client method resumes on the caller's SynchronizationContext:
+// Library code awaits with ConfigureAwait(false) (.claude/rules/code-conventions.md), so no client method resumes on the caller's SynchronizationContext:
 // a caller that blocks on the task in a UI or ASP.NET (.NET Framework) context would deadlock otherwise. The rows come from the
 // clients' public methods, so a new method fails here until it has its call below.
 public partial class ClientConventionsTest
