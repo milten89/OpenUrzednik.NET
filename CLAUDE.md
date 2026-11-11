@@ -46,10 +46,15 @@ dotnet tool restore                                             # once: Stryker.
 uv run tests/Mutation/run.py nbp                                # mutation tests of one shard (--all, --list); reports in artifacts/mutation
 ```
 
-Before you say a task is done, run `dotnet build`, `dotnet test -f net10.0` and `dotnet format --verify-no-changes`, and report the results.
+Before you say a task is done, run `dotnet build OpenUrzednik.slnx -p:TreatWarningsAsErrors=true` (every warning fails, as in CI; the NuGet audit warnings stay warnings), `dotnet test OpenUrzednik.slnx -f net10.0` and `dotnet format OpenUrzednik.slnx --verify-no-changes`, and report the results.
 If the change touches a public API, a target or packaging, also run the pack above: package validation fails it when the builds of a package differ.
 Package validation also compares each package with the latest release (`PackageValidationBaselineVersion` in `src/Directory.Build.props`, raised by the back-merge after each release).
 Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`); ADR-0011 allows only CP0006 for a new client-interface method, and baseline suppressions (`IsBaselineSuppression`) for breaking changes while `version.json` carries a new major not released yet.
+
+Run `dotnet format` only with `--verify-no-changes`, and only on a tree that builds (the format hook's `dotnet format whitespace --folder` pass on each edited `.cs` file is the exception: it needs no build and changes only whitespace): its fix mode inserted casts into code that didn't compile, and wrote merge-conflict markers into multi-target projects whose targets disagreed about unnecessary usings.
+To remove unused usings, run `dotnet build --no-incremental`, collect the IDE0005 warnings per target framework, and delete only the lines flagged on every target.
+
+Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Microsoft Learn (the `microsoft-learn` server in `.mcp.json`, or learn.microsoft.com), including the "Applies to" list for netstandard2.0 and .NET Framework; library APIs with Context7 (the `context7` server) for the version in `Directory.Packages.props`; a provider's API with `/verify-api`.
 
 ## Architecture rules (from ADRs)
 
@@ -64,6 +69,11 @@ Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`
 - Do not add a `PackageReference` to a `src/` project without an ADR or explicit approval. The build fails on a package the project's list doesn't name (`CheckPackageReferenceAllowList` in `src/Directory.Build.targets`; the integration packages and Diagnostics set `OpenUrzednikAllowedPackageReferences` in their csproj). Never extend a list to make a build pass.
 - More rules: [`.claude/rules/dependencies.md`](.claude/rules/dependencies.md).
 
+**Shared internal code ([ADR-0021](docs/adr/0021-transport-subclasses-of-condition-errors.md), [ADR-0019](docs/adr/0019-shared-http-layer-tested-through-test-host.md))**
+- Internal code that several packages need is shared source: a `src/<Area>` folder with a `.props` file that each package imports, tested and mutated through a test-only host (`src/Http`, `src/Identifiers`, `src/Privacy`, `src/Dates`).
+- Never move such code into a package that others reach through `InternalsVisibleTo`, and never make it public for that reason: an app can pair packages of different versions, so internals would become a cross-package contract, and on netstandard2.0 the polyfills would clash (CS0436). Core's telemetry internals (ADR-0003) are the one existing exception.
+- Types that apps use belong in a real package, such as `OpenUrzednik.Transport.Http`.
+
 **Telemetry ([ADR-0003](docs/adr/0003-telemetry-abstractions.md))**
 - Use `IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` and `IOpenUrzednikSpan` from Core.
   - Don't use `ILogger` or `ActivitySource` in Core or provider packages.
@@ -73,7 +83,7 @@ Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`
 - More rules: [`.claude/rules/telemetry.md`](.claude/rules/telemetry.md).
 
 **Target frameworks ([ADR-0005](docs/adr/0005-target-frameworks.md))**
-- Libraries target `netstandard2.0` plus the .NET LTS releases in support, today `netstandard2.0;net8.0;net10.0` (the .NET targets are in the root `Directory.Build.props`); .NET Framework 4.7.2 or later uses netstandard2.0; tests add `net472`, which runs the netstandard2.0 build on .NET Framework (CI job `test (net472)`; xUnit 4 supports nothing older). A .NET target that isn't the lowest one may be removed in a minor version once Microsoft ends its support; the lowest .NET target and netstandard2.0 are removed only in a major.
+- Libraries target `netstandard2.0` plus the .NET LTS releases in support, today `netstandard2.0;net8.0;net10.0` (the .NET targets are in the root `Directory.Build.props`); .NET Framework 4.7.2 or later uses netstandard2.0; tests add `net472`, which runs the netstandard2.0 build on .NET Framework (CI job `test (net472)`; xUnit v3, package version 4, supports nothing older). A .NET target that isn't the lowest one may be removed in a minor version once Microsoft ends its support; the lowest .NET target and netstandard2.0 are removed only in a major.
 - More rules: [`.claude/rules/target-frameworks.md`](.claude/rules/target-frameworks.md).
 
 **HTTP ([ADR-0019](docs/adr/0019-shared-http-layer-tested-through-test-host.md))**
@@ -82,10 +92,10 @@ Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`
 - More rules: [`.claude/rules/http.md`](.claude/rules/http.md).
 
 **Compatibility ([ADR-0011](docs/adr/0011-compatibility-policy.md))**
-- Now: public classes not designed for inheritance are `sealed` (unsealing is a minor change, sealing after 1.0 a major one). The abstract extension points (`OpenUrzednikError`, `OpenUrzednikException`, `ValueValidator<T>`) never get a new abstract member, and no interface except a client interface gets a new member (telemetry interfaces are frozen).
-- From the first stable release:
+- Public classes not designed for inheritance are `sealed` (unsealing is a minor change, sealing a major one). The abstract extension points (`OpenUrzednikError`, `OpenUrzednikException`, `ValueValidator<T>`) never get a new abstract member, and no interface except a client interface gets a new member (telemetry interfaces are frozen).
+- Since 1.0.0:
   - Covered within a major: the public API on every target, documented behaviour, the error contract (ADR-0002) and the telemetry contract (ADR-0003). Not covered: log and exception message text, log properties, undocumented behaviour, internal types (except Core internals called through `InternalsVisibleTo`, which are only added to), previews.
-  - A client interface may gain a method in a minor version; package validation reports it (CP0006), and the PR suppresses exactly that diagnostic, citing ADR-0011.
+  - A client interface may gain a method in a minor version; package validation reports it (CP0006) once the package has been released, and the PR suppresses exactly that diagnostic, citing ADR-0011.
   - Before a major removes a member, mark it `[Obsolete]` (with the replacement) for at least one minor. A patch (`hotfix/*`) adds no public API.
   - A PR with a breaking change carries `breaking-change` and raises `version.json` on `develop` to the next major ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
 - Support ([ADR-0013](docs/adr/0013-version-support-policy.md)): fixes go to the latest minor of the latest major; after a new major, the previous one gets security fixes for 6 months from `release/N.x` (ADR-0008).
@@ -117,9 +127,16 @@ Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`
 - Branch from `develop` (`feature/…`, `fix/…`, `docs/…`, `chore/…`). PRs target `develop` and are merged with a merge commit (squash is disabled). Releases go from a `release/X.Y` branch, made from `develop`, into `main` ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
 - Prepare a release only with `/prepare-release` (it never publishes: the maintainer merges the PR into `main` and approves the `nuget-release` deployment); after the publish, `/prepare-release after` checks it and opens the back-merge.
 - A release or hotfix PR into `main`, or a backport PR into a support branch `release/N.x`, must add `docs/release-notes/v<version>.md` (`/release-notes`): the `build (net10.0)` job checks it on the PR, and `nuget-release.yml` checks it again before publishing.
-- A fix for a released version follows the hotfix procedure in [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md): `hotfix/…` from the `vX.Y.Z` tag, the next patch in `version.json`, a PR into `main`, then the back-merge into `develop` through a `merge/vX.Y.Z` branch.
+- Bug fixes in released code ([ADR-0013](docs/adr/0013-version-support-policy.md)): a fix that isn't critical goes into `develop` and ships in the next release; a critical one ships as a hotfix of the current version.
+  - The maintainer decides at triage and writes "hotfix" in the issue. Without that, target `develop`.
+  - Critical means, for example: wrong data returned, a throw where a result is promised (ADR-0002), a target framework that breaks, identifiers leaking into logs, a regression from the last release.
+  - A hotfix follows [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md): `hotfix/…` from the `vX.Y.Z` tag, the next patch in `version.json`, a PR into `main`, then the back-merge into `develop` through a `merge/vX.Y.Z` branch. It adds no public API, so a fix that needs one waits for the next minor.
+  - A fix judged critical after it merged into `develop` is cherry-picked into a `hotfix/…` branch made from the tag.
+  - A vulnerability never goes into a public issue or PR first: report it privately ([`SECURITY.md`](SECURITY.md)), and the maintainer prepares the fix in a private advisory.
 - After a new major, the previous one has a support branch `release/N.x` (a public ref; [ADR-0008](docs/adr/0008-branching-versioning-and-release.md), [ADR-0013](docs/adr/0013-version-support-policy.md)) for security fixes only, for 6 months. A security fix lands on the latest line first, then is backported: `hotfix/N.x-…` from `origin/release/N.x`, cherry-pick the fix, the next patch of that line, release notes, a PR into `release/N.x`. Never merge `release/N.x` into `main` or `develop`. Nothing else goes into it, except a CI fix needed to keep it releasable, in the same backport PR.
 - Commit or push only when asked. One issue per PR (see "Issues and the project").
+- Stage explicit paths (`git add <paths>`), never `git add -A`, `git add .` or `git commit -a`: a checkout can hold local files that aren't part of the change.
+- Change only what the issue needs: no drive-by refactors, renames or reformatting. Related consistency updates (docs, skills, the project table, `README.pl.md`, cross-references) belong in the same PR; list the optional ones in the PR for the maintainer to decide.
 - ADR lifecycle ([ADR-0022](docs/adr/0022-record-architecture-decisions-frozen-at-release.md)): `proposed` → `accepted` (approved, binding on `develop`) → `released` (`released-in: vX.Y.Z`, set by `/prepare-release`).
   - An `accepted` ADR that no release has shipped is corrected in place through `/adr`, with a dated line under More Information.
   - Never edit a `released`, rejected or superseded ADR except its status line, `released-in` and a link to the ADR that supersedes it.
@@ -127,6 +144,7 @@ Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`
   - If a change contradicts an ADR, stop and use `/adr` instead of working around it: correct an `accepted` one in place, or write a new ADR that restates the whole decision and supersedes a `released` one.
   - A decision that shapes the architecture or is hard to reverse (public API shape, the error or telemetry contract, dependencies, target frameworks, the release and support flow) gets an ADR in the same PR, also when it was settled in chat.
 - Before opening a PR, run the `reviewer` agent on the diff.
+- After opening it, wait for the `CodeQL` check in `gh pr checks <n>` (the `Analyze (…)` jobs pass even when they find something), read the open alerts with `gh api "repos/milten89/OpenUrzednik.NET/code-scanning/alerts?ref=refs/pull/<n>/merge&state=open"`, and fix them in the same PR.
 - Packaging, package icons and required CI job names: [`.claude/rules/packaging-and-ci.md`](.claude/rules/packaging-and-ci.md).
 - Documentation language and prose style: [`.claude/rules/docs.md`](.claude/rules/docs.md).
 
@@ -150,6 +168,16 @@ gh project item-list 2 --owner milten89 --format json --limit 200 --jq '[.items[
 # Set Status to In progress
 gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id PVTSSF_lAHOAJh3Rs4BnebIzhmC35A --single-select-option-id e0ec58a2
 ```
+
+## Contributors without write access
+
+Everything in this file and in `.claude/rules/` applies to you; only these steps differ.
+
+- Work in a fork: clone it, add this repository as the `upstream` remote, run `gh repo set-default milten89/OpenUrzednik.NET`, and branch from `upstream/develop`. Where a skill or the `reviewer` agent says `origin/…`, use `upstream/…`.
+- A bug fix always targets `develop`, also when the issue says hotfix: the maintainer takes care of the hotfix part.
+- Don't set project fields, labels or milestones, and skip the project commands above: comment on the issue that you're working on it. The maintainer sets the release label on your PR, and the `release-label` check waits for it.
+- Open the PR with `gh pr create -R milten89/OpenUrzednik.NET --base develop --head <your-user>:<branch>`. The `reviewer` agent diffs against `upstream/<base>` when that remote exists. If `gh api` can't read the code-scanning alerts, open the `CodeQL` check's details on the PR.
+- Where a rule says to stop and ask the maintainer, ask in an issue comment or a draft PR.
 
 ## Skills and agents
 

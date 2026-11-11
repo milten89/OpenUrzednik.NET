@@ -39,7 +39,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 
 ## 6. Client method
 
-- SemVer (ADR-0011), from 1.0: a new method on a client interface is a minor change (suppress package validation's CP0006 for exactly that method); changing or removing one, or changing documented behaviour, needs a major version (`breaking-change` label, `version.json` raised). A patch adds no new method. Before 1.0, breaking changes only need the `breaking-change` label.
+- SemVer (ADR-0011): a new method on a client interface is a minor change. In a package that has been released, package validation reports it as CP0006: suppress exactly that diagnostic for that method. A package not released yet (an empty `PackageValidationBaselineVersion`) has no baseline, so it gets no CP0006 and needs no suppression. Changing or removing a method, or changing documented behaviour, needs a major version (`breaking-change` label, `version.json` raised). A patch adds no new method.
 - Add it to the interface first, with XML docs that state limits and the publication schedule. `CancellationToken cancellationToken = default` goes last, in both the interface and the class.
 - Follow the existing pattern: start the span (`<provider>.<area>.<operation>`, no `get_` prefix: `latest`, `today`, `top_count`, `date`, `range`) → set tags → combine the validators → the provider's request pipeline with `.ConfigureAwait(false)` (NBP: `await _pipeline.GetAsync(...)` for the whole payload or `GetFirstAsync(...)` for the first item of an array). The pipeline (NBP: `Nbp/Common/NbpRequestPipeline.cs`) logs and records validation failures, builds the path only after validation, sends the request, maps the payload and records failures. Put the URL builder call inside the path lambda (`() => builder.ForDate(date)`), never before it: builders reject invalid input.
 - A path or query that carries a personal identifier goes through the executor's display-path overload, `GetAsync(relativePath, displayPath, typeInfo, …)`, with a route template or masked display path (ADR-0019): it replaces the URI in `url.path`, logs, error messages and `MapErrorAsync`'s `RequestPath`, and the default 400 mapping drops the server's message. The DI package logs the same display path ([ADR-0017](../../../docs/adr/0017-http-client-logging-for-identifier-paths.md)).
@@ -65,7 +65,12 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 
 ## 8. Finish
 
-- `dotnet build OpenUrzednik.slnx`, `dotnet test OpenUrzednik.slnx -f net10.0`, `dotnet format OpenUrzednik.slnx --verify-no-changes`.
+- `dotnet build OpenUrzednik.slnx -p:TreatWarningsAsErrors=true`, `dotnet test OpenUrzednik.slnx -f net10.0`, `dotnet format OpenUrzednik.slnx --verify-no-changes`.
+- A new or changed public method changes a package's API, so also run `dotnet pack OpenUrzednik.Packages.slnf -c Release` (package validation; see `CLAUDE.md`, Commands).
+- `dotnet test OpenUrzednik.slnx -f net472` on Windows (the netstandard2.0 build on .NET Framework; CI runs it as `test (net472)`).
+- The provider's mutation shard: `uv run tests/Mutation/run.py <shard>` (`/stryker`). The provider shards have `break` 100 (`tests/Mutation/shards.json`), so no mutant may survive.
+- The Native AOT smoke app, when the method adds a DTO, a `JsonTypeInfo` or other serialization code: add an offline call with a captured fixture to `tests/OpenUrzednik.AotSmoke/Program.cs` for a new response type, then `dotnet publish tests/OpenUrzednik.AotSmoke -f net10.0` and run the binary (needs clang on Linux or the C++ build tools on Windows; CI does both as `aot (net10.0)`). The publish checks all library code, since every assembly is rooted; the run exercises only the calls in `Program.cs`.
+- The provider's notes in `/verify-api` (endpoint, error cases, quota, test environment), in the same PR.
 - Update the package README (`README.md`, English) if the public API changed. Add a new span, tag or log event to its telemetry reference. If an informational part changed (description, installation, quick start, the list of English sections), update `README.pl.md` too (ADR-0009).
 - The PR body starts with `Closes #<issue>` for the issue this work comes from.
 - Run the `reviewer` agent on the diff.

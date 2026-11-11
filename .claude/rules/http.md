@@ -12,5 +12,5 @@ paths:
 - A provider describes itself with a `RestProviderProfile` (span name `<name>.http.get`, message prefix, optional `MapErrorAsync` override).
 - NBP creates its executor in `Nbp/Common/NbpConnection.cs`.
 - Options checks (the `https` base URL, `Timeout`, the base address from the options, the `HttpClient` or the default) are shared in `RestOptions` (`src/Http/Infrastructure`); a provider adds only its own rules.
-- Clients take an `HttpClient` and optional `NbpOptions`; they never change the `HttpClient`.
+- Clients take an `HttpClient` and optional `<Prefix>Options` (`NbpOptions`, `WhiteListOptions`); they never change the `HttpClient`.
 - Dispose `HttpRequestMessage` and `HttpResponseMessage`.

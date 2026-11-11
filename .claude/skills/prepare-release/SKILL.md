@@ -41,7 +41,7 @@ All of these must hold:
 ### 2. Version
 
 - **The version** is the argument, or `version` in `origin/develop`'s `version.json` without the suffix (`"1.1.0-preview.{height}"` → `1.1.0`). It has three parts and no suffix, and it is at least `1.0.0`. **The first release is the exception** ([`docs/RELEASE-PROCESS.md`](../../../docs/RELEASE-PROCESS.md#versioning)): `develop` carries `0.1.0-preview.{height}`, and the release is `1.0.0`. With no previous release tag, the default is `1.0.0`; any other version stops the skill and goes to the user.
-- **Previous release:** `git tag -l "v*" --sort=-v:refname | grep -v -- '-' | head -1` (skips prerelease tags such as `v0.1.0-preview`). None before 1.0.0.
+- **Previous release:** `git tag -l "v*" --sort=-v:refname | grep -v -- '-' | head -1` (skips prerelease tags such as `v0.1.0-preview`).
 - **Breaking changes:** if there is a previous release, list the merged PRs since then with `breaking-change`:
 
   ```bash
@@ -50,7 +50,7 @@ All of these must hold:
   ```
 
   If any are listed, the version must raise the major (`1.4.0` → `2.0.0`). Otherwise stop and ask the user: a breaking change in a minor violates [ADR-0011](../../../docs/adr/0011-compatibility-policy.md).
-- **Above nuget.org:** the version must sort above every **listed** version of every published package (the six packages in `OpenUrzednik.Packages.slnf`):
+- **Above nuget.org:** the version must sort above every **listed** version of every published package (the packable projects, `PACKAGES` in `scripts/check_nuget.py`):
 
   ```bash
   python .claude/skills/prepare-release/scripts/check_nuget.py before <version>
@@ -75,7 +75,7 @@ git switch -c release/<major>.<minor> origin/develop
 Run them in order; on Windows, add the net472 test run.
 
 ```bash
-dotnet build OpenUrzednik.slnx
+dotnet build OpenUrzednik.slnx -p:TreatWarningsAsErrors=true
 dotnet test OpenUrzednik.slnx -f net10.0
 dotnet test OpenUrzednik.slnx -f net472            # Windows only
 dotnet format OpenUrzednik.slnx --verify-no-changes
@@ -86,8 +86,8 @@ python .claude/skills/prepare-release/scripts/check_packages.py artifacts/releas
 ```
 
 - The pack also runs package validation; it must pass with no new suppression.
-- `check_packages.py` checks every `.nupkg`: the exact version, `releaseNotes` linking `…/releases/tag/v<version>`, the icon, a Description starting with "Unofficial", no preview wording in the packed README, and repository links on `main`. Each line it prints is a problem; fix it on `develop` (a normal PR), not on the release branch, unless the fix is the release's own (version, README table). Before 1.0.0, the issues of milestone `1.0.0` cover them: the "Unofficial" Description (P4-1), the preview sections of the package READMEs (P4-2) and the icon (P4-5). If one is still open, stop and name it.
-- `git diff origin/develop --stat` lists only `version.json`, `README.md`, `README.pl.md` and the notes file.
+- `check_packages.py` checks every `.nupkg`: the exact version, `releaseNotes` linking `…/releases/tag/v<version>`, the icon, a Description starting with "Unofficial", no preview wording in the packed README, and repository links on `main`. Each line it prints is a problem; fix it on `develop` (a normal PR), not on the release branch, unless the fix is the release's own (version, README table).
+- `git diff origin/develop --stat` lists only `version.json`, `README.md`, `README.pl.md`, the notes file and step 3's ADR status and index changes in `docs/adr/`.
 
 ### 5. Confirm, push and open the PR
 
@@ -99,17 +99,17 @@ gh pr create -R milten89/OpenUrzednik.NET --base main --head release/<major>.<mi
   --label skip-changelog --title "Release <version>" --body-file <scratch body file>
 ```
 
-The body lists, as a checklist for the maintainer: the milestone, the notes file, the check results, the `mutation` check (required on `main`, ADR-0020; a few minutes), and the steps after the merge (merge with a merge commit; approve the `nuget-release` deployment; then `/prepare-release after`). Release PRs don't close issues (`Closes` works only on the default branch): the maintainer moves the milestone's issues to Done.
+The body lists, as a checklist for the maintainer: the milestone, the notes file, the check results, the `mutation` check (ADR-0020; a few minutes; required on `main` once the `release-mutation` ruleset exists, `docs/GITHUB-SETUP.md`), and the steps after the merge (merge with a merge commit; approve the `nuget-release` deployment; then `/prepare-release after`). Release PRs don't close issues (`Closes` works only on the default branch): the maintainer moves the milestone's issues to Done.
 
 ### 6. Stop
 
-Tell the user the PR link and that the next steps are theirs: wait for the required `mutation` check, merge (merge commit) and approve the deployment in Actions. If `mutation` fails, report the failing shards and the undetected mutants from their job summaries, and stop: the release waits for tests that kill them.
+Tell the user the PR link and that the next steps are theirs: wait for the `mutation` check, merge (merge commit) and approve the deployment in Actions. If `mutation` fails, report the failing shards and the undetected mutants from their job summaries, and stop: the release waits for tests that kill them.
 
 ## `/prepare-release after [version]`
 
 Run after `nuget-release.yml` finished. The version is the argument, or the one in `origin/main`'s `version.json`.
 
-1. **Published:** `python .claude/skills/prepare-release/scripts/check_nuget.py after <version>` reports the version listed for each of the six packages. The index can lag a few minutes behind the publish: wait and retry before reporting a failure.
+1. **Published:** `python .claude/skills/prepare-release/scripts/check_nuget.py after <version>` reports the version listed for each package in `PACKAGES`. The index can lag a few minutes behind the publish: wait and retry before reporting a failure.
 2. **Smoke test** in a new folder in the scratchpad (not in the repo), before the back-merge is merged, while `develop` previews still sort below the release:
 
    ```bash

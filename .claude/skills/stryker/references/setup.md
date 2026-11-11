@@ -4,7 +4,7 @@ Part of `/stryker` ([SKILL.md](../SKILL.md)). [ADR-0020](../../../../docs/adr/00
 
 ## CI
 
-- `.github/workflows/mutation.yml`: required check `mutation` on PRs into `main` and `release/*.x`; Monday 02:00 UTC on `develop`; `workflow_dispatch`.
+- `.github/workflows/mutation.yml`: check `mutation` on PRs into `main` and `release/*.x` (required there once the `release-mutation` ruleset exists, `docs/GITHUB-SETUP.md`); Monday 02:00 UTC on `develop`; `workflow_dispatch`.
 - `mutation-tooling.yml` calls it on PRs into `develop` that touch `tests/Mutation/**`, the test hosts, the workflows or `.config/dotnet-tools.json`.
 - A PR into `develop` that changes only `src/` doesn't run it: run the shards locally, and if CI evidence is wanted, dispatch it on the branch (`gh workflow run mutation.yml --ref <branch>`; not read-only, so ask first).
 - Reports are the `mutation-<runner>` artifacts (30 days).
@@ -12,7 +12,7 @@ Part of `/stryker` ([SKILL.md](../SKILL.md)). [ADR-0020](../../../../docs/adr/00
 
 ## Shards and test-only hosts
 
-One shard per project under test, one CI runner per shard (`adapters` runs `di logging diagnostics`; `identifiers` also runs `identifiers-netstandard` and `dates`, `http` also runs `http-netstandard`). Stryker never mutates a test project's own files, so shared source that only tests compile lives in test-only host libraries (`tests/OpenUrzednik.Identifiers.TestHost`, `…Dates.TestHost`, `…Http.TestHost`, `…Http.DependencyInjection.TestHost`) and is mutated in the host's shard; provider and DI shards exclude it (`!**/Http/**`, `!**/Dates/**`). A new provider adds its shards (`/new-provider`).
+One shard per project under test, one CI runner per shard (`adapters` runs `di logging diagnostics`; `identifiers` also runs `identifiers-netstandard` and `dates`, `http` also runs `http-netstandard`, `core` also runs `transport-http`). Stryker never mutates a test project's own files, so shared source that only tests compile lives in test-only host libraries (`tests/OpenUrzednik.Identifiers.TestHost`, `…Dates.TestHost`, `…Http.TestHost`, `…Http.DependencyInjection.TestHost`) and is mutated in the host's shard; provider and DI shards exclude what they import (`!**/Http/**`, `!**/Identifiers/**`, `!**/Privacy/**`, `!**/Dates/**`). A new provider adds its shards (`/new-provider`).
 
 The netstandard2.0 branches (`#if NET` … `#else`) get their own hosts (ADR-0020): `tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost` and `…Http.NetStandardBranch.TestHost` compile the same source with `DisableImplicitFrameworkDefines` (no framework symbols: no `NET`, `NETCOREAPP`, `NET10_0_OR_GREATER`, …), and `….NetStandardBranch.Tests` link the existing test files with the same property, so a test's own `#if NET` expectation follows the branch. The shard mutates the whole source again, not only the `#else` branches, which roughly doubles its runner's time. A linked test must not use `#if NET` for a runtime difference (e.g. .NET Framework's missing inner `TimeoutException`): its `#else` expectation would run on .NET's runtime here. Their configs differ from the default shard's only in `project` and `test-projects`. Things to know:
 
@@ -28,4 +28,4 @@ Every config (`tests/Mutation/stryker-<shard>.json`) shares: `test-runner: mtp`,
 
 ## Mutator names
 
-For `// Stryker disable once <Mutator> : <reason>`, the names are the enum names (`Stryker.Abstractions/Mutator.cs`): `Statement`, `Arithmetic`, `Block`, `Equality`, `Boolean`, `Logical`, `Assignment`, `Unary`, `Update`, `Checked`, `Linq`, `String`, `Bitwise`, `Initializer`, `Regex`, `NullCoalescing`, `Math`, `StringMethod`, `Conditional`, `CollectionExpression`; several are comma-separated. Examples: `src/Http/Infrastructure/RestRequestExecutor.cs:486`, `src/OpenUrzednik.Nbp/Common/NbpConnection.cs:14`.
+For `// Stryker disable once <Mutator> : <reason>`, the names are the enum names (`Stryker.Abstractions/Mutator.cs`): `Statement`, `Arithmetic`, `Block`, `Equality`, `Boolean`, `Logical`, `Assignment`, `Unary`, `Update`, `Checked`, `Linq`, `String`, `Bitwise`, `Initializer`, `Regex`, `NullCoalescing`, `Math`, `StringMethod`, `Conditional`, `CollectionExpression`; several are comma-separated. Examples: `git grep -n "Stryker disable" -- src/Http/Infrastructure/RestRequestExecutor.cs src/OpenUrzednik.Nbp/Common/NbpConnection.cs`.
