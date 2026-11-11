@@ -65,3 +65,8 @@ nunit-*.xml
 
 # Stryker.NET default output when run without --output (tests/Mutation/run.py writes to artifacts/mutation)
 StrykerOutput/
+
+# Claude Code: personal settings and notes, and the worktrees its subagents create
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md

@@ -32,12 +32,13 @@ uv run tests/Mutation/run.py --all
 | `identifiers` | `tests/OpenUrzednik.Identifiers.TestHost` | `src/Identifiers/**`, `src/Privacy/**` |
 | `identifiers-netstandard` | `tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost` (no `NET` symbol) | the same, all of it again, built with the netstandard2.0 branches |
 | `dates` | `tests/OpenUrzednik.Dates.TestHost` | `src/Dates/*.cs` (the polyfills aren't mutated) |
-| `nbp` | `src/OpenUrzednik.Nbp` | validation, URL builders, extensions, models, payload, pipeline, options, `NbpDateOnlyExtensions.cs` (11 globs) |
+| `nbp` | `src/OpenUrzednik.Nbp` | validation, URL builders, extensions, models, payload, pipeline, options, `NbpDateOnlyExtensions.cs` |
 | `mf-white-list` | `src/OpenUrzednik.MF.WhiteList` | options, validator, `Common/**`, the `WhiteList…Error` types (shared source excluded) |
 | `http` | `tests/OpenUrzednik.Http.TestHost` | `src/Http/Infrastructure/**` |
 | `http-netstandard` | `tests/OpenUrzednik.Http.NetStandardBranch.TestHost` (no `NET` symbol) | the same, all of it again, built with the netstandard2.0 branches |
 | `http-di` | `tests/OpenUrzednik.Http.DependencyInjection.TestHost` | `src/Http/DependencyInjection/**` |
 | `core` | `src/OpenUrzednik.Core` | results, `Errors/`, `Exceptions/`, `Validation/` |
+| `transport-http` | `src/OpenUrzednik.Transport.Http` | the whole package (CI runs it on the `core` runner) |
 | `di`, `logging` | the package's `src/` folder | the whole package |
 | `diagnostics` | `src/OpenUrzednik.Diagnostics` | none (ratchet only) |
 
@@ -68,7 +69,7 @@ One file of the core shard took 41 s this way (2026-11-07); other files' mutants
 `run.py` reads each shard's JSON report and fails it when Stryker exits non-zero, when **no mutant was tested** (Stryker exits 0 when it can't compute a score, PR sn#3672), when a strict glob matches no file, when a mutant in a strict file is **Survived or NoCoverage**, or when the score is below the shard's `break`. Score = (Killed + Timeout) / (Killed + Timeout + Survived + NoCoverage); CompileError, RuntimeError and Ignored don't count (`Mutants/Mutant.cs:26`). Today every shard has `break: 100`.
 
 - **Strict** files: code whose broken behaviour would harm users (ADR-0020 lists them). No undetected mutant may stay. **Ratchet** code: its `break` is the floor of its last score, raised when tests improve, until it turns strict.
-- CI runs it as the required check `mutation` on PRs into `main` and `release/*.x` and weekly on `develop`, not on PRs into `develop` that change only `src/`: run the shards locally. Triggers, artifacts and the shared config settings: [setup.md](references/setup.md).
+- CI runs it as the check `mutation` on PRs into `main` and `release/*.x` (required there once the `release-mutation` ruleset exists) and weekly on `develop`, not on PRs into `develop` that change only `src/`: run the shards locally. Triggers, artifacts and the shared config settings: [setup.md](references/setup.md).
 
 ## 3. Read the report
 
@@ -105,7 +106,7 @@ Work file by file from `mutants.py list`. For each Survived or NoCoverage mutant
    - Only for an equivalent mutant or one Stryker can't activate (item 5), never for a missing test.
    - It covers every mutant of the listed kinds in the **whole following statement** (a block statement included). After adding it, diff the reports: only the intended mutants may turn `Ignored`; a killed one turning `Ignored` means the comment hides a test.
 4. **Timeout** counts as detected, but the MTP runner produces false timeouts (sn#3956, sn#3915). A loop that no longer ends (a removed `i++`) is a real one; for any other Timeout in strict code, make the change by hand and check that a test fails, or add one.
-5. **Static initializers**: the MTP runner reuses one test host across mutants, so a static field initializer's mutant is usually never activated and survives (sn#3897). Check by hand that breaking it fails tests, then disable it with that reason (`src/OpenUrzednik.Nbp/Common/NbpConnection.cs:14`).
+5. **Static initializers**: the MTP runner reuses one test host across mutants, so a static field initializer's mutant is usually never activated and survives (sn#3897). Check by hand that breaking it fails tests, then disable it with that reason (`NbpConnection.Profile` in `src/OpenUrzednik.Nbp/Common/NbpConnection.cs`).
 
 Report the before/after counts per shard in the PR, as PRs #237, #240 and #247 do.
 

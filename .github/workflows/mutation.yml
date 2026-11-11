@@ -108,8 +108,8 @@ jobs:
         retention-days: 30
 
   mutation:
-    # NOTE: "mutation" is a required status check in the "release-mutation" ruleset (main, release/*.x). If you rename this job,
-    # update the ruleset (see docs/GITHUB-SETUP.md).
+    # NOTE: "mutation" becomes a required status check in the "release-mutation" ruleset (main, release/*.x) once that ruleset is
+    # created after 1.1.0 ships (docs/GITHUB-SETUP.md). If you rename this job, update the ruleset.
     name: mutation
     needs: shard
     if: ${{ always() }}

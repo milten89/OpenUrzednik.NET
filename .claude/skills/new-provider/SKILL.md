@@ -64,7 +64,7 @@ Notation, with MF White List as the example:
 
 - [ ] Icon: an `[[icons.icon]]` entry in `assets/branding/branding.toml`, then `uv run assets/branding/generate.py` writes `<icon>.svg` and `<icon>.png`; a row in the "Package → icon" table of `assets/branding/BRANDING.md`.
 - [ ] The icon PNG in `version.json` `pathFilters` and in the `paths` filter of `.github/workflows/nuget-pre-release.yml`, and in the icon list of `docs/RELEASE-PROCESS.md` (its `pathFilters` description).
-- [ ] The package ids in `PACKAGES` of `.claude/skills/prepare-release/scripts/check_nuget.py`, and the package count in `.claude/skills/prepare-release/SKILL.md` ("the six packages").
+- [ ] The package ids in `PACKAGES` of `.claude/skills/prepare-release/scripts/check_nuget.py`.
 - [ ] Each netstandard2.0 dependency the provider adds: a patch-only `ignore` entry and a pattern in the `published-dependencies` group of `.github/dependabot.yml`, unless an existing one covers it.
 - [ ] `dotnet pack OpenUrzednik.Packages.slnf -c Release` passes package validation once the package is packable.
 
@@ -79,5 +79,5 @@ Notation, with MF White List as the example:
 
 ## 7. Finish
 
-- [ ] `dotnet build OpenUrzednik.slnx`, the tests (`-f net10.0`, `-f net472`), `dotnet format OpenUrzednik.slnx --verify-no-changes`, the pack above, and the AOT smoke publish (`dotnet publish tests/OpenUrzednik.AotSmoke -f net10.0`) where the C++ build tools are installed.
+- [ ] `dotnet build OpenUrzednik.slnx -p:TreatWarningsAsErrors=true`, the tests (`-f net10.0`, `-f net472`), `dotnet format OpenUrzednik.slnx --verify-no-changes`, the pack above, and the AOT smoke publish (`dotnet publish tests/OpenUrzednik.AotSmoke -f net10.0`) where the C++ build tools are installed.
 - [ ] The `reviewer` agent on the diff; the PR starts with `Closes #<issue>`.
