@@ -123,7 +123,7 @@ Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`
 - ADR lifecycle ([ADR-0022](docs/adr/0022-record-architecture-decisions-frozen-at-release.md)): `proposed` → `accepted` (approved, binding on `develop`) → `released` (`released-in: vX.Y.Z`, set by `/prepare-release`).
   - An `accepted` ADR that no release has shipped is corrected in place through `/adr`, with a dated line under More Information.
   - Never edit a `released`, rejected or superseded ADR except its status line, `released-in` and a link to the ADR that supersedes it.
-  - Follow-up work goes into issues; a clarification that changes no decision goes here or into the linked docs.
+  - Follow-up work goes into issues; a clarification that changes no decision goes here, into `.claude/rules/` or into the linked docs.
   - If a change contradicts an ADR, stop and use `/adr` instead of working around it: correct an `accepted` one in place, or write a new ADR that restates the whole decision and supersedes a `released` one.
   - A decision that shapes the architecture or is hard to reverse (public API shape, the error or telemetry contract, dependencies, target frameworks, the release and support flow) gets an ADR in the same PR, also when it was settled in chat.
 - Before opening a PR, run the `reviewer` agent on the diff.
