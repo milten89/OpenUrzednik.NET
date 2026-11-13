@@ -4,38 +4,22 @@ using Shouldly;
 
 namespace OpenUrzednik.Http.Tests.Infrastructure;
 
+// The range itself is tested on IsValidTimeout; these check ValidateTimeout's own exception.
 public partial class RestOptionsTest
 {
-    public static TheoryData<TimeSpan?> ValidTimeouts => new()
-    {
-        (TimeSpan?)null,
-        TimeSpan.FromTicks(1),
-        TimeSpan.FromSeconds(5),
-        // HttpClient.Timeout accepts at most int.MaxValue milliseconds, and so does the option.
-        TimeSpan.FromMilliseconds(int.MaxValue),
-        Timeout.InfiniteTimeSpan,
-    };
-
-    public static TheoryData<TimeSpan> InvalidTimeouts => new()
-    {
-        TimeSpan.Zero,
-        TimeSpan.FromSeconds(-5),
-        TimeSpan.FromMilliseconds(-2),
-        TimeSpan.FromMilliseconds(int.MaxValue) + TimeSpan.FromMilliseconds(1),
-    };
-
-    [Theory]
-    [MemberData(nameof(ValidTimeouts))]
-    public void ValidateTimeout_ValidTimeout_DoesNotThrow(TimeSpan? timeout)
+    [Fact]
+    public void ValidateTimeout_ValidTimeout_DoesNotThrow()
     {
         // Act & Assert
-        Should.NotThrow(() => RestOptions.ValidateTimeout(timeout, DisplayName, "timeout"));
+        Should.NotThrow(() => RestOptions.ValidateTimeout(TimeSpan.FromSeconds(5), DisplayName, "timeout"));
     }
 
-    [Theory]
-    [MemberData(nameof(InvalidTimeouts))]
-    public void ValidateTimeout_InvalidTimeout_ThrowsArgumentException(TimeSpan timeout)
+    [Fact]
+    public void ValidateTimeout_InvalidTimeout_ThrowsArgumentException()
     {
+        // Arrange
+        var timeout = TimeSpan.FromSeconds(-5);
+
         // Act
         var exception = Should.Throw<ArgumentException>(() => RestOptions.ValidateTimeout(timeout, DisplayName, "timeout"));
 

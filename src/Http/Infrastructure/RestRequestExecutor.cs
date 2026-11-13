@@ -71,12 +71,8 @@ internal sealed class RestRequestExecutor
         ArgumentNullException.ThrowIfNull(profile);
         if (!baseAddress.IsAbsoluteUri)
             throw new ArgumentException($"The base address must be absolute: {baseAddress}", nameof(baseAddress));
-        // HasValue, not `timeout is { } value`, so that mutation testing checks the comparisons (ADR-0020): the pattern's `is not`
-        // mutant leaves `value` unassigned where it's used (CS0165), so the mutant doesn't compile, and Stryker discards the other
-        // mutants of that code with it.
-        var value = timeout.GetValueOrDefault();
-        if (timeout.HasValue && value != System.Threading.Timeout.InfiniteTimeSpan && (value <= TimeSpan.Zero || value.TotalMilliseconds > int.MaxValue))
-            throw new ArgumentOutOfRangeException(nameof(timeout), value, "The timeout must be positive and at most int.MaxValue ms, or Timeout.InfiniteTimeSpan.");
+        if (!RestOptions.IsValidTimeout(timeout))
+            throw new ArgumentOutOfRangeException(nameof(timeout), timeout, "The timeout must be positive and at most int.MaxValue ms, or Timeout.InfiniteTimeSpan.");
 
         _httpClient = httpClient;
         BaseAddress = baseAddress;

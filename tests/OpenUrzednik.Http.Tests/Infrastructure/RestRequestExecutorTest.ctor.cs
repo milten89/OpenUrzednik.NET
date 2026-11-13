@@ -49,17 +49,15 @@ public partial class RestRequestExecutorTest
             .ParamName.ShouldBe("baseAddress");
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-5)]
-    [InlineData(60 * 60 * 24 * 60)] // more than int.MaxValue ms, which CancelAfter rejects
-    public void Ctor_InvalidTimeout_ThrowsArgumentOutOfRangeException(double seconds)
+    // The range itself is tested on RestOptions.IsValidTimeout; this checks the constructor's own exception.
+    [Fact]
+    public void Ctor_InvalidTimeout_ThrowsArgumentOutOfRangeException()
     {
         // Arrange
         using var httpClient = new HttpClient();
 
         // Act && Assert
-        Should.Throw<ArgumentOutOfRangeException>(() => new RestRequestExecutor(httpClient, BaseAddress, Profile, TimeSpan.FromSeconds(seconds)))
+        Should.Throw<ArgumentOutOfRangeException>(() => new RestRequestExecutor(httpClient, BaseAddress, Profile, TimeSpan.Zero))
             .ParamName.ShouldBe("timeout");
     }
 
