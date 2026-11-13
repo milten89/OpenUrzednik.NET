@@ -143,7 +143,7 @@ Only security fixes go into the support branch. A CI or tooling change needed to
 
 ## Dev-only dependencies vs. the published package
 
-`Nerdbank.GitVersioning` must have `PrivateAssets="all"` so it doesn't end up as a dependency of the published package. It is referenced once for all libraries in `src/Directory.Build.props`; the version is managed centrally in `Directory.Packages.props`:
+`Nerdbank.GitVersioning` must have `PrivateAssets="all"` so it doesn't end up as a dependency of the published package. It is referenced once for all libraries in `src/Directory.Build.props`, like the analyzer `Microsoft.CodeAnalysis.BannedApiAnalyzers`; the version is managed centrally in `Directory.Packages.props`. A `PrivateAssets="all"` reference in `src/` must also be on the build-only list (`OpenUrzednikBuildOnlyPackageReferences` in `src/Directory.Build.targets`), or the build fails:
 
 ```xml
 <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />

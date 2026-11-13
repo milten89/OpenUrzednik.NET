@@ -33,8 +33,15 @@
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
+  <!-- Build-only references; each must be on the build-only list in Directory.Build.targets. -->
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- APIs the ADRs rule out in library code (RS0030); the places allowed to use them are exempt in src/.editorconfig. -->
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" Visible="false" />
   </ItemGroup>
 
   <!-- Compiler and BCL types .NET has built in; each assembly gets its own internal copy. -->

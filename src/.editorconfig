@@ -5,3 +5,14 @@
 
 dotnet_diagnostic.CA1031.severity = warning   # no catch (Exception) or bare catch (ADR-0002)
 dotnet_diagnostic.CA2007.severity = warning   # ConfigureAwait(false) on every await (.claude/rules/code-conventions.md)
+
+# Banned APIs (RS0030, src/BannedSymbols.txt): only the places the ADRs allow may use them. RS0030 is one diagnostic for every
+# banned symbol, so an exempt file may use all of them: keep these sections to single files or folders.
+
+# The one HttpClient.SendAsync call of the REST providers (ADR-0019).
+[Http/Infrastructure/RestRequestExecutor.cs]
+dotnet_diagnostic.RS0030.severity = none
+
+# The fallback trace source and the ActivitySource adapter (ADR-0003).
+[{OpenUrzednik.Core/Telemetry/Activities/**.cs,OpenUrzednik.Diagnostics/ActivityTraceSource.cs}]
+dotnet_diagnostic.RS0030.severity = none
