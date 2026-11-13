@@ -68,7 +68,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 **Dependencies ([ADR-0004](docs/adr/0004-dependency-policy.md))**
 - Core and provider packages take **no package dependencies** on .NET targets.
 - **If a change raises an abstraction above its minimum** (typically a Dependabot PR), stop and ask the maintainer explicitly what to do, naming the package, both versions and the rule. Don't merge, approve, rebase onto or build on that change until they answer explicitly.
-- Do not add a `PackageReference` to a `src/` project without an ADR or explicit approval. The build fails on a package the project's list doesn't name (`CheckPackageReferenceAllowList` in `src/Directory.Build.targets`; the integration packages and Diagnostics set `OpenUrzednikAllowedPackageReferences` in their csproj). Never extend a list to make a build pass.
+- Do not add a `PackageReference` to a `src/` project without an ADR or explicit approval. The build fails on a package the project's list doesn't name (`CheckPackageReferenceAllowList` in `src/Directory.Build.targets`; the integration packages and Diagnostics set `OpenUrzednikAllowedPackageReferences` in their csproj). A build-only reference (`PrivateAssets="all"`) passes only when `OpenUrzednikBuildOnlyPackageReferences` names it (build tools and analyzers), and a `FrameworkReference` fails the build. Never extend a list to make a build pass.
 - More rules: [`.claude/rules/dependencies.md`](.claude/rules/dependencies.md).
 
 **Shared internal code ([ADR-0021](docs/adr/0021-transport-subclasses-of-condition-errors.md), [ADR-0019](docs/adr/0019-shared-http-layer-tested-through-test-host.md))**
@@ -116,6 +116,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 
 - C# `latest`, nullable enabled, file-scoped namespaces, `_camelCase` private fields. `.editorconfig` is authoritative.
 - No parallel API variants: one public method per operation, returning a result; the exception style comes only through `EnsureSuccess()` / `EnsureSuccessAsync()`.
+- Banned APIs (RS0030, `src/BannedSymbols.txt`): every request method of `HttpClient` and `HttpMessageInvoker`, and `HttpClientJsonExtensions` (`GetFromJsonAsync`, ADR-0019), the clock properties `DateTime.Now`/`Today`/`UtcNow` and `DateTimeOffset.Now`/`UtcNow` (use `TimeProvider` or `WarsawCalendar.Today`), and `ActivitySource` (ADR-0003). Only the places the ADRs allow are exempt, in `src/.editorconfig` (`RestRequestExecutor.cs`, Core's `Telemetry/Activities`, `OpenUrzednik.Diagnostics/ActivityTraceSource.cs`); never add a symbol exemption to make a build pass.
 - More rules: [`.claude/rules/code-conventions.md`](.claude/rules/code-conventions.md).
 
 ## Testing conventions

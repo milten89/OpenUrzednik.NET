@@ -12,8 +12,13 @@
 
   <!-- The dependency policy (ADR-0004): a PackageReference a project's list doesn't name fails the build. The default is the
        Core and provider list: nothing on the .NET targets, Microsoft BCL packages on netstandard2.0. The Diagnostics adapter
-       and the integration packages set their own list in their csproj. SDK-implied references and build-only ones
-       (PrivateAssets="all", e.g. NBGV) aren't dependencies of the package, so they aren't checked. -->
+       and the integration packages set their own list in their csproj. SDK-implied references aren't checked. A build-only
+       reference (PrivateAssets="all") isn't a dependency of the package, but it passes only when the build-only list below
+       names it, so PrivateAssets="all" can't let another package through. A FrameworkReference (e.g. Microsoft.AspNetCore.App)
+       is a dependency of the package too, and src/ takes none. -->
+  <PropertyGroup>
+    <OpenUrzednikBuildOnlyPackageReferences>Nerdbank.GitVersioning;Microsoft.CodeAnalysis.BannedApiAnalyzers</OpenUrzednikBuildOnlyPackageReferences>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(OpenUrzednikAllowedPackageReferences)' == '' and '$(TargetFramework)' == 'netstandard2.0'">
     <OpenUrzednikAllowedPackageReferences>System.Text.Json;System.Net.Http.Json;Microsoft.Bcl.TimeProvider;Microsoft.Bcl.HashCode</OpenUrzednikAllowedPackageReferences>
   </PropertyGroup>
@@ -21,12 +26,21 @@
   <Target Name="CheckPackageReferenceAllowList" BeforeTargets="CoreCompile" Condition="'$(TargetFramework)' != ''">
     <ItemGroup>
       <_OpenUrzednikAllowedPackage Include="$(OpenUrzednikAllowedPackageReferences)" />
+      <_OpenUrzednikBuildOnlyPackage Include="$(OpenUrzednikBuildOnlyPackageReferences)" />
       <_OpenUrzednikPackageDependency Include="@(PackageReference)"
                                       Condition="'%(PackageReference.IsImplicitlyDefined)' != 'true' and '%(PackageReference.PrivateAssets)' != 'all'" />
+      <_OpenUrzednikPrivatePackage Include="@(PackageReference)"
+                                   Condition="'%(PackageReference.IsImplicitlyDefined)' != 'true' and '%(PackageReference.PrivateAssets)' == 'all'" />
       <_OpenUrzednikDisallowedPackage Include="@(_OpenUrzednikPackageDependency)" Exclude="@(_OpenUrzednikAllowedPackage)" />
+      <_OpenUrzednikDisallowedBuildOnlyPackage Include="@(_OpenUrzednikPrivatePackage)" Exclude="@(_OpenUrzednikBuildOnlyPackage)" />
+      <_OpenUrzednikFrameworkReference Include="@(FrameworkReference)" Condition="'%(FrameworkReference.IsImplicitlyDefined)' != 'true'" />
     </ItemGroup>
     <Error Condition="'@(_OpenUrzednikDisallowedPackage)' != ''"
            Text="$(MSBuildProjectName) ($(TargetFramework)) references @(_OpenUrzednikDisallowedPackage, ', '), which its allowed package list doesn't name (ADR-0004, docs/adr/0004-dependency-policy.md). A new dependency needs an ADR or the maintainer's approval; then add it to OpenUrzednikAllowedPackageReferences." />
+    <Error Condition="'@(_OpenUrzednikDisallowedBuildOnlyPackage)' != ''"
+           Text="$(MSBuildProjectName) ($(TargetFramework)) references @(_OpenUrzednikDisallowedBuildOnlyPackage, ', ') as build-only (PrivateAssets=&quot;all&quot;), which the build-only list doesn't name (ADR-0004, docs/adr/0004-dependency-policy.md). Only build tools and analyzers may be build-only; with the maintainer's approval, add it to OpenUrzednikBuildOnlyPackageReferences in src/Directory.Build.targets." />
+    <Error Condition="'@(_OpenUrzednikFrameworkReference)' != ''"
+           Text="$(MSBuildProjectName) ($(TargetFramework)) has a FrameworkReference to @(_OpenUrzednikFrameworkReference, ', '); library packages take no shared-framework dependency (ADR-0004, docs/adr/0004-dependency-policy.md)." />
   </Target>
 
 </Project>
