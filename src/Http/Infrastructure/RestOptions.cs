@@ -42,6 +42,22 @@ internal static class RestOptions
     /// <summary>
     /// Accepts the same values as <see cref="HttpClient.Timeout"/>: positive and at most <see cref="int.MaxValue"/> milliseconds, or
     /// <see cref="Timeout.InfiniteTimeSpan"/>. <see langword="null"/> (the <see cref="HttpClient.Timeout"/> applies) is valid too.
+    /// The one copy of the range: <see cref="ValidateTimeout"/> and <see cref="RestRequestExecutor"/>'s constructor use it, each with
+    /// its own exception.
+    /// </summary>
+    /// <param name="timeout">The timeout to check.</param>
+    /// <returns><see langword="true"/> when <paramref name="timeout"/> is in range or <see langword="null"/>.</returns>
+    internal static bool IsValidTimeout(TimeSpan? timeout)
+    {
+        // HasValue, not a pattern variable (`timeout is not { } value || …`), so that mutation testing checks the comparisons
+        // (ADR-0020): negating the pattern leaves `value` unassigned where it's used (CS0165), so the mutant doesn't compile, and
+        // Stryker discards the other mutants of that code with it.
+        var value = timeout.GetValueOrDefault();
+        return !timeout.HasValue || value == Timeout.InfiniteTimeSpan || (value > TimeSpan.Zero && value.TotalMilliseconds <= int.MaxValue);
+    }
+
+    /// <summary>
+    /// Checks an options timeout with <see cref="IsValidTimeout"/>; the message starts with the provider's display name.
     /// </summary>
     /// <param name="timeout">The timeout from the options.</param>
     /// <param name="displayName">The provider's name that starts the message, e.g. <c>NBP API</c>.</param>
@@ -49,12 +65,8 @@ internal static class RestOptions
     /// <exception cref="ArgumentException"><paramref name="timeout"/> is out of range.</exception>
     internal static void ValidateTimeout(TimeSpan? timeout, string displayName, string paramName)
     {
-        // HasValue, not `timeout is { } value`, so that mutation testing checks the comparisons (ADR-0020): the pattern's `is not`
-        // mutant leaves `value` unassigned where it's used (CS0165), so the mutant doesn't compile, and Stryker discards the other
-        // mutants of that code with it.
-        var value = timeout.GetValueOrDefault();
-        if (timeout.HasValue && value != Timeout.InfiniteTimeSpan && (value <= TimeSpan.Zero || value.TotalMilliseconds > int.MaxValue))
-            throw new ArgumentException($"Invalid {displayName} timeout: {value}. It must be positive and at most {int.MaxValue} ms, or Timeout.InfiniteTimeSpan.", paramName);
+        if (!IsValidTimeout(timeout))
+            throw new ArgumentException($"Invalid {displayName} timeout: {timeout}. It must be positive and at most {int.MaxValue} ms, or Timeout.InfiniteTimeSpan.", paramName);
     }
 
     /// <summary>
