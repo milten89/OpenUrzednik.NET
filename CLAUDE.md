@@ -46,6 +46,8 @@ dotnet tool restore                                             # once: Stryker.
 uv run tests/Mutation/run.py nbp                                # mutation tests of one shard (--all, --list); reports in artifacts/mutation
 ```
 
+`global.json` pins the .NET 10 SDK (10.0.100 or a later 10.0 feature band, never a prerelease), the one CI installs; a new .NET target ([ADR-0005](docs/adr/0005-target-frameworks.md)) raises the pin to that target's SDK.
+
 Before you say a task is done, run `dotnet build OpenUrzednik.slnx -p:TreatWarningsAsErrors=true` (every warning fails, as in CI; the NuGet audit warnings stay warnings), `dotnet test OpenUrzednik.slnx -f net10.0` and `dotnet format OpenUrzednik.slnx --verify-no-changes`, and report the results.
 If the change touches a public API, a target or packaging, also run the pack above: package validation fails it when the builds of a package differ.
 Package validation also compares each package with the latest release (`PackageValidationBaselineVersion` in `src/Directory.Build.props`, raised by the back-merge after each release).

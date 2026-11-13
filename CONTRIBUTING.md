@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- The [.NET 10 SDK](https://dotnet.microsoft.com/download) or later, and the .NET 8 runtime to run the `net8.0` tests.
+- The [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), 10.0.100 or a later 10.0 feature band (`global.json` pins the SDK CI uses; a .NET 11 SDK alone won't build the repository), and the .NET 8 runtime to run the `net8.0` tests.
 - For the `net472` tests: Windows with .NET Framework 4.7.2 or later (CI runs them on 4.8). Building needs no .NET Framework targeting pack; the SDK brings the reference assemblies.
 - For the mutation tests: [uv](https://docs.astral.sh/uv/) or Python 3.12 or later, and `dotnet tool restore` once (Stryker.NET is a local tool).
 - For the Native AOT smoke app (`tests/OpenUrzednik.AotSmoke`; CI runs it, locally it's optional): clang on Linux, or the C++ build tools on Windows.
