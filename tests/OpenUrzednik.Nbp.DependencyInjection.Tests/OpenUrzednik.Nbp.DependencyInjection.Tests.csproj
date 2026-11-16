@@ -8,6 +8,7 @@
   <ItemGroup>
     <!-- Polly.RateLimiting, for its rejection type; the package itself only references Polly.Core. -->
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
 </Project>
