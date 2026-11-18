@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Rules over the public API of every published package (#279, #297): ArchUnitNET for the type-level rules, plain reflection
+       for the member-level ones. It references the packages, never their internals, so it reads what an app sees; on net472 it
+       checks the netstandard2.0 builds. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Diagnostics\OpenUrzednik.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Extensions.Logging\OpenUrzednik.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.MF.WhiteList\OpenUrzednik.MF.WhiteList.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Nbp.DependencyInjection\OpenUrzednik.Nbp.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.Transport.Http\OpenUrzednik.Transport.Http.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The core package only, with Shouldly asserts: ArchUnitNET.xUnitV3 pins old xunit.v3.assert and System.* packages. -->
+    <PackageReference Include="TngTech.ArchUnitNET" />
+  </ItemGroup>
+
+</Project>

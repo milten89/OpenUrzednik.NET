@@ -25,6 +25,7 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | `tests/OpenUrzednik.IntegrationTests` | WireMock tests (run in CI) and tests against the real API (explicit: they run with `--explicit on` or when `OPEN_URZEDNIK_INTEGRATION_TEST_ENABLED` is set) |
 | `tests/OpenUrzednik.AotSmoke` | Native AOT smoke app, not an xUnit project: published and run by the CI job `aot (net10.0)` (`dotnet publish tests/OpenUrzednik.AotSmoke -f net10.0`, needs `clang` on Linux or the C++ build tools on Windows) |
 | `tests/OpenUrzednik.TestCommon` | Shared test helpers: `StubHttpMessageHandler`, `ManualFact`/`ManualTheory`, Faker extensions |
+| `tests/OpenUrzednik.Architecture.Tests` | Rules over the public API of every published package: ArchUnitNET for the type-level ones (sealed classes, namespaces), reflection for the member-level ones (`DateOnly`, `CancellationToken`, synchronous argument checks, records with lists); one sample of every public error type through `ShouldFollowTheMetadataRule()`. A new package adds a type to `SrcAssemblies`, a new error type a sample |
 | `tests/OpenUrzednik.Identifiers.TestHost`, `tests/OpenUrzednik.Dates.TestHost`, `tests/OpenUrzednik.Http.TestHost`, `tests/OpenUrzednik.Http.DependencyInjection.TestHost` | Test-only libraries that compile shared source on its own (`src/Identifiers` with `src/Privacy`; `src/Dates`; `src/Http/Infrastructure`; `src/Http/DependencyInjection`), so Stryker.NET mutates it in the host's shard and never in a provider's; Core.Tests and Http.Tests reference them instead of compiling copies or reaching a provider's copy |
 | `tests/OpenUrzednik.Identifiers.NetStandardBranch.TestHost`, `tests/OpenUrzednik.Http.NetStandardBranch.TestHost` and their `….Tests` | The same shared source compiled without the `NET` symbol (`DisableImplicitFrameworkDefines`), so its netstandard2.0 branches compile on net10.0 and Stryker.NET mutates them (shards `identifiers-netstandard`, `http-netstandard`, [ADR-0020](docs/adr/0020-mutation-testing-of-every-target-branch.md)); the test projects link Core.Tests' `Identifiers/` and `Privacy/` and Http.Tests' `Infrastructure/` |
 | `tests/Mutation` | Stryker.NET mutation shards (`shards.json`, `stryker-<shard>.json`) and `run.py`, the gate ([ADR-0020](docs/adr/0020-mutation-testing-of-every-target-branch.md)) |
@@ -105,7 +106,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 
 **Client API ([ADR-0007](docs/adr/0007-client-api-and-extensibility.md))**
 - The default case is one line (`new NbpGoldPriceClient(httpClient)`).
-- `CancellationToken cancellationToken = default` is the last parameter of every async method, in both interfaces and implementations. In `src/`, CA1068 checks the order and CA2016 that the token is passed on.
+- `CancellationToken cancellationToken = default` is the last parameter of every async method, in both interfaces and implementations. In `src/`, CA1068 checks the order and CA2016 that the token is passed on; `tests/OpenUrzednik.Architecture.Tests` checks that every public async method has one. Core's result combinators (`EnsureSuccessAsync`, `MapAsync`, `BindAsync`) take none: they continue an operation the caller started with its own token.
 - More rules: [`.claude/rules/client-api.md`](.claude/rules/client-api.md).
 
 ## Performance
