@@ -70,7 +70,7 @@ Which fixes become a hotfix: the maintainer decides at triage and writes "hotfix
    git checkout -b hotfix/nbp-bug123 v1.0.0
    ```
 
-2. Set the root `version.json` to the next patch, `"1.0.1"`. NBGV doesn't raise the patch by itself: a version with three parts is used as written, and the git height goes only into the assembly file version. Set `PackageValidationBaselineVersion` in `src/Directory.Build.props` to the tag's version (`1.0.0`): at the tag it still names the release before, because the back-merge raises it only on `develop`. Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)).
+2. Set the root `version.json` to the next patch, `"1.0.1"`. NBGV doesn't raise the patch by itself: a version with three parts is used as written, and the git height goes only into the assembly file version. Set `PackageValidationBaselineVersion` in `src/Directory.Build.props` to the tag's version (`1.0.0`): at the tag it still names the release before, because the back-merge raises it only on `develop`. Remove the empty `PackageValidationBaselineVersion` of every package that tag published for the first time. Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)) and run `uv run .github/scripts/package_guard.py`.
 3. Fix the bug and open a PR **hotfix → `main`** (required, since `main` is protected), labelled `bug`. An ADR the hotfix adds or ships is marked `released` with `released-in: v1.0.1` in the same PR ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)). Then run `/release-notes 1.0.1`, and commit and push `docs/release-notes/v1.0.1.md`: the notes list the hotfix PR itself, so it must exist first, and the PR's `build (net10.0)` job fails until the file is there. The PR runs the `mutation` check too, when the tag already contains `mutation.yml` ([ADR-0020](adr/0020-mutation-testing-of-every-target-branch.md)): the fix comes with tests that kill its mutants.
 4. Merge (merge commit) → `nuget-release.yml` publishes `1.0.1`, tags `v1.0.1`, creates the GitHub Release.
 5. Back-merge (below), so the fix reaches `develop`. `develop` keeps its own version (e.g. `"1.1.0-preview.{height}"`).
@@ -87,6 +87,8 @@ git merge --no-commit origin/develop   # on a version.json conflict, keep develo
 #   (unless develop already carries a higher version, e.g. "2.0.0-preview.{height}")
 git diff origin/develop -- version.json   # after a hotfix: no output; after a release: only the next-minor change
 # set PackageValidationBaselineVersion in src/Directory.Build.props to the released version (e.g. 1.1.0 or 1.0.1)
+# remove the empty PackageValidationBaselineVersion of every package this release published for the first time
+uv run .github/scripts/package_guard.py   # the check CI runs; it must pass
 dotnet pack OpenUrzednik.Packages.slnf -c Release -p:ApiCompatGenerateSuppressionFile=true   # drops suppressions the new baseline no longer needs
 git diff -- src   # the suppression files may only lose entries (or be deleted); a new entry means a real break
 git commit
@@ -96,6 +98,11 @@ git push -u origin merge/v1.1.0
 Check `version.json` with that `git diff` even when git reports no conflict: after a release, git takes `main`'s stable version silently.
 
 The package-validation baseline moves with each release: from then on, every pack on `develop` compares the packages with the version just published ([ADR-0011](adr/0011-compatibility-policy.md)). The release must be on nuget.org first: the pack downloads the baseline packages. Raising it makes some suppressions unnecessary (the CP0006 of a client-interface method that is now in the baseline, the baseline suppressions of a major just released), and an unnecessary suppression fails the pack. Regenerating the files with `ApiCompatGenerateSuppressionFile` removes exactly those and keeps the ones `develop` still needs (a method added after the release branch was cut, a major in progress). Delete a `CompatibilitySuppressions.xml` that ends up empty.
+
+The `build (net10.0)` job checks this with `.github/scripts/package_guard.py`, on every PR and in the release workflow:
+- the baseline is the latest stable `vX.Y.Z` tag merged into the branch (a tag of the version being built is skipped, so a re-run of a release passes), and an empty baseline is only for a package that tag didn't ship;
+- only ADR-0011's suppressions are allowed, and a patch adds no CP0006 entry its tag doesn't have;
+- no file weakens package validation or changes the strong-name key.
 
 Open a PR from `merge/v1.1.0` into `develop`, label it `skip-changelog`, and merge it with a merge commit.
 
@@ -134,7 +141,7 @@ git push origin "$(git tag --list 'v1.*' --sort=-v:refname | head -n 1)^{commit}
    git cherry-pick -x <commit>…   # on a conflict, resolve it and keep the "cherry picked from" line
    ```
 
-2. Set the root `version.json` to the next patch of that line (e.g. `"1.4.3"` after `v1.4.2`), and `PackageValidationBaselineVersion` in `src/Directory.Build.props` to that line's latest release (`1.4.2`). Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)).
+2. Set the root `version.json` to the next patch of that line (e.g. `"1.4.3"` after `v1.4.2`), and `PackageValidationBaselineVersion` in `src/Directory.Build.props` to that line's latest release (`1.4.2`), and remove the empty `PackageValidationBaselineVersion` of every package that release shipped. Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)) and run `uv run .github/scripts/package_guard.py`.
 3. Open a PR **hotfix → `release/1.x`**, labelled `bug`. An ADR the backport adds is marked `released` with `released-in: v1.4.3` in the same PR ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)). Then run `/release-notes 1.4.3`, and commit and push `docs/release-notes/v1.4.3.md`; the PR's `build (net10.0)` job fails until the file is there.
 4. Merge (merge commit) → `nuget-release.yml` publishes `1.4.3`, tags `v1.4.3` and creates the GitHub Release (not marked Latest).
 5. **No back-merge:** `release/1.x` is never merged into `main` or `develop`, which carry the newer major and already have the fix. Its release notes stay on `release/1.x` and in the GitHub Release.

@@ -52,6 +52,12 @@ jobs:
         restore-keys: |
           nuget-${{ runner.os }}-
 
+    # Suppressions, package-validation properties, the strong-name key and the baseline version (ADR-0011, ADR-0005). It reads
+    # only the tree, the tags and version.json, so it gives the same answer on a PR, in nuget-release.yml and locally.
+    - name: Check package validation and signing
+      if: matrix.tfm == 'net10.0'
+      run: python3 .github/scripts/package_guard.py
+
     - name: Restore dependencies
       run: dotnet restore OpenUrzednik.slnx
 

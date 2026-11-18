@@ -30,7 +30,7 @@ Notation, with MF White List as the example:
 - [ ] `src/<Package>/<Package>.csproj`:
   - `Description` ("Unofficial …", "Not affiliated with …"), `PackageTags`, `OpenUrzednikPackageIcon` = `<icon>.png`, `<None Include="README.md" Pack="true" PackagePath="\" Visible="false" />`;
   - **`IsPackable=false` until the package has a usable client** (ADR-0016): every merge into `develop` publishes previews of all packable projects;
-  - an **empty** `PackageValidationBaselineVersion` until its first release;
+  - an **empty** `PackageValidationBaselineVersion` until its first release (the back-merge after that release removes it; `.github/scripts/package_guard.py` fails once a released package still has it);
   - `InternalsVisibleTo` for its test projects, and `DynamicProxyGenAssembly2` with Castle's `Key` if tests mock internals (copy it from `OpenUrzednik.Nbp.csproj`);
   - netstandard2.0-only BCL packages in a `Condition="'$(TargetFramework)' == 'netstandard2.0'"` group, never `Version=` (ADR-0004); the allow-list in `src/Directory.Build.targets` fails the build on anything else;
   - dates: import `src/Dates/Dates.props` (ADR-0005): the `DateOnly` alias on netstandard2.0, its polyfills, `ToPublicDate()`, `ToIso8601String()` and `WarsawCalendar.Today` (which needs `Microsoft.Bcl.TimeProvider` on netstandard2.0, like the HTTP layer). Its tests and mutants stay in `OpenUrzednik.Core.Tests` and the `dates` shard; the provider's shard excludes `!**/Dates/**`.
