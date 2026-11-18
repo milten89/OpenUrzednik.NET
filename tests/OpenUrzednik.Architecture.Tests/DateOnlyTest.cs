@@ -35,11 +35,9 @@ public class DateOnlyTest
         var typeParameters = type.IsGenericTypeDefinition ? type.GetGenericArguments() : [];
         foreach (var used in inherited.Concat(typeParameters).Where(UsesDateOnly))
             yield return $"{name} : {used.Name}";
-        foreach (var method in PublicSurface.Methods(type).Cast<MethodBase>().Concat(PublicSurface.Constructors(type)))
-        {
-            if (Signature(method).Any(UsesDateOnly))
-                yield return PublicSurface.Describe(method);
-        }
+        foreach (var method in PublicSurface.Methods(type).Cast<MethodBase>().Concat(PublicSurface.Constructors(type))
+                     .Where(method => Signature(method).Any(UsesDateOnly)))
+            yield return PublicSurface.Describe(method);
         foreach (var property in PublicSurface.Properties(type)
                      .Where(p => UsesDateOnly(p.PropertyType) || p.GetIndexParameters().Any(i => UsesDateOnly(i.ParameterType))))
             yield return $"{name}.{property.Name}";
