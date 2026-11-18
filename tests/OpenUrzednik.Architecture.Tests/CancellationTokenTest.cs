@@ -8,7 +8,8 @@ namespace OpenUrzednik.Architecture.Tests;
 // interfaces and implementations. In src/, CA1068 checks the order at build time; these tests check the name, the default, and
 // that every public async method has one. Exempt: Core's result combinators (EnsureSuccessAsync, MapAsync, BindAsync), which
 // continue an operation the caller started with its own token, and a method whose signature comes from outside the packages
-// (IAsyncDisposable.DisposeAsync, an override of a BCL method).
+// (IAsyncDisposable.DisposeAsync, an override of a BCL method). A delegate type isn't checked (decided 2026-11-18): it's a
+// callback signature an app implements, not a method the packages offer.
 public class CancellationTokenTest
 {
     private static readonly string[] CombinatorNames = ["EnsureSuccessAsync", "MapAsync", "BindAsync"];
