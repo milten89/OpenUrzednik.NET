@@ -54,7 +54,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
   - HTTP failure passthrough
   - empty response
   - telemetry: span name, tags, recorded errors (`error.type`); a new log call gets a new event id (`RestLogEvents` for the HTTP layer, the provider's events and `<Prefix>LogEvents` for the rest; NBP: `NbpEvents` + `NbpLogEvents`), never a reused one
-  - identifiers: the value appears nowhere unmasked (messages, metadata, log arguments, span tags), with a fake identifier that passes its check digits
+  - identifiers: the value appears nowhere unmasked (messages, metadata, log arguments, span tags), with a fake identifier that passes its check digits. Required for every method that takes an identifier: call it with a `RecordingTelemetry` (TestCommon) as logger and trace source, for success and for each error the API can echo the identifier in, and assert `result.ShouldNotLeak(telemetry, identifier)`; it searches logs, spans, error messages and metadata, and exceptions, for the value, its digits and any 5 consecutive digits
   - Use `Faker().WithConstantSeed()`, the DTO fakers, `StubHttpMessageHandler`, `FakeTimeProvider`.
 - **Mapper** tests in `MapperTest.<MapMethod>.cs`; a **validator** test per new validator.
 - **WireMock** (`tests/OpenUrzednik.IntegrationTests/<Provider>/WireMock/`):

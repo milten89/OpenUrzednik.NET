@@ -130,6 +130,49 @@ public sealed partial class WhiteListRequestPipelineTest
             "reason", "MF White List API response is missing 'requestId'.");
     }
 
+    // ADR-0003: a NIP in the request path, and echoed in the API's error message, reaches no log, span or error. The NIP is fake,
+    // with a valid check digit.
+    private const string LeakNip = "7368125416";
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest, """{"code":"WL-113","message":"Nieprawidłowy NIP: 7368125416."}""", typeof(WhiteListBadRequestError), true)]
+    [InlineData(HttpStatusCode.NotFound, "", typeof(HttpNotFoundError), false)]
+    [InlineData(HttpStatusCode.InternalServerError, """{"code":"WL-100","message":"Błąd dla 7368125416."}""", typeof(WhiteListServiceUnavailableError), true)]
+    [InlineData(HttpStatusCode.OK, "{", typeof(SerializationError), false)]
+    public async Task GetAsync_NipInPathAndEchoedInTheError_LeaksNothing(HttpStatusCode status, string body, Type errorType, bool echoed)
+    {
+        // Arrange
+        var telemetry = new RecordingTelemetry();
+        var sut = CreateSut(Json(status, body), out _, new OpenUrzednikTelemetry(telemetry, telemetry));
+
+        // Act
+        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
+            () => $"search/nip/{LeakNip}", DisplayPath, WhiteListJsonContext.Default.ErrorDto, dto => dto.Code, TestContext.Current.CancellationToken);
+
+        // Assert
+        var error = result.Errors.ShouldHaveSingleItem();
+        error.ShouldBeOfType(errorType);
+        if (echoed)
+            error.Message.ShouldContain("******5416");
+        result.ShouldNotLeak(telemetry, LeakNip);
+    }
+
+    [Fact]
+    public async Task GetAsync_SuccessWithTheNipInThePath_LeaksNothing()
+    {
+        // Arrange
+        var telemetry = new RecordingTelemetry();
+        var sut = CreateSut(Json(HttpStatusCode.OK, """{"code":"WL-0","message":"ok"}"""), out _, new OpenUrzednikTelemetry(telemetry, telemetry));
+
+        // Act
+        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
+            () => $"search/nip/{LeakNip}", DisplayPath, WhiteListJsonContext.Default.ErrorDto, dto => dto.Code, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.ShouldNotLeak(telemetry, LeakNip);
+    }
+
     [Fact]
     public async Task GetAsync_CallerSynchronizationContext_DoesNotResumeOnIt()
     {
