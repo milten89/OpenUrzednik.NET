@@ -7,6 +7,8 @@
 
   <!-- The shared date helpers come with NBP's internals (src/Dates); Dates.props gives NBP this global using, the tests need it too. -->
   <ItemGroup>
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="6.0.2" />
+    <PackageReference Include="System.Text.Json" />
     <Using Include="OpenUrzednik.Dates" />
   </ItemGroup>
 
