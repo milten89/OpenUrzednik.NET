@@ -23,6 +23,6 @@ paths:
   - The library's own keys hold only `string`, `bool`, `int`, `long`, `double`, `null` or arrays of one of these; `decimal` as an exact invariant string; dates, times and durations as ISO 8601 strings (`"2026-01-05"`, `"PT30S"`); enums by name unless their numbers carry a standard meaning (an HTTP status is an `int`); never tuples, ranges in one value, or other objects.
   - Keys are camelCase public constants.
   - The one exception until 2.0 is `retryAfter` (`TimeSpan`); `retryAfterDuration` is its ISO form.
-  - `TestCommon`'s `ShouldFollowTheMetadataRule()` checks it in tests.
+  - `TestCommon`'s `ShouldFollowTheMetadataRule()` checks it in tests; `tests/OpenUrzednik.Architecture.Tests` (`ErrorMetadataTest`) runs it on a sample of every error type and fails when a type has none or isn't public (an app matches an error's details by its type).
 - Several errors (only validation produces them) are thrown by `EnsureSuccess()` as one `OpenUrzednikValidationException` listing all of them, never as `AggregateException`. Several errors of other kinds: the first error's exception, with all of them in `Errors`.
 - Results are not comparable: don't add `Equals`/`==` to `OpenUrzednikResult` (CA1815 stays suppressed); compare `IsSuccess`, the value or error codes.
