@@ -264,7 +264,7 @@ internal sealed class RestRequestExecutor
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return TimeoutFailure(ElapsedLimit(deadline, requestToken, started), messagePath, traceSpan, ex);
+            return TimeoutFailure(ElapsedLimit(deadline, started, requestToken), messagePath, traceSpan, ex);
         }
         catch (HttpRequestException ex)
         {
@@ -275,7 +275,7 @@ internal sealed class RestRequestExecutor
     // Names only a limit known to have elapsed. The request deadline cancels requestToken. HttpClient.Timeout counts when at least
     // that long went by: it runs on the real clock, as Stopwatch does, and .NET Framework gives it no inner TimeoutException.
     // Anything shorter, e.g. a resilience handler's timeout or a connect timeout, is a limit we don't know.
-    private TimeSpan? ElapsedLimit(TimeSpan? deadline, CancellationToken requestToken, long started)
+    private TimeSpan? ElapsedLimit(TimeSpan? deadline, long started, CancellationToken requestToken)
     {
         if (requestToken.IsCancellationRequested)
             return deadline;
