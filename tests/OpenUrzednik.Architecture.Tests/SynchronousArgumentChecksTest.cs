@@ -20,7 +20,8 @@ public class SynchronousArgumentChecksTest
     {
         // Act
         var violations = PublicSurface.Types()
-            .SelectMany(type => PublicSurface.Methods(type).Concat(PublicSurface.ExplicitImplementations(type)))
+            .SelectMany(PublicSurface.Methods)
+            .Concat(PublicSurface.HiddenInterfaceImplementations())
             .Where(method => !method.IsAbstract && PublicSurface.ReturnsAsync(method))
             .Where(method => method.GetParameters().Any(p => NeedsCheck(p.ParameterType)))
             .Where(method => method.GetCustomAttributesData().Any(a => StateMachineAttributes.Contains(a.AttributeType.FullName)))
@@ -32,14 +33,17 @@ public class SynchronousArgumentChecksTest
     }
 
     // A reference type can be null and an enum can be undefined; Nullable<enum> too. A generic parameter can be null unless it's
-    // constrained to a non-nullable value type (struct, unmanaged).
+    // constrained to a non-nullable value type (struct, unmanaged), and can be an undefined value when it's constrained to Enum.
     private static bool NeedsCheck(Type type)
     {
         if (type.IsByRef)
             type = type.GetElementType()!;
         type = Nullable.GetUnderlyingType(type) ?? type;
         if (type.IsGenericParameter)
-            return (type.GenericParameterAttributes & GenericParameterAttributes.NotNullableValueTypeConstraint) == 0;
+        {
+            return (type.GenericParameterAttributes & GenericParameterAttributes.NotNullableValueTypeConstraint) == 0
+                   || type.GetGenericParameterConstraints().Contains(typeof(Enum));
+        }
         return !type.IsValueType || type.IsEnum;
     }
 }

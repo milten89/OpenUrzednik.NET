@@ -26,6 +26,17 @@ public class SrcAssembliesTest
         tested.ShouldBe(packages, "add a type of each new package to SrcAssemblies.All (and a ProjectReference)");
     }
 
+    // The ArchUnitNET rules select PublicSurface's types; one ArchUnitNET can't map would be skipped without a word.
+    [Fact]
+    public void ArchUnitModel_Always_KnowsEveryPublicType()
+    {
+        // Act
+        var unknown = ArchUnitModel.Unknown(PublicSurface.Types()).Select(type => type.FullName).ToList();
+
+        // Assert
+        unknown.ShouldBeEmpty();
+    }
+
     private static string FindUp(string fileName)
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)

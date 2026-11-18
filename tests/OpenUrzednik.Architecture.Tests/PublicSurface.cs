@@ -21,14 +21,20 @@ internal static class PublicSurface
         => type.GetMethods(Declared).Where(method => IsOwnMethod(method) && IsVisible(method, type));
 
     /// <summary>
-    /// The private methods that implement a public interface explicitly: an app calls them through the interface, so they follow
-    /// the same rules as public methods. Internal interfaces aren't public API.
+    /// The methods an app reaches only through a public interface: explicit implementations in a visible type, and every
+    /// implementation in a type it can't see (an internal span or client handed out as the interface). They follow the same
+    /// rules as public methods. Internal interfaces aren't public API.
     /// </summary>
-    public static IEnumerable<MethodInfo> ExplicitImplementations(Type type)
-        => type.IsInterface
-            ? []
-            : type.GetInterfaces().Where(i => i.IsVisible).SelectMany(i => type.GetInterfaceMap(i).TargetMethods)
-                .Where(method => method.IsPrivate && method.DeclaringType == type && method.Name.IndexOf('.') >= 0);
+    public static IEnumerable<MethodInfo> HiddenInterfaceImplementations()
+        => SrcAssemblies.All.SelectMany(assembly => assembly.GetTypes())
+            .Where(type => !type.IsInterface && !IsGenerated(type))
+            .SelectMany(type => HiddenImplementations(type, IsVisible(type)));
+
+    private static IEnumerable<MethodInfo> HiddenImplementations(Type type, bool typeIsVisible)
+        => type.GetInterfaces().Where(i => i.IsVisible).SelectMany(i => type.GetInterfaceMap(i).TargetMethods)
+            .Where(method => method.DeclaringType == type)
+            .Where(method => typeIsVisible ? method.IsPrivate && method.Name.IndexOf('.') >= 0 : !IsAccessor(method))
+            .Distinct();
 
     /// <summary>The interfaces of <paramref name="type"/> an app can see.</summary>
     public static IEnumerable<Type> VisibleInterfaces(Type type) => type.GetInterfaces().Where(i => i.IsVisible);
@@ -77,13 +83,12 @@ internal static class PublicSurface
 
     private static bool IsVisibleAccessor(MethodInfo? accessor, Type type) => accessor is not null && IsVisible(accessor, type);
 
-    // Not an accessor (special names other than the op_ operators), not compiler-generated, not a delegate's runtime method.
+    // Not an accessor, not compiler-generated, not a delegate's runtime method (a delegate's signature is checked through Invoke).
     private static bool IsOwnMethod(MethodInfo method)
-    {
-        if (method.IsSpecialName && !method.Name.StartsWith("op_", StringComparison.Ordinal))
-            return false;
-        return !IsGenerated(method) && (method.MethodImplementationFlags & MethodImplAttributes.Runtime) == 0;
-    }
+        => !IsAccessor(method) && !IsGenerated(method) && (method.MethodImplementationFlags & MethodImplAttributes.Runtime) == 0;
+
+    // Property and event accessors are special names; operators (op_…) are too, but they're methods an app calls.
+    private static bool IsAccessor(MethodInfo method) => method.IsSpecialName && !method.Name.StartsWith("op_", StringComparison.Ordinal);
 
     private static bool IsGenerated(MemberInfo member) => member.Name.StartsWith("<", StringComparison.Ordinal);
 }

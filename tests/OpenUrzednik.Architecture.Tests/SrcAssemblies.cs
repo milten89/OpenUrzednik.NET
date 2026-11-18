@@ -36,6 +36,13 @@ internal static class ArchUnitModel
 {
     private static readonly Lazy<ArchUnitArchitecture> Model = new(() => new ArchLoader().LoadAssemblies(SrcAssemblies.All).Build());
 
+    /// <summary>
+    /// The types ArchUnitNET's model has no entry for. A rule over <c>Are(types)</c> silently skips those, so
+    /// <see cref="SrcAssembliesTest"/> requires this to be empty for every public type.
+    /// </summary>
+    public static IEnumerable<System.Type> Unknown(IEnumerable<System.Type> types)
+        => types.Where(type => !ArchRuleDefinition.Types().That().Are(type).GetObjects(Model.Value).Any());
+
     /// <summary>Fails with ArchUnitNET's list of violations when <paramref name="rule"/> doesn't hold.</summary>
     public static void ShouldHold(this IArchRule rule)
     {

@@ -22,7 +22,7 @@ public class CancellationTokenTest
         // Act
         var violations = PublicSurface.Types()
             .SelectMany(PublicSurface.Methods)
-            .Where(method => method.GetParameters().Any(IsToken))
+            .Where(method => method.GetParameters().Any(IsToken) && !HasExternalContract(method))
             .Where(method => !TakesTokenLastNamedAndOptional(method.GetParameters()))
             .Select(PublicSurface.Describe)
             .ToList();

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 using Shouldly;
 
@@ -19,10 +20,7 @@ public class DateOnlyTest
     public void PublicSignature_OutsideDateOnlyExtensions_NeverUsesDateOnly()
     {
         // Act
-        var violations = PublicSurface.Types()
-            .Where(type => !type.Name.EndsWith("DateOnlyExtensions", StringComparison.Ordinal))
-            .SelectMany(Uses)
-            .ToList();
+        var violations = PublicSurface.Types().SelectMany(Uses).ToList();
 
         // Assert
         violations.ShouldBeEmpty();
@@ -35,7 +33,11 @@ public class DateOnlyTest
         var typeParameters = type.IsGenericTypeDefinition ? type.GetGenericArguments() : [];
         foreach (var used in inherited.Concat(typeParameters).Where(UsesDateOnly))
             yield return $"{name} : {used.Name}";
+        if (IsDelegate(type) && Signature(type.GetMethod("Invoke")!).Any(UsesDateOnly))
+            yield return $"{name}.Invoke";
+        var extensionsExempt = IsDateOnlyExtensions(type);
         foreach (var method in PublicSurface.Methods(type).Cast<MethodBase>().Concat(PublicSurface.Constructors(type))
+                     .Where(method => !(extensionsExempt && method.IsDefined(typeof(ExtensionAttribute), false)))
                      .Where(method => Signature(method).Any(UsesDateOnly)))
             yield return PublicSurface.Describe(method);
         foreach (var property in PublicSurface.Properties(type)
@@ -61,10 +63,18 @@ public class DateOnlyTest
         }
     }
 
+    // The exemption is for the .NET-only DateOnly overloads: the extension methods (classic, or a C# 14 extension block's) of a
+    // static class named *DateOnlyExtensions. Anything else in such a class still counts.
+    private static bool IsDateOnlyExtensions(Type type)
+        => type.IsAbstract && type.IsSealed && type.Name.EndsWith("DateOnlyExtensions", StringComparison.Ordinal);
+
+    private static bool IsDelegate(Type type) => type.IsSubclassOf(typeof(Delegate));
+
     private static bool UsesDateOnly(Type type) => DateOnlyType is not null && UsesDateOnly(type, []);
 
-    // Through arrays, by-ref and pointer types, Nullable<T>, every other generic argument (Task<DateOnly>, IReadOnlyList<...>) and
-    // the constraints of a generic parameter (where T : IComparable<DateOnly>); `seen` stops at T : IComparable<T>.
+    // Through arrays, by-ref and pointer types, Nullable<T>, every other generic argument (Task<DateOnly>, IReadOnlyList<...>), the
+    // constraints of a generic parameter (where T : IComparable<DateOnly>) and the signature of a delegate the packages declare
+    // (an event's custom handler); `seen` stops at T : IComparable<T> and at a delegate that refers to itself.
     private static bool UsesDateOnly(Type type, HashSet<Type> seen)
     {
         if (type == DateOnlyType)
@@ -73,6 +83,10 @@ public class DateOnlyTest
             return UsesDateOnly(type.GetElementType()!, seen);
         if (type.IsGenericParameter)
             return seen.Add(type) && type.GetGenericParameterConstraints().Any(constraint => UsesDateOnly(constraint, seen));
-        return type.IsGenericType && type.GetGenericArguments().Any(argument => UsesDateOnly(argument, seen));
+        if (type.IsGenericType && type.GetGenericArguments().Any(argument => UsesDateOnly(argument, seen)))
+            return true;
+        var definition = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+        return IsDelegate(definition) && SrcAssemblies.All.Contains(definition.Assembly) && seen.Add(definition)
+               && Signature(definition.GetMethod("Invoke")!).Any(part => UsesDateOnly(part, seen));
     }
 }
