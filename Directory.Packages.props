@@ -50,6 +50,7 @@
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="TngTech.ArchUnitNET" Version="0.13.5" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.12.0" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.11.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="WireMock.Net" Version="2.21.0" />

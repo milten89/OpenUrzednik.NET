@@ -42,7 +42,7 @@ updates:
       published-dependencies:
         patterns: [ "Microsoft.Extensions.Http", "Microsoft.Extensions.Options", "System.*", "Microsoft.Bcl.*", "Polly.Core" ]
       test-dependencies:
-        patterns: [ "xunit*", "Microsoft.NET.Test.Sdk", "Microsoft.Testing.*", "NSubstitute*", "Shouldly", "Bogus", "WireMock.Net*", "TngTech.ArchUnitNET",
+        patterns: [ "xunit*", "Microsoft.NET.Test.Sdk", "Microsoft.Testing.*", "NSubstitute*", "Shouldly", "Bogus", "WireMock.Net*", "TngTech.ArchUnitNET", "Microsoft.CodeAnalysis.CSharp",
                     "Microsoft.Extensions.TimeProvider.Testing", "Microsoft.Extensions.Http.Resilience" ]
       build-tooling:
         patterns: [ "Nerdbank.GitVersioning", "Microsoft.CodeAnalysis.BannedApiAnalyzers" ]

@@ -58,7 +58,7 @@ Notation, with MF White List as the example:
 
 - [ ] The dependencies and transport are AOT-safe: source-generated `JsonTypeInfo<T>` for JSON; for SOAP, no reflection-based `XmlSerializer`.
 - [ ] `tests/OpenUrzednik.AotSmoke/OpenUrzednik.AotSmoke.csproj`: a `ProjectReference` and a `TrimmerRootAssembly` per package, and an `EmbeddedResource` per fixture it uses.
-- [ ] `tests/OpenUrzednik.Architecture.Tests`: a `ProjectReference` per package and a type of each in `SrcAssemblies.All`, so the public-API rules cover it.
+- [ ] `tests/OpenUrzednik.Architecture.Tests`: a `ProjectReference` per package and a type of each in `SrcAssemblies.All`, so the public-API rules cover it. Its `ProjectListsTest` fails until each new `src/` project is in the solution filter, the solution, the AotSmoke app (`ProjectReference` and `TrimmerRootAssembly`), a Stryker shard's `project`, and its shard in the `mutation.yml` matrix.
 - [ ] `tests/OpenUrzednik.AotSmoke/Program.cs`: an offline call per client through a stub handler with a captured fixture (result, span, log entry), and the DI registration, default and keyed, as the NBP checks do.
 
 ## 5. Packaging and release (ADR-0008)
