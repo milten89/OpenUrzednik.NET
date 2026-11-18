@@ -45,7 +45,7 @@ Notation, with MF White List as the example:
 - [ ] `public static class <Prefix>Telemetry` with `SourceName = "<Package>"`, as `NbpTelemetry`.
 - [ ] `public static class <Prefix>LogEvents`: a REST provider mirrors the `RestLogEvents` ids (1xxx); the provider's own events from 2001 on; new ids only, never reused. A SOAP provider's ADR decides its HTTP-level ids.
 - [ ] `<InternalsVisibleTo Include="<Package>" />` in Core's .NET-only group (`src/OpenUrzednik.Core/OpenUrzednik.Core.csproj`): every provider that uses the .NET fallback trace source, SOAP ones too.
-- [ ] Span names `<provider>.<area>.<operation>`, the HTTP span `<provider>.http.get` (from `RestProviderProfile`), tags `<provider>.<parameter>`; identifiers only masked or as display paths.
+- [ ] Span names `<provider>.<area>.<operation>`, the HTTP span `<provider>.http.get` (from `RestProviderProfile`), tags `<provider>.<parameter>`; identifiers only masked or as display paths, proven per method with TestCommon's `ShouldNotLeak` (`/new-endpoint`).
 
 ## 3. Tests
 
