@@ -104,7 +104,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 
 **Client API ([ADR-0007](docs/adr/0007-client-api-and-extensibility.md))**
 - The default case is one line (`new NbpGoldPriceClient(httpClient)`).
-- `CancellationToken cancellationToken = default` is the last parameter of every async method, in both interfaces and implementations.
+- `CancellationToken cancellationToken = default` is the last parameter of every async method, in both interfaces and implementations. In `src/`, CA1068 checks the order and CA2016 that the token is passed on.
 - More rules: [`.claude/rules/client-api.md`](.claude/rules/client-api.md).
 
 ## Performance

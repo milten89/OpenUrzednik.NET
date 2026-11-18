@@ -21,3 +21,4 @@ paths:
 - Large clients are split into `partial` files by area (`NbpCurrencyExchangeRateClient.BuySell.cs`).
 - Messages and logs are in English. Format dates invariantly (`yyyy-MM-dd`).
 - Library code (`src/`) awaits with `ConfigureAwait(false)`; CA2007 flags a missing one.
+- In `src/`, CA1068 flags a `CancellationToken` that isn't the last parameter, and CA2016 one that isn't passed on to a method that takes it. Suppress either only with `[SuppressMessage(..., Justification = "...")]` on the member, saying why (the `ReadAsStreamAsync` polyfill in `src/Http/Polyfills` is the one case).

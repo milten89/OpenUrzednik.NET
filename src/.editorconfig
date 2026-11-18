@@ -5,6 +5,8 @@
 
 dotnet_diagnostic.CA1031.severity = warning   # no catch (Exception) or bare catch (ADR-0002)
 dotnet_diagnostic.CA2007.severity = warning   # ConfigureAwait(false) on every await (.claude/rules/code-conventions.md)
+dotnet_diagnostic.CA2016.severity = warning   # pass the CancellationToken on to the methods that take one
+dotnet_diagnostic.CA1068.severity = warning   # CancellationToken is the last parameter (CLAUDE.md, Client API)
 
 # Banned APIs (RS0030, src/BannedSymbols.txt): only the places the ADRs allow may use them. RS0030 is one diagnostic for every
 # banned symbol, so an exempt file may use all of them: keep these sections to single files or folders.
