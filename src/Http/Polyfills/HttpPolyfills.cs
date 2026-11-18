@@ -1,4 +1,5 @@
 #if !NET
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 // Same namespace as the executor, so the call sites need no #if.
@@ -11,6 +12,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// </summary>
 internal static class HttpPolyfills
 {
+    [SuppressMessage("Reliability", "CA2016:Forward the 'CancellationToken' parameter to methods", Justification = "This is the polyfill of ReadAsStreamAsync(CancellationToken): netstandard2.0's HttpContent has only the token-less overload, so passing the token would make the method call itself. CA2016 fires only where this file compiles against .NET's HttpContent (the netstandard-branch test host).")]
     internal static Task<Stream> ReadAsStreamAsync(this HttpContent content, CancellationToken cancellationToken)
         => content.ReadAsStreamAsync().WaitAsync(cancellationToken);
 
