@@ -12,8 +12,7 @@ public class SrcAssembliesTest
     public void All_Always_MatchesThePackagesSolutionFilter()
     {
         // Arrange
-        var filter = FindUp("OpenUrzednik.Packages.slnf");
-        using var json = JsonDocument.Parse(File.ReadAllText(filter));
+        using var json = JsonDocument.Parse(RepositoryFiles.Read("OpenUrzednik.Packages.slnf"));
         var packages = json.RootElement.GetProperty("solution").GetProperty("projects").EnumerateArray()
             .Select(project => Path.GetFileNameWithoutExtension(project.GetString()!.Replace('\\', '/')))
             .OrderBy(name => name, StringComparer.Ordinal)
@@ -35,16 +34,5 @@ public class SrcAssembliesTest
 
         // Assert
         unknown.ShouldBeEmpty();
-    }
-
-    private static string FindUp(string fileName)
-    {
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-        {
-            if (directory.EnumerateFiles(fileName).FirstOrDefault() is { } file)
-                return file.FullName;
-        }
-
-        throw new FileNotFoundException($"{fileName} not found above {AppContext.BaseDirectory}.");
     }
 }
