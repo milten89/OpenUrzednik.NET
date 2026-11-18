@@ -44,6 +44,7 @@ dotnet pack OpenUrzednik.Packages.slnf -c Release    # runs package validation, 
 dotnet test tests/OpenUrzednik.IntegrationTests --explicit on   # also hits the real NBP API
 dotnet tool restore                                             # once: Stryker.NET (local tool)
 uv run tests/Mutation/run.py nbp                                # mutation tests of one shard (--all, --list); reports in artifacts/mutation
+uv run .github/scripts/package_guard.py                         # suppressions, package-validation properties, signing, baseline (CI runs it)
 ```
 
 `global.json` pins the .NET 10 SDK (10.0.100 or a later 10.0 feature band, never a prerelease), the one CI installs; a new .NET target ([ADR-0005](docs/adr/0005-target-frameworks.md)) raises the pin to that target's SDK.
@@ -51,7 +52,7 @@ uv run tests/Mutation/run.py nbp                                # mutation tests
 Before you say a task is done, run `dotnet build OpenUrzednik.slnx -p:TreatWarningsAsErrors=true` (every warning fails, as in CI; the NuGet audit warnings stay warnings), `dotnet test OpenUrzednik.slnx -f net10.0` and `dotnet format OpenUrzednik.slnx --verify-no-changes`, and report the results.
 If the change touches a public API, a target or packaging, also run the pack above: package validation fails it when the builds of a package differ.
 Package validation also compares each package with the latest release (`PackageValidationBaselineVersion` in `src/Directory.Build.props`, raised by the back-merge after each release).
-Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`); ADR-0011 allows only CP0006 for a new client-interface method, and baseline suppressions (`IsBaselineSuppression`) for breaking changes while `version.json` carries a new major not released yet.
+Never add a suppression (`CompatibilitySuppressions.xml`, `NoWarn` of a `CPxxxx`); ADR-0011 allows only CP0006 for a new client-interface method, and baseline suppressions (`IsBaselineSuppression`) for breaking changes while `version.json` carries a new major not released yet. `.github/scripts/package_guard.py` checks these rules in CI (`build (net10.0)`).
 
 Run `dotnet format` only with `--verify-no-changes`, and only on a tree that builds (the format hook's `dotnet format whitespace --folder` pass on each edited `.cs` file is the exception: it needs no build and changes only whitespace): its fix mode inserted casts into code that didn't compile, and wrote merge-conflict markers into multi-target projects whose targets disagreed about unnecessary usings.
 To remove unused usings, run `dotnet build --no-incremental`, collect the IDE0005 warnings per target framework, and delete only the lines flagged on every target.

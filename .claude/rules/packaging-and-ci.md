@@ -11,7 +11,7 @@ paths:
 # Packaging and CI
 
 - The NuGet workflows build and pack `OpenUrzednik.Packages.slnf` (the `src/` projects only).
-  - **A new `src/` project must be added to it**, or it isn't published (a new provider: work through `/new-provider`, which lists this and the other places); until its first release it sets an empty `PackageValidationBaselineVersion` (there is no baseline to download).
+  - **A new `src/` project must be added to it**, or it isn't published (a new provider: work through `/new-provider`, which lists this and the other places); until its first release it sets an empty `PackageValidationBaselineVersion` (there is no baseline to download), and the back-merge after that release removes it. `.github/scripts/package_guard.py` (`build (net10.0)`; locally `uv run .github/scripts/package_guard.py`) checks the baseline, the empty overrides, the suppressions, the package-validation properties and the strong-name key.
   - Every package gets the version of the root `version.json` (lockstep, ADR-0008); don't add a `version.json` to a project.
   - A new package input outside `src/` goes into both `pathFilters` in `version.json` and the `paths` filter of `nuget-pre-release.yml` (a directory is `dir` in the first and `dir/**` in the second).
 - Package icons follow `assets/branding/BRANDING.md`: a provider package sets `OpenUrzednikPackageIcon` in its csproj, and its PNG joins both publish lists above.
