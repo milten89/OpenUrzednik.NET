@@ -12,7 +12,8 @@ public class NamespacesTest
     public void PublicType_Always_HasNoExtensionsOrOptionsNamespaceSegment()
     {
         // Arrange
-        IArchRule rule = Types().That().ArePublic()
+        // PublicSurface's types, not ArchUnitNET's ArePublic(), which counts a public nested type of an internal type as public.
+        IArchRule rule = Types().That().Are(PublicSurface.Types())
             .And().DoNotResideInNamespace("OpenUrzednik.Extensions.Logging")
             .And().DoNotResideInNamespace("Microsoft.Extensions.DependencyInjection")
             .Should().NotResideInNamespaceMatching(@"\.(Extensions|Options)(\.|$)")

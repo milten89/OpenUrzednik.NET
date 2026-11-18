@@ -80,5 +80,22 @@ public class ErrorMetadataTest
         missing.ShouldBeEmpty("add a sample of each new error type");
     }
 
+    // An app reads an error's details by its type (`is WhiteListNotFoundError`, ADR-0021), and the samples above can only build
+    // public types, so every error type is public.
+    [Fact]
+    public void ErrorType_InAnyPackage_IsPublic()
+    {
+        // Act
+        var hidden = SrcAssemblies.All
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(type => type.IsSubclassOf(typeof(OpenUrzednikError)))
+            .Except(PublicSurface.Types())
+            .Select(Name)
+            .ToList();
+
+        // Assert
+        hidden.ShouldBeEmpty();
+    }
+
     private static string Name(Type type) => type.FullName ?? type.Name;
 }

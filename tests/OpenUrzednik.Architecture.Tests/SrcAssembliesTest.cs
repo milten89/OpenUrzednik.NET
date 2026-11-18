@@ -30,9 +30,8 @@ public class SrcAssembliesTest
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
         {
-            var path = Path.Combine(directory.FullName, fileName);
-            if (File.Exists(path))
-                return path;
+            if (directory.EnumerateFiles(fileName).FirstOrDefault() is { } file)
+                return file.FullName;
         }
 
         throw new FileNotFoundException($"{fileName} not found above {AppContext.BaseDirectory}.");

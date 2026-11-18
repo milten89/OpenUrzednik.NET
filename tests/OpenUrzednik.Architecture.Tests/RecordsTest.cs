@@ -8,19 +8,20 @@ namespace OpenUrzednik.Architecture.Tests;
 
 // Code conventions: a record's generated Equals compares a list by reference, so a public record holding a collection declares its
 // own Equals and GetHashCode (Currency/CurrencyExchangeRates.cs). The generated ones carry [CompilerGenerated]. A record, class or
-// struct, is recognised by the PrintMembers(StringBuilder) the compiler gives it.
+// struct, is recognised by the PrintMembers(StringBuilder) the compiler gives it. The generated Equals compares every instance
+// field, so every field counts, whatever its visibility (a property's backing field included).
 public class RecordsTest
 {
     private const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
 
     [Fact]
-    public void PublicRecord_WithCollectionProperty_DeclaresItsOwnEquality()
+    public void PublicRecord_WithCollectionField_DeclaresItsOwnEquality()
     {
         // Arrange
         var records = PublicSurface.Types()
             .Where(type => type.GetMethod("PrintMembers", Declared | BindingFlags.NonPublic, null, [typeof(System.Text.StringBuilder)], null) is not null)
-            .Where(type => type.GetProperties(Declared).Any(p => p.PropertyType != typeof(string)
-                                                                 && typeof(IEnumerable).IsAssignableFrom(p.PropertyType)))
+            .Where(type => type.GetFields(Declared | BindingFlags.NonPublic).Any(f => f.FieldType != typeof(string)
+                                                                                        && typeof(IEnumerable).IsAssignableFrom(f.FieldType)))
             .ToList();
 
         // Act

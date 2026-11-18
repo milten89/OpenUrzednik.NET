@@ -1,11 +1,20 @@
+using System.Reflection;
+
 using Shouldly;
 
 namespace OpenUrzednik.Architecture.Tests;
 
 // ADR-0005: every build has the same public signatures, so public dates are DateTime; DateOnly overloads exist only as .NET-only
-// extension methods (the *DateOnlyExtensions classes). Compared by full name: on net472 the tests alias DateOnly to DateTime.
+// extension methods (the *DateOnlyExtensions classes). The netstandard2.0 build can't use DateOnly, so on net472 (where the tests
+// alias DateOnly to DateTime) there is nothing to find and the type is null.
 public class DateOnlyTest
 {
+#if NET
+    private static readonly Type? DateOnlyType = typeof(DateOnly);
+#else
+    private static readonly Type? DateOnlyType = null;
+#endif
+
     [Fact]
     public void PublicSignature_OutsideDateOnlyExtensions_NeverUsesDateOnly()
     {
@@ -22,12 +31,13 @@ public class DateOnlyTest
     private static IEnumerable<string> Uses(Type type)
     {
         var name = type.FullName;
-        foreach (var inherited in type.GetInterfaces().Append(type.BaseType).OfType<Type>().Where(UsesDateOnly))
-            yield return $"{name} : {inherited.Name}";
-        foreach (var method in PublicSurface.Methods(type).Cast<System.Reflection.MethodBase>().Concat(PublicSurface.Constructors(type)))
+        var inherited = PublicSurface.VisibleInterfaces(type).Append(type.BaseType).OfType<Type>();
+        var typeParameters = type.IsGenericTypeDefinition ? type.GetGenericArguments() : [];
+        foreach (var used in inherited.Concat(typeParameters).Where(UsesDateOnly))
+            yield return $"{name} : {used.Name}";
+        foreach (var method in PublicSurface.Methods(type).Cast<MethodBase>().Concat(PublicSurface.Constructors(type)))
         {
-            var returnType = (method as System.Reflection.MethodInfo)?.ReturnType;
-            if ((returnType is not null && UsesDateOnly(returnType)) || method.GetParameters().Any(p => UsesDateOnly(p.ParameterType)))
+            if (Signature(method).Any(UsesDateOnly))
                 yield return PublicSurface.Describe(method);
         }
         foreach (var property in PublicSurface.Properties(type)
@@ -39,9 +49,32 @@ public class DateOnlyTest
             yield return $"{name}.{field.Name}";
     }
 
-    // Through arrays, by-ref and pointer types, Nullable<T> and every other generic argument (Task<DateOnly>, IReadOnlyList<...>).
-    private static bool UsesDateOnly(Type type)
-        => type.FullName == "System.DateOnly"
-           || (type.HasElementType && UsesDateOnly(type.GetElementType()!))
-           || (type.IsGenericType && type.GetGenericArguments().Any(UsesDateOnly));
+    // The return type, the parameters and a generic method's type parameters (whose constraints are part of the signature).
+    private static IEnumerable<Type> Signature(MethodBase method)
+    {
+        if (method is MethodInfo info)
+            yield return info.ReturnType;
+        foreach (var parameter in method.GetParameters())
+            yield return parameter.ParameterType;
+        if (method.IsGenericMethodDefinition)
+        {
+            foreach (var typeParameter in method.GetGenericArguments())
+                yield return typeParameter;
+        }
+    }
+
+    private static bool UsesDateOnly(Type type) => DateOnlyType is not null && UsesDateOnly(type, []);
+
+    // Through arrays, by-ref and pointer types, Nullable<T>, every other generic argument (Task<DateOnly>, IReadOnlyList<...>) and
+    // the constraints of a generic parameter (where T : IComparable<DateOnly>); `seen` stops at T : IComparable<T>.
+    private static bool UsesDateOnly(Type type, HashSet<Type> seen)
+    {
+        if (type == DateOnlyType)
+            return true;
+        if (type.HasElementType)
+            return UsesDateOnly(type.GetElementType()!, seen);
+        if (type.IsGenericParameter)
+            return seen.Add(type) && type.GetGenericParameterConstraints().Any(constraint => UsesDateOnly(constraint, seen));
+        return type.IsGenericType && type.GetGenericArguments().Any(argument => UsesDateOnly(argument, seen));
+    }
 }
