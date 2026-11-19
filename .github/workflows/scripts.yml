@@ -1,0 +1,59 @@
+name: Script tests
+
+# The edge-case tests of the repository's scripts and of the workflow steps with logic (tests/Scripts/edge-tests.sh): they take
+# each step from the workflow files of the checkout, so a PR that changes a step, a script or an input they copy runs them.
+# Not a required check: with the paths filter, most PRs never run it.
+
+on:
+  pull_request:
+    branches: [ develop, main, 'release/*.x' ]
+    paths:
+      - 'tests/Scripts/**'
+      - '.github/workflows/**'
+      - '.github/scripts/**'
+      - '.github/release.yml'
+      - '.claude/hooks/**'
+      - '.claude/skills/prepare-release/scripts/**'
+      - 'tests/Mutation/**'
+      # What the cases copy from the checkout: every project and props file (the shard selection reads how projects link and
+      # import; package_guard.py's cases take the root and src props), src/Privacy, the Stryker tool manifest and the key.
+      - '**/*.csproj'
+      - '**/*.props'
+      - 'src/Privacy/**'
+      - '.config/dotnet-tools.json'
+      - 'OpenUrzednik.snk'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scripts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  scripts:
+    # Linux, as the workflows' own runners. macOS passed too (its bash 3.2, in #313); CONTRIBUTING says how to run it there.
+    name: scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    # The format-cs.sh hook cases run `dotnet format whitespace`; the runner's jq, yq, pwsh and python3 are used as they are.
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Show the tool versions
+      run: |
+        bash --version | head -1
+        for tool in git jq yq python3 pwsh dotnet; do echo "$tool: $("$tool" --version 2>&1 | head -1)"; done
+
+    - name: Run the edge-case tests
+      run: bash tests/Scripts/edge-tests.sh

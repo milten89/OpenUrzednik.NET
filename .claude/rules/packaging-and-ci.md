@@ -1,6 +1,8 @@
 ---
 paths:
   - ".github/**"
+  - ".claude/hooks/**"
+  - "tests/Scripts/**"
   - "version.json"
   - "OpenUrzednik.Packages.slnf"
   - "OpenUrzednik.slnx"
@@ -16,3 +18,4 @@ paths:
   - A new package input outside `src/` goes into both `pathFilters` in `version.json` and the `paths` filter of `nuget-pre-release.yml` (a directory is `dir` in the first and `dir/**` in the second).
 - Package icons follow `assets/branding/BRANDING.md`: a provider package sets `OpenUrzednikPackageIcon` in its csproj, and its PNG joins both publish lists above.
 - **CI job names are required status checks in the GitHub ruleset.** If you rename a job in `.github/workflows/build.yml`, `format.yml`, `dependency-review.yml` or `release-label.yml`, say so: the ruleset must be updated (see `docs/GITHUB-SETUP.md`). The same holds for the `mutation` job of `.github/workflows/mutation.yml`: it runs on every PR into `develop` (only the shards the PR affects, required through the ruleset `develop-mutation`), `main` and `release/*.x`, and becomes required on the last two once the ruleset `release-mutation` exists: the maintainer creates it as `docs/GITHUB-SETUP.md` describes, once a release that contains `mutation.yml` (1.1.0) is merged into `main`. From then on, every release, hotfix and backport PR waits for it.
+- **Scripts and workflow steps with logic have edge-case tests** in `tests/Scripts/edge-tests.sh` (`scripts.yml` runs them on PRs that change a workflow, `.github/scripts`, `.claude/hooks`, the `/prepare-release` scripts, `tests/Mutation` or the files the `package_guard.py` cases copy). A new or changed step or script adds its cases there, in the same PR: the normal case, then empty or missing input, unusual names, re-runs, failing tools. Run it on Linux or WSL 2 (CONTRIBUTING, "Testing scripts and workflow steps"). A known, accepted failure goes into `KNOWN_FAILURES` with its reason, never to make a run pass.

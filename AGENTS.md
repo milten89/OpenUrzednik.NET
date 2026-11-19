@@ -12,7 +12,7 @@ The rest of each area's rules are in [`.claude/rules/`](.claude/rules/). Claude 
 | [`docs.md`](.claude/rules/docs.md) | `**/*.md`, `.github/ISSUE_TEMPLATE/**` |
 | [`errors.md`](.claude/rules/errors.md) | `src/**/*.cs`, `tests/**/*.cs` |
 | [`http.md`](.claude/rules/http.md) | `src/**/*.cs`, `tests/**/*.cs` |
-| [`packaging-and-ci.md`](.claude/rules/packaging-and-ci.md) | `.github/**`, `version.json`, `OpenUrzednik.Packages.slnf`, `OpenUrzednik.slnx`, `src/**/*.csproj`, `assets/branding/**` |
+| [`packaging-and-ci.md`](.claude/rules/packaging-and-ci.md) | `.github/**`, `.claude/hooks/**`, `tests/Scripts/**`, `version.json`, `OpenUrzednik.Packages.slnf`, `OpenUrzednik.slnx`, `src/**/*.csproj`, `assets/branding/**` |
 | [`performance.md`](.claude/rules/performance.md) | `src/**/*.cs` |
 | [`target-frameworks.md`](.claude/rules/target-frameworks.md) | `src/**`, `tests/**`, `**/*.props`, `**/*.targets`, `version.json` |
 | [`telemetry.md`](.claude/rules/telemetry.md) | `src/**/*.cs`, `tests/**/*.cs` |
