@@ -9,7 +9,7 @@
 set -uo pipefail
 
 shell=default event=pull_request ref="" base="develop" head="feature/local" workspace="$PWD"
-extra=()
+extra=()   # expanded as ${extra[@]+…}: bash before 4.4 (macOS's 3.2) calls an empty array unbound under set -u
 while [ $# -gt 1 ]; do
   case "$1" in
     --shell) shell="$2"; shift 2 ;;
@@ -51,7 +51,7 @@ env CI=true GITHUB_ACTIONS=true RUNNER_OS=Linux RUNNER_ARCH=X64 RUNNER_TEMP="$ru
   GITHUB_WORKSPACE="$workspace" GITHUB_EVENT_NAME="$event" GITHUB_REF="$ref" GITHUB_REF_NAME="$ref_name" \
   GITHUB_BASE_REF="$base_ref" GITHUB_HEAD_REF="$head_ref" GITHUB_REPOSITORY=milten89/OpenUrzednik.NET \
   GITHUB_OUTPUT="$runner_temp/output" GITHUB_ENV="$runner_temp/env" GITHUB_PATH="$runner_temp/path" \
-  GITHUB_STEP_SUMMARY="$runner_temp/step_summary" "${extra[@]}" "${cmd[@]}"
+  GITHUB_STEP_SUMMARY="$runner_temp/step_summary" ${extra[@]+"${extra[@]}"} "${cmd[@]}"
 code=$?
 
 for f in output env path step_summary; do

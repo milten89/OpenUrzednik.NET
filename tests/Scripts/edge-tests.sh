@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Edge-case tests of the repository's scripts and of the workflow steps with logic (branches, parsing, loops).
 #
-# Usage (Linux, or WSL 2 on Windows; tools: bash 4.4+, git, jq, yq (Mike Farah's), python3, pwsh, the .NET SDK):
+# Usage (Linux, WSL 2 on Windows, or macOS; tools: bash 3.2+, git, jq, yq (Mike Farah's), python3, pwsh, the .NET SDK):
 #   bash tests/Scripts/edge-tests.sh            # the repository this script is in
 #   bash tests/Scripts/edge-tests.sh <repo>     # another checkout
 # CI runs it in .github/workflows/scripts.yml. Exit codes: 0 every case passed (known failures don't count), 1 a case failed.
@@ -28,7 +28,7 @@ export GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=fal
 export PYTHONDONTWRITEBYTECODE=1
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-pass=0 fail=0 known=0
+pass=0 fail=0 known=0 skipped=0
 results=()
 
 # Known, accepted failures: the case still runs, and its failure doesn't fail the suite. A known case that passes is reported,
@@ -165,7 +165,12 @@ expect "C3 notes: empty fails" nonzero "missing or empty" run-step --event push 
 d=$(c ws); printf ' \n\n' > "$d/docs/release-notes/v1.0.0.md"
 expect "C4 notes: whitespace-only file fails" nonzero "missing or empty" run-step --event push --base main --workspace "$d" --env VERSION=1.0.0 "$notes_step"
 d=$(c case); echo x > "$d/docs/release-notes/V1.0.0.md"
-expect "C5 notes: wrong case (V1.0.0.md) fails on Linux" nonzero "missing or empty" run-step --event push --base main --workspace "$d" --env VERSION=1.0.0 "$notes_step"
+# The runner's file system tells V1.0.0.md from v1.0.0.md; macOS's and Windows' default ones don't, so the case can't run there.
+if touch "$work/CaseProbe" && [ -e "$work/caseprobe" ]; then
+  skipped=$((skipped+1)); results+=("SKIP  C5 notes: wrong case (V1.0.0.md) fails (this file system ignores case)")
+else
+  expect "C5 notes: wrong case (V1.0.0.md) fails" nonzero "missing or empty" run-step --event push --base main --workspace "$d" --env VERSION=1.0.0 "$notes_step"
+fi
 
 # ---------- D: build.yml notes check on PRs into main ----------
 pr_step="$(step build.yml build "Check the release notes")"
@@ -420,5 +425,5 @@ for r in failure cancelled skipped ""; do
 done
 
 printf '%s\n' "${results[@]}"
-echo "== $pass passed, $fail failed, $known known failures"
+echo "== $pass passed, $fail failed, $known known failures, $skipped skipped"
 [ "$fail" -eq 0 ]

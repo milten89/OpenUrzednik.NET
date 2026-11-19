@@ -54,7 +54,7 @@ It prints one line per case and exits 1 if one fails. A known, accepted failure 
 
 A new case covers the normal input first, then the edge cases: empty or missing input, unusual names and characters (spaces, Polish letters), re-runs, and a failing tool the step calls. A single command with no logic (`dotnet build …`) needs none.
 
-**Linux** (as CI, `ubuntu-latest`): bash 4.4 or later, git, jq, [yq by Mike Farah](https://github.com/mikefarah/yq#install) (not the Python `yq`, which takes other arguments), python3, [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/install-ubuntu) and the [.NET 10 SDK](https://learn.microsoft.com/dotnet/core/install/linux-ubuntu-install#ubuntu-2404). On Ubuntu 24.04: `sudo apt-get install -y git jq python3 dotnet-sdk-10.0`, then yq and PowerShell from the linked pages.
+**Linux** (as CI, `ubuntu-latest`): bash 3.2 or later, git, jq, [yq by Mike Farah](https://github.com/mikefarah/yq#install) (not the Python `yq`, which takes other arguments), python3, [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/install-ubuntu) and the [.NET 10 SDK](https://learn.microsoft.com/dotnet/core/install/linux-ubuntu-install#ubuntu-2404). On Ubuntu 24.04: `sudo apt-get install -y git jq python3 dotnet-sdk-10.0`, then yq and PowerShell from the linked pages.
 
 **Windows:** through WSL 2, not Git Bash (the cases need Linux tools and file names). Install a distribution once with `wsl --install -d Ubuntu-24.04`, install the Linux tools above inside it, then run the script on your checkout through its `/mnt/c/…` path:
 
@@ -64,7 +64,7 @@ wsl -d Ubuntu-24.04 -- bash /mnt/c/<path to your clone>/tests/Scripts/edge-tests
 
 A checkout made by `git worktree` on Windows works too: the cases don't run git in your checkout.
 
-**macOS:** MACOS_RESULT
+**macOS:** works with the system bash (3.2): `brew install jq yq python` ([Homebrew](https://brew.sh); its `yq` is Mike Farah's), plus [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/install-powershell-on-macos) and the [.NET 10 SDK](https://learn.microsoft.com/dotnet/core/install/macos). The file system ignores case, so the case that needs a case-sensitive one (C5) prints `SKIP`. Checked on GitHub's `macos-latest` runner.
 
 ## Working with AI agents
 
