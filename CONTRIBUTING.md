@@ -9,6 +9,7 @@
 - The [GitHub CLI](https://cli.github.com/) (`gh`), if you or your agent work with issues and PRs from the command line.
 - No Docker: the WireMock tests run WireMock.Net inside the test process.
 - With Claude Code: its format hook (`.claude/settings.json`) runs in bash, which is Git Bash on Windows, and uses jq when it's installed.
+- For the script tests (`tests/Scripts`, only when you change a script or a workflow step): Linux, or WSL 2 on Windows; see [Testing scripts and workflow steps](#testing-scripts-and-workflow-steps).
 
 ## Before you start
 
@@ -37,8 +38,33 @@ See [SECURITY.md](SECURITY.md). Don't report vulnerabilities in a public issue.
 2. Target `develop`; we merge PRs with a merge commit. The `main` branch takes only release PRs (from `release/X.Y` branches) and hotfixes (see [`docs/RELEASE-PROCESS.md`](docs/RELEASE-PROCESS.md)). A bug fix targets `develop` too: the maintainer decides at triage whether it also ships as a hotfix of the current version, and takes care of that part. Report a vulnerability privately ([SECURITY.md](SECURITY.md)), never in an issue or a PR.
 3. Before opening a PR, run `dotnet build OpenUrzednik.slnx -p:TreatWarningsAsErrors=true` (CI fails on any warning), `dotnet test OpenUrzednik.slnx -f net10.0` and `dotnet format OpenUrzednik.slnx --verify-no-changes` locally. The tests run on Microsoft.Testing.Platform, so filters are xUnit's, not VSTest's `--filter`: `dotnet test tests/OpenUrzednik.Nbp.Tests --filter-class "*NbpGoldPriceClientTest"`.
 4. If you change code in a file the mutation tests treat as strict (`tests/Mutation/shards.json`), run that shard too: `dotnet tool restore` once, then `uv run tests/Mutation/run.py <shard>` (or `python tests/Mutation/run.py <shard>`). It runs [Stryker.NET](https://stryker-mutator.io/docs/stryker-net/introduction/), which changes your code in small ways and checks that a test fails for each change; the report in `artifacts/mutation/<shard>/reports/` lists the changes no test noticed. Your PR runs the shards its change affects (`uv run tests/Mutation/run.py --changed-since upstream/develop --all` picks the same ones locally from your committed changes), and every release PR runs all of them ([ADR-0020](docs/adr/0020-mutation-testing-of-every-target-branch.md)), so a gap found now doesn't fail your PR or block a release later.
-5. Describe *what* and *why*, not only *how*, especially for changes in `Core`. PR descriptions and commit messages are in English ([ADR-0009](docs/adr/0009-documentation-language.md)).
-6. The docs are in English. Next to the root README and the README of each published package sits a short Polish `README.pl.md` with only the informational parts: what the package is and the "unofficial" notice, installation, the quick-start example, the root package table and links to the English sections. If you change one of those parts and don't write Polish, say so in the PR; the maintainer updates the Polish file.
+5. If you change a script (`.github/scripts`, `.claude/hooks`, the `/prepare-release` scripts, `tests/Mutation/run.py`) or a workflow step with logic (branches, parsing, loops), add its cases to `tests/Scripts/edge-tests.sh` and run it ([below](#testing-scripts-and-workflow-steps)). CI runs it on PRs that touch those files.
+6. Describe *what* and *why*, not only *how*, especially for changes in `Core`. PR descriptions and commit messages are in English ([ADR-0009](docs/adr/0009-documentation-language.md)).
+7. The docs are in English. Next to the root README and the README of each published package sits a short Polish `README.pl.md` with only the informational parts: what the package is and the "unofficial" notice, installation, the quick-start example, the root package table and links to the English sections. If you change one of those parts and don't write Polish, say so in the PR; the maintainer updates the Polish file.
+
+## Testing scripts and workflow steps
+
+`tests/Scripts/edge-tests.sh` tests the repository's scripts and the workflow steps with logic: the format hook, the release, notes and label checks, the `test (net472)` loop, the `/prepare-release` scripts, the mutation workflow's shard selection, summary and aggregate check, and `package_guard.py`. Each case takes its step from the workflow file in your checkout and runs it the way an Ubuntu runner does (`tests/Scripts/run-step.sh`), in a temp directory; nothing in the repository changes.
+
+```bash
+bash tests/Scripts/edge-tests.sh
+```
+
+It prints one line per case and exits 1 if one fails. A known, accepted failure prints `KNOWN` and doesn't count; the list and the reasons are at the top of the script.
+
+A new case covers the normal input first, then the edge cases: empty or missing input, unusual names and characters (spaces, Polish letters), re-runs, and a failing tool the step calls. A single command with no logic (`dotnet build …`) needs none.
+
+**Linux** (as CI, `ubuntu-latest`): bash 4.4 or later, git, jq, [yq by Mike Farah](https://github.com/mikefarah/yq#install) (not the Python `yq`, which takes other arguments), python3, [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/install-ubuntu) and the [.NET 10 SDK](https://learn.microsoft.com/dotnet/core/install/linux-ubuntu-install#ubuntu-2404). On Ubuntu 24.04: `sudo apt-get install -y git jq python3 dotnet-sdk-10.0`, then yq and PowerShell from the linked pages.
+
+**Windows:** through WSL 2, not Git Bash (the cases need Linux tools and file names). Install a distribution once with `wsl --install -d Ubuntu-24.04`, install the Linux tools above inside it, then run the script on your checkout through its `/mnt/c/…` path:
+
+```powershell
+wsl -d Ubuntu-24.04 -- bash /mnt/c/<path to your clone>/tests/Scripts/edge-tests.sh
+```
+
+A checkout made by `git worktree` on Windows works too: the cases don't run git in your checkout.
+
+**macOS:** MACOS_RESULT
 
 ## Working with AI agents
 

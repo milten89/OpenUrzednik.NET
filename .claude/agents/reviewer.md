@@ -58,7 +58,7 @@ First read `CLAUDE.md`, every rule file in `.claude/rules/` (a diff doesn't load
 - Copy-pasted logic that should go into the shared pipeline.
 - `.editorconfig` conventions; tests follow the `partial` class / file-per-method / `Method_Condition_Expected` layout with a constant-seed Faker.
 - A new `src/` project is listed in `OpenUrzednik.Packages.slnf` (the NuGet workflows pack only that), and in `OpenUrzednik.slnx`.
-- CI: a renamed job in `build.yml`, `format.yml`, `dependency-review.yml` or `release-label.yml`, or a renamed `mutation` job in `mutation.yml` (rulesets `develop-mutation`, and `release-mutation` once it exists), means the rulesets' required checks must be updated (`docs/GITHUB-SETUP.md`).
+- CI: a new or changed script (`.github/scripts`, `.claude/hooks`, the `/prepare-release` scripts, `tests/Mutation/run.py`) or workflow step with logic without new cases in `tests/Scripts/edge-tests.sh`, or a case added to `KNOWN_FAILURES` without a reason. A renamed job in `build.yml`, `format.yml`, `dependency-review.yml` or `release-label.yml`, or a renamed `mutation` job in `mutation.yml` (rulesets `develop-mutation`, and `release-mutation` once it exists), means the rulesets' required checks must be updated (`docs/GITHUB-SETUP.md`).
 - Workflow injection (adapted from the `github_actions_workflow` rule of Anthropic's security-guidance plugin, Apache-2.0): in `.github/workflows/`, flag untrusted event data (`github.event.*` titles, bodies, branch names, commit messages and author names; `github.head_ref`) expanded with `${{ }}` inside a `run:` script instead of passed through `env:`, and a `pull_request_target` or `workflow_run` job that checks out or runs the PR's code. Either is **Blocking**.
 
 ## Verify
