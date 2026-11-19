@@ -33,13 +33,10 @@ concurrency:
 
 jobs:
   scripts:
-    name: scripts (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    # Linux, as the workflows' own runners. macOS passed too (its bash 3.2, in #313); CONTRIBUTING says how to run it there.
+    name: scripts
+    runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-latest, macos-latest ]
 
     steps:
     - name: Checkout repository

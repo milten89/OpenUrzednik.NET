@@ -209,7 +209,8 @@ f="$work/f"; mkdir -p "$f/bin" "$f/tests/A.Tests" "$f/tests/OpenUrzednik.TestCom
 printf '#!/bin/sh\necho "dotnet $*" >> "%s/calls"\ncase "$*" in *"$FAIL_ON"*) [ -n "$FAIL_ON" ] && exit 3;; esac\nexit 0\n' "$f" > "$f/bin/dotnet"; chmod +x "$f/bin/dotnet"
 netfx="$work/netfx.ps1"; yq '.jobs.test-netfx.steps[] | select(.name == "Build (net472)") | .run' "$repo/.github/workflows/build.yml" > "$netfx"
 expect "F1 net472 loop: builds every test project except TestCommon and AotSmoke, paths with spaces" 0 "" bash -c "cd '$f' && rm -f calls && PATH='$f/bin':\$PATH pwsh -NoProfile -File '$netfx' && [ \$(grep -c . calls) = 2 ] && ! grep -q TestCommon calls && ! grep -q AotSmoke calls && grep -q 'B Tests.csproj' calls"
-expect "F2 net472 loop: stops at the failing build, with its exit code" 3 "" bash -c "cd '$f' && rm -f calls; PATH='$f/bin':\$PATH FAIL_ON=A.Tests pwsh -NoProfile -File '$netfx'; code=\$?; ! grep -q 'B Tests' calls || exit 1; exit \$code"
+# Every build fails (both names contain "Tests"), so the order the file system gives doesn't matter: one call, then the stop.
+expect "F2 net472 loop: stops at the first failing build, with its exit code" 3 "" bash -c "cd '$f' && rm -f calls; PATH='$f/bin':\$PATH FAIL_ON=Tests pwsh -NoProfile -File '$netfx'; code=\$?; [ \$(grep -c . calls) = 1 ] || exit 1; exit \$code"
 
 # ---------- G: nuget-release "Tag and create the GitHub Release", with a bare origin and a stub gh ----------
 tag_step="$(step nuget-release.yml deploy "Tag and create the GitHub Release")"
