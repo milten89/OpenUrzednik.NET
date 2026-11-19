@@ -25,6 +25,7 @@ dotnet tool restore                          # once per clone
 uv run tests/Mutation/run.py --list          # shard names
 uv run tests/Mutation/run.py nbp             # one shard (several: nbp core)
 uv run tests/Mutation/run.py --all
+uv run tests/Mutation/run.py --changed-since origin/develop --all   # only the shards the branch's committed changes affect, as CI on a PR into develop
 ```
 
 | Shard | Workdir (project mutated) | Strict globs (`tests/Mutation/shards.json`) |
@@ -69,7 +70,7 @@ One file of the core shard took 41 s this way (2026-11-07); other files' mutants
 `run.py` reads each shard's JSON report and fails it when Stryker exits non-zero, when **no mutant was tested** (Stryker exits 0 when it can't compute a score, PR sn#3672), when a strict glob matches no file, when a mutant in a strict file is **Survived or NoCoverage**, or when the score is below the shard's `break`. Score = (Killed + Timeout) / (Killed + Timeout + Survived + NoCoverage); CompileError, RuntimeError and Ignored don't count (`Mutants/Mutant.cs:26`). Today every shard has `break: 100`.
 
 - **Strict** files: code whose broken behaviour would harm users (ADR-0020 lists them). No undetected mutant may stay. **Ratchet** code: its `break` is the floor of its last score, raised when tests improve, until it turns strict.
-- CI runs it as the check `mutation` on PRs into `main` and `release/*.x` (required there once the `release-mutation` ruleset exists) and weekly on `develop`, not on PRs into `develop` that change only `src/`: run the shards locally. Triggers, artifacts and the shared config settings: [setup.md](references/setup.md).
+- CI runs it as the check `mutation` on PRs into `main` and `release/*.x` (required there once the `release-mutation` ruleset exists) and weekly on `develop`, and on PRs into `develop` only the shards the PR affects (required there through the `develop-mutation` ruleset): run the shards locally before the PR. Triggers, artifacts and the shared config settings: [setup.md](references/setup.md).
 
 ## 3. Read the report
 

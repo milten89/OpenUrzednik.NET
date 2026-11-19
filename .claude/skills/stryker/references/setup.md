@@ -4,9 +4,9 @@ Part of `/stryker` ([SKILL.md](../SKILL.md)). [ADR-0020](../../../../docs/adr/00
 
 ## CI
 
-- `.github/workflows/mutation.yml`: check `mutation` on PRs into `main` and `release/*.x` (required there once the `release-mutation` ruleset exists, `docs/GITHUB-SETUP.md`); Monday 02:00 UTC on `develop`; `workflow_dispatch`.
-- `mutation-tooling.yml` calls it on PRs into `develop` that touch `tests/Mutation/**`, the test hosts, the workflows or `.config/dotnet-tools.json`.
-- A PR into `develop` that changes only `src/` doesn't run it: run the shards locally, and if CI evidence is wanted, dispatch it on the branch (`gh workflow run mutation.yml --ref <branch>`; not read-only, so ask first).
+- `.github/workflows/mutation.yml`, check `mutation`: every shard on PRs into `main` and `release/*.x` (required there once the `release-mutation` ruleset exists, `docs/GITHUB-SETUP.md`), Monday 02:00 UTC on `develop`, and `workflow_dispatch`.
+- On a PR into `develop`, each runner first runs `run.py --changed-since <base sha> --list <its shards>` and runs only the shards the PR affects: a change to the shard's workdir, strict files, Stryker config, test projects, or what those projects compile or import from outside their folders (`Compile Include`, `Import Project`). A change to `run.py`, `shards.json`, `mutation.yml`, `.config/dotnet-tools.json`, `global.json`, `Directory.Packages.props` or `tests/Directory.Build.props` runs every shard (`TOOLING`). A dependency the shard neither mutates nor tests (Core under a provider, `TestCommon`, the other `Directory.*` files) doesn't count; the weekly run catches it. A runner with no affected shard skips its setup and passes, so `mutation` always reports and is required on `develop` (ruleset `develop-mutation`).
+- Locally, the same selection for the committed changes: `uv run tests/Mutation/run.py --changed-since origin/develop --all`.
 - Reports are the `mutation-<runner>` artifacts (30 days).
 - Time: each shard job takes about 1–6 minutes including setup (`nbp` and `http` are the longest; runs 42355286460, 42403860292).
 

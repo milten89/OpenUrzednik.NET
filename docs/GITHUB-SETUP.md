@@ -51,7 +51,7 @@ Not used:
 
 ## Ruleset `release-mutation`
 
-Targets `refs/heads/main` and `refs/heads/release/*.x`: the branches releases are published from. It requires one status check, `mutation` (the last job of `.github/workflows/mutation.yml`, which fails unless every mutation shard passed), on every release, hotfix and backport PR ([ADR-0020](adr/0020-mutation-testing-of-every-target-branch.md)). It is a separate ruleset because the workflow doesn't run on PRs into `develop`, and a required check that never reports blocks the merge.
+Targets `refs/heads/main` and `refs/heads/release/*.x`: the branches releases are published from. It requires one status check, `mutation` (the last job of `.github/workflows/mutation.yml`, which fails unless every mutation shard passed), on every release, hotfix and backport PR ([ADR-0020](adr/0020-mutation-testing-of-every-target-branch.md)). It is a separate ruleset because `protected-branches` also targets `main`, where the check must wait for 1.1.0 (below).
 
 | Setting | Value |
 |---|---|
@@ -59,7 +59,19 @@ Targets `refs/heads/main` and `refs/heads/release/*.x`: the branches releases ar
 | Required status checks (strict, up to date; `do_not_enforce_on_create`, as in `protected-branches`) | `mutation` (GitHub Actions) |
 | Bypass | Repository role **Admin**, mode **pull requests only**, as in `protected-branches` |
 
-Create it only once a release that contains `mutation.yml` (1.1.0) is merged into `main`. Before that, a hotfix branched from `v1.0.0` has no `mutation.yml`, so its PR into `main` would never get the check and couldn't merge without the admin bypass. A support branch `release/N.x` made from a later tag has the workflow, so its backport PRs get the check. Check it with `gh api repos/milten89/OpenUrzednik.NET/rulesets` (the id is listed there). The workflow also runs every Monday on `develop`, on demand (`workflow_dispatch`), and through `mutation-tooling.yml` on PRs into `develop` that change the mutation tooling; those runs aren't required checks.
+Create it only once a release that contains `mutation.yml` (1.1.0) is merged into `main`. Before that, a hotfix branched from `v1.0.0` has no `mutation.yml`, so its PR into `main` would never get the check and couldn't merge without the admin bypass. A support branch `release/N.x` made from a later tag has the workflow, so its backport PRs get the check. Check it with `gh api repos/milten89/OpenUrzednik.NET/rulesets` (the id is listed there). The workflow also runs every Monday on `develop` and on demand (`workflow_dispatch`); those runs aren't required checks.
+
+## Ruleset `develop-mutation`
+
+Targets `refs/heads/develop`. It requires `mutation` on every PR into `develop` ([ADR-0020](adr/0020-mutation-testing-of-every-target-branch.md)). There the workflow runs only the shards the PR's changes affect (`tests/Mutation/run.py --changed-since`); a shard runner with none skips its setup and passes, so the check always reports and a PR that touches no shard's code waits only seconds. It is separate from `protected-branches`, which also targets `main`, and from `release-mutation`, which can't exist before 1.1.0.
+
+| Setting | Value |
+|---|---|
+| Enforcement | active |
+| Required status checks (strict, up to date) | `mutation` (GitHub Actions) |
+| Bypass | Repository role **Admin**, mode **pull requests only**, as in `protected-branches` |
+
+Create it once the PR that adds `develop` to the workflow's `pull_request` branches ([#280](https://github.com/milten89/OpenUrzednik.NET/issues/280)) is merged: a PR opened before that has no `mutation` run, and needs an update from `develop` to get one.
 
 ## Environments
 

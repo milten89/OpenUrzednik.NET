@@ -1,17 +1,16 @@
 name: Mutation tests
 
-# Stryker.NET mutation testing (ADR-0020): before every release (PRs into main and support branches), every Monday on develop,
-# on demand, and from mutation-tooling.yml when the tooling itself changes. Shards are listed in tests/Mutation/shards.json and
-# run by tests/Mutation/run.py, which fails a shard on an untested run, an undetected mutant in a strict file, or a score below
-# the shard's break value.
+# Stryker.NET mutation testing (ADR-0020): every shard before every release (PRs into main and support branches), every Monday on
+# develop and on demand; on a PR into develop, only the shards its changes affect (run.py --changed-since). Shards are listed in
+# tests/Mutation/shards.json and run by tests/Mutation/run.py, which fails a shard on an untested run, an undetected mutant in a
+# strict file, or a score below the shard's break value.
 
 on:
   pull_request:
-    branches: [ main, 'release/*.x' ]
+    branches: [ develop, main, 'release/*.x' ]
   schedule:
     - cron: '0 2 * * 1'
   workflow_dispatch:
-  workflow_call:
 
 permissions:
   contents: read
@@ -57,10 +56,29 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
-        fetch-depth: 0   # NBGV needs full history to compute versions during Stryker's build
+        # Full history: NBGV computes versions during Stryker's build, and the selection below diffs against the PR's base.
+        fetch-depth: 0
+
+    # On a PR into develop, only the job's shards that the PR's changes affect run; the steps below skip when none does, and the
+    # job passes. Every other run takes all of them. A failed selection (exit 2) fails the job, never skips it.
+    - name: Select the shards
+      id: select
+      env:
+        SHARDS: ${{ matrix.shards }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        if [ "$GITHUB_EVENT_NAME" = pull_request ] && [ "$GITHUB_BASE_REF" = develop ]; then
+          selected=$(python3 tests/Mutation/run.py --changed-since "$BASE_SHA" --list $SHARDS)
+        else
+          selected=$SHARDS
+        fi
+        selected=$(echo $selected)
+        echo "shards=$selected" >> "$GITHUB_OUTPUT"
+        echo "Shards to run: ${selected:-none}"
 
     # Stryker 5 needs the .NET 10 runtime; the projects multi-target, so restore needs the newest SDK.
     - name: Setup .NET SDKs
+      if: ${{ steps.select.outputs.shards != '' }}
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         dotnet-version: |
@@ -68,6 +86,7 @@ jobs:
           10.0.x
 
     - name: Cache NuGet packages
+      if: ${{ steps.select.outputs.shards != '' }}
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.nuget/packages
@@ -76,23 +95,32 @@ jobs:
           nuget-${{ runner.os }}-
 
     - name: Restore the tools
+      if: ${{ steps.select.outputs.shards != '' }}
       run: dotnet tool restore
 
     # Stryker's design-time build of each project needs restored packages. Without them it drops test projects silently
     # (fewer tests, mutants without coverage) or compiles a project without its package references.
     - name: Restore dependencies
+      if: ${{ steps.select.outputs.shards != '' }}
       run: dotnet restore OpenUrzednik.slnx
 
     - name: Run the mutation shards
+      if: ${{ steps.select.outputs.shards != '' }}
       env:
-        SHARDS: ${{ matrix.shards }}
+        SHARDS: ${{ steps.select.outputs.shards }}
       run: python3 tests/Mutation/run.py $SHARDS
 
     - name: Add the summary
       if: ${{ !cancelled() }}
+      env:
+        SHARDS: ${{ matrix.shards }}
+        SELECTED: ${{ steps.select.outputs.shards }}
+        SELECTION: ${{ steps.select.outcome }}
       run: |
         if [ -f artifacts/mutation/summary.md ]; then
           cat artifacts/mutation/summary.md >> "$GITHUB_STEP_SUMMARY"
+        elif [ "$SELECTION" = success ] && [ -z "$SELECTED" ]; then
+          echo "No shard of this job is affected by the PR's changes ($SHARDS)." >> "$GITHUB_STEP_SUMMARY"
         fi
 
     - name: Upload the reports
@@ -108,8 +136,9 @@ jobs:
         retention-days: 30
 
   mutation:
-    # NOTE: "mutation" becomes a required status check in the "release-mutation" ruleset (main, release/*.x) once that ruleset is
-    # created after 1.1.0 ships (docs/GITHUB-SETUP.md). If you rename this job, update the ruleset.
+    # NOTE: "mutation" is the required status check of the "develop-mutation" ruleset (develop), and of the "release-mutation"
+    # ruleset (main, release/*.x) once that one is created after 1.1.0 ships (docs/GITHUB-SETUP.md). If you rename this job,
+    # update both rulesets.
     name: mutation
     needs: shard
     if: ${{ always() }}
