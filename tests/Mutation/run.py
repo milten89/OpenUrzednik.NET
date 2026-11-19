@@ -8,6 +8,8 @@ Usage (from the repository root):
     python3 tests/Mutation/run.py <shard> [<shard> ...]   # CI
     uv run tests/Mutation/run.py --all
     uv run tests/Mutation/run.py --list
+    uv run tests/Mutation/run.py --changed-since origin/develop --all      # only the shards the branch's changes affect
+    uv run tests/Mutation/run.py --changed-since <commit> --list <shard>…  # print those shards instead of running them (CI)
 
 Each shard (tests/Mutation/shards.json) runs `dotnet stryker` with its config into artifacts/mutation/<shard>, then this script reads
 reports/mutation-report.json and fails the shard when:
@@ -16,6 +18,13 @@ reports/mutation-report.json and fails the shard when:
   * a mutant in a strict file survived or has no coverage, or
   * the mutation score is below the shard's `break` value.
 It writes a markdown summary to artifacts/mutation/summary.md (CI copies it into the job summary).
+
+With --changed-since <commit>, it keeps only the shards that the files changed between <commit> and HEAD (`git diff
+<commit>...HEAD`, both sides of a rename) affect: the shard's project folder (its workdir), strict files and Stryker config, its
+test projects' folders, what those projects compile or import from outside their folders (the files they name directly, not
+the items of an imported file), and the tooling every shard uses (TOOLING). Polyfills, which no shard mutates, and a dependency the
+shard neither mutates nor tests (Core under a provider, TestCommon, the other Directory.* files) don't count: the release and weekly
+runs cover them. With no shard affected, it runs nothing and exits 0.
 Exit codes: 0 every shard passed, 1 a gate failed, 2 a shard couldn't run or its report is missing.
 """
 
@@ -23,16 +32,30 @@ from __future__ import annotations
 
 import json
 import os
+import posixpath
 import re
 import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[2]
 SHARDS_FILE = ROOT / "tests" / "Mutation" / "shards.json"
 OUTPUT_ROOT = ROOT / "artifacts" / "mutation"
+
+# A change to one of these affects every shard: the runner, the shard list, the workflow, the Stryker.NET version, and what every
+# Stryker run builds and tests with (the SDK, the package versions, the test projects' shared settings and test platform).
+TOOLING = [
+    "tests/Mutation/run.py",
+    "tests/Mutation/shards.json",
+    ".github/workflows/mutation.yml",
+    ".config/dotnet-tools.json",
+    "global.json",
+    "Directory.Packages.props",
+    "tests/Directory.Build.props",
+]
 
 DETECTED = {"Killed", "Timeout"}
 UNDETECTED = {"Survived", "NoCoverage"}
@@ -108,6 +131,52 @@ def load_shards() -> dict[str, Shard]:
         )
         for name, spec in data["shards"].items()
     }
+
+
+def relative(path: Path) -> str:
+    return os.path.relpath(path.resolve(), ROOT).replace(os.sep, "/")
+
+
+def project_globs(project: Path) -> list[str]:
+    """The repository-relative globs of what a project takes from outside its folder: the files it compiles from there
+    (`<Compile Include="../…">`) and the files it imports (`<Import Project="…">`, such as src/Http/Http.props)."""
+    folder = relative(project.parent)
+    globs = []
+    for element in ElementTree.parse(project).iter():
+        attribute = {"Compile": "Include", "Import": "Project"}.get(element.tag)
+        for value in (element.get(attribute) or "").split(";") if attribute else []:
+            value = value.strip().replace("$(MSBuildThisFileDirectory)", "").replace("\\", "/")
+            if value:
+                globs.append(posixpath.normpath(posixpath.join(folder, value)))
+    return globs
+
+
+def inputs(shard: Shard) -> list[str]:
+    """The globs of the files whose change affects a shard: its project, strict files, config, test projects, and what those
+    projects compile or import from outside their folders."""
+    config = json.loads(shard.config.read_text(encoding="utf-8"))["stryker-config"]
+    globs = [f"{relative(shard.workdir)}/**", *shard.strict, relative(shard.config), *project_globs(shard.workdir / config["project"])]
+    for test_project in config.get("test-projects", []):
+        test_project = shard.workdir / test_project
+        globs += [f"{relative(test_project.parent)}/**", *project_globs(test_project)]
+    return globs
+
+
+def changed_files(since: str) -> list[str]:
+    """The files changed between `since` and HEAD (both sides of a rename), or an error when git can't tell."""
+    completed = subprocess.run(
+        ["git", "diff", "--name-only", "--no-renames", "-z", f"{since}...HEAD"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=False,
+    )
+    if completed.returncode != 0:
+        raise ValueError(f"git diff {since}...HEAD failed: {completed.stderr.strip()}")
+    # -z: paths as they are, never quoted (a non-ASCII name would be).
+    return [path for path in completed.stdout.split("\0") if path]
+
+
+def affected(shard: Shard, changed: list[str]) -> bool:
+    regexes = [glob_to_regex(pattern) for pattern in TOOLING + inputs(shard)]
+    return any(regex.match(path) for path in changed for regex in regexes)
 
 
 def run_stryker(shard: Shard, output: Path) -> int:
@@ -190,17 +259,38 @@ def main(argv: list[str]) -> int:
     # The summary has emoji; a redirected stdout on Windows uses the ANSI code page (cp1250), which can't encode them.
     sys.stdout.reconfigure(encoding="utf-8")
     shards = load_shards()
+    since = None
+    if argv[:1] == ["--changed-since"]:
+        # An empty commit would diff HEAD with itself and select nothing.
+        if len(argv) < 2 or not argv[1].strip() or argv[1].startswith("--"):
+            print("--changed-since needs a commit.", file=sys.stderr)
+            return 2
+        since, argv = argv[1], argv[2:]
     if not argv or argv == ["--help"]:
         print(__doc__)
         return 2
-    if argv == ["--list"]:
-        print("\n".join(shards))
-        return 0
+    listing = argv[0] == "--list"
+    if listing:
+        argv = argv[1:] or ["--all"]
     names = list(shards) if argv == ["--all"] else argv
     unknown = [name for name in names if name not in shards]
     if unknown:
         print(f"Unknown shard(s): {', '.join(unknown)}. Known: {', '.join(shards)}", file=sys.stderr)
         return 2
+    if since is not None:
+        try:
+            changed = changed_files(since)
+        except ValueError as error:
+            print(error, file=sys.stderr)
+            return 2
+        names = [name for name in names if affected(shards[name], changed)]
+    if listing:
+        if names:
+            print("\n".join(names))
+        return 0
+    if not names:
+        print(f"No shard is affected by the changes since {since}.")
+        return 0
 
     results = []
     for name in names:

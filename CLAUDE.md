@@ -45,6 +45,7 @@ dotnet pack OpenUrzednik.Packages.slnf -c Release    # runs package validation, 
 dotnet test tests/OpenUrzednik.IntegrationTests --explicit on   # also hits the real NBP API
 dotnet tool restore                                             # once: Stryker.NET (local tool)
 uv run tests/Mutation/run.py nbp                                # mutation tests of one shard (--all, --list); reports in artifacts/mutation
+uv run tests/Mutation/run.py --changed-since origin/develop --all   # only the shards the branch's committed changes affect, as on a PR into develop
 uv run .github/scripts/package_guard.py                         # suppressions, package-validation properties, signing, baseline (CI runs it)
 ```
 

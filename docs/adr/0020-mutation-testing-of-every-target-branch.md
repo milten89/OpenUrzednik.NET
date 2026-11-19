@@ -18,7 +18,8 @@ Line coverage doesn't show whether tests check behaviour, so ADR-0018 introduced
 * Every release (and hotfix, and backport to a support branch) is checked, without relying on someone remembering to run it.
 * An occasional check on `develop` catches erosion between releases.
 * The scope follows risk to users, not today's test strength: all production code, on every branch a target compiles, minus mutants that can't harm anyone.
-* Fast enough for a release PR, without slowing down every PR into `develop`.
+* Fast enough for a release PR; a PR into `develop` waits only for the shards its change affects.
+* A gap shows up in the PR that causes it, not weeks later in the weekly run or on the release PR.
 * No change to the published packages.
 
 ## Considered Options
@@ -27,7 +28,8 @@ For the gate (unchanged from ADR-0018):
 
 * Stryker.NET on every release PR as a required check, plus a weekly run
 * Stryker.NET as a report only (weekly or on demand), no gate
-* Stryker.NET on every PR into `develop` (changed files only)
+* Stryker.NET on every PR into `develop`, only the shards its change affects
+* Stryker.NET on every PR into `develop`, every shard
 * No mutation testing; keep hand-made mutation checks in PRs
 
 For the branches only netstandard2.0 compiles:
@@ -39,7 +41,7 @@ For the branches only netstandard2.0 compiles:
 
 ## Decision Outcome
 
-Chosen options: "Stryker.NET on every release PR as a required check, plus a weekly run", because it checks every release automatically and keeps PR CI into `develop` fast; and "Test-only hosts that compile the code on net10.0 without the `NET` symbol", because it is the only way that works with Stryker.NET 5.0.0 and xUnit v3 today.
+Chosen options: "Stryker.NET on every release PR as a required check, plus a weekly run", because it checks every release automatically; "Stryker.NET on every PR into `develop`, only the shards its change affects", because a gap then shows up in the PR that causes it while a PR that touches no shard's code doesn't wait; and "Test-only hosts that compile the code on net10.0 without the `NET` symbol", because it is the only way that works with Stryker.NET 5.0.0 and xUnit v3 today.
 
 * **Tool:** [Stryker.NET](https://stryker-mutator.io/docs/stryker-net/introduction/) as a local tool (`.config/dotnet-tools.json`), with the Microsoft Testing Platform runner (`test-runner: mtp`): its VSTest runner can't run xUnit v3 tests. One target framework per run, `net10.0`. `concurrency: 1` while the MTP runner under-reports kills in parallel sessions (stryker-net #3832).
 * **Shards:** `tests/Mutation/shards.json` lists one shard per project under test, each with its Stryker config (`tests/Mutation/stryker-<shard>.json`). The workflow runs them on parallel runners. Shared source that only a test project compiles (`src/Identifiers`, `src/Privacy`, `src/Http`) is compiled into test-only host libraries in `tests/`, because Stryker never mutates a test project's own files. A new provider adds its shards (`/new-provider`).
@@ -50,13 +52,16 @@ Chosen options: "Stryker.NET on every release PR as a required check, plus a wee
   * A provider's own netstandard2.0 branches get a host when they produce mutants. NBP's don't today: a spike in #251 compiled the whole provider this way (with `DateOnly` as the `DateTime` alias) and found one mutant on a netstandard2.0-only line, in `DateOnlyPolyfills.DayNumber`, killed; not worth a shard.
 * **Scope:** all production code, on every branch as above, except low-value mutants: log calls (message text and properties aren't contract, ADR-0003 and ADR-0011), mutants inside exception constructor calls (`*Exception.ctor`; a rule that matters, such as which constructor gets the inner exception, goes in a statement outside the call), `Polyfills/` and `Dto/`, and mutants marked `// Stryker disable once <Mutator> : <reason>` because they're equivalent (performance-only paths, caches), or because Stryker can't activate them (static field initializers, verified by hand). The comment covers every mutant of the listed kinds in the statement that follows, so it goes on the narrowest statement, and it never stands for missing tests.
 * **Gate:** `tests/Mutation/run.py` fails a shard when no mutant was tested, when a mutant in one of its **strict** files is undetected (Survived or NoCoverage), or when its score is below its `break` value. Strict files are the code whose broken behaviour would harm users: the error contract and the HTTP executor, validators and options validation, results, errors and exceptions, identifiers and masking, mappers, models, payload selection and URL building, display paths and their logging, resilience translation. The rest is **ratchet** code: its `break` is the floor of its last score, raised whenever tests improve, until it can turn strict.
-* **When it runs:** on every PR into `main` and `release/*.x` (release, hotfix and backport PRs), where the `mutation` job is a required status check (ruleset `release-mutation`, [GITHUB-SETUP](../GITHUB-SETUP.md)); every Monday on `develop`; on demand; and on a PR into `develop` that changes the mutation tooling. Not on other PRs into `develop`.
+* **When it runs:** every shard on every PR into `main` and `release/*.x` (release, hotfix and backport PRs), where the `mutation` job is a required status check (ruleset `release-mutation`, [GITHUB-SETUP](../GITHUB-SETUP.md)); every Monday on `develop`; and on demand. On every PR into `develop`, only the shards its change affects (`run.py --changed-since <base>`): a change to a shard's project, strict files, Stryker config, test projects, or what those projects compile or import from outside their folders; a change to what every shard runs with (`run.py`, `shards.json`, `mutation.yml`, `.config/dotnet-tools.json`, `global.json`, `Directory.Packages.props`, `tests/Directory.Build.props`) runs every shard. A dependency a shard neither mutates nor tests (Core under a provider, `TestCommon`, the other `Directory.*` files) doesn't count; the weekly and release runs cover it. The `mutation` job always reports, passing when no shard is affected, and is a required status check on `develop` too (ruleset `develop-mutation`).
 * Locally: `dotnet tool restore`, then `uv run tests/Mutation/run.py <shard>` (or `--all`).
 
 ### Consequences
 
 * Good, because no release goes out with strict code whose tests don't catch a change in it, on either branch of the shared source.
 * Good, because the weekly run shows erosion between releases, and the reports name the exact mutant.
+* Good, because a PR into `develop` that leaves strict code without tests that kill its mutants fails there, so the gap never reaches a release PR.
+* Bad, because a PR into `develop` that touches a shard's code waits for that shard (minutes, the `http` runner the longest), and a flaky result of the preview runner can hit any contributor; rerun the shard.
+* Bad, because a change only to a dependency of a shard (Core, `TestCommon`, the build's `Directory.*` files) isn't mutation-tested until the weekly or release run, and a PR that bumps the SDK or a package version (Dependabot) runs every shard.
 * Good, because the shared source is compiled into real libraries for the tests, which also runs it on net472 like production.
 * Good, because a separate copy of a rule for netstandard2.0 can no longer drift from its tests unnoticed.
 * Bad, because the MTP runner is a preview: a Stryker bug can fail a release PR; rerun the shard, and if it persists, fix or pin the tool before releasing.
@@ -68,7 +73,7 @@ Chosen options: "Stryker.NET on every release PR as a required check, plus a wee
 
 ### Confirmation
 
-* The required `mutation` check on release, hotfix and backport PRs; the weekly run's result.
+* The required `mutation` check on release, hotfix and backport PRs and on PRs into `develop`; the weekly run's result.
 * `/prepare-release` waits for `mutation` on the release PR and stops when it fails.
 * The `reviewer` agent flags a `// Stryker disable` comment without a reason, or one that hides missing tests; new strict code without tests that kill its mutants; and a new `#if` branch in strict code that no shard mutates.
 
@@ -84,10 +89,15 @@ Chosen options: "Stryker.NET on every release PR as a required check, plus a wee
 * Good, because nothing can block.
 * Bad, because nothing makes anyone read it before a release.
 
-### Stryker.NET on every PR into `develop`
+### Stryker.NET on every PR into `develop`, only the shards its change affects
 
-* Good, because problems show up in the PR that causes them.
-* Bad, because every PR waits, and the preview runner's flaky results would hit every contributor. A possible addition once the MTP runner is stable.
+* Good, because problems show up in the PR that causes them, and a PR that touches no shard's code (docs, CI, other tests) doesn't wait.
+* Bad, because the preview runner's flaky results can hit contributors, and a change only to a dependency is caught later.
+
+### Stryker.NET on every PR into `develop`, every shard
+
+* Good, because a dependency's change is checked at once too.
+* Bad, because every PR waits for the longest shard, and the preview runner's flaky results would hit every contributor.
 
 ### No mutation testing
 
@@ -113,4 +123,8 @@ Chosen options: "Stryker.NET on every release PR as a required check, plus a wee
 
 ## More Information
 
-* Issues [#227](https://github.com/milten89/OpenUrzednik.NET/issues/227) (ADR-0018) and [#251](https://github.com/milten89/OpenUrzednik.NET/issues/251). Revisit `concurrency` when stryker-net #3897 ships, PR runs when the MTP runner leaves preview, and a real net472 shard (polyfills included) when a release ships stryker-net PR #3854; `/stryker` tracks these.
+* Issues [#227](https://github.com/milten89/OpenUrzednik.NET/issues/227) (ADR-0018) and [#251](https://github.com/milten89/OpenUrzednik.NET/issues/251). Revisit `concurrency` when stryker-net #3897 ships, running every shard on PRs into `develop` when the MTP runner leaves preview, and a real net472 shard (polyfills included) when a release ships stryker-net PR #3854; `/stryker` tracks these.
+
+### Corrections before release
+
+* 2026-11-19 · [#280](https://github.com/milten89/OpenUrzednik.NET/issues/280) · PRs into `develop` run the shards their change affects, and `mutation` is required there (ruleset `develop-mutation`); `mutation-tooling.yml`, which ran every shard only when the tooling changed, is removed. Gaps had been found only by the weekly run.
