@@ -130,16 +130,19 @@ public sealed partial class WhiteListRequestPipelineTest
             "reason", "MF White List API response is missing 'requestId'.");
     }
 
-    // ADR-0003: a NIP in the request path, and echoed in the API's error message, reaches no log, span or error. The NIP is fake,
-    // with a valid check digit.
+    // ADR-0003: a NIP in the request path, and echoed in the API's error message, reaches no log, span or error. The NIP and the
+    // account number are fake, with valid check digits.
     private const string LeakNip = "7368125416";
+    private const string LeakAccount = "61109010140000071219812874";
 
     [Theory]
-    [InlineData(HttpStatusCode.BadRequest, """{"code":"WL-113","message":"Nieprawidłowy NIP: 7368125416."}""", typeof(WhiteListBadRequestError), true)]
-    [InlineData(HttpStatusCode.NotFound, "", typeof(HttpNotFoundError), false)]
-    [InlineData(HttpStatusCode.InternalServerError, """{"code":"WL-100","message":"Błąd dla 7368125416."}""", typeof(WhiteListServiceUnavailableError), true)]
-    [InlineData(HttpStatusCode.OK, "{", typeof(SerializationError), false)]
-    public async Task GetAsync_NipInPathAndEchoedInTheError_LeaksNothing(HttpStatusCode status, string body, Type errorType, bool echoed)
+    [InlineData(HttpStatusCode.BadRequest, """{"code":"WL-113","message":"Nieprawidłowy NIP: 7368125416."}""", typeof(WhiteListBadRequestError), "******5416")]
+    [InlineData(HttpStatusCode.BadRequest, """{"code":"WL-113","message":"Nieprawidłowy NIP: 736-812-54-16."}""", typeof(WhiteListBadRequestError), "***-***-54-16")]
+    [InlineData(HttpStatusCode.BadRequest, """{"code":"WL-113","message":"Nieprawidłowy NIP: 736 812 54 16."}""", typeof(WhiteListBadRequestError), "*** *** 54 16")]
+    [InlineData(HttpStatusCode.NotFound, "", typeof(HttpNotFoundError), null)]
+    [InlineData(HttpStatusCode.InternalServerError, """{"code":"WL-100","message":"Błąd dla 7368125416."}""", typeof(WhiteListServiceUnavailableError), "******5416")]
+    [InlineData(HttpStatusCode.OK, "{", typeof(SerializationError), null)]
+    public async Task GetAsync_NipInPathAndEchoedInTheError_LeaksNothing(HttpStatusCode status, string body, Type errorType, string? masked)
     {
         // Arrange
         var telemetry = new RecordingTelemetry();
@@ -152,9 +155,47 @@ public sealed partial class WhiteListRequestPipelineTest
         // Assert
         var error = result.Errors.ShouldHaveSingleItem();
         error.ShouldBeOfType(errorType);
-        if (echoed)
-            error.Message.ShouldContain("******5416");
+        if (masked is not null)
+            error.Message.ShouldContain(masked);
         result.ShouldNotLeak(telemetry, LeakNip);
+    }
+
+    [Fact]
+    public async Task GetAsync_EchoInABodyLongerThanTheReadLimit_LeaksNothingAndEchoesNothing()
+    {
+        // Arrange: the executor reads the first 500 characters, so the JSON is cut and the server's text is dropped, identifiers before
+        // and after the cut included.
+        var telemetry = new RecordingTelemetry();
+        var body = $$"""{"code":"WL-113","message":"Nieprawidłowy NIP: {{LeakNip}}. {{new string('x', 600)}} {{LeakNip}}"}""";
+        var sut = CreateSut(Json(HttpStatusCode.BadRequest, body), out _, new OpenUrzednikTelemetry(telemetry, telemetry));
+
+        // Act
+        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
+            () => $"search/nip/{LeakNip}", DisplayPath, WhiteListJsonContext.Default.ErrorDto, dto => dto.Code, TestContext.Current.CancellationToken);
+
+        // Assert
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<WhiteListBadRequestError>();
+        error.Message.ShouldBe("MF White List API rejected the request to https://wykazpodatnikowvat.mf.gov.pl/api/search/nip/{nip}.");
+        error.WhiteListCode.ShouldBeNull();
+        result.ShouldNotLeak(telemetry, LeakNip);
+    }
+
+    [Fact]
+    public async Task GetAsync_AccountInPathAndEchoedGrouped_LeaksNothing()
+    {
+        // Arrange
+        var telemetry = new RecordingTelemetry();
+        var body = """{"code":"WL-109","message":"Nieprawidłowy numer rachunku: 61 1090 1014 0000 0712 1981 2874."}""";
+        var sut = CreateSut(Json(HttpStatusCode.BadRequest, body), out _, new OpenUrzednikTelemetry(telemetry, telemetry));
+
+        // Act
+        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_bank_account"), "SearchByBankAccountAsync",
+            OpenUrzednikResult.Success(), () => $"search/bank-account/{LeakAccount}", "search/bank-account/{bankAccount}",
+            WhiteListJsonContext.Default.ErrorDto, dto => dto.Code, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<WhiteListBadRequestError>().Message.ShouldContain("** **** **** **** **** **** 2874");
+        result.ShouldNotLeak(telemetry, LeakAccount);
     }
 
     [Fact]
