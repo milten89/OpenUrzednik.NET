@@ -60,6 +60,6 @@ P:System.DateTimeOffset.UtcNow;Use TimeProvider.GetUtcNow()
 # Tracing goes through IOpenUrzednikTraceSource; ActivitySource only in Core's Telemetry/Activities and OpenUrzednik.Diagnostics (ADR-0025).
 T:System.Diagnostics.ActivitySource;Use IOpenUrzednikTraceSource (ADR-0025)
 
-# Metrics go through IOpenUrzednikMetrics, on one shared meter per provider; Meter only in Core's Telemetry/Metrics and
+# Metrics go through IOpenUrzednikMetrics, on one meter per provider (and per DI container with an IMeterFactory); Meter only in Core's Telemetry/Metrics and
 # OpenUrzednik.Diagnostics/MeterMetrics.cs (ADR-0025).
 T:System.Diagnostics.Metrics.Meter;Use IOpenUrzednikMetrics (ADR-0025)

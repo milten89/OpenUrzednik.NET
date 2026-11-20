@@ -28,12 +28,18 @@ internal sealed class SharedOpenUrzednikMeter : IOpenUrzednikMetrics
 
     private SharedOpenUrzednikMeter(Meter meter) => Meter = meter;
 
-    /// <summary>The meter; it lives as long as the process.</summary>
+    /// <summary>The meter: a shared one lives as long as the process, one passed to <see cref="Over"/> as long as its owner keeps it.</summary>
     internal Meter Meter { get; }
 
     /// <summary>Returns the metrics for <paramref name="name"/>, creating its <see cref="Meter"/> on first use.</summary>
     internal static SharedOpenUrzednikMeter Get(string name)
         => Shared.GetOrAdd(name, static key => new Lazy<SharedOpenUrzednikMeter>(() => new SharedOpenUrzednikMeter(new Meter(key)))).Value;
+
+    /// <summary>
+    /// Returns metrics over a meter the caller owns, e.g. one from an <c>IMeterFactory</c> (ADR-0025): not shared, so create one
+    /// per meter and reuse it, or its instruments are created again. Added in 1.1.0 for <c>MeterMetrics.Create</c>.
+    /// </summary>
+    internal static SharedOpenUrzednikMeter Over(Meter meter) => new(meter);
 
     /// <inheritdoc/>
     /// <remarks>
