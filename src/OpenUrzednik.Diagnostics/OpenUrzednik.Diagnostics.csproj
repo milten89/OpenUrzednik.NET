@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Unofficial OpenUrzednik.NET adapter for System.Diagnostics: turns the clients' spans into Activities for OpenTelemetry and other listeners.</Description>
-    <PackageTags>Tracing;ActivitySource;OpenTelemetry;API;Poland;Gov</PackageTags>
+    <Description>Unofficial OpenUrzednik.NET adapter for System.Diagnostics: turns the clients' spans into Activities and their measurements into System.Diagnostics.Metrics instruments, for OpenTelemetry and other listeners.</Description>
+    <PackageTags>Tracing;ActivitySource;Metrics;Meter;OpenTelemetry;API;Poland;Gov</PackageTags>
   </PropertyGroup>
 
   <!-- The only package ADR-0024 allows the tracing adapter, on netstandard2.0 only; src/Directory.Build.targets checks it. -->
@@ -22,6 +22,7 @@
   <!-- On .NET these types are in Core (internal, InternalsVisibleTo); netstandard2.0 compiles the same files in (ADR-0025). -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="..\OpenUrzednik.Core\Telemetry\Activities\*.cs" Link="Activities\%(Filename)%(Extension)" />
+    <Compile Include="..\OpenUrzednik.Core\Telemetry\Metrics\*.cs" Link="Metrics\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

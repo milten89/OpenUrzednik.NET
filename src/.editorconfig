@@ -24,3 +24,7 @@ dotnet_diagnostic.RS0030.severity = none
 # The fallback trace source and the ActivitySource adapter (ADR-0025).
 [{OpenUrzednik.Core/Telemetry/Activities/**.cs,OpenUrzednik.Diagnostics/ActivityTraceSource.cs}]
 dotnet_diagnostic.RS0030.severity = none
+
+# The shared meter per provider and the Meter adapter (ADR-0025).
+[{OpenUrzednik.Core/Telemetry/Metrics/**.cs,OpenUrzednik.Diagnostics/MeterMetrics.cs}]
+dotnet_diagnostic.RS0030.severity = none

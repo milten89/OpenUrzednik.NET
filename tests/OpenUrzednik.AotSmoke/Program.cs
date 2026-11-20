@@ -141,6 +141,18 @@ using (var provider = services.BuildServiceProvider())
     Check("di: keyed client", keyedRates.IsSuccess, Describe(keyedRates));
 }
 
+// 4. Metrics: MeterMetrics creates an instrument from a measurement and records its value and tags.
+var measurements = new List<(string Instrument, double Value, int Tags)>();
+using (var meterListener = new System.Diagnostics.Metrics.MeterListener())
+{
+    meterListener.InstrumentPublished = (instrument, l) => { if (instrument.Meter.Name == "OpenUrzednik.AotSmoke") l.EnableMeasurementEvents(instrument); };
+    meterListener.SetMeasurementEventCallback<double>((instrument, value, tags, _) => measurements.Add((instrument.Name, value, tags.Length)));
+    meterListener.Start();
+    MeterMetrics.GetShared("OpenUrzednik.AotSmoke").Record(new SmokeMeasurement());
+}
+Check("metrics: a histogram measurement reaches a MeterListener",
+    measurements is [("openurzednik.smoke.duration", 0.25, 1)], string.Join(", ", measurements));
+
 lock (spans)
     Check("tracing: spans reach the OpenUrzednik.Nbp source", spans.Contains("nbp.gold.latest"), string.Join(", ", spans));
 
@@ -207,4 +219,15 @@ internal sealed class FixtureHandler(HttpStatusCode? status = null, string? reso
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
+}
+
+// A measurement as the library creates them (theirs are internal to each provider).
+internal sealed class SmokeMeasurement : OpenUrzednik.Core.Telemetry.IOpenUrzednikHistogramMeasurement
+{
+    public string Name => "openurzednik.smoke.duration";
+    public string Unit => "s";
+    public string Description => "AOT smoke test.";
+    public IReadOnlyList<KeyValuePair<string, object?>> Tags { get; } = [new("openurzednik.operation", "smoke")];
+    public double Value => 0.25;
+    public IReadOnlyList<double>? BucketBoundaries { get; } = [0.1, 1];
 }
