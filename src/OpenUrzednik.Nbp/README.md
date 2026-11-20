@@ -156,7 +156,7 @@ The package also runs on .NET Framework 4.7.2 or later (through `netstandard2.0`
 
 ## Logging and tracing
 
-The clients take an optional `telemetry` parameter, an `OpenUrzednikTelemetry` with `Logger`, `TraceSource` and `Metrics` properties; a property you leave `null` keeps its default. Without a logger they log nothing. Without a trace source, on .NET 8 and later they record spans on the `OpenUrzednik.Nbp` `ActivitySource` (`NbpTelemetry.SourceName`), which costs nothing while no one listens to it; on .NET Framework they record none. To use `ILogger` and OpenTelemetry, install the [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) and [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics) adapters:
+The clients' last constructor parameter, `telemetry`, takes an `OpenUrzednikTelemetry` with `Logger`, `TraceSource` and `Metrics` properties (pass `null` for `options` and `timeProvider` to keep their defaults); a property you leave `null` keeps its default. Without a logger they log nothing. Without a trace source, on .NET 8 and later they record spans on the `OpenUrzednik.Nbp` `ActivitySource` (`NbpTelemetry.SourceName`), which costs nothing while no one listens to it; on .NET Framework they record none. To use `ILogger` and OpenTelemetry, install the [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) and [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics) adapters:
 
 ```csharp
 using OpenUrzednik.Core.Telemetry;
@@ -172,7 +172,7 @@ var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: nul
 });
 ```
 
-On .NET 8 and later the `TraceSource` and `Metrics` lines are optional; to turn spans off, pass `NullOpenUrzednikTraceSource.Instance`. Subscribe with `AddSource("OpenUrzednik.*")` or `AddSource(NbpTelemetry.SourceName)`. Logs go to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`).
+On .NET 8 and later the `TraceSource` and `Metrics` lines are optional; to turn spans off, set `TraceSource = NullOpenUrzednikTraceSource.Instance`. Subscribe with `AddSource("OpenUrzednik.*")` or `AddSource(NbpTelemetry.SourceName)`. Logs go to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`).
 
 Without `Metrics`, on .NET 8 and later the clients record each operation's duration on the `OpenUrzednik.Nbp` `Meter`, which costs nothing while no one listens to it; on .NET Framework they record none. Set `Metrics = MeterMetrics.GetShared(NbpTelemetry.SourceName)` (OpenUrzednik.Diagnostics) to record on .NET Framework too (the DI package does this for you), and subscribe with `AddMeter("OpenUrzednik.*")` or `AddMeter(NbpTelemetry.SourceName)`.
 

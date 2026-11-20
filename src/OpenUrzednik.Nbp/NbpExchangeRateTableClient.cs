@@ -69,7 +69,7 @@ public sealed partial class NbpExchangeRateTableClient : INbpExchangeRateTableCl
     /// <param name="traceSource">Trace source for spans; <see langword="null"/> uses the <see cref="NbpTelemetry.SourceName"/> <c>ActivitySource</c> on .NET 8 and later, and disables tracing on .NET Framework (netstandard2.0).</param>
     /// <exception cref="ArgumentNullException"><paramref name="httpClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="options"/> or the <see cref="HttpClient.BaseAddress"/> is invalid (not an absolute <c>https</c> URL, or a non-positive timeout).</exception>
-    [Obsolete("Pass the logger and trace source in an OpenUrzednikTelemetry (ADR-0025). This constructor is removed in 2.0.")]
+    [Obsolete("Use the constructor (HttpClient, NbpOptions?, TimeProvider?, OpenUrzednikTelemetry?) or a shorter one; pass a logger or trace source in an OpenUrzednikTelemetry (ADR-0025). This constructor is removed in 2.0.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public NbpExchangeRateTableClient(HttpClient httpClient, NbpOptions? options = null, TimeProvider? timeProvider = null,
         IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)

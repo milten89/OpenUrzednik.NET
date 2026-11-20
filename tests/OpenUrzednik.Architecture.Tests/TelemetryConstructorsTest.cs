@@ -13,9 +13,9 @@ public class TelemetryConstructorsTest
 {
     private static readonly Type[] TelemetryKinds = [typeof(IOpenUrzednikLogger), typeof(IOpenUrzednikTraceSource), typeof(IOpenUrzednikMetrics)];
 
+    // A client is a public type built from an HttpClient, so one that takes no telemetry at all is found too.
     private static List<Type> Clients() => PublicSurface.Types()
-        .Where(type => PublicSurface.Constructors(type).Any(constructor => Takes(constructor, typeof(OpenUrzednikTelemetry))
-                                                                           || TelemetryKinds.Any(kind => Takes(constructor, kind))))
+        .Where(type => PublicSurface.Constructors(type).Any(constructor => constructor.GetParameters().FirstOrDefault()?.ParameterType == typeof(HttpClient)))
         .ToList();
 
     [Fact]

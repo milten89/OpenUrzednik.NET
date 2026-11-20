@@ -7,7 +7,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Http.Tests.Infrastructure;
 
-public class OpenUrzednikTelemetryTest
+public class ClientTelemetryTest
 {
     [Fact]
     public void Ctor_NoArguments_UsesNullImplementations()

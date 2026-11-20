@@ -122,6 +122,31 @@ public partial class NbpCurrencyExchangeRateClientTest
     }
 
     [Fact]
+    public async Task Ctor_Obsolete_PassesOptionsClockAndTelemetryOn()
+    {
+        // Arrange: the 1.0 constructor, obsolete until 2.0, still forwards every argument
+        var handler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
+        using var httpClient = new HttpClient(handler);
+        var (logger, _, tracer) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
+        var options = new NbpOptions { ApiUrl = "https://gateway.example.com/nbp/" };
+        var clock = new FakeTimeProvider(new DateTimeOffset(2100, 1, 1, 12, 0, 0, TimeSpan.Zero));
+#pragma warning disable CS0618 // the obsolete constructor is what this test checks
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, options, clock, logger, tracer);
+#pragma warning restore CS0618
+
+        // Act: a date before the data fails validation (logged); one in the future for the system clock is sent
+        await sut.GetAsync("USD", new DateOnly(1990, 1, 1), cancellationToken: TestContext.Current.CancellationToken);
+        var result = await sut.GetAsync("USD", new DateOnly(2099, 6, 1), cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, NbpEvents.ValidationFailed, null, "Validation failed for {operation}", "operation", Arg.Any<string>());
+        tracer.Received().StartSpan(Arg.Any<string>());
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpNotFoundError>(); // from the stub
+        handler.Request.ShouldNotBeNull().RequestUri.ShouldNotBeNull().Host.ShouldBe("gateway.example.com");
+    }
+
+    [Fact]
     public async Task Ctor_CustomTelemetry_LogsAndTracesThroughIt()
     {
         // Arrange
