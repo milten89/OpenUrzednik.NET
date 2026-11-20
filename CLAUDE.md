@@ -88,7 +88,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
   - The one exception is the fallback trace source: on the .NET targets a client without a trace source uses the shared `OpenUrzednik.<Provider>` source, through Core's internal `Telemetry/Activities` (compiled into Core on .NET only, linked into `OpenUrzednik.Diagnostics` for netstandard2.0; Core grants `InternalsVisibleTo` on .NET only, and a new REST provider must be added to it). netstandard2.0 falls back to `NullOpenUrzednikTraceSource`.
   - Those Core internals are called across packages, and an app may pair a newer Core with older packages: within a major, add to them, never change or remove.
 - These interfaces are frozen from 1.0: a new capability is a separate interface that callers check with `is`.
-- Metrics (decided, being implemented): Core's abstract `OpenUrzednikMetrics` with virtual no-op methods (a new measurement is a new virtual method in a minor, never an abstract one), `MeterMetrics` in `OpenUrzednik.Diagnostics` on every target, the histogram `openurzednik.client.operation.duration` per provider meter `OpenUrzednik.<Provider>`; recorded while the span is current, with the span's own duration (`IOpenUrzednikSpanTiming`) or one measurement of its own.
+- Metrics (decided, being implemented): Core's `IOpenUrzednikMetrics` (`IsEnabled(name)`, `Record(IOpenUrzednikMeasurement)`) with public measurement interfaces by instrument kind and internal measurement classes whose name, unit and tags are set where they are measured; `MeterMetrics` in `OpenUrzednik.Diagnostics` on every target; the histogram `openurzednik.client.operation.duration` per provider meter `OpenUrzednik.<Provider>`, recorded while the span is current, with the span's own duration (`IOpenUrzednikSpanTiming`) or one measurement of its own.
 - More rules: [`.claude/rules/telemetry.md`](.claude/rules/telemetry.md).
 
 **Target frameworks ([ADR-0005](docs/adr/0005-target-frameworks.md))**
@@ -101,7 +101,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 - More rules: [`.claude/rules/http.md`](.claude/rules/http.md).
 
 **Compatibility ([ADR-0011](docs/adr/0011-compatibility-policy.md))**
-- Public classes not designed for inheritance are `sealed` (unsealing is a minor change, sealing a major one). The abstract extension points (`OpenUrzednikError`, `OpenUrzednikException`, `ValueValidator<T>`, and `OpenUrzednikMetrics` once it exists) never get a new abstract member, and no interface except a client interface gets a new member (telemetry interfaces are frozen).
+- Public classes not designed for inheritance are `sealed` (unsealing is a minor change, sealing a major one). The abstract extension points (`OpenUrzednikError`, `OpenUrzednikException`, `ValueValidator<T>`) never get a new abstract member, and no interface except a client interface gets a new member (telemetry interfaces are frozen).
 - Since 1.0.0:
   - Covered within a major: the public API on every target, documented behaviour, the error contract (ADR-0002) and the telemetry contract (ADR-0025). Not covered: log and exception message text, log properties, undocumented behaviour, internal types (except Core internals called through `InternalsVisibleTo`, which are only added to), previews.
   - A client interface may gain a method in a minor version; package validation reports it (CP0006) once the package has been released, and the PR suppresses exactly that diagnostic, citing ADR-0011.
