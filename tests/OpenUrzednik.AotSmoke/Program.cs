@@ -39,6 +39,18 @@ using var listener = new ActivityListener
 };
 ActivitySource.AddActivityListener(listener);
 
+// Metrics: the clients' operation durations on the shared OpenUrzednik.Nbp meter.
+var operations = new List<string>();
+using var nbpMeterListener = new System.Diagnostics.Metrics.MeterListener();
+nbpMeterListener.InstrumentPublished = (instrument, l) => { if (instrument.Meter.Name == NbpTelemetry.SourceName) l.EnableMeasurementEvents(instrument); };
+nbpMeterListener.SetMeasurementEventCallback<double>((instrument, _, tags, _) =>
+{
+    foreach (var tag in tags)
+        if (tag.Key == "openurzednik.operation")
+            lock (operations) operations.Add($"{instrument.Name} {tag.Value}");
+});
+nbpMeterListener.Start();
+
 // Logs: a provider that formats every entry and reads its structured state, so the logging path runs as native code too.
 var logs = new RecordingLoggerProvider();
 using var loggerFactory = LoggerFactory.Create(logging => logging.AddProvider(logs).SetMinimumLevel(LogLevel.Debug));
@@ -47,7 +59,8 @@ using var loggerFactory = LoggerFactory.Create(logging => logging.AddProvider(lo
 using (var httpClient = new HttpClient(new FixtureHandler()))
 {
     var gold = new NbpGoldPriceClient(httpClient, null, null,
-        loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(), ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
+        loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(), ActivityTraceSource.GetShared(NbpTelemetry.SourceName),
+        MeterMetrics.GetShared(NbpTelemetry.SourceName));
     var goldLatest = await gold.GetLatestAsync();
     Check("gold: latest price", goldLatest.IsSuccess && goldLatest.Value.Price == 517.55m, Describe(goldLatest));
 
@@ -153,6 +166,9 @@ using (var meterListener = new System.Diagnostics.Metrics.MeterListener())
 Check("metrics: a histogram measurement reaches a MeterListener",
     measurements is [("openurzednik.smoke.duration", 0.25, 1)], string.Join(", ", measurements));
 
+lock (operations)
+    Check("metrics: operation durations reach the OpenUrzednik.Nbp meter", operations.Contains("openurzednik.client.operation.duration nbp.gold.latest"),
+        string.Join(", ", operations));
 lock (spans)
     Check("tracing: spans reach the OpenUrzednik.Nbp source", spans.Contains("nbp.gold.latest"), string.Join(", ", spans));
 

@@ -3,9 +3,7 @@ using System.Net;
 using System.Text;
 #endif
 
-#if NET
 using OpenUrzednik.Core.Errors;
-#endif
 using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
 
@@ -117,4 +115,56 @@ public sealed class NbpClientMetricsTest : IDisposable
         Own().ShouldBeEmpty();
     }
 #endif
+
+    // Each client takes the metrics through its constructor (ADR-0025): here a MeterMetrics of its own meter, on every target.
+    public static TheoryData<string> Clients => ["gold", "currency", "table"];
+
+    [Theory]
+    [MemberData(nameof(Clients))]
+    public async Task Constructor_MeterMetrics_RecordsOnThatMeter(string client)
+    {
+        // Arrange
+        var meterName = $"OpenUrzednik.Tests.{Guid.NewGuid():N}";
+        using var recorder = new MeterRecorder(meterName);
+        var metrics = MeterMetrics.GetShared(meterName);
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound)));
+        var options = new NbpOptions { ApiUrl = $"https://{_host}/api/" };
+        var cancellationToken = TestContext.Current.CancellationToken;
+
+        // Act
+        var operation = client switch
+        {
+            "gold" => await new NbpGoldPriceClient(httpClient, options, metrics: metrics).GetLatestAsync(cancellationToken).ContinueWith(_ => "nbp.gold.latest", cancellationToken),
+            "currency" => await new NbpCurrencyExchangeRateClient(httpClient, options, metrics: metrics).GetLatestAsync("USD", cancellationToken: cancellationToken).ContinueWith(_ => "nbp.currency.latest", cancellationToken),
+            _ => await new NbpExchangeRateTableClient(httpClient, options, metrics: metrics).GetBuySellLatestAsync(cancellationToken).ContinueWith(_ => "nbp.table.buy_sell_latest", cancellationToken),
+        };
+
+        // Assert
+        var measurement = recorder.Measurements.ShouldHaveSingleItem();
+        measurement.Instrument.Name.ShouldBe("openurzednik.client.operation.duration");
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", operation));
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("server.address", _host));
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("error.type", NotFoundError.ErrorCode));
+    }
+
+    [Fact]
+    public async Task ObsoleteConstructor_StillWorks_AndRecordsWithTheDefault()
+    {
+        // Arrange: the 1.0 constructor, obsolete until 2.0
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound)));
+#pragma warning disable CS0618 // the obsolete constructor is what this test checks
+        var sut = new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = $"https://{_host}/api/" }, null, null, null);
+#pragma warning restore CS0618
+
+        // Act
+        var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);
+
+        // Assert: the default metrics, the shared OpenUrzednik.Nbp meter on .NET and none on .NET Framework
+        result.IsFailure.ShouldBeTrue();
+#if NET
+        Own().ShouldHaveSingleItem().Tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", "nbp.gold.latest"));
+#else
+        Own().ShouldBeEmpty();
+#endif
+    }
 }

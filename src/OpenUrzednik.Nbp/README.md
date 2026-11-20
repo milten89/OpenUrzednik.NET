@@ -170,11 +170,13 @@ var client = new NbpGoldPriceClient(httpClient,
 
 On .NET 8 and later the `traceSource` line is optional; to turn spans off, pass `NullOpenUrzednikTraceSource.Instance`. Subscribe with `AddSource("OpenUrzednik.*")` or `AddSource(NbpTelemetry.SourceName)`. Logs go to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`).
 
-The clients use their own interfaces (`IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` from OpenUrzednik.Core), not `ILogger` and `ActivitySource`. So this package needs neither `Microsoft.Extensions.Logging.Abstractions` nor any other logging or tracing package. Only the adapters connect it to `ILogger` and `ActivitySource`.
+The clients also take an optional `metrics` parameter. Without it, on .NET 8 and later they record each operation's duration on the `OpenUrzednik.Nbp` `Meter`, which costs nothing while no one listens to it; on .NET Framework they record none. With OpenUrzednik.Diagnostics, pass `metrics: MeterMetrics.GetShared(NbpTelemetry.SourceName)` to record on .NET Framework too (the DI package does this for you), and subscribe with `AddMeter("OpenUrzednik.*")` or `AddMeter(NbpTelemetry.SourceName)`.
+
+The clients use their own interfaces (`IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` and `IOpenUrzednikMetrics` from OpenUrzednik.Core), not `ILogger`, `ActivitySource` and `Meter`. So this package needs neither `Microsoft.Extensions.Logging.Abstractions` nor any other logging or tracing package. Only the adapters connect it to `ILogger`, `ActivitySource` and `Meter`.
 
 ## Telemetry reference
 
-Within a major version, the names below don't change: the source, span names, tags, `error.type` values, logger categories and event ids. Minor versions may add spans, tags and events. Log message text and properties may change in any version, so filter logs by event id, not by text.
+Within a major version, the names below don't change: the source and meter, span names, the metric's name, unit and tags, `error.type` values, logger categories and event ids. Minor versions may add spans, metrics, tags and events. Log message text and properties may change in any version, so filter logs by event id, not by text.
 
 ### Spans
 
@@ -210,6 +212,16 @@ Each client method starts one span on the `OpenUrzednik.Nbp` source, with the HT
 | `nbp.http.get` | the request of any method | `http.request.method`, `server.address` (e.g. `api.nbp.pl`, or the `ApiUrl` host), `server.port` (always set, e.g. `443`), `url.path` (e.g. `/api/cenyzlota`), `http.response.status_code` |
 
 Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. In the `last_published_before` spans, `nbp.date` is the date passed to the method, not the end of the requested range. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)).
+
+### Metrics
+
+Each client method records one measurement on the `OpenUrzednik.Nbp` meter when it ends, while its span is still current (so exemplars can link to the trace).
+
+| Instrument | Kind, unit | Tags |
+|---|---|---|
+| `openurzednik.client.operation.duration` | histogram, seconds (`s`) | `openurzednik.operation` (the method's span name above, e.g. `nbp.gold.latest`), `openurzednik.provider` (`nbp`), `error.type` (only on failure), `server.address`, `server.port` |
+
+The duration is exactly the span's when the operation is traced, and otherwise measured with the client's `TimeProvider`. `error.type` is the first error's code (as on the span), or `_OTHER` when the method threw, e.g. because the caller cancelled it. The suggested bucket boundaries (OpenTelemetry's for RPC calls, 0.1 ms to 60 s) apply on .NET 10 and .NET Framework; on .NET 8 the listener's defaults apply.
 
 ### Log events
 
