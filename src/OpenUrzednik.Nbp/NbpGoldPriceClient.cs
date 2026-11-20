@@ -56,44 +56,48 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetLatestAsync(CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.latest");
+        using var operation = _pipeline.StartOperation("nbp.gold.latest");
+        var traceSpan = operation.Span;
 
-        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetLatestAsync), OpenUrzednikResult.Success(),
-            _urlBuilder.Latest, JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
+        return operation.Complete(await _pipeline.GetFirstAsync(traceSpan, nameof(GetLatestAsync), OpenUrzednikResult.Success(),
+            _urlBuilder.Latest, JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false));
     }
 
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<IReadOnlyList<GoldPrice>>> GetTopCountAsync(int topCount, CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.top_count");
+        using var operation = _pipeline.StartOperation("nbp.gold.top_count");
+        var traceSpan = operation.Span;
         traceSpan.SetTag("nbp.top_count", topCount);
 
         var validation = new TopCountValidator(nameof(topCount), topCount, TopCountValidator.MaxTopCount).Validate();
 
-        return await _pipeline.GetAsync(traceSpan, nameof(GetTopCountAsync), validation,
-            () => _urlBuilder.ForTopCount(topCount), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
+        return operation.Complete(await _pipeline.GetAsync(traceSpan, nameof(GetTopCountAsync), validation,
+            () => _urlBuilder.ForTopCount(topCount), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false));
     }
 
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetTodayAsync(CancellationToken cancellationToken = default)
     {
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.today");
+        using var operation = _pipeline.StartOperation("nbp.gold.today");
+        var traceSpan = operation.Span;
 
-        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetTodayAsync), OpenUrzednikResult.Success(),
-            _urlBuilder.Today, JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
+        return operation.Complete(await _pipeline.GetFirstAsync(traceSpan, nameof(GetTodayAsync), OpenUrzednikResult.Success(),
+            _urlBuilder.Today, JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false));
     }
 
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetAsync(DateTime date, CancellationToken cancellationToken = default)
     {
         var day = DateOnly.FromDateTime(date);
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.date");
+        using var operation = _pipeline.StartOperation("nbp.gold.date");
+        var traceSpan = operation.Span;
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
         var validation = new GoldDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate();
 
-        return await _pipeline.GetFirstAsync(traceSpan, nameof(GetAsync), validation,
-            () => _urlBuilder.ForDate(day), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
+        return operation.Complete(await _pipeline.GetFirstAsync(traceSpan, nameof(GetAsync), validation,
+            () => _urlBuilder.ForDate(day), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false));
     }
 
     /// <inheritdoc/>
@@ -101,27 +105,29 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
     {
         var fromDay = DateOnly.FromDateTime(from);
         var toDay = DateOnly.FromDateTime(to);
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.range");
+        using var operation = _pipeline.StartOperation("nbp.gold.range");
+        var traceSpan = operation.Span;
         traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
         traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
 
         var validation = new GoldDateValidator(nameof(to), toDay, WarsawCalendar.Today(_timeProvider)).Validate()
             .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxRatesDateRange).Validate());
 
-        return await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
-            () => _urlBuilder.ForDateRange(fromDay, toDay), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false);
+        return operation.Complete(await _pipeline.GetAsync(traceSpan, nameof(GetAsync), validation,
+            () => _urlBuilder.ForDateRange(fromDay, toDay), JsonContext.GoldPriceDtoArray, Mapper.MapToGoldPrice, cancellationToken).ConfigureAwait(false));
     }
 
     /// <inheritdoc/>
     public async Task<OpenUrzednikResult<GoldPrice>> GetLastPublishedBeforeAsync(DateTime date, CancellationToken cancellationToken = default)
     {
         var day = DateOnly.FromDateTime(date);
-        using var traceSpan = _telemetryProvider.TraceSource.StartSpan("nbp.gold.last_published_before");
+        using var operation = _pipeline.StartOperation("nbp.gold.last_published_before");
+        var traceSpan = operation.Span;
         traceSpan.SetTag("nbp.date", day.ToIso8601String());
 
         var validation = new LastPublishedBeforeDateValidator(nameof(date), day, GoldDateValidator.MinDate, WarsawCalendar.Today(_timeProvider)).Validate();
 
-        return await _pipeline.GetLastAsync(traceSpan, nameof(GetLastPublishedBeforeAsync), validation,
-            () => _urlBuilder.ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), day.AddDays(-1)), JsonContext.GoldPriceDtoArray, Mapper.MapLastToGoldPrice, cancellationToken).ConfigureAwait(false);
+        return operation.Complete(await _pipeline.GetLastAsync(traceSpan, nameof(GetLastPublishedBeforeAsync), validation,
+            () => _urlBuilder.ForDateRange(day.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), day.AddDays(-1)), JsonContext.GoldPriceDtoArray, Mapper.MapLastToGoldPrice, cancellationToken).ConfigureAwait(false));
     }
 }

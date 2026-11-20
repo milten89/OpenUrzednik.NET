@@ -10,7 +10,8 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// here, where the operation is measured; the packages' telemetry references document them.
 /// </summary>
 /// <remarks>
-/// It is its own tag list, so recording an operation allocates this one object; the boxed port comes from the caller,
+/// Created when the operation starts (<see cref="OperationScope"/>, only while the metric is enabled) and completed once
+/// when it ends, with its duration and error type. It is its own tag list, so recording an operation allocates this one object; the boxed port comes from the caller,
 /// which boxes it once per client. Tags never carry identifiers: the operation is a span name and the error type an
 /// error code.
 /// </remarks>
@@ -26,25 +27,33 @@ internal sealed class OperationMeasurement : IOpenUrzednikHistogramMeasurement, 
 
     private readonly string _operation;
     private readonly string _provider;
-    private readonly string? _errorType;
+    private string? _errorType;
     private readonly string? _serverAddress;
     private readonly object? _serverPort;
 
     /// <param name="operation">The operation's span name, e.g. <c>nbp.gold.latest</c>.</param>
     /// <param name="provider">The provider's short name, e.g. <c>nbp</c>.</param>
-    /// <param name="duration">How long the operation took.</param>
-    /// <param name="errorType">The error code when it failed (OpenTelemetry's <c>error.type</c>); <see langword="null"/> on success.</param>
     /// <param name="serverAddress">The API's host (<c>server.address</c>), if known.</param>
     /// <param name="serverPort">The API's port (<c>server.port</c>), boxed once by the caller, if known.</param>
-    internal OperationMeasurement(string operation, string provider, TimeSpan duration, string? errorType, string? serverAddress, object? serverPort)
+    internal OperationMeasurement(string operation, string provider, string? serverAddress, object? serverPort)
     {
         _operation = operation;
         _provider = provider;
-        Value = duration.TotalSeconds;
-        _errorType = errorType;
         _serverAddress = serverAddress;
         _serverPort = serverPort;
-        Count = 2 + (errorType is null ? 0 : 1) + (serverAddress is null ? 0 : 1) + (serverPort is null ? 0 : 1);
+    }
+
+    /// <summary>Whether <see cref="Complete"/> has run.</summary>
+    internal bool IsCompleted { get; private set; }
+
+    /// <summary>Sets the operation's duration and error type, once.</summary>
+    /// <param name="duration">How long the operation took.</param>
+    /// <param name="errorType">The error code when it failed (OpenTelemetry's <c>error.type</c>); <see langword="null"/> on success.</param>
+    internal void Complete(TimeSpan duration, string? errorType)
+    {
+        Value = duration.TotalSeconds;
+        _errorType = errorType;
+        IsCompleted = true;
     }
 
     /// <inheritdoc/>
@@ -57,7 +66,7 @@ internal sealed class OperationMeasurement : IOpenUrzednikHistogramMeasurement, 
     public string Description => "Duration of OpenUrzednik.NET client operations.";
 
     /// <inheritdoc/>
-    public double Value { get; }
+    public double Value { get; private set; }
 
     /// <inheritdoc/>
     public IReadOnlyList<double>? BucketBoundaries => Boundaries;
@@ -68,7 +77,7 @@ internal sealed class OperationMeasurement : IOpenUrzednikHistogramMeasurement, 
     public IReadOnlyList<KeyValuePair<string, object?>> Tags => this;
 
     /// <inheritdoc/>
-    public int Count { get; }
+    public int Count => 2 + (_errorType is null ? 0 : 1) + (_serverAddress is null ? 0 : 1) + (_serverPort is null ? 0 : 1);
 
     /// <inheritdoc/>
     public KeyValuePair<string, object?> this[int index]

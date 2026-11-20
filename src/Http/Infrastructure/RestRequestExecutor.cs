@@ -91,6 +91,21 @@ internal sealed class RestRequestExecutor
     public Uri BaseAddress { get; }
 
     /// <summary>
+    /// Starts one client operation: its trace span and, while the operation-duration metric is enabled, its measurement
+    /// with the provider's short name and this executor's <c>server.address</c> and <c>server.port</c> (ADR-0025).
+    /// </summary>
+    /// <param name="operationName">The operation's span name, e.g. <c>nbp.gold.latest</c>.</param>
+    /// <returns>The scope; the caller completes it with its result and disposes it.</returns>
+    internal OperationScope StartOperation(string operationName)
+    {
+        var span = _telemetry.TraceSource.StartSpan(operationName);
+        var metrics = _telemetry.Metrics;
+        return metrics.IsEnabled(OperationMeasurement.InstrumentName)
+            ? new OperationScope(span, metrics, new OperationMeasurement(operationName, _profile.Name, _serverAddress, _serverPort), _timeProvider)
+            : new OperationScope(span);
+    }
+
+    /// <summary>
     /// Gets the request deadline: the timeout passed to the constructor when set, otherwise <see cref="HttpClient.Timeout"/>.
     /// It also covers reading the body, which <see cref="HttpClient.Timeout"/> doesn't with <see cref="HttpCompletionOption.ResponseHeadersRead"/>.
     /// <see langword="null"/> means no deadline.

@@ -32,6 +32,8 @@ OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement.Unit.get -> string!
 OpenUrzednik.Core.Telemetry.IOpenUrzednikMetrics
 OpenUrzednik.Core.Telemetry.IOpenUrzednikMetrics.IsEnabled(string! measurementName) -> bool
 OpenUrzednik.Core.Telemetry.IOpenUrzednikMetrics.Record(OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement! measurement) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpanTiming
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpanTiming.StopTiming() -> System.TimeSpan?
 OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics
 OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics.IsEnabled(string! measurementName) -> bool
 OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics.Record(OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement! measurement) -> void

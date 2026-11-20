@@ -25,6 +25,9 @@ internal sealed class NbpRequestPipeline
         _telemetry = telemetry;
     }
 
+    /// <summary>Starts one client operation: its span and its operation-duration measurement (ADR-0025).</summary>
+    internal OperationScope StartOperation(string operationName) => _connection.StartOperation(operationName);
+
     /// <summary>
     /// Validates, requests <paramref name="path"/> and maps the whole payload.
     /// </summary>
