@@ -4,6 +4,7 @@ paths:
   - "**/*.props"
   - "**/*.targets"
   - ".github/dependabot.yml"
+  - "nuget.config"
   - "src/*.DependencyInjection/**"
 ---
 
@@ -14,6 +15,7 @@ paths:
 - `Microsoft.Extensions.*` is allowed only in integration packages (`*.DependencyInjection`, `OpenUrzednik.Extensions.Logging`). The tracing adapter `OpenUrzednik.Diagnostics` may depend only on `System.Diagnostics.DiagnosticSource`, and only on netstandard2.0.
 - DI packages don't add a resilience handler: they return the `IHttpClientBuilder`, the app chains `AddStandardResilienceHandler()`, and the DI package turns the handler's rejections into errors. A client the app registers itself gets the same translation from the public `AddOpenUrzednik<Provider>RejectionHandler()` (named after the provider, so two DI packages don't clash).
 - Versions live in `Directory.Packages.props` (central package management). Never put `Version=` on a `PackageReference`.
+- Every package comes from nuget.org: the root `nuget.config` clears other sources and maps `*` to nuget.org (#292). Another source needs the maintainer's approval and a `packageSource` mapping of its own, and anyone who restored from it must clear their global packages folder before building here, because the mapping skips packages already there.
 - Version choice applies to the **dependencies of the published libraries** only; tests, build tooling and anything used only inside the repository take the latest version.
   - For those dependencies: **abstractions** (API contracts under semantic versioning, e.g. `Microsoft.Extensions.Logging.Abstractions`) use the **lowest** version: the first release (`x.0.0`) of the major that matches our oldest .NET target (currently 8.0.0), because it is a minimum for every app.
   - Move to a later patch only if that version has a known vulnerability; the minimum rises when the oldest .NET target is removed (ADR-0005).
