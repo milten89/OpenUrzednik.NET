@@ -23,14 +23,17 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing.AddSource("OpenUrzednik.*"));
 ```
 
-Na .NET 8 i nowszym to wystarczy: klient bez `traceSource` sam zapisuje spany w źródle swojego dostawcy. Na .NET Framework (`netstandard2.0`) klient zapisuje spany tylko wtedy, gdy podasz mu `traceSource`:
+Na .NET 8 i nowszym to wystarczy: klient bez `TraceSource` sam zapisuje spany w źródle swojego dostawcy. Na .NET Framework (`netstandard2.0`) klient zapisuje spany tylko wtedy, gdy podasz mu `TraceSource` w `OpenUrzednikTelemetry`:
 
 ```csharp
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Nbp;
 
-var client = new NbpGoldPriceClient(httpClient,
-    traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
+var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: null, telemetry: new OpenUrzednikTelemetry
+{
+    TraceSource = ActivityTraceSource.GetShared(NbpTelemetry.SourceName),
+});
 ```
 
 ## Więcej po angielsku

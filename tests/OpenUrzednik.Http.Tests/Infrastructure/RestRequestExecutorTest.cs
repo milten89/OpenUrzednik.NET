@@ -28,12 +28,12 @@ public partial class RestRequestExecutorTest
     private static readonly JsonTypeInfo<TestDto> TypeInfo = (JsonTypeInfo<TestDto>)JsonOptions.GetTypeInfo(typeof(TestDto));
 
     private readonly TimeProvider _timeProvider = new FakeTimeProvider();
-    private readonly OpenUrzednikTelemetry _telemetryProvider = new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
+    private readonly ClientTelemetry _telemetryProvider = new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
 
     private static readonly RestProviderProfile Profile = new("test", "Test API");
 
     // Providers resolve the base address themselves; the tests take it from the HttpClient.
-    private static RestRequestExecutor CreateConnection(HttpClient httpClient, OpenUrzednikTelemetry telemetryProvider, TimeProvider timeProvider, TimeSpan? timeout = null)
+    private static RestRequestExecutor CreateConnection(HttpClient httpClient, ClientTelemetry telemetryProvider, TimeProvider timeProvider, TimeSpan? timeout = null)
         => new(httpClient, httpClient?.BaseAddress ?? new Uri("https://api.example.com/"), Profile, timeout, telemetryProvider, timeProvider);
 
     private static HttpClient CreateHttpClient(Faker faker, HttpResponseMessage response)
@@ -49,13 +49,13 @@ public partial class RestRequestExecutorTest
     private static HttpResponseMessage CreateJsonResponse(HttpStatusCode statusCode, TestDto dto)
         => new(statusCode) { Content = JsonContent.Create(dto, TypeInfo) };
 
-    private static (OpenUrzednikTelemetry Provider, IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span) CreateTelemetrySubstitutes()
+    private static (ClientTelemetry Provider, IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span) CreateTelemetrySubstitutes()
     {
         var logger = Substitute.For<IOpenUrzednikLogger>();
         var span = Substitute.For<IOpenUrzednikSpan>();
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(span);
-        return (new OpenUrzednikTelemetry(logger, tracer), logger, span);
+        return (new ClientTelemetry(logger, tracer), logger, span);
     }
 
     private sealed record TestDto(string Name, int Value);
@@ -209,6 +209,6 @@ public partial class RestRequestExecutorTest
         }
     }
 
-    private static RestRequestExecutor CreateConnectionWithOverride(HttpClient httpClient, Func<ErrorResponseContext, Task<OpenUrzednikError?>> mapErrorAsync, OpenUrzednikTelemetry? telemetry = null)
+    private static RestRequestExecutor CreateConnectionWithOverride(HttpClient httpClient, Func<ErrorResponseContext, Task<OpenUrzednikError?>> mapErrorAsync, ClientTelemetry? telemetry = null)
         => new(httpClient, httpClient.BaseAddress!, new RestProviderProfile("test", "Test API", mapErrorAsync), telemetry: telemetry);
 }

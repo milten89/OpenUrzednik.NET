@@ -1,1 +1,10 @@
 #nullable enable
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.NbpCurrencyExchangeRateClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options) -> void
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.NbpCurrencyExchangeRateClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options, System.TimeProvider? timeProvider) -> void
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.NbpCurrencyExchangeRateClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options, System.TimeProvider? timeProvider, OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry? telemetry) -> void
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.NbpExchangeRateTableClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options) -> void
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.NbpExchangeRateTableClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options, System.TimeProvider? timeProvider) -> void
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.NbpExchangeRateTableClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options, System.TimeProvider? timeProvider, OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry? telemetry) -> void
+OpenUrzednik.Nbp.NbpGoldPriceClient.NbpGoldPriceClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options) -> void
+OpenUrzednik.Nbp.NbpGoldPriceClient.NbpGoldPriceClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options, System.TimeProvider? timeProvider) -> void
+OpenUrzednik.Nbp.NbpGoldPriceClient.NbpGoldPriceClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options, System.TimeProvider? timeProvider, OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry? telemetry) -> void

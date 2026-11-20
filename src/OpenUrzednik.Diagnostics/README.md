@@ -23,14 +23,17 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing.AddSource("OpenUrzednik.*"));
 ```
 
-On .NET 8 and later that's all you need: a client created without a trace source records its spans on its provider's source. On .NET Framework (`netstandard2.0`) a client records spans only when you pass a trace source:
+On .NET 8 and later that's all you need: a client created without a trace source records its spans on its provider's source. On .NET Framework (`netstandard2.0`) a client records spans only when you pass a trace source in its `OpenUrzednikTelemetry`:
 
 ```csharp
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Nbp;
 
-var client = new NbpGoldPriceClient(httpClient,
-    traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
+var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: null, telemetry: new OpenUrzednikTelemetry
+{
+    TraceSource = ActivityTraceSource.GetShared(NbpTelemetry.SourceName),
+});
 ```
 
 `GetShared` creates one `ActivitySource` per name, which lives until the process ends; on .NET it is the same source the clients use by default. To use your own source, pass `new ActivityTraceSource(source)`. `AddOpenUrzednikNbp()` from OpenUrzednik.Nbp.DependencyInjection passes the shared source for you.

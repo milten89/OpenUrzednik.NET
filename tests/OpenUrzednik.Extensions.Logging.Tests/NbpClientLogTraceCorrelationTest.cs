@@ -4,6 +4,7 @@ using System.Text;
 
 using Microsoft.Extensions.Logging;
 
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
@@ -52,7 +53,7 @@ public sealed class NbpClientLogTraceCorrelationTest : IDisposable
     }
 
     private NbpGoldPriceClient CreateSut(HttpClient httpClient)
-        => new(httpClient, logger: new OpenUrzednikLogger(_logger), traceSource: new ActivityTraceSource(_source));
+        => new(httpClient, null, null, new OpenUrzednikTelemetry { Logger = new OpenUrzednikLogger(_logger), TraceSource = new ActivityTraceSource(_source) });
 
     private Activity Operation(string name)
     {

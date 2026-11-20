@@ -56,3 +56,11 @@ override OpenUrzednik.Core.Errors.ValidationError.CollectMetadata(System.Collect
 override OpenUrzednik.Core.Errors.ValidationError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
 static readonly OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics.Instance -> OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics!
 virtual OpenUrzednik.Core.Errors.OpenUrzednikError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry
+OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry.Logger.get -> OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger?
+OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry.Logger.set -> void
+OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry.Metrics.get -> OpenUrzednik.Core.Telemetry.IOpenUrzednikMetrics?
+OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry.Metrics.set -> void
+OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry.OpenUrzednikTelemetry() -> void
+OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry.TraceSource.get -> OpenUrzednik.Core.Telemetry.IOpenUrzednikTraceSource?
+OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry.TraceSource.set -> void

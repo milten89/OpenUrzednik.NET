@@ -18,9 +18,9 @@ namespace OpenUrzednik.MF.WhiteList.Common;
 internal sealed class WhiteListRequestPipeline
 {
     private readonly RestRequestExecutor _connection;
-    private readonly OpenUrzednikTelemetry _telemetry;
+    private readonly ClientTelemetry _telemetry;
 
-    internal WhiteListRequestPipeline(RestRequestExecutor connection, OpenUrzednikTelemetry telemetry)
+    internal WhiteListRequestPipeline(RestRequestExecutor connection, ClientTelemetry telemetry)
     {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(telemetry);

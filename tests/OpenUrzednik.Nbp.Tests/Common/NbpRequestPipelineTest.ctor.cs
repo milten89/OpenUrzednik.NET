@@ -11,7 +11,7 @@ public sealed partial class NbpRequestPipelineTest
     public void Ctor_NullConnection_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new NbpRequestPipeline(null!, new OpenUrzednikTelemetry()))
+        Should.Throw<ArgumentNullException>(() => new NbpRequestPipeline(null!, new ClientTelemetry()))
             .ParamName.ShouldBe("connection");
     }
 
@@ -20,7 +20,7 @@ public sealed partial class NbpRequestPipelineTest
     {
         // Arrange
         using var httpClient = new HttpClient();
-        var telemetry = new OpenUrzednikTelemetry();
+        var telemetry = new ClientTelemetry();
         var connection = NbpConnection.Create(httpClient, null, telemetry, TimeProvider.System);
 
         // Act && Assert

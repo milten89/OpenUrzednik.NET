@@ -35,7 +35,7 @@ public sealed partial class WhiteListErrorMappingTest : IDisposable
     {
         var httpClient = new HttpClient(new StubHttpMessageHandler(response));
         _httpClients.Add(httpClient);
-        var connection = WhiteListConnection.CreateSearch(httpClient, null, new OpenUrzednikTelemetry(), new FakeTimeProvider(Now));
+        var connection = WhiteListConnection.CreateSearch(httpClient, null, new ClientTelemetry(), new FakeTimeProvider(Now));
 
         var result = await connection.GetAsync(RelativePath, DisplayPath, WhiteListJsonContext.Default.ErrorDto, TestContext.Current.CancellationToken);
 

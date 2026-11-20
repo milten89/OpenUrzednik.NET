@@ -84,7 +84,7 @@ public partial class RestRequestExecutorTest
         await cts.CancelAsync();
 
         // Act
-        await Should.ThrowAsync<OperationCanceledException>(() => CreateConnection(httpClient, new OpenUrzednikTelemetry(traceSource: tracer), _timeProvider)
+        await Should.ThrowAsync<OperationCanceledException>(() => CreateConnection(httpClient, new ClientTelemetry(traceSource: tracer), _timeProvider)
             .GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, cts.Token));
 
         // Assert
@@ -709,7 +709,7 @@ public partial class RestRequestExecutorTest
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(span);
         var logger = Substitute.For<IOpenUrzednikLogger>();
-        var telemetryProvider = new OpenUrzednikTelemetry(logger, tracer);
+        var telemetryProvider = new ClientTelemetry(logger, tracer);
 
         // Act
         await Should.ThrowAsync<OperationCanceledException>(
@@ -736,7 +736,7 @@ public partial class RestRequestExecutorTest
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(span);
         var logger = Substitute.For<IOpenUrzednikLogger>();
-        var telemetryProvider = new OpenUrzednikTelemetry(logger, tracer);
+        var telemetryProvider = new ClientTelemetry(logger, tracer);
 
         // Act
         await Should.ThrowAsync<OperationCanceledException>(
@@ -1341,7 +1341,7 @@ public partial class RestRequestExecutorTest
         tracer.StartSpan(Arg.Any<string>()).Returns(Substitute.For<IOpenUrzednikSpan>());
 
         // Act
-        await CreateConnection(httpClient, new OpenUrzednikTelemetry(traceSource: tracer), _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+        await CreateConnection(httpClient, new ClientTelemetry(traceSource: tracer), _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
 
         // Assert
         tracer.Received(1).StartSpan("test.http.get");

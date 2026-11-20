@@ -17,11 +17,14 @@ dotnet add package OpenUrzednik.Extensions.Logging
 ## Usage
 
 ```csharp
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.Nbp;
 
-var client = new NbpGoldPriceClient(httpClient,
-    logger: loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>());
+var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: null, telemetry: new OpenUrzednikTelemetry
+{
+    Logger = loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(),
+});
 ```
 
 The log category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`), as with `ILogger<T>`. You can turn a whole provider's logs on or off by prefix:

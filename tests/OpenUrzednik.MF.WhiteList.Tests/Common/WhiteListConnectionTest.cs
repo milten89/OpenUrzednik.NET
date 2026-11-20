@@ -9,7 +9,7 @@ namespace OpenUrzednik.MF.WhiteList.Tests.Common;
 // Shared helpers; tests are in one file per method.
 public sealed partial class WhiteListConnectionTest
 {
-    private static OpenUrzednikTelemetry Telemetry() => new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
+    private static ClientTelemetry Telemetry() => new(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
 
     private static RestRequestExecutor CreateSearch(HttpClient httpClient, WhiteListOptions? options)
         => WhiteListConnection.CreateSearch(httpClient, options, Telemetry(), new FakeTimeProvider());

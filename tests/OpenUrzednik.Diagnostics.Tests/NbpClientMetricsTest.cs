@@ -3,9 +3,8 @@ using System.Net;
 using System.Text;
 #endif
 
-#if NET
 using OpenUrzednik.Core.Errors;
-#endif
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
 
@@ -117,4 +116,79 @@ public sealed class NbpClientMetricsTest : IDisposable
         Own().ShouldBeEmpty();
     }
 #endif
+
+    // Each client takes the metrics through its constructor (ADR-0025): here a MeterMetrics of its own meter, on every target.
+    public static TheoryData<string> Clients => ["gold", "currency", "table"];
+
+    [Theory]
+    [MemberData(nameof(Clients))]
+    public async Task Constructor_MeterMetrics_RecordsOnThatMeter(string client)
+    {
+        // Arrange
+        var meterName = $"OpenUrzednik.Tests.{Guid.NewGuid():N}";
+        using var recorder = new MeterRecorder(meterName);
+        var metrics = MeterMetrics.GetShared(meterName);
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound)));
+        var options = new NbpOptions { ApiUrl = $"https://{_host}/api/" };
+
+        // Act
+        var operation = await CallAsync(client, httpClient, options, metrics, TestContext.Current.CancellationToken);
+
+        // Assert
+        var measurement = recorder.Measurements.ShouldHaveSingleItem();
+        measurement.Instrument.Name.ShouldBe("openurzednik.client.operation.duration");
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", operation));
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("server.address", _host));
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("error.type", NotFoundError.ErrorCode));
+    }
+
+    [Theory]
+    [MemberData(nameof(Clients))]
+    public async Task ObsoleteConstructor_StillWorks_AndRecordsWithTheDefault(string client)
+    {
+        // Arrange: the 1.0 constructor, obsolete until 2.0
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound)));
+        var options = new NbpOptions { ApiUrl = $"https://{_host}/api/" };
+
+        // Act
+        var operation = await CallAsync(client, httpClient, options, metrics: null, TestContext.Current.CancellationToken, obsolete: true);
+
+        // Assert: the default metrics, the shared OpenUrzednik.Nbp meter on .NET and none on .NET Framework. Own() keeps only
+        // the measurements of this test's host, so one recorded proves the constructor passed the options on.
+#if NET
+        Own().ShouldHaveSingleItem().Tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", operation));
+#else
+        operation.ShouldNotBeNull();
+        Own().ShouldBeEmpty();
+#endif
+    }
+
+    // Calls one failing operation of the client (the stub answers 404) and returns the operation's name.
+    private static async Task<string> CallAsync(string client, HttpClient httpClient, NbpOptions options, IOpenUrzednikMetrics? metrics,
+        CancellationToken cancellationToken, bool obsolete = false)
+    {
+#pragma warning disable CS0618 // the obsolete constructors are what ObsoleteConstructor_StillWorks_AndRecordsWithTheDefault checks
+        switch (client)
+        {
+            case "gold":
+                var gold = obsolete
+                    ? new NbpGoldPriceClient(httpClient, options, null, null, null)
+                    : new NbpGoldPriceClient(httpClient, options, null, new OpenUrzednikTelemetry { Metrics = metrics });
+                (await gold.GetLatestAsync(cancellationToken)).IsFailure.ShouldBeTrue();
+                return "nbp.gold.latest";
+            case "currency":
+                var currency = obsolete
+                    ? new NbpCurrencyExchangeRateClient(httpClient, options, null, null, null)
+                    : new NbpCurrencyExchangeRateClient(httpClient, options, null, new OpenUrzednikTelemetry { Metrics = metrics });
+                (await currency.GetLatestAsync("USD", cancellationToken: cancellationToken)).IsFailure.ShouldBeTrue();
+                return "nbp.currency.latest";
+            default:
+                var table = obsolete
+                    ? new NbpExchangeRateTableClient(httpClient, options, null, null, null)
+                    : new NbpExchangeRateTableClient(httpClient, options, null, new OpenUrzednikTelemetry { Metrics = metrics });
+                (await table.GetBuySellLatestAsync(cancellationToken)).IsFailure.ShouldBeTrue();
+                return "nbp.table.buy_sell_latest";
+        }
+#pragma warning restore CS0618
+    }
 }

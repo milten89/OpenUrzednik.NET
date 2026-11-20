@@ -16,7 +16,7 @@ public class NbpPayloadTest
     {
         // Arrange
         var span = Substitute.For<IOpenUrzednikSpan>();
-        var telemetryProvider = new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
+        var telemetryProvider = new ClientTelemetry(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance);
 
         // Act
         var result = NbpPayload.Map(21, x => x * 2, telemetryProvider, span);
@@ -34,7 +34,7 @@ public class NbpPayloadTest
         var span = Substitute.For<IOpenUrzednikSpan>();
         span.IsRecording.Returns(true);
         var logger = Substitute.For<IOpenUrzednikLogger>();
-        var telemetryProvider = new OpenUrzednikTelemetry(logger, NullOpenUrzednikTraceSource.Instance);
+        var telemetryProvider = new ClientTelemetry(logger, NullOpenUrzednikTraceSource.Instance);
 
         // Act
         var result = NbpPayload.Map<object?, int>(null, dto =>
