@@ -96,11 +96,11 @@ internal static class WhiteListErrorMapping
         var style = NoSeparator;
         // A digit extends the run and its current group; a separator of the run's style (or the first one) followed by a digit starts
         // a new group; one of another style followed by a digit closes the run and starts the next one at the last group; anything
-        // else, and the end of the text, closes the run [start, index). Runs may overlap: masking only ever hides digits. One loop
-        // with no inner skip, so that mutation testing has no equivalent mutant here (ADR-0020).
-        for (var index = 0; index <= text.Length; index++)
+        // else closes the run [start, index), and the end of the text closes the last one. Runs may overlap: masking only ever hides
+        // digits. One loop with no inner skip, so that mutation testing has no equivalent mutant here (ADR-0020).
+        for (var index = 0; index < text.Length; index++)
         {
-            if (index < text.Length && IsDigit(text[index]))
+            if (IsDigit(text[index]))
             {
                 if (digits == 0)
                     start = index;
@@ -139,6 +139,7 @@ internal static class WhiteListErrorMapping
             style = NoSeparator;
         }
 
+        Mask(ref masked, text, start, text.Length, digits);
         return masked is null ? text : new string(masked);
     }
 
