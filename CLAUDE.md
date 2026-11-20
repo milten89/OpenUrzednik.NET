@@ -84,7 +84,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 
 **Telemetry ([ADR-0025](docs/adr/0025-telemetry-abstractions-with-metrics.md))**
 - Use `IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` and `IOpenUrzednikSpan` from Core.
-  - Don't use `ILogger` or `ActivitySource` in Core or provider packages.
+  - Don't use `ILogger`, `ActivitySource` or `Meter` in Core or provider packages.
   - The one exception is the fallback trace source: on the .NET targets a client without a trace source uses the shared `OpenUrzednik.<Provider>` source, through Core's internal `Telemetry/Activities` (compiled into Core on .NET only, linked into `OpenUrzednik.Diagnostics` for netstandard2.0; Core grants `InternalsVisibleTo` on .NET only, and a new REST provider must be added to it). netstandard2.0 falls back to `NullOpenUrzednikTraceSource`.
   - Those Core internals are called across packages, and an app may pair a newer Core with older packages: within a major, add to them, never change or remove.
 - These interfaces are frozen from 1.0: a new capability is a separate interface that callers check with `is`.
@@ -123,7 +123,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 
 - C# `latest`, nullable enabled, file-scoped namespaces, `_camelCase` private fields. `.editorconfig` is authoritative.
 - No parallel API variants: one public method per operation, returning a result; the exception style comes only through `EnsureSuccess()` / `EnsureSuccessAsync()`.
-- Banned APIs (RS0030, `src/BannedSymbols.txt`): every request method of `HttpClient` and `HttpMessageInvoker`, and `HttpClientJsonExtensions` (`GetFromJsonAsync`, ADR-0019), the clock properties `DateTime.Now`/`Today`/`UtcNow` and `DateTimeOffset.Now`/`UtcNow` (use `TimeProvider` or `WarsawCalendar.Today`), and `ActivitySource` (ADR-0025). Only the places the ADRs allow are exempt, in `src/.editorconfig` (`RestRequestExecutor.cs`, Core's `Telemetry/Activities`, `OpenUrzednik.Diagnostics/ActivityTraceSource.cs`); never add a symbol exemption to make a build pass.
+- Banned APIs (RS0030, `src/BannedSymbols.txt`): every request method of `HttpClient` and `HttpMessageInvoker`, and `HttpClientJsonExtensions` (`GetFromJsonAsync`, ADR-0019), the clock properties `DateTime.Now`/`Today`/`UtcNow` and `DateTimeOffset.Now`/`UtcNow` (use `TimeProvider` or `WarsawCalendar.Today`), `ActivitySource` and `Meter` (ADR-0025). Only the places the ADRs allow are exempt, in `src/.editorconfig` (`RestRequestExecutor.cs`, Core's `Telemetry/Activities` and `Telemetry/Metrics`, `OpenUrzednik.Diagnostics/ActivityTraceSource.cs` and `MeterMetrics.cs`); never add a symbol exemption to make a build pass.
 - More rules: [`.claude/rules/code-conventions.md`](.claude/rules/code-conventions.md).
 
 ## Testing conventions
