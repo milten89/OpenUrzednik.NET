@@ -8,7 +8,7 @@ The rest of each area's rules are in [`.claude/rules/`](.claude/rules/). Claude 
 |---|---|
 | [`client-api.md`](.claude/rules/client-api.md) | `src/**/*.cs`, `tests/**/*.cs`, `samples/**/*.cs` |
 | [`code-conventions.md`](.claude/rules/code-conventions.md) | `src/**/*.cs`, `samples/**/*.cs` |
-| [`dependencies.md`](.claude/rules/dependencies.md) | `**/*.csproj`, `**/*.props`, `**/*.targets`, `.github/dependabot.yml`, `src/*.DependencyInjection/**` |
+| [`dependencies.md`](.claude/rules/dependencies.md) | `**/*.csproj`, `**/*.props`, `**/*.targets`, `.github/dependabot.yml`, `nuget.config`, `src/*.DependencyInjection/**` |
 | [`docs.md`](.claude/rules/docs.md) | `**/*.md`, `.github/ISSUE_TEMPLATE/**` |
 | [`errors.md`](.claude/rules/errors.md) | `src/**/*.cs`, `tests/**/*.cs` |
 | [`http.md`](.claude/rules/http.md) | `src/**/*.cs`, `tests/**/*.cs` |
