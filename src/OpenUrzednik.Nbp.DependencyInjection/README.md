@@ -4,7 +4,7 @@
 
 > ⚠️ **Unofficial:** OpenUrzednik.NET is a community project. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP) or any other Polish public institution.
 
-Registers the **NBP** clients from [OpenUrzednik.Nbp](https://www.nuget.org/packages/OpenUrzednik.Nbp) in Microsoft.Extensions.DependencyInjection: typed clients from `IHttpClientFactory`, validated options, logging and tracing.
+Registers the **NBP** clients from [OpenUrzednik.Nbp](https://www.nuget.org/packages/OpenUrzednik.Nbp) in Microsoft.Extensions.DependencyInjection: typed clients from `IHttpClientFactory`, validated options, logging, tracing and metrics.
 
 > Part of [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). See the [main README](https://github.com/milten89/OpenUrzednik.NET#readme) for an overview of the project.
 
@@ -138,7 +138,7 @@ builder.Services.AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>((httpCli
     .AddStandardResilienceHandler();
 ```
 
-A bare `AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>()` isn't supported: resolving the client throws an `InvalidOperationException` ("A suitable constructor … could not be located"). A client registered this way gets no logger unless you pass one (`loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>()`), records spans only on .NET 8 and later unless you pass `ActivityTraceSource.GetShared(NbpTelemetry.SourceName)`, and a resilience handler's rejections are turned into errors only if you call `AddOpenUrzednikNbpRejectionHandler()` on its builder, as in the example above; the errors are described under [Retries and timeouts](#retries-and-timeouts). Calling it more than once, or on the builder `AddOpenUrzednikNbp()` returns, adds nothing.
+A bare `AddHttpClient<INbpGoldPriceClient, NbpGoldPriceClient>()` isn't supported: resolving the client throws an `InvalidOperationException` ("A suitable constructor … could not be located"). A client registered this way gets no logger unless you pass one (`loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>()`), records spans and metrics only on .NET 8 and later unless you pass `ActivityTraceSource.GetShared(NbpTelemetry.SourceName)` and `metrics: MeterMetrics.GetShared(NbpTelemetry.SourceName)`, and a resilience handler's rejections are turned into errors only if you call `AddOpenUrzednikNbpRejectionHandler()` on its builder, as in the example above; the errors are described under [Retries and timeouts](#retries-and-timeouts). Calling it more than once, or on the builder `AddOpenUrzednikNbp()` returns, adds nothing.
 
 ## Retries and timeouts
 
@@ -210,6 +210,6 @@ This handler doesn't honor `Retry-After`. The package treats what such a handler
 
 ## Logging and tracing
 
-The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`. Every log entry has an event id from `NbpLogEvents`; the span names, tags and event ids are listed in the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#telemetry-reference).
+The clients log through the registered `ILoggerFactory`. The category is the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`). Spans go to the `OpenUrzednik.Nbp` source, which you enable in OpenTelemetry with `AddSource("OpenUrzednik.*")`. Operation durations go to the `OpenUrzednik.Nbp` meter on every target, .NET Framework included; enable it with `AddMeter("OpenUrzednik.*")`. Every log entry has an event id from `NbpLogEvents`; the span names, tags, [metrics](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#metrics) and event ids are listed in the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#telemetry-reference).
 
 If you register your own `TimeProvider`, the clients use it instead of `TimeProvider.System`.

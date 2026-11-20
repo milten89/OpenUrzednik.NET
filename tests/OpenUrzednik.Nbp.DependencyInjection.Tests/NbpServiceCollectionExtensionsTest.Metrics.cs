@@ -10,6 +10,7 @@ namespace OpenUrzednik.Nbp.DependencyInjection.Tests;
 
 // ADR-0025: the DI registrations pass MeterMetrics, so their clients record on the shared OpenUrzednik.Nbp meter on every
 // target, .NET Framework included. Other tests record on that meter at the same time, so each test uses its own API host.
+// On .NET a client without metrics records on the same meter, so only the net472 run fails if DI stops passing them.
 public sealed partial class NbpServiceCollectionExtensionsTest
 {
     [Fact]

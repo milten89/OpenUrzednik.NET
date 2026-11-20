@@ -47,7 +47,7 @@ public class MetricsConstructorsTest
             .Select(constructor => constructor.DeclaringType!.FullName)
             .ToList();
 
-        // Assert
+        // Assert: 2.0 removes the obsolete constructors, and with them this test
         obsolete.ShouldNotBeEmpty("no obsolete client constructor found: the discovery broke");
         violations.ShouldBeEmpty();
     }

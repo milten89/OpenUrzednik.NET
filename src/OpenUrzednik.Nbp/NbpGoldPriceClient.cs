@@ -44,7 +44,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         : this(httpClient, new NbpUrlBuilderFactory(), options, timeProvider, logger, traceSource, metrics) { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NbpGoldPriceClient"/> class without metrics: use the constructor with <c>metrics</c>
+    /// Initializes a new instance of the <see cref="NbpGoldPriceClient"/> class without a <c>metrics</c> parameter (the default metrics are used): use the constructor with <c>metrics</c>
     /// (pass <see langword="null"/> to keep the default). Removed in 2.0.
     /// </summary>
     /// <param name="httpClient">HTTP client used for the requests. It isn't changed, so it can be shared with other code.</param>
@@ -54,7 +54,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
     /// <param name="traceSource">Trace source for spans; <see langword="null"/> uses the <see cref="NbpTelemetry.SourceName"/> <c>ActivitySource</c> on .NET 8 and later, and disables tracing on .NET Framework (netstandard2.0).</param>
     /// <exception cref="ArgumentNullException"><paramref name="httpClient"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="options"/> or the <see cref="HttpClient.BaseAddress"/> is invalid (not an absolute <c>https</c> URL, or a non-positive timeout).</exception>
-    [Obsolete("Use the constructor with metrics (pass null to keep the default). This constructor is removed in 2.0.")]
+    [Obsolete("Use the constructor with metrics (pass null to keep the default, ADR-0025). This constructor is removed in 2.0.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public NbpGoldPriceClient(HttpClient httpClient, NbpOptions? options, TimeProvider? timeProvider,
         IOpenUrzednikLogger? logger, IOpenUrzednikTraceSource? traceSource)
