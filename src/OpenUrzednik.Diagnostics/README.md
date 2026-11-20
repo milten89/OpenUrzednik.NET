@@ -105,7 +105,24 @@ var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: nul
 });
 ```
 
-`GetShared` returns one instance per meter name for the whole process. On .NET it records on the same meter the clients use by default, so a process never has two meters with one name; `MeterMetrics.Meter` is that meter. `AddOpenUrzednikNbp()` from OpenUrzednik.Nbp.DependencyInjection passes it for you, on every target.
+`GetShared` returns one instance per meter name for the whole process. On .NET it records on the same meter the clients use by default; `MeterMetrics.Meter` is that meter.
+
+### With dependency injection
+
+`AddOpenUrzednikNbp()` from OpenUrzednik.Nbp.DependencyInjection passes metrics for you, on every target. When the container has an `IMeterFactory`, its clients record on a meter of that factory (`MeterMetrics.Create(meterFactory, name)`), which is disposed with the container. On .NET 8 and later `AddHttpClient()` registers a factory, and on .NET Framework the Generic Host or `services.AddMetrics()` does; without one, the clients record on the shared meter. This is what `HttpClient` does with its own metrics.
+
+The factory meter has the same name, so `AddMeter("OpenUrzednik.*")` collects it, and OpenTelemetry merges its series with the shared meter's when an app also creates clients without DI. Your tests can collect one container's measurements by the factory, even when tests run in parallel:
+
+```csharp
+using Microsoft.Extensions.Diagnostics.Metrics.Testing; // Microsoft.Extensions.Diagnostics.Testing package
+
+var meterFactory = provider.GetRequiredService<IMeterFactory>();
+using var collector = new MetricCollector<double>(meterFactory, NbpTelemetry.SourceName, "openurzednik.client.operation.duration");
+
+await provider.GetRequiredService<INbpGoldPriceClient>().GetLatestAsync();
+
+var measurement = collector.GetMeasurementSnapshot().Single();
+```
 
 ### What gets measured
 

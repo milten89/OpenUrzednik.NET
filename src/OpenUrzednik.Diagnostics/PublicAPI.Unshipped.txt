@@ -4,3 +4,4 @@ OpenUrzednik.Diagnostics.MeterMetrics.IsEnabled(string! measurementName) -> bool
 OpenUrzednik.Diagnostics.MeterMetrics.Meter.get -> System.Diagnostics.Metrics.Meter!
 OpenUrzednik.Diagnostics.MeterMetrics.Record(OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement! measurement) -> void
 static OpenUrzednik.Diagnostics.MeterMetrics.GetShared(string! name) -> OpenUrzednik.Diagnostics.MeterMetrics!
+static OpenUrzednik.Diagnostics.MeterMetrics.Create(System.Diagnostics.Metrics.IMeterFactory! meterFactory, string! name) -> OpenUrzednik.Diagnostics.MeterMetrics!

@@ -1,3 +1,5 @@
+using System.Diagnostics.Metrics;
+
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -62,6 +64,7 @@ public static class NbpServiceCollectionExtensions
             return services.AddHttpClient(HttpClientName);
 
         services.AddSingleton<NbpRegistration>();
+        services.TryAddSingleton(static provider => new NbpContainerMetrics(provider));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<NbpOptions>, NbpOptionsValidation>());
         options.ValidateOnStart();
 
@@ -124,6 +127,7 @@ public static class NbpServiceCollectionExtensions
         // Resolved once per key, like the default clients' IOptions<NbpOptions>: a later configuration reload isn't picked up.
         services.AddKeyedSingleton(serviceKey, (provider, _) =>
             new NbpKeyedRegistration(provider.GetRequiredService<IOptionsMonitor<NbpOptions>>().Get(serviceKey)));
+        services.TryAddSingleton(static provider => new NbpContainerMetrics(provider));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<NbpOptions>, NbpOptionsValidation>());
         options.ValidateOnStart();
 
@@ -185,9 +189,6 @@ public static class NbpServiceCollectionExtensions
 
     private static IOpenUrzednikTraceSource TraceSource => ActivityTraceSource.GetShared(NbpTelemetry.SourceName);
 
-    // The shared OpenUrzednik.Nbp meter (ADR-0025): the same one the clients use by default on .NET, and metrics on .NET Framework too.
-    private static IOpenUrzednikMetrics Metrics => MeterMetrics.GetShared(NbpTelemetry.SourceName);
-
     private static NbpOptions GetOptions(IServiceProvider provider) => provider.GetRequiredService<IOptions<NbpOptions>>().Value;
 
     private static NbpOptions GetOptions(IServiceProvider provider, string serviceKey)
@@ -200,7 +201,18 @@ public static class NbpServiceCollectionExtensions
 
     // One container per client: the logger's category is the client's type (ADR-0025).
     private static OpenUrzednikTelemetry Telemetry<TClient>(IServiceProvider provider)
-        => new() { Logger = CreateLogger<TClient>(provider), TraceSource = TraceSource, Metrics = Metrics };
+        => new() { Logger = CreateLogger<TClient>(provider), TraceSource = TraceSource, Metrics = provider.GetRequiredService<NbpContainerMetrics>().Metrics };
+
+    // The metrics of one container (ADR-0025): its IMeterFactory's OpenUrzednik.Nbp meter when it has a factory (on .NET 8 and
+    // later AddHttpClient registers one), else the shared meter. A singleton, so the container's clients share one set of instruments.
+    internal sealed class NbpContainerMetrics(IServiceProvider provider)
+    {
+        public IOpenUrzednikMetrics Metrics { get; } = For(provider.GetService<IMeterFactory>());
+
+        // A method of its own, so a test can pass no factory on .NET too, where AddHttpClient always registers one (and needs it).
+        internal static IOpenUrzednikMetrics For(IMeterFactory? meterFactory)
+            => meterFactory is not null ? MeterMetrics.Create(meterFactory, NbpTelemetry.SourceName) : MeterMetrics.GetShared(NbpTelemetry.SourceName);
+    }
 
     // Marks that the clients are registered, so a second call doesn't add them, or the rejection handler, again.
     private sealed class NbpRegistration;

@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Diagnostics.Tests;
 
-public class MeterMetricsTest
+public partial class MeterMetricsTest
 {
     private static string UniqueName() => $"OpenUrzednik.Tests.{Guid.NewGuid():N}";
 
