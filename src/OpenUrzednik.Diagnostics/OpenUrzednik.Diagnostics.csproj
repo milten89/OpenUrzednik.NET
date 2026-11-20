@@ -22,6 +22,7 @@
   <!-- On .NET these types are in Core (internal, InternalsVisibleTo); netstandard2.0 compiles the same files in (ADR-0025). -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="..\OpenUrzednik.Core\Telemetry\Activities\*.cs" Link="Activities\%(Filename)%(Extension)" />
+    <Compile Include="..\OpenUrzednik.Core\Telemetry\Metrics\*.cs" Link="Metrics\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

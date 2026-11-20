@@ -21,6 +21,20 @@ OpenUrzednik.Core.Errors.ValidationError.RuleName.get -> string!
 OpenUrzednik.Core.Errors.ValidationError<T>
 OpenUrzednik.Core.Errors.ValidationError<T>.ValidationError(string! message, string! ruleName, string? name, T value) -> void
 OpenUrzednik.Core.Errors.ValidationError<T>.Value.get -> T
+OpenUrzednik.Core.Telemetry.IOpenUrzednikHistogramMeasurement
+OpenUrzednik.Core.Telemetry.IOpenUrzednikHistogramMeasurement.BucketBoundaries.get -> System.Collections.Generic.IReadOnlyList<double>?
+OpenUrzednik.Core.Telemetry.IOpenUrzednikHistogramMeasurement.Value.get -> double
+OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement
+OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement.Description.get -> string!
+OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement.Name.get -> string!
+OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement.Tags.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string!, object?>>!
+OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement.Unit.get -> string!
+OpenUrzednik.Core.Telemetry.IOpenUrzednikMetrics
+OpenUrzednik.Core.Telemetry.IOpenUrzednikMetrics.IsEnabled(string! measurementName) -> bool
+OpenUrzednik.Core.Telemetry.IOpenUrzednikMetrics.Record(OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement! measurement) -> void
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics.IsEnabled(string! measurementName) -> bool
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics.Record(OpenUrzednik.Core.Telemetry.IOpenUrzednikMeasurement! measurement) -> void
 const OpenUrzednik.Core.Errors.RangeValidationError.EndMetadataKey = "end" -> string!
 const OpenUrzednik.Core.Errors.RangeValidationError.EndNameMetadataKey = "endName" -> string!
 const OpenUrzednik.Core.Errors.RangeValidationError.StartMetadataKey = "start" -> string!
@@ -38,4 +52,5 @@ override OpenUrzednik.Core.Errors.UnauthorizedError.CreateException() -> OpenUrz
 override OpenUrzednik.Core.Errors.UnknownError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
 override OpenUrzednik.Core.Errors.ValidationError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
 override OpenUrzednik.Core.Errors.ValidationError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+static readonly OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics.Instance -> OpenUrzednik.Core.Telemetry.NullOpenUrzednikMetrics!
 virtual OpenUrzednik.Core.Errors.OpenUrzednikError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
