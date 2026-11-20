@@ -7,9 +7,10 @@ paths:
   - "src/*.DependencyInjection/**"
 ---
 
-# Dependencies ([ADR-0004](../../docs/adr/0004-dependency-policy.md))
+# Dependencies ([ADR-0024](../../docs/adr/0024-dependency-policy-with-a-7z-reader.md))
 
 - On netstandard2.0, only official Microsoft BCL packages are allowed (`System.Text.Json`, `System.Net.Http.Json`, `Microsoft.Bcl.TimeProvider`, `Microsoft.Bcl.HashCode`), referenced in a `Condition="'$(TargetFramework)' == 'netstandard2.0'"` item group.
+- SharpCompress is allowed only in `OpenUrzednik.MF.WhiteList.FlatFile`, the White List flat file's 7z reader. It is an implementation pinned to a minor (today 0.50.x): it is still 0.x and its minors break its API, so a minor raise is a deliberate change checked against its release notes, and a raise that lifts its netstandard2.0 dependencies above 8.0.0 waits for the maintainer like an abstraction. The package uses only its archive read API (open, entries, `OpenEntryStream()`), never its writers or `WriteToDirectory`, on a seekable temporary file.
 - `Microsoft.Extensions.*` is allowed only in integration packages (`*.DependencyInjection`, `OpenUrzednik.Extensions.Logging`). The tracing adapter `OpenUrzednik.Diagnostics` may depend only on `System.Diagnostics.DiagnosticSource`, and only on netstandard2.0.
 - DI packages don't add a resilience handler: they return the `IHttpClientBuilder`, the app chains `AddStandardResilienceHandler()`, and the DI package turns the handler's rejections into errors. A client the app registers itself gets the same translation from the public `AddOpenUrzednik<Provider>RejectionHandler()` (named after the provider, so two DI packages don't clash).
 - Versions live in `Directory.Packages.props` (central package management). Never put `Version=` on a `PackageReference`.

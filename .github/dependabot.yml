@@ -12,13 +12,13 @@ updates:
     labels: [ "dependencies" ]
     commit-message:
       prefix: "chore(deps)"
-    # Abstractions stay at their lowest supported version (ADR-0004): x.0.0 of the oldest .NET target's major. A version
+    # Abstractions stay at their lowest supported version (ADR-0024): x.0.0 of the oldest .NET target's major. A version
     # update would break that rule except for a vulnerability fix (#41, #56), so none are opened. A vulnerability still shows as a Dependabot
     # alert; then raise the version by hand to the first fixed patch.
     ignore:
       - dependency-name: "*.Abstractions"
         update-types: [ "version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch" ]
-      # Dependencies of the published libraries: patch updates only (ADR-0004). Each version is a minimum for every app, so
+      # Dependencies of the published libraries: patch updates only (ADR-0024). Each version is a minimum for every app, so
       # a minor or major raise is a deliberate change made by hand. Test and tooling packages keep getting every update.
       # The net8.0 overrides in Directory.Packages.props (PackageVersion Update) are patched by hand.
       - dependency-name: "Microsoft.Extensions.Http"

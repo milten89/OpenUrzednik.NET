@@ -20,7 +20,7 @@ using WireMock.Server;
 
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
-// AddOpenUrzednikNbp() with Microsoft's resilience handlers (ADR-0004): retries work, and rejections come back as errors.
+// AddOpenUrzednikNbp() with Microsoft's resilience handlers (ADR-0024): retries work, and rejections come back as errors.
 // End-to-end through the DI registration, so not split into one file per method.
 public sealed class NbpDependencyInjectionWireMockTest : IDisposable
 {

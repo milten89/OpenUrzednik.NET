@@ -7,7 +7,7 @@ namespace OpenUrzednik.Nbp.DependencyInjection;
 
 /// <summary>
 /// Turns the exceptions a resilience handler throws when it rejects a request into the ones the request executor
-/// returns as errors (ADR-0004): a timeout becomes a <see cref="TaskCanceledException"/> (a <c>RequestTimeoutError</c>),
+/// returns as errors (ADR-0024): a timeout becomes a <see cref="TaskCanceledException"/> (a <c>RequestTimeoutError</c>),
 /// an open circuit breaker or a rate limiter a marked <see cref="HttpRequestException"/> (<see cref="ResilienceRejection.Create"/>, a <c>ServiceUnavailableError</c>; an unmarked
 /// <see cref="HttpRequestException"/> would be a <c>ConnectionFailedError</c>).
 /// It must be the outermost handler, so it sees what the resilience handler throws.
