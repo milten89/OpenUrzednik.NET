@@ -1,5 +1,7 @@
 using System.Diagnostics.Metrics;
 
+using OpenUrzednik.TestCommon;
+
 using Shouldly;
 
 namespace OpenUrzednik.Diagnostics.Tests;

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using OpenUrzednik.Diagnostics;
+using OpenUrzednik.TestCommon;
 
 using Shouldly;
 

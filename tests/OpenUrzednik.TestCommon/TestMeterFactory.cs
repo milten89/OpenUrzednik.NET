@@ -1,11 +1,12 @@
 using System.Diagnostics.Metrics;
 
-namespace OpenUrzednik.Nbp.DependencyInjection.Tests;
+namespace OpenUrzednik.TestCommon;
 
 /// <summary>
 /// An <see cref="IMeterFactory"/> like a DI container's: its meters have it as their scope and are disposed with it.
+/// <see cref="Dispose"/> may be called more than once.
 /// </summary>
-internal sealed class TestMeterFactory : IMeterFactory
+public sealed class TestMeterFactory : IMeterFactory
 {
     private readonly List<Meter> _meters = [];
 
