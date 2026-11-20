@@ -26,12 +26,12 @@ public sealed partial class WhiteListRequestPipelineTest : IDisposable
             httpClient.Dispose();
     }
 
-    private WhiteListRequestPipeline CreateSut(HttpResponseMessage response, out StubHttpMessageHandler handler, OpenUrzednikTelemetry? telemetry = null)
+    private WhiteListRequestPipeline CreateSut(HttpResponseMessage response, out StubHttpMessageHandler handler, ClientTelemetry? telemetry = null)
     {
         handler = new StubHttpMessageHandler(response);
         var httpClient = new HttpClient(handler);
         _httpClients.Add(httpClient);
-        telemetry ??= new OpenUrzednikTelemetry();
+        telemetry ??= new ClientTelemetry();
         return new WhiteListRequestPipeline(WhiteListConnection.CreateSearch(httpClient, null, telemetry, new FakeTimeProvider()), telemetry);
     }
 

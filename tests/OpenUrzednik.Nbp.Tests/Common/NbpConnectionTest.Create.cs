@@ -17,7 +17,7 @@ public partial class NbpConnectionTest
 {
     private static RestRequestExecutor Create(HttpClient httpClient, NbpOptions? options)
         => NbpConnection.Create(httpClient, options,
-            new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance), new FakeTimeProvider());
+            new ClientTelemetry(NullOpenUrzednikLogger.Instance, NullOpenUrzednikTraceSource.Instance), new FakeTimeProvider());
 
     [Fact]
     public void Create_NoOptionsAndNoBaseAddress_UsesDefaultApiUrlAndHttpClientTimeout()
@@ -130,13 +130,13 @@ public partial class NbpConnectionTest
         using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(Substitute.For<IOpenUrzednikSpan>());
-        var connection = NbpConnection.Create(httpClient, null, new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, tracer), new FakeTimeProvider());
+        var connection = NbpConnection.Create(httpClient, null, new ClientTelemetry(NullOpenUrzednikLogger.Instance, tracer), new FakeTimeProvider());
 
         // Act
         var result = await connection.GetAsync("cenyzlota", NbpJsonContext.Default.GoldPriceDtoArray, TestContext.Current.CancellationToken);
 
         // Assert
-        // The span name is part of the telemetry contract (ADR-0003).
+        // The span name is part of the telemetry contract (ADR-0025).
         tracer.Received(1).StartSpan("nbp.http.get");
         result.Errors.ShouldHaveSingleItem().Message.ShouldBe("NBP API is unavailable, status 503.");
     }

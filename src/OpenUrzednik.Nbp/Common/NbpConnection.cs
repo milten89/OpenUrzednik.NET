@@ -22,7 +22,7 @@ internal static class NbpConnection
     /// <see cref="HttpClient.BaseAddress"/>, then <see cref="NbpOptions.DefaultApiUrl"/>.
     /// </summary>
     /// <exception cref="ArgumentException">The options or the <see cref="HttpClient.BaseAddress"/> are invalid.</exception>
-    internal static RestRequestExecutor Create(HttpClient httpClient, NbpOptions? options, OpenUrzednikTelemetry telemetry, TimeProvider timeProvider)
+    internal static RestRequestExecutor Create(HttpClient httpClient, NbpOptions? options, ClientTelemetry telemetry, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
 

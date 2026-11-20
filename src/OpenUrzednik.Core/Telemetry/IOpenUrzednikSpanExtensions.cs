@@ -25,7 +25,7 @@ public static class IOpenUrzednikSpanExtensions
     /// and marks the span as failed: with the error's message for one error, or with the number of errors for several.
     /// Does nothing when the span isn't recording or the list is empty.
     /// </summary>
-    /// <remarks>The <c>error</c> events are best-effort: unlike the tag, they aren't part of the telemetry contract (ADR-0003).</remarks>
+    /// <remarks>The <c>error</c> events are best-effort: unlike the tag, they aren't part of the telemetry contract (ADR-0025).</remarks>
     /// <param name="span">Span to update.</param>
     /// <param name="errors">Errors to record.</param>
     public static void RecordErrors(this IOpenUrzednikSpan span, IReadOnlyList<OpenUrzednikError> errors)

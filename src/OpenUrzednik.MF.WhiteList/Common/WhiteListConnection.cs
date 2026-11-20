@@ -24,19 +24,19 @@ internal static class WhiteListConnection
     /// Creates the executor of the search and check client: base address the host root plus <see cref="SearchApiPath"/>.
     /// </summary>
     /// <exception cref="ArgumentException">The options or the <see cref="HttpClient.BaseAddress"/> are invalid.</exception>
-    internal static RestRequestExecutor CreateSearch(HttpClient httpClient, WhiteListOptions? options, OpenUrzednikTelemetry telemetry, TimeProvider timeProvider)
+    internal static RestRequestExecutor CreateSearch(HttpClient httpClient, WhiteListOptions? options, ClientTelemetry telemetry, TimeProvider timeProvider)
         => Create(httpClient, options, telemetry, timeProvider, SearchApiPath);
 
     /// <summary>
     /// Creates the executor of the status (WL2) client: base address the host root plus <see cref="StatusApiPath"/>.
     /// </summary>
     /// <exception cref="ArgumentException">The options or the <see cref="HttpClient.BaseAddress"/> are invalid.</exception>
-    internal static RestRequestExecutor CreateStatus(HttpClient httpClient, WhiteListOptions? options, OpenUrzednikTelemetry telemetry, TimeProvider timeProvider)
+    internal static RestRequestExecutor CreateStatus(HttpClient httpClient, WhiteListOptions? options, ClientTelemetry telemetry, TimeProvider timeProvider)
         => Create(httpClient, options, telemetry, timeProvider, StatusApiPath);
 
     // The host root from the options, then HttpClient.BaseAddress, then WhiteListOptions.DefaultApiUrl; the profile's error mapping uses
     // the client's clock.
-    private static RestRequestExecutor Create(HttpClient httpClient, WhiteListOptions? options, OpenUrzednikTelemetry telemetry, TimeProvider timeProvider, string apiPath)
+    private static RestRequestExecutor Create(HttpClient httpClient, WhiteListOptions? options, ClientTelemetry telemetry, TimeProvider timeProvider, string apiPath)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(timeProvider);

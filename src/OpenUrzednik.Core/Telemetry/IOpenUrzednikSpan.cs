@@ -3,7 +3,7 @@ namespace OpenUrzednik.Core.Telemetry;
 /// <summary>
 /// A started span; disposing it ends the span. Started by <see cref="IOpenUrzednikTraceSource.StartSpan"/>.
 /// </summary>
-/// <remarks>The library calls this interface, so it doesn't change within a major version; a new capability comes as a separate interface (ADR-0003).</remarks>
+/// <remarks>The library calls this interface, so it doesn't change within a major version; a new capability comes as a separate interface (ADR-0025).</remarks>
 public interface IOpenUrzednikSpan : IDisposable
 {
     /// <summary>

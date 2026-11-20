@@ -47,7 +47,7 @@ public sealed partial class WhiteListRequestPipelineTest
     {
         // Arrange
         var logger = CreateLogger();
-        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new OpenUrzednikTelemetry(logger));
+        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new ClientTelemetry(logger));
 
         // Act
         await sut.GetAsync(CreateRecordingSpan(), "SearchByNipAsync", OpenUrzednikResult.Failure(new ValidationError("Invalid.", "rule", "nip", null)),
@@ -82,7 +82,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         var httpSpan = CreateRecordingSpan();
         tracer.StartSpan(Arg.Any<string>()).Returns(httpSpan);
-        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, tracer));
+        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new ClientTelemetry(NullOpenUrzednikLogger.Instance, tracer));
 
         // Act
         await sut.GetAsync(CreateRecordingSpan(), "Operation", OpenUrzednikResult.Success(),
@@ -115,7 +115,7 @@ public sealed partial class WhiteListRequestPipelineTest
     {
         // Arrange
         var logger = CreateLogger();
-        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new OpenUrzednikTelemetry(logger));
+        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new ClientTelemetry(logger));
         var span = CreateRecordingSpan();
         var exception = new InvalidPayloadException("MF White List API response is missing 'requestId'.");
 
@@ -130,7 +130,7 @@ public sealed partial class WhiteListRequestPipelineTest
             "reason", "MF White List API response is missing 'requestId'.");
     }
 
-    // ADR-0003: a NIP in the request path, and echoed in the API's error message, reaches no log, span or error. The NIP and the
+    // ADR-0025: a NIP in the request path, and echoed in the API's error message, reaches no log, span or error. The NIP and the
     // account number are fake, with valid check digits.
     private const string LeakNip = "7368125416";
     private const string LeakAccount = "61109010140000071219812874";
@@ -146,7 +146,7 @@ public sealed partial class WhiteListRequestPipelineTest
     {
         // Arrange
         var telemetry = new RecordingTelemetry();
-        var sut = CreateSut(Json(status, body), out _, new OpenUrzednikTelemetry(telemetry, telemetry));
+        var sut = CreateSut(Json(status, body), out _, new ClientTelemetry(telemetry, telemetry));
 
         // Act
         var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
@@ -167,7 +167,7 @@ public sealed partial class WhiteListRequestPipelineTest
         // and after the cut included.
         var telemetry = new RecordingTelemetry();
         var body = $$"""{"code":"WL-113","message":"Nieprawidłowy NIP: {{LeakNip}}. {{new string('x', 600)}} {{LeakNip}}"}""";
-        var sut = CreateSut(Json(HttpStatusCode.BadRequest, body), out _, new OpenUrzednikTelemetry(telemetry, telemetry));
+        var sut = CreateSut(Json(HttpStatusCode.BadRequest, body), out _, new ClientTelemetry(telemetry, telemetry));
 
         // Act
         var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
@@ -186,7 +186,7 @@ public sealed partial class WhiteListRequestPipelineTest
         // Arrange
         var telemetry = new RecordingTelemetry();
         var body = """{"code":"WL-109","message":"Nieprawidłowy numer rachunku: 61 1090 1014 0000 0712 1981 2874."}""";
-        var sut = CreateSut(Json(HttpStatusCode.BadRequest, body), out _, new OpenUrzednikTelemetry(telemetry, telemetry));
+        var sut = CreateSut(Json(HttpStatusCode.BadRequest, body), out _, new ClientTelemetry(telemetry, telemetry));
 
         // Act
         var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_bank_account"), "SearchByBankAccountAsync",
@@ -203,7 +203,7 @@ public sealed partial class WhiteListRequestPipelineTest
     {
         // Arrange
         var telemetry = new RecordingTelemetry();
-        var sut = CreateSut(Json(HttpStatusCode.OK, """{"code":"WL-0","message":"ok"}"""), out _, new OpenUrzednikTelemetry(telemetry, telemetry));
+        var sut = CreateSut(Json(HttpStatusCode.OK, """{"code":"WL-0","message":"ok"}"""), out _, new ClientTelemetry(telemetry, telemetry));
 
         // Act
         var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
@@ -220,7 +220,7 @@ public sealed partial class WhiteListRequestPipelineTest
         // Arrange
         var httpClient = new HttpClient(new AsyncResponseHandler(() => Json(HttpStatusCode.OK, """{"code":"c"}""")));
         _httpClients.Add(httpClient);
-        var telemetry = new OpenUrzednikTelemetry();
+        var telemetry = new ClientTelemetry();
         var sut = new WhiteListRequestPipeline(WhiteListConnection.CreateSearch(httpClient, null, telemetry, new FakeTimeProvider()), telemetry);
 
         // Act

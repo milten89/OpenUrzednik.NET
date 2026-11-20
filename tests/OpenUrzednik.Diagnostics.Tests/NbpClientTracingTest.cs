@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
 
@@ -10,7 +11,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Diagnostics.Tests;
 
-// ADR-0003 confirmation: spans a real client starts reach an ActivityListener.
+// ADR-0025 confirmation: spans a real client starts reach an ActivityListener.
 // End-to-end through NbpGoldPriceClient, so not split into one file per method.
 public sealed class NbpClientTracingTest : IDisposable
 {
@@ -19,7 +20,7 @@ public sealed class NbpClientTracingTest : IDisposable
     public void Dispose() => _recorder.Dispose();
 
     private NbpGoldPriceClient CreateSut(HttpClient httpClient)
-        => new(httpClient, traceSource: new ActivityTraceSource(_recorder.Source));
+        => new(httpClient, null, null, new OpenUrzednikTelemetry { TraceSource = new ActivityTraceSource(_recorder.Source) });
 
     [Fact]
     public async Task GetLatestAsync_Success_RecordsOperationAndHttpActivities()
@@ -60,7 +61,7 @@ public sealed class NbpClientTracingTest : IDisposable
         };
         using var httpClient = new HttpClient(new StubHttpMessageHandler(response));
         var sut = new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = "https://gateway.example.com:8443/nbp/" },
-            traceSource: new ActivityTraceSource(_recorder.Source));
+            null, new OpenUrzednikTelemetry { TraceSource = new ActivityTraceSource(_recorder.Source) });
 
         // Act
         var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);

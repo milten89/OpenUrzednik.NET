@@ -4,6 +4,7 @@ using System.Text;
 
 using Microsoft.Extensions.Logging;
 
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
@@ -12,7 +13,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Extensions.Logging.Tests;
 
-// Telemetry contract (ADR-0003): a client writes an operation's log entries while that operation's span, or its HTTP child
+// Telemetry contract (ADR-0025): a client writes an operation's log entries while that operation's span, or its HTTP child
 // span, is Activity.Current, so log providers can link them to the trace. End-to-end through NbpGoldPriceClient with the real
 // ActivityTraceSource and ILogger adapter, so not split into one file per method.
 public sealed class NbpClientLogTraceCorrelationTest : IDisposable
@@ -52,7 +53,7 @@ public sealed class NbpClientLogTraceCorrelationTest : IDisposable
     }
 
     private NbpGoldPriceClient CreateSut(HttpClient httpClient)
-        => new(httpClient, logger: new OpenUrzednikLogger(_logger), traceSource: new ActivityTraceSource(_source));
+        => new(httpClient, null, null, new OpenUrzednikTelemetry { Logger = new OpenUrzednikLogger(_logger), TraceSource = new ActivityTraceSource(_source) });
 
     private Activity Operation(string name)
     {

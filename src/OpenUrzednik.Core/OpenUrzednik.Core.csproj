@@ -9,15 +9,16 @@
     <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
-  <!-- The ActivitySource tracing behind the providers' fallback trace source (ADR-0003): .NET has ActivitySource built in.
+  <!-- The ActivitySource tracing and the Meter behind the providers' fallback trace source and metrics (ADR-0025): .NET has both built in.
        On netstandard2.0 Core takes no dependency, so these files are linked into OpenUrzednik.Diagnostics instead. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Remove="Telemetry\Activities\**" />
+    <Compile Remove="Telemetry\Metrics\**" />
   </ItemGroup>
 
   <!-- .NET targets only: on netstandard2.0 the internal polyfills would clash in the assemblies that see them.
-       The internals these assemblies call are a contract between packages (ADR-0003): within a major, add, never change or remove.
-       Every REST provider goes here, because its OpenUrzednikTelemetry (src/Http) uses SharedActivityTraceSource. -->
+       The internals these assemblies call are a contract between packages (ADR-0025): within a major, add, never change or remove.
+       Every REST provider goes here, because its ClientTelemetry (src/Http) uses SharedActivityTraceSource. -->
   <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
     <InternalsVisibleTo Include="OpenUrzednik.Diagnostics" />
     <InternalsVisibleTo Include="OpenUrzednik.Nbp" />

@@ -18,7 +18,7 @@ Notation, with MF White List as the example:
 | `<Provider>` | the folder name in shared test projects | `MFWhiteList` |
 | `<provider>` | the short name in telemetry: snake_case of the id without `OpenUrzednik.` | `mf_white_list` |
 | `<icon>` | the icon file name | `icon-mf` |
-| `<label>` | the GitHub label | `provider:mf` |
+| `<label>` | the GitHub label | `provider:white-list` |
 
 ## 0. Before any code
 
@@ -41,7 +41,7 @@ Notation, with MF White List as the example:
 - [ ] `src/<Package>.DependencyInjection`: links `src/Http/Infrastructure/ResilienceRejection.cs`, sets `OpenUrzednikAllowedPackageReferences`, returns the `IHttpClientBuilder`, adds `AddOpenUrzednik<Name>RejectionHandler()` (ADR-0024). If request paths or queries carry identifiers: imports `src/Http/DependencyInjection/DependencyInjection.props`, calls `AddOpenUrzednikDisplayPathLogging()` on every named client, and has a test that the factory's logging carries no identifier ([ADR-0017](../../../docs/adr/0017-http-client-logging-for-identifier-paths.md)).
 - [ ] Every new project in `OpenUrzednik.slnx`; the `src/` ones also in **`OpenUrzednik.Packages.slnf`**.
 
-## 2. Telemetry (ADR-0003, ADR-0015)
+## 2. Telemetry (ADR-0025, ADR-0015)
 
 - [ ] `public static class <Prefix>Telemetry` with `SourceName = "<Package>"`, as `NbpTelemetry`.
 - [ ] `public static class <Prefix>LogEvents`: a REST provider mirrors the `RestLogEvents` ids (1xxx); the provider's own events from 2001 on; new ids only, never reused. A SOAP provider's ADR decides its HTTP-level ids.
@@ -77,7 +77,7 @@ Notation, with MF White List as the example:
 - [ ] `CLAUDE.md`: a row per package in the Project table.
 - [ ] The package ids in the package dropdowns of `.github/ISSUE_TEMPLATE/bug_report.yml`, `feature_request.yml` and `0-question.yml`.
 - [ ] The "missing or unexpected data" hints name the provider's source: `SUPPORT.md` (first bullet) and the intro of `.github/ISSUE_TEMPLATE/0-question.yml` (bilingual).
-- [ ] Propose `<label>` with a row in the Labels table of `docs/GITHUB-SETUP.md`; the maintainer creates the label.
+- [ ] `<label>` exists (`/triage` creates it when the provider is proposed; create it now if it is missing), its row is in the Labels table of `docs/GITHUB-SETUP.md` (the provider's ADR PR adds it; add it here if it is missing), and it is on every issue and PR of the provider, this one included.
 
 ## 7. Finish
 

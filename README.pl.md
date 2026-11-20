@@ -33,7 +33,7 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 | :--- | :--- | :--- |
 | [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.pl.md) | ✅ Stabilny | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` oraz `EnsureSuccess()` / `EnsureSuccessAsync()` |
 | [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.pl.md) | ✅ Stabilny | Przekazuje logi klientów do `ILogger` z Microsoft.Extensions.Logging |
-| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | ✅ Stabilny | Zamienia spany klientów na `Activity` dla OpenTelemetry (`AddSource("OpenUrzednik.*")`) |
+| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | ✅ Stabilny | Zamienia spany klientów na `Activity` i zapisuje ich metryki w `Meter`, dla OpenTelemetry (`AddSource("OpenUrzednik.*")`, `AddMeter("OpenUrzednik.*")`) |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.pl.md) | ✅ Stabilny | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md) | ✅ Stabilny | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` |
 | [**OpenUrzednik.Transport.Http**](src/OpenUrzednik.Transport.Http/README.pl.md) | 🆕 1.1 | Błędy spowodowane odpowiedziami HTTP (`HttpNotFoundError` i pozostałe) oraz `IOpenUrzednikHttpStatusCode`; instaluje się razem z każdym dostawcą REST |

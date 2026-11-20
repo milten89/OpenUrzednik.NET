@@ -7,7 +7,7 @@ namespace OpenUrzednik.Core.Telemetry;
 /// One <see cref="ActivitySource"/> per name for the whole process, as an <see cref="IOpenUrzednikTraceSource"/>.
 /// On the .NET targets a provider client without a trace source uses it (<c>OpenUrzednik.&lt;Provider&gt;</c>), so
 /// <c>AddSource("OpenUrzednik.*")</c> is enough without DI; <c>ActivityTraceSource.GetShared</c> in <c>OpenUrzednik.Diagnostics</c>
-/// returns the same source. Compiled into Core on the .NET targets and linked into <c>OpenUrzednik.Diagnostics</c> for netstandard2.0 (ADR-0003).
+/// returns the same source. Compiled into Core on the .NET targets and linked into <c>OpenUrzednik.Diagnostics</c> for netstandard2.0 (ADR-0025).
 /// </summary>
 /// <remarks>
 /// On .NET, OpenUrzednik.Diagnostics and the providers call <see cref="Get"/> and <see cref="Source"/> through <c>InternalsVisibleTo</c>,

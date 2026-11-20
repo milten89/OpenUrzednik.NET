@@ -31,7 +31,7 @@ public partial class NbpCurrencyExchangeRateClientTest
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") };
         });
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://nbp.example.com/api/") };
-        var sut = new NbpCurrencyExchangeRateClient(httpClient, timeProvider: TestClock.FarFuture());
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, null, TestClock.FarFuture());
 
         // Act
         var calls = Enumerable.Range(0, callCount).Select(i =>

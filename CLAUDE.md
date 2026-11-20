@@ -11,8 +11,8 @@ OpenUrzednik.NET is a set of unofficial .NET client libraries for Polish public 
 | Project | State |
 |---|---|
 | `src/OpenUrzednik.Core` | Result pattern (`OpenUrzednikResult`, `OpenUrzednikResult<T>`), errors and exceptions, telemetry abstractions, `ValueValidator<T>` |
-| `src/Http` | Shared REST/JSON layer, not a package: internal source compiled into each REST provider through `Http.props` (a DI package links `Infrastructure/ResilienceRejection.cs` to mark resilience rejections; a DI package of a provider with display paths imports `DependencyInjection/DependencyInjection.props`, its HttpClient logging, ADR-0017) (`RestRequestExecutor`, `RestProviderProfile`, `RestOptions`, `OpenUrzednikTelemetry`; namespace `OpenUrzednik.Http.Infrastructure`); tested in `OpenUrzednik.Http.Tests` |
-| `src/Privacy` | Masking of personal identifiers and secrets (ADR-0003), not a package: internal source compiled into each provider that handles them through `Privacy.props` (`SensitiveValue.Mask`; namespace `OpenUrzednik.Privacy`); tested in `OpenUrzednik.Core.Tests` through `OpenUrzednik.Identifiers.TestHost` |
+| `src/Http` | Shared REST/JSON layer, not a package: internal source compiled into each REST provider through `Http.props` (a DI package links `Infrastructure/ResilienceRejection.cs` to mark resilience rejections; a DI package of a provider with display paths imports `DependencyInjection/DependencyInjection.props`, its HttpClient logging, ADR-0017) (`RestRequestExecutor`, `RestProviderProfile`, `RestOptions`, `ClientTelemetry`; namespace `OpenUrzednik.Http.Infrastructure`); tested in `OpenUrzednik.Http.Tests` |
+| `src/Privacy` | Masking of personal identifiers and secrets (ADR-0025), not a package: internal source compiled into each provider that handles them through `Privacy.props` (`SensitiveValue.Mask`; namespace `OpenUrzednik.Privacy`); tested in `OpenUrzednik.Core.Tests` through `OpenUrzednik.Identifiers.TestHost` |
 | `src/Identifiers` | Validators of Polish identifiers, not a package: internal source compiled into each provider that takes them through `Identifiers.props`, which brings `src/Privacy` (`NipValidator`, `RegonValidator`, `KrsNumberValidator`, `BankAccountNumberValidator`, `IdentifierNormalizer`; namespace `OpenUrzednik.Identifiers`); tested in `OpenUrzednik.Core.Tests` |
 | `src/Dates` | Date helpers, not a package: internal source compiled into each provider that takes or returns dates through `Dates.props`, which also adds the global using and, on netstandard2.0, the `DateOnly` alias (`DateOnlyExtensions.ToPublicDate`/`ToIso8601String`, `WarsawCalendar.Today`, the `DateOnly` polyfills; namespace `OpenUrzednik.Dates`); tested in `OpenUrzednik.Core.Tests` |
 | `src/OpenUrzednik.Extensions.Logging` | `IOpenUrzednikLogger` over `ILogger` (`OpenUrzednikLogger`, `CreateOpenUrzednikLogger<TClient>()`) |
@@ -79,15 +79,16 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 
 **Shared internal code ([ADR-0021](docs/adr/0021-transport-subclasses-of-condition-errors.md), [ADR-0019](docs/adr/0019-shared-http-layer-tested-through-test-host.md))**
 - Internal code that several packages need is shared source: a `src/<Area>` folder with a `.props` file that each package imports, tested and mutated through a test-only host (`src/Http`, `src/Identifiers`, `src/Privacy`, `src/Dates`).
-- Never move such code into a package that others reach through `InternalsVisibleTo`, and never make it public for that reason: an app can pair packages of different versions, so internals would become a cross-package contract, and on netstandard2.0 the polyfills would clash (CS0436). Core's telemetry internals (ADR-0003) are the one existing exception.
+- Never move such code into a package that others reach through `InternalsVisibleTo`, and never make it public for that reason: an app can pair packages of different versions, so internals would become a cross-package contract, and on netstandard2.0 the polyfills would clash (CS0436). Core's telemetry internals (ADR-0025) are the one existing exception.
 - Types that apps use belong in a real package, such as `OpenUrzednik.Transport.Http`.
 
-**Telemetry ([ADR-0003](docs/adr/0003-telemetry-abstractions.md))**
+**Telemetry ([ADR-0025](docs/adr/0025-telemetry-abstractions-with-metrics.md))**
 - Use `IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` and `IOpenUrzednikSpan` from Core.
-  - Don't use `ILogger` or `ActivitySource` in Core or provider packages.
+  - Don't use `ILogger`, `ActivitySource` or `Meter` in Core or provider packages.
   - The one exception is the fallback trace source: on the .NET targets a client without a trace source uses the shared `OpenUrzednik.<Provider>` source, through Core's internal `Telemetry/Activities` (compiled into Core on .NET only, linked into `OpenUrzednik.Diagnostics` for netstandard2.0; Core grants `InternalsVisibleTo` on .NET only, and a new REST provider must be added to it). netstandard2.0 falls back to `NullOpenUrzednikTraceSource`.
   - Those Core internals are called across packages, and an app may pair a newer Core with older packages: within a major, add to them, never change or remove.
 - These interfaces are frozen from 1.0: a new capability is a separate interface that callers check with `is`.
+- Metrics (decided, being implemented): Core's `IOpenUrzednikMetrics` (`IsEnabled(name)`, `Record(IOpenUrzednikMeasurement)`) with public measurement interfaces by instrument kind and internal measurement classes whose name, unit and tags are set where they are measured; `MeterMetrics` in `OpenUrzednik.Diagnostics` on every target; the histogram `openurzednik.client.operation.duration` per provider meter `OpenUrzednik.<Provider>`, recorded while the span is current, with the span's own duration (`IOpenUrzednikSpanTiming`) or one measurement of its own.
 - More rules: [`.claude/rules/telemetry.md`](.claude/rules/telemetry.md).
 
 **Target frameworks ([ADR-0005](docs/adr/0005-target-frameworks.md))**
@@ -102,7 +103,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 **Compatibility ([ADR-0011](docs/adr/0011-compatibility-policy.md))**
 - Public classes not designed for inheritance are `sealed` (unsealing is a minor change, sealing a major one). The abstract extension points (`OpenUrzednikError`, `OpenUrzednikException`, `ValueValidator<T>`) never get a new abstract member, and no interface except a client interface gets a new member (telemetry interfaces are frozen).
 - Since 1.0.0:
-  - Covered within a major: the public API on every target, documented behaviour, the error contract (ADR-0002) and the telemetry contract (ADR-0003). Not covered: log and exception message text, log properties, undocumented behaviour, internal types (except Core internals called through `InternalsVisibleTo`, which are only added to), previews.
+  - Covered within a major: the public API on every target, documented behaviour, the error contract (ADR-0002) and the telemetry contract (ADR-0025). Not covered: log and exception message text, log properties, undocumented behaviour, internal types (except Core internals called through `InternalsVisibleTo`, which are only added to), previews.
   - A client interface may gain a method in a minor version; package validation reports it (CP0006) once the package has been released, and the PR suppresses exactly that diagnostic, citing ADR-0011.
   - Before a major removes a member, mark it `[Obsolete]` (with the replacement) for at least one minor. A patch (`hotfix/*`) adds no public API.
   - A PR with a breaking change carries `breaking-change` and raises `version.json` on `develop` to the next major ([ADR-0008](docs/adr/0008-branching-versioning-and-release.md)).
@@ -122,7 +123,7 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 
 - C# `latest`, nullable enabled, file-scoped namespaces, `_camelCase` private fields. `.editorconfig` is authoritative.
 - No parallel API variants: one public method per operation, returning a result; the exception style comes only through `EnsureSuccess()` / `EnsureSuccessAsync()`.
-- Banned APIs (RS0030, `src/BannedSymbols.txt`): every request method of `HttpClient` and `HttpMessageInvoker`, and `HttpClientJsonExtensions` (`GetFromJsonAsync`, ADR-0019), the clock properties `DateTime.Now`/`Today`/`UtcNow` and `DateTimeOffset.Now`/`UtcNow` (use `TimeProvider` or `WarsawCalendar.Today`), and `ActivitySource` (ADR-0003). Only the places the ADRs allow are exempt, in `src/.editorconfig` (`RestRequestExecutor.cs`, Core's `Telemetry/Activities`, `OpenUrzednik.Diagnostics/ActivityTraceSource.cs`); never add a symbol exemption to make a build pass.
+- Banned APIs (RS0030, `src/BannedSymbols.txt`): every request method of `HttpClient` and `HttpMessageInvoker`, and `HttpClientJsonExtensions` (`GetFromJsonAsync`, ADR-0019), the clock properties `DateTime.Now`/`Today`/`UtcNow` and `DateTimeOffset.Now`/`UtcNow` (use `TimeProvider` or `WarsawCalendar.Today`), `ActivitySource` and `Meter` (ADR-0025). Only the places the ADRs allow are exempt, in `src/.editorconfig` (`RestRequestExecutor.cs`, Core's `Telemetry/Activities` and `Telemetry/Metrics`, `OpenUrzednik.Diagnostics/ActivityTraceSource.cs` and `MeterMetrics.cs`); never add a symbol exemption to make a build pass.
 - More rules: [`.claude/rules/code-conventions.md`](.claude/rules/code-conventions.md).
 
 ## Testing conventions

@@ -140,14 +140,14 @@ public sealed partial class WhiteListConnectionTest
         using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(Substitute.For<IOpenUrzednikSpan>());
-        var connection = WhiteListConnection.CreateSearch(httpClient, null, new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, tracer), new FakeTimeProvider());
+        var connection = WhiteListConnection.CreateSearch(httpClient, null, new ClientTelemetry(NullOpenUrzednikLogger.Instance, tracer), new FakeTimeProvider());
 
         // Act
         var result = await connection.GetAsync("search/nip/1234567890", "search/nip/{nip}", WhiteListJsonContext.Default.ErrorDto,
             TestContext.Current.CancellationToken);
 
         // Assert
-        // The span name is part of the telemetry contract (ADR-0003, ADR-0023).
+        // The span name is part of the telemetry contract (ADR-0025, ADR-0023).
         tracer.Received(1).StartSpan("mf_white_list.http.get");
         result.Errors.ShouldHaveSingleItem().Message
             .ShouldBe("MF White List API is unavailable for https://wykazpodatnikowvat.mf.gov.pl/api/search/nip/{nip}, status 503.");

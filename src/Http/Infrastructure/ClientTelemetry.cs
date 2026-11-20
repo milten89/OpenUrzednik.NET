@@ -5,16 +5,21 @@ using OpenUrzednik.Core.Telemetry;
 namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
-/// The logger and trace source a provider client uses, with defaults (ADR-0003).
-/// For provider authors; applications pass <see cref="IOpenUrzednikLogger"/> and <see cref="IOpenUrzednikTraceSource"/> to the clients.
+/// The logger, trace source and metrics a provider client uses, with the defaults resolved (ADR-0025).
+/// For provider authors; applications pass an <see cref="OpenUrzednikTelemetry"/> to the clients.
 /// </summary>
 /// <param name="logger">The logger, or <see langword="null"/> for <see cref="NullOpenUrzednikLogger"/>.</param>
 /// <param name="traceSource">
 /// The trace source, or <see langword="null"/> for the default: on the .NET targets the process-wide <c>ActivitySource</c> named
 /// <paramref name="sourceName"/>, on netstandard2.0 (or without a name) <see cref="NullOpenUrzednikTraceSource"/>.
 /// </param>
-/// <param name="sourceName">The provider's <c>ActivitySource</c> name, e.g. <c>OpenUrzednik.Nbp</c>.</param>
-internal sealed class OpenUrzednikTelemetry(IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null, string? sourceName = null)
+/// <param name="sourceName">The provider's <c>ActivitySource</c> and <c>Meter</c> name, e.g. <c>OpenUrzednik.Nbp</c>.</param>
+/// <param name="metrics">
+/// The metrics, or <see langword="null"/> for the default: on the .NET targets the process-wide <c>Meter</c> named
+/// <paramref name="sourceName"/>, on netstandard2.0 (or without a name) <see cref="NullOpenUrzednikMetrics"/>.
+/// </param>
+internal sealed class ClientTelemetry(IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null, string? sourceName = null,
+    IOpenUrzednikMetrics? metrics = null)
 {
     /// <summary>
     /// Gets the logger. Never <see langword="null"/>.
@@ -26,6 +31,11 @@ internal sealed class OpenUrzednikTelemetry(IOpenUrzednikLogger? logger = null, 
     /// </summary>
     public IOpenUrzednikTraceSource TraceSource { get; } = traceSource ?? DefaultTraceSource(sourceName);
 
+    /// <summary>
+    /// Gets the metrics. Never <see langword="null"/>.
+    /// </summary>
+    public IOpenUrzednikMetrics Metrics { get; } = metrics ?? DefaultMetrics(sourceName);
+
     // netstandard2.0 has no ActivitySource without the System.Diagnostics.DiagnosticSource package, which Core and providers don't take.
     [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "The netstandard2.0 build returns one concrete type, the .NET build two; the shared signature needs the interface, and the result is stored once per client in an interface-typed property, so a concrete type devirtualizes nothing.")]
     private static IOpenUrzednikTraceSource DefaultTraceSource(string? sourceName)
@@ -33,5 +43,14 @@ internal sealed class OpenUrzednikTelemetry(IOpenUrzednikLogger? logger = null, 
         => sourceName is null ? NullOpenUrzednikTraceSource.Instance : SharedActivityTraceSource.Get(sourceName);
 #else
         => NullOpenUrzednikTraceSource.Instance;
+#endif
+
+    // netstandard2.0 has no Meter without the System.Diagnostics.DiagnosticSource package (OpenUrzednik.Diagnostics' MeterMetrics).
+    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for improved performance", Justification = "As for DefaultTraceSource: two concrete types on .NET, one shared interface-typed property.")]
+    private static IOpenUrzednikMetrics DefaultMetrics(string? sourceName)
+#if NET
+        => sourceName is null ? NullOpenUrzednikMetrics.Instance : SharedOpenUrzednikMeter.Get(sourceName);
+#else
+        => NullOpenUrzednikMetrics.Instance;
 #endif
 }

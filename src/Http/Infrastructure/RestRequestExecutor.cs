@@ -36,7 +36,7 @@ internal sealed class RestRequestExecutor
     private readonly HttpClient _httpClient;
     private readonly TimeSpan? _timeout;
     private readonly RestProviderProfile _profile;
-    private readonly OpenUrzednikTelemetry _telemetry;
+    private readonly ClientTelemetry _telemetry;
     private readonly TimeProvider _timeProvider;
     private readonly string _spanName;
     // The span's server.address and server.port: request paths are relative, so the authority is the base address's.
@@ -58,13 +58,13 @@ internal sealed class RestRequestExecutor
     /// Deadline for one request, including reading the body. <see langword="null"/> uses <see cref="HttpClient.Timeout"/>;
     /// <see cref="Timeout.InfiniteTimeSpan"/> removes this deadline. <see cref="HttpClient.Timeout"/> still limits the wait for the headers.
     /// </param>
-    /// <param name="telemetry">Logger and trace source; <see langword="null"/> for no-op telemetry.</param>
-    /// <param name="timeProvider">Clock for <c>Retry-After</c> dates; <see langword="null"/> for <see cref="TimeProvider.System"/>.</param>
+    /// <param name="telemetry">Logger, trace source and metrics; <see langword="null"/> for no-op telemetry.</param>
+    /// <param name="timeProvider">Clock for <c>Retry-After</c> dates and the duration of an operation without a span that reports one; <see langword="null"/> for <see cref="TimeProvider.System"/>.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpClient"/>, <paramref name="baseAddress"/> or <paramref name="profile"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="baseAddress"/> isn't absolute.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> isn't positive, isn't at most <see cref="int.MaxValue"/> milliseconds, and isn't <see cref="Timeout.InfiniteTimeSpan"/>.</exception>
     public RestRequestExecutor(HttpClient httpClient, Uri baseAddress, RestProviderProfile profile, TimeSpan? timeout = null,
-        OpenUrzednikTelemetry? telemetry = null, TimeProvider? timeProvider = null)
+        ClientTelemetry? telemetry = null, TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(baseAddress);
@@ -78,7 +78,7 @@ internal sealed class RestRequestExecutor
         BaseAddress = baseAddress;
         _profile = profile;
         _timeout = timeout;
-        _telemetry = telemetry ?? new OpenUrzednikTelemetry();
+        _telemetry = telemetry ?? new ClientTelemetry();
         _timeProvider = timeProvider ?? TimeProvider.System;
         _spanName = profile.Name + ".http.get";
         _serverAddress = baseAddress.IdnHost;
@@ -89,6 +89,21 @@ internal sealed class RestRequestExecutor
     /// Gets the base address request paths are resolved against.
     /// </summary>
     public Uri BaseAddress { get; }
+
+    /// <summary>
+    /// Starts one client operation: its trace span and, while the operation-duration metric is enabled, its measurement
+    /// with the provider's short name and this executor's <c>server.address</c> and <c>server.port</c> (ADR-0025).
+    /// </summary>
+    /// <param name="operationName">The operation's span name, e.g. <c>nbp.gold.latest</c>.</param>
+    /// <returns>The scope; the caller completes it with its result and disposes it.</returns>
+    internal OperationScope StartOperation(string operationName)
+    {
+        var span = _telemetry.TraceSource.StartSpan(operationName);
+        var metrics = _telemetry.Metrics;
+        return metrics.IsEnabled(OperationMeasurement.InstrumentName)
+            ? new OperationScope(span, new OperationMeasurement(operationName, _profile.Name, _serverAddress, _serverPort, metrics, _timeProvider))
+            : new OperationScope(span);
+    }
 
     /// <summary>
     /// Gets the request deadline: the timeout passed to the constructor when set, otherwise <see cref="HttpClient.Timeout"/>.
@@ -117,7 +132,7 @@ internal sealed class RestRequestExecutor
 
     /// <summary>
     /// Sends a GET request for <paramref name="relativePath"/>, like <see cref="GetAsync{TDto}(string, JsonTypeInfo{TDto}, CancellationToken)"/>,
-    /// for a request whose path or query carries personal identifiers or secrets (ADR-0003, ADR-0019). <paramref name="displayPath"/> replaces
+    /// for a request whose path or query carries personal identifiers or secrets (ADR-0025, ADR-0019). <paramref name="displayPath"/> replaces
     /// the request URI everywhere the executor writes it: the <c>url.path</c> tag (the base address path plus the display path, without its query),
     /// logs, error messages and <see cref="ErrorResponseContext.RequestPath"/> (the base address plus the display path).
     /// The default mapping of a 400 leaves out the server's message, which may echo the identifier; a provider that needs it reads it in
@@ -151,7 +166,7 @@ internal sealed class RestRequestExecutor
 
         var requestUri = new Uri(BaseAddress, relativePath.TrimStart('/'));
 
-        // OpenTelemetry HTTP client semantic conventions (ADR-0003): the address the client was given, before any DelegatingHandler
+        // OpenTelemetry HTTP client semantic conventions (ADR-0025): the address the client was given, before any DelegatingHandler
         // rewrites it. server.port is always set, as .NET 9+ does.
         using var traceSpan = _telemetry.TraceSource.StartSpan(_spanName);
         traceSpan.SetTag("http.request.method", "GET");

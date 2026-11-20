@@ -9,7 +9,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Core.Tests.Telemetry;
 
-// TestCommon's leak check (ADR-0003): every place an identifier can reach an app is searched, and a masked value passes. The NIP
+// TestCommon's leak check (ADR-0025): every place an identifier can reach an app is searched, and a masked value passes. The NIP
 // and the account number are fake (the NIP's check digit is valid); their digit runs can't appear by chance in the texts below.
 public class IdentifierLeakTest
 {

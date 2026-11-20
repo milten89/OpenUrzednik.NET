@@ -13,7 +13,7 @@ public sealed partial class WhiteListRequestPipelineTest
     public void Ctor_NullConnection_ThrowsArgumentNullException()
     {
         // Act && Assert
-        Should.Throw<ArgumentNullException>(() => new WhiteListRequestPipeline(null!, new OpenUrzednikTelemetry()))
+        Should.Throw<ArgumentNullException>(() => new WhiteListRequestPipeline(null!, new ClientTelemetry()))
             .ParamName.ShouldBe("connection");
     }
 
@@ -22,7 +22,7 @@ public sealed partial class WhiteListRequestPipelineTest
     {
         // Arrange
         using var httpClient = new HttpClient();
-        var telemetry = new OpenUrzednikTelemetry();
+        var telemetry = new ClientTelemetry();
         var connection = WhiteListConnection.CreateSearch(httpClient, null, telemetry, new FakeTimeProvider());
 
         // Act && Assert

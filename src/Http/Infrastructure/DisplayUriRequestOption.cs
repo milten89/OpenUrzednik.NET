@@ -8,7 +8,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// </summary>
 /// <remarks>
 /// The key is a contract between packages: an app may pair a provider with an older or newer DI package, and a logger that doesn't
-/// find the key logs the real path. Within a major, never rename or remove it (like Core's cross-package internals, ADR-0003).
+/// find the key logs the real path. Within a major, never rename or remove it (like Core's cross-package internals, ADR-0025).
 /// </remarks>
 internal static class DisplayUriRequestOption
 {

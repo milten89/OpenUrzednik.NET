@@ -14,9 +14,9 @@ namespace OpenUrzednik.Nbp.Common;
 internal sealed class NbpRequestPipeline
 {
     private readonly RestRequestExecutor _connection;
-    private readonly OpenUrzednikTelemetry _telemetry;
+    private readonly ClientTelemetry _telemetry;
 
-    internal NbpRequestPipeline(RestRequestExecutor connection, OpenUrzednikTelemetry telemetry)
+    internal NbpRequestPipeline(RestRequestExecutor connection, ClientTelemetry telemetry)
     {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(telemetry);
@@ -24,6 +24,9 @@ internal sealed class NbpRequestPipeline
         _connection = connection;
         _telemetry = telemetry;
     }
+
+    /// <summary>Starts one client operation: its span and its operation-duration measurement (ADR-0025).</summary>
+    internal OperationScope StartOperation(string operationName) => _connection.StartOperation(operationName);
 
     /// <summary>
     /// Validates, requests <paramref name="path"/> and maps the whole payload.

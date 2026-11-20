@@ -73,8 +73,9 @@ Rules (definitions in [`docs/GITHUB-SETUP.md`](../../../docs/GITHUB-SETUP.md#fie
 - **Seq:** a free number between the neighbours in the intended order (the plan uses steps of 10; follow-ups take free numbers in between). When no neighbour gives a clear place, take one more than the highest Seq of the item's Phase that is still free.
 - **Plan:** the next free `F<n>`, computed from all items as above, never from a few neighbours.
 - **Size:** an estimate of the maintainer's effort to review or do it, not the agent's: `XS` (< 15 min), `S` (< 30 min), `M` (about 1 h), `L` (several hours).
-- **Labels:** one release label from `.github/release.yml` as a forecast (`breaking-change`, `enhancement`, `bug`, `documentation`, `dependencies`, `ci`, `skip-changelog`) plus area labels (`area:*`, `provider:*`). Only labels that exist; propose a new one in the notes instead of creating it.
+- **Labels:** one release label from `.github/release.yml` as a forecast (`breaking-change`, `enhancement`, `bug`, `documentation`, `dependencies`, `ci`, `skip-changelog`) plus area labels (`area:*`, `provider:*`). Only labels that exist; propose a new one in the notes instead of creating it, except a provider label (next item).
 - **Provider proposals:** `Backlog`, Priority `Low`, no milestone.
+- **Provider labels:** a proposal of a new provider, or of a variant package of one (ADR-0016), gets its own `provider:<name>` label: `<name>` in kebab case, color `#FBCA04`, description "Affects `<package>`" (a base provider's adds "(and its variants)"); e.g. `provider:white-list`, `provider:flat-file`. If it doesn't exist, the notes propose creating it and list the open and closed issues and PRs connected with the provider (found by its name, checked one by one); step 5 creates it and adds it to the proposal and to the listed items the maintainer approved. A variant's items carry the base provider's label too. The provider's ADR PR adds its row to the Labels table of `docs/GITHUB-SETUP.md`.
 - **Due:** only for a calendar deadline.
 
 Show one table for all items, in the recommended order, then the notes:
@@ -101,6 +102,8 @@ gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id
 gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id <field id> --text <plan>                       # Plan
 gh project item-edit --project-id PVT_kwHOAJh3Rs4BnebI --id <item id> --field-id <field id> --date <YYYY-MM-DD>                 # Due, only for a deadline
 gh issue edit <n> -R milten89/OpenUrzednik.NET --add-label <label>      # --remove-label for a wrong form label
+gh label create provider:<name> -R milten89/OpenUrzednik.NET --color FBCA04 --description "Affects <package>"   # a new provider label only
+gh pr edit <n> -R milten89/OpenUrzednik.NET --add-label provider:<name>  # a provider's PRs
 gh issue edit <n> -R milten89/OpenUrzednik.NET --milestone <title>      # only when the table gives a milestone
 ```
 
@@ -115,4 +118,4 @@ Report every failed write.
 
 ## Issues an agent opens for the maintainer
 
-When the maintainer asks an agent for work that needs a new issue (one issue per PR), the agent opens it and triages it right away with the rules of step 3, without the table and approval: the request is the approval. Status is `Ready`, or stays `In progress` if a linked PR already moved it there. The one exception is the milestone: a milestone gates the release, so set one only when the maintainer's request names the release; otherwise leave it out and say so in the report. Issues an agent opens on its own initiative (problems found in passing) stay in `Triage` for this skill.
+When the maintainer asks an agent for work that needs a new issue (one issue per PR), the agent opens it and triages it right away with the rules of step 3, without the table and approval: the request is the approval. Status is `Ready`, or stays `In progress` if a linked PR already moved it there. The one exception is the milestone: a milestone gates the release, so set one only when the maintainer's request names the release; otherwise leave it out and say so in the report. A provider label the issue needs (step 3, **Provider labels**) is created and applied the same way, without approval: the request is the approval. Issues an agent opens on its own initiative (problems found in passing) stay in `Triage` for this skill.

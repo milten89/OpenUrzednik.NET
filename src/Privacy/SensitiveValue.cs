@@ -4,7 +4,7 @@ namespace OpenUrzednik.Privacy;
 
 /// <summary>
 /// Masks personal identifiers (PESEL, NIP, REGON, bank account numbers) and secrets before they reach log messages or
-/// properties, span tags, error and exception messages, error metadata or <c>Exception.Data</c> (ADR-0003).
+/// properties, span tags, error and exception messages, error metadata or <c>Exception.Data</c> (ADR-0025).
 /// </summary>
 internal static class SensitiveValue
 {

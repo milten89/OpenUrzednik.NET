@@ -40,7 +40,7 @@ internal static class NbpPayload
         return latest;
     }
 
-    internal static OpenUrzednikResult<TModel> Map<TDto, TModel>(TDto dto, Func<TDto, TModel> map, OpenUrzednikTelemetry telemetryProvider, IOpenUrzednikSpan traceSpan)
+    internal static OpenUrzednikResult<TModel> Map<TDto, TModel>(TDto dto, Func<TDto, TModel> map, ClientTelemetry telemetryProvider, IOpenUrzednikSpan traceSpan)
     {
         try
         {
