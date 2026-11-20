@@ -56,6 +56,7 @@ For 1.0.0 this step doesn't apply: the range is the whole preview history, and i
 - Keep the generated lines (`* <title> by @<author> in <PR url>`); shorten or clarify a title only when it says nothing to a user. Keep the "New Contributors" section, but remove bots (`dependabot[bot]`) from it, and the whole section if nobody else is left.
 - **Breaking changes:** for each PR in that category, read its body (`gh pr view <n> --json body`), especially "Breaking changes / notes for reviewers", and add what the user has to change under **Upgrading**: the old and new API, the new error code, the renamed tag. A breaking change outside a major version is a policy violation ([ADR-0011](../../../docs/adr/0011-compatibility-policy.md)): stop and tell the user.
 - Mention changes to the dependency minimums and the targets (a dropped .NET target, a raised `Microsoft.Extensions.*` floor) under **Upgrading** too: they decide whether an app can update.
+- A new metrics instrument kind (a new `IOpenUrzednik…Measurement` interface, such as a gauge or counter, ADR-0025) goes under **Upgrading**: name the interface and the measurements that use it, and say that a custom `IOpenUrzednikMetrics` sink records nothing of that kind until it supports the interface (`MeterMetrics` does).
 - No internal detail users can't act on (refactorings, test-only PRs); those PRs carry `skip-changelog` or `ci`.
 
 ### 1.0.0 only
