@@ -14,4 +14,4 @@ To watch it happen, use the flags in [debugging.md](debugging.md).
 
 ## Why configuration can't free collateral
 
-`ignore-mutations` (even `["linq"]`) and `ignore-methods` filter **after** compilation and skip CompileError mutants (`MutationTest/CsharpMutationProcess.cs:118-126`, sn#962; verified on the core shard and a repro). Only a `// Stryker disable` comment acts before compilation: the mutant is created as Ignored (`Mutants/CsharpMutantOrchestrator.cs:170-176`) and only Pending mutants are injected (`Mutants/MutationStore.cs:267`), so its neighbours compile.
+`ignore-mutations` (even `["linq"]`) and `ignore-methods` filter **after** compilation and skip CompileError mutants (`MutationTest/CsharpMutationProcess.cs:118-126`, sn#962; verified on the core shard and a repro). Only a `// Stryker disable` comment acts before compilation: the mutant is created as Ignored (`Mutants/CsharpMutantOrchestrator.cs:171-177`) and only Pending mutants are injected (`Mutants/MutationStore.cs:267`), so its neighbours compile.
