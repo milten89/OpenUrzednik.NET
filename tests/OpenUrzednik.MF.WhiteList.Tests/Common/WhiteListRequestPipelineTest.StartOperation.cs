@@ -41,7 +41,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var tags = metrics.Recorded.ShouldHaveSingleItem().Tags;
         tags["error.type"].ShouldBe(RateLimitExceededError.ErrorCode);
         tags["openurzednik.operation"].ShouldBe(OperationName);
-        tags["openurzednik.provider"].ShouldBe(WhiteListConnection.ProviderName);
+        tags["openurzednik.provider"].ShouldBe("mf_white_list"); // stable within a major (ADR-0025)
         tags["server.address"].ShouldBe("wykazpodatnikowvat.mf.gov.pl");
         tags["server.port"].ShouldBe(443);
     }
@@ -75,7 +75,7 @@ public sealed partial class WhiteListRequestPipelineTest
         {
             InstrumentPublished = (instrument, l) =>
             {
-                if (instrument.Meter.Name == WhiteListTelemetry.SourceName)
+                if (instrument.Meter.Name == "OpenUrzednik.MF.WhiteList") // the documented meter name, stable within a major
                     l.EnableMeasurementEvents(instrument);
             },
         };
