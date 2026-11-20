@@ -15,6 +15,11 @@
     <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 
+  <!-- IMeterFactory (TestMeterFactory): built into .NET 8 and later, a package on .NET Framework. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+  </ItemGroup>
+
   <!-- ArgumentNullException.ThrowIfNull and friends on .NET Framework; only here, because no other assembly sees these internals. -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Compile Include="../../src/Polyfills/ThrowHelpers.cs" Link="Polyfills/ThrowHelpers.cs" />

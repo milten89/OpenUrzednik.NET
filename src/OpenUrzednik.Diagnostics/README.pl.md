@@ -4,7 +4,7 @@
 
 > ⚠️ **Projekt nieoficjalny:** OpenUrzednik.NET to projekt społecznościowy. Nie jest powiązany z Narodowym Bankiem Polskim (NBP) ani z żadną inną polską instytucją publiczną i nie działa z ich upoważnienia.
 
-Adapter, który zamienia spany klientów **OpenUrzednik.NET** na `Activity` z `System.Diagnostics`. Zbierają je OpenTelemetry i inne narzędzia do śledzenia.
+Adaptery, które zamieniają spany klientów **OpenUrzednik.NET** na `Activity` z `System.Diagnostics` i zapisują ich metryki w `Meter`. Zbierają je OpenTelemetry i inne narzędzia.
 
 > Część zestawu [OpenUrzednik.NET](https://github.com/milten89/OpenUrzednik.NET). Przegląd projektu po polsku znajdziesz w [głównym README](https://github.com/milten89/OpenUrzednik.NET/blob/main/README.pl.md).
 
@@ -36,9 +36,22 @@ var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: nul
 });
 ```
 
+## Metryki
+
+Każda metoda klienta zapisuje czas swojego działania w `Meter` o tej samej nazwie co źródło dostawcy, `OpenUrzednik.<Provider>`. W OpenTelemetry włączysz wszystkie naraz:
+
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics => metrics.AddMeter("OpenUrzednik.*"));
+```
+
+Na .NET 8 i nowszym to wystarczy. Na .NET Framework klient zapisuje metryki tylko wtedy, gdy podasz mu `Metrics = MeterMetrics.GetShared(NbpTelemetry.SourceName)` w `OpenUrzednikTelemetry`. `AddOpenUrzednikNbp()` podaje metryki za ciebie: jeśli kontener ma `IMeterFactory`, klienty zapisują w jego `Meter` ([szczegóły po angielsku](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#with-dependency-injection)).
+
 ## Więcej po angielsku
 
 - [Własne `ActivitySource`](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#usage)
 - [Spany żądań `HttpClient`](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#http-client-spans)
 - [Co trafia do śladu (spany, tagi, błędy, stabilność, .NET Framework)](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#what-goes-into-the-trace)
+- [Metryki (instrument, tagi, przedziały, stabilność)](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#metrics)
+- [Własny odbiornik metryk (`IOpenUrzednikMetrics`)](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#your-own-metrics-sink)
 - [Zależności](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#dependencies)

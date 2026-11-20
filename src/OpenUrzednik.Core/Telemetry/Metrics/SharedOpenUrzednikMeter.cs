@@ -5,7 +5,8 @@ using System.Diagnostics.Metrics;
 namespace OpenUrzednik.Core.Telemetry;
 
 /// <summary>
-/// One <see cref="Meter"/> per name for the whole process, as an <see cref="IOpenUrzednikMetrics"/> (ADR-0025). Each
+/// A <see cref="Meter"/> as an <see cref="IOpenUrzednikMetrics"/> (ADR-0025): through <see cref="Get"/> one meter per name
+/// for the whole process, through <see cref="Over"/> a meter the caller owns (a DI container's factory meter). Each
 /// instrument is created from the first measurement recorded with its name (its unit, description and, for a histogram,
 /// bucket advice), so measurements added in later versions need no change here. On the .NET targets a provider client
 /// without metrics uses it (<c>OpenUrzednik.&lt;Provider&gt;</c>), so <c>AddMeter("OpenUrzednik.*")</c> is enough without
@@ -13,7 +14,7 @@ namespace OpenUrzednik.Core.Telemetry;
 /// .NET targets and linked into <c>OpenUrzednik.Diagnostics</c> for netstandard2.0.
 /// </summary>
 /// <remarks>
-/// On .NET, OpenUrzednik.Diagnostics and the providers call <see cref="Get"/> and the members of
+/// On .NET, OpenUrzednik.Diagnostics and the providers call <see cref="Get"/>, <see cref="Over"/> and the members of
 /// <see cref="IOpenUrzednikMetrics"/> through <c>InternalsVisibleTo</c>, and an app may combine a newer Core with older
 /// packages: within a major version add members, never change or remove these.
 /// </remarks>
@@ -28,12 +29,18 @@ internal sealed class SharedOpenUrzednikMeter : IOpenUrzednikMetrics
 
     private SharedOpenUrzednikMeter(Meter meter) => Meter = meter;
 
-    /// <summary>The meter; it lives as long as the process.</summary>
+    /// <summary>The meter: a shared one lives as long as the process, one passed to <see cref="Over"/> as long as its owner keeps it.</summary>
     internal Meter Meter { get; }
 
     /// <summary>Returns the metrics for <paramref name="name"/>, creating its <see cref="Meter"/> on first use.</summary>
     internal static SharedOpenUrzednikMeter Get(string name)
         => Shared.GetOrAdd(name, static key => new Lazy<SharedOpenUrzednikMeter>(() => new SharedOpenUrzednikMeter(new Meter(key)))).Value;
+
+    /// <summary>
+    /// Returns metrics over a meter the caller owns, e.g. one from an <c>IMeterFactory</c> (ADR-0025): not shared, so create one
+    /// per meter and reuse it, or its instruments are created again. Added in 1.1.0 for <c>MeterMetrics.Create</c>.
+    /// </summary>
+    internal static SharedOpenUrzednikMeter Over(Meter meter) => new(meter);
 
     /// <inheritdoc/>
     /// <remarks>
