@@ -47,7 +47,7 @@ public partial class MeterMetricsTest
     public void Create_FactoryDisposed_RecordsNothingAndDoesNotThrow()
     {
         // Arrange: the instrument exists before the container (the factory) is disposed
-        var factory = new TestMeterFactory();
+        using var factory = new TestMeterFactory(); // disposed again at the end, which the factory allows
         var values = new List<double>();
         using var listener = ListenToScope(factory, values);
         var metrics = MeterMetrics.Create(factory, UniqueName());
