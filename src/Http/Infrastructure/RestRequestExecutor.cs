@@ -58,8 +58,8 @@ internal sealed class RestRequestExecutor
     /// Deadline for one request, including reading the body. <see langword="null"/> uses <see cref="HttpClient.Timeout"/>;
     /// <see cref="Timeout.InfiniteTimeSpan"/> removes this deadline. <see cref="HttpClient.Timeout"/> still limits the wait for the headers.
     /// </param>
-    /// <param name="telemetry">Logger and trace source; <see langword="null"/> for no-op telemetry.</param>
-    /// <param name="timeProvider">Clock for <c>Retry-After</c> dates; <see langword="null"/> for <see cref="TimeProvider.System"/>.</param>
+    /// <param name="telemetry">Logger, trace source and metrics; <see langword="null"/> for no-op telemetry.</param>
+    /// <param name="timeProvider">Clock for <c>Retry-After</c> dates and the duration of an operation without a span that reports one; <see langword="null"/> for <see cref="TimeProvider.System"/>.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="httpClient"/>, <paramref name="baseAddress"/> or <paramref name="profile"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="baseAddress"/> isn't absolute.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> isn't positive, isn't at most <see cref="int.MaxValue"/> milliseconds, and isn't <see cref="Timeout.InfiniteTimeSpan"/>.</exception>
@@ -89,6 +89,21 @@ internal sealed class RestRequestExecutor
     /// Gets the base address request paths are resolved against.
     /// </summary>
     public Uri BaseAddress { get; }
+
+    /// <summary>
+    /// Starts one client operation: its trace span and, while the operation-duration metric is enabled, its measurement
+    /// with the provider's short name and this executor's <c>server.address</c> and <c>server.port</c> (ADR-0025).
+    /// </summary>
+    /// <param name="operationName">The operation's span name, e.g. <c>nbp.gold.latest</c>.</param>
+    /// <returns>The scope; the caller completes it with its result and disposes it.</returns>
+    internal OperationScope StartOperation(string operationName)
+    {
+        var span = _telemetry.TraceSource.StartSpan(operationName);
+        var metrics = _telemetry.Metrics;
+        return metrics.IsEnabled(OperationMeasurement.InstrumentName)
+            ? new OperationScope(span, new OperationMeasurement(operationName, _profile.Name, _serverAddress, _serverPort, metrics, _timeProvider))
+            : new OperationScope(span);
+    }
 
     /// <summary>
     /// Gets the request deadline: the timeout passed to the constructor when set, otherwise <see cref="HttpClient.Timeout"/>.

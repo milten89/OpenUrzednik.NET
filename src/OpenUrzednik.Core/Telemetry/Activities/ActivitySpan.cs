@@ -6,7 +6,7 @@ namespace OpenUrzednik.Core.Telemetry;
 /// An <see cref="IOpenUrzednikSpan"/> over a started <see cref="Activity"/>; disposing it stops the activity.
 /// Compiled into Core on the .NET targets and linked into <c>OpenUrzednik.Diagnostics</c> for netstandard2.0, so both use one implementation (ADR-0025).
 /// </summary>
-internal sealed class ActivitySpan : IOpenUrzednikSpan
+internal sealed class ActivitySpan : IOpenUrzednikSpan, IOpenUrzednikSpanTiming
 {
     // OpenTelemetry semantic conventions for exceptions.
     internal const string ExceptionEventName = "exception";
@@ -15,8 +15,16 @@ internal sealed class ActivitySpan : IOpenUrzednikSpan
     internal const string ExceptionStackTraceTag = "exception.stacktrace";
 
     private readonly Activity _activity;
+    // When the span started, as a Stopwatch timestamp: StopTiming sets the end time from the elapsed
+    // Stopwatch time, not from DateTime.UtcNow, which moves in ~15.6 ms steps on .NET Framework while the activity's start
+    // time is precise there.
+    private readonly long _startTimestamp;
 
-    internal ActivitySpan(Activity activity) => _activity = activity;
+    internal ActivitySpan(Activity activity)
+    {
+        _activity = activity;
+        _startTimestamp = Stopwatch.GetTimestamp();
+    }
 
     /// <summary>
     /// Starts an <see cref="ActivityKind.Internal"/> activity on <paramref name="source"/>. When nothing listens to the source,
@@ -60,5 +68,26 @@ internal sealed class ActivitySpan : IOpenUrzednikSpan
     public void AddEvent<T>(string name, string tagKey, T tagValue)
         => _activity.AddEvent(new ActivityEvent(name, tags: new ActivityTagsCollection { { tagKey, tagValue } }));
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Sets the activity's end time to its start time plus the elapsed <see cref="Stopwatch"/> time, so
+    /// <see cref="Activity.Duration"/> is final and never negative; <see cref="Activity.Stop"/> keeps an end time that is
+    /// already set, so the trace shows the same duration. A later call moves the end time again.
+    /// </remarks>
+    public TimeSpan? StopTiming()
+    {
+        _activity.SetEndTime(_activity.StartTimeUtc + Elapsed());
+        return _activity.Duration;
+    }
+
     public void Dispose() => _activity.Dispose();
+
+#if NET
+    private TimeSpan Elapsed() => Stopwatch.GetElapsedTime(_startTimestamp);
+#else
+    // netstandard2.0 (linked into OpenUrzednik.Diagnostics) has no Stopwatch.GetElapsedTime.
+    private static readonly double TicksPerTimestamp = (double)TimeSpan.TicksPerSecond / Stopwatch.Frequency;
+
+    private TimeSpan Elapsed() => TimeSpan.FromTicks((long)((Stopwatch.GetTimestamp() - _startTimestamp) * TicksPerTimestamp));
+#endif
 }

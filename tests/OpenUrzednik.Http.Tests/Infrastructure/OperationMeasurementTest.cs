@@ -1,3 +1,4 @@
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 
 using Shouldly;
@@ -8,11 +9,46 @@ public class OperationMeasurementTest
 {
     private static readonly object Port = 443;
 
+    private static OperationMeasurement Measure(string operation, string provider, TimeSpan duration, string? errorType, string? serverAddress, object? serverPort)
+    {
+        var measurement = new OperationMeasurement(operation, provider, serverAddress, serverPort, NullOpenUrzednikMetrics.Instance, TimeProvider.System);
+        measurement.Complete(duration, errorType);
+        return measurement;
+    }
+
+    [Fact]
+    public void Ctor_NotCompleted_HasNoValueOrErrorTypeYet()
+    {
+        // Act
+        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", "api.nbp.pl", Port, NullOpenUrzednikMetrics.Instance, TimeProvider.System);
+
+        // Assert
+        measurement.IsCompleted.ShouldBeFalse();
+        measurement.Value.ShouldBe(0);
+        measurement.Tags.Select(tag => tag.Key).ShouldBe(["openurzednik.operation", "openurzednik.provider", "server.address", "server.port"]);
+    }
+
+    [Fact]
+    public void Complete_DurationAndErrorType_SetsValueAndErrorTag()
+    {
+        // Arrange
+        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", null, null, NullOpenUrzednikMetrics.Instance, TimeProvider.System);
+
+        // Act
+        measurement.Complete(TimeSpan.FromMilliseconds(250), "not_found");
+
+        // Assert
+        measurement.IsCompleted.ShouldBeTrue();
+        measurement.Value.ShouldBe(0.25);
+        measurement.Count.ShouldBe(3);
+        measurement[2].ShouldBe(new KeyValuePair<string, object?>("error.type", "not_found"));
+    }
+
     [Fact]
     public void Ctor_Values_DescribeTheOperationDurationHistogram()
     {
         // Act
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.FromMilliseconds(1250), null, null, null);
+        var measurement = Measure("nbp.gold.latest", "nbp", TimeSpan.FromMilliseconds(1250), null, null, null);
 
         // Assert
         measurement.Name.ShouldBe("openurzednik.client.operation.duration");
@@ -26,7 +62,7 @@ public class OperationMeasurementTest
     public void BucketBoundaries_AreOpenTelemetrysRpcSetInAscendingOrder()
     {
         // Act
-        var boundaries = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, null, null, null).BucketBoundaries;
+        var boundaries = Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, null, null, null).BucketBoundaries;
 
         // Assert
         boundaries.ShouldBe([0.0001, 0.0005, 0.001, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 15, 30, 45, 60]);
@@ -36,7 +72,7 @@ public class OperationMeasurementTest
     public void Tags_EveryValue_AllTagsInOrder()
     {
         // Arrange
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, "not_found", "api.nbp.pl", Port);
+        var measurement = Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, "not_found", "api.nbp.pl", Port);
 
         // Act
         var tags = measurement.Tags;
@@ -58,7 +94,7 @@ public class OperationMeasurementTest
     public void Tags_Success_NoErrorType()
     {
         // Arrange
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, null, "api.nbp.pl", Port);
+        var measurement = Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, null, "api.nbp.pl", Port);
 
         // Act
         var tags = measurement.Tags;
@@ -81,7 +117,7 @@ public class OperationMeasurementTest
     public void Tags_OneOptionalValue_ItFollowsTheRequiredTags(string? errorType, string? serverAddress, bool withPort, string expectedKey)
     {
         // Arrange
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, errorType, serverAddress, withPort ? Port : null);
+        var measurement = Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, errorType, serverAddress, withPort ? Port : null);
 
         // Act
         var tags = measurement.Tags;
@@ -98,7 +134,7 @@ public class OperationMeasurementTest
     public void Tags_NoOptionalValue_OperationAndProviderOnly()
     {
         // Arrange
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, null, null, null);
+        var measurement = Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, null, null, null);
 
         // Act
         var tags = measurement.Tags;
@@ -112,7 +148,7 @@ public class OperationMeasurementTest
     public void Tags_IsTheMeasurementItself()
     {
         // Arrange
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, null, null, null);
+        var measurement = Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, null, null, null);
 
         // Act & Assert: one allocation per recorded operation
         measurement.Tags.ShouldBeSameAs(measurement);
@@ -127,10 +163,10 @@ public class OperationMeasurementTest
     {
         // Arrange
         var measurement = count == 5
-            ? new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, "not_found", "api.nbp.pl", Port)
+            ? Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, "not_found", "api.nbp.pl", Port)
             : count == 3
-                ? new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, null, "api.nbp.pl", null)
-                : new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, null, null, null);
+                ? Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, null, "api.nbp.pl", null)
+                : Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, null, null, null);
 
         // Act & Assert
         measurement.Count.ShouldBe(count);
@@ -141,7 +177,7 @@ public class OperationMeasurementTest
     public void GetEnumerator_NonGeneric_YieldsTheSameTags()
     {
         // Arrange
-        System.Collections.IEnumerable measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, "not_found", null, null);
+        System.Collections.IEnumerable measurement = Measure("nbp.gold.latest", "nbp", TimeSpan.Zero, "not_found", null, null);
         var tags = new List<object>();
 
         // Act: through the non-generic interface, so its explicit GetEnumerator runs
