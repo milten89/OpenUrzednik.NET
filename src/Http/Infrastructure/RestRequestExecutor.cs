@@ -117,7 +117,7 @@ internal sealed class RestRequestExecutor
 
     /// <summary>
     /// Sends a GET request for <paramref name="relativePath"/>, like <see cref="GetAsync{TDto}(string, JsonTypeInfo{TDto}, CancellationToken)"/>,
-    /// for a request whose path or query carries personal identifiers or secrets (ADR-0003, ADR-0019). <paramref name="displayPath"/> replaces
+    /// for a request whose path or query carries personal identifiers or secrets (ADR-0025, ADR-0019). <paramref name="displayPath"/> replaces
     /// the request URI everywhere the executor writes it: the <c>url.path</c> tag (the base address path plus the display path, without its query),
     /// logs, error messages and <see cref="ErrorResponseContext.RequestPath"/> (the base address plus the display path).
     /// The default mapping of a 400 leaves out the server's message, which may echo the identifier; a provider that needs it reads it in
@@ -151,7 +151,7 @@ internal sealed class RestRequestExecutor
 
         var requestUri = new Uri(BaseAddress, relativePath.TrimStart('/'));
 
-        // OpenTelemetry HTTP client semantic conventions (ADR-0003): the address the client was given, before any DelegatingHandler
+        // OpenTelemetry HTTP client semantic conventions (ADR-0025): the address the client was given, before any DelegatingHandler
         // rewrites it. server.port is always set, as .NET 9+ does.
         using var traceSpan = _telemetry.TraceSource.StartSpan(_spanName);
         traceSpan.SetTag("http.request.method", "GET");

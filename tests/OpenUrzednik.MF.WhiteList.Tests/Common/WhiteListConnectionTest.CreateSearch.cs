@@ -147,7 +147,7 @@ public sealed partial class WhiteListConnectionTest
             TestContext.Current.CancellationToken);
 
         // Assert
-        // The span name is part of the telemetry contract (ADR-0003, ADR-0023).
+        // The span name is part of the telemetry contract (ADR-0025, ADR-0023).
         tracer.Received(1).StartSpan("mf_white_list.http.get");
         result.Errors.ShouldHaveSingleItem().Message
             .ShouldBe("MF White List API is unavailable for https://wykazpodatnikowvat.mf.gov.pl/api/search/nip/{nip}, status 503.");

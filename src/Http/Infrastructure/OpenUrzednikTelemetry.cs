@@ -5,7 +5,7 @@ using OpenUrzednik.Core.Telemetry;
 namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
-/// The logger and trace source a provider client uses, with defaults (ADR-0003).
+/// The logger and trace source a provider client uses, with defaults (ADR-0025).
 /// For provider authors; applications pass <see cref="IOpenUrzednikLogger"/> and <see cref="IOpenUrzednikTraceSource"/> to the clients.
 /// </summary>
 /// <param name="logger">The logger, or <see langword="null"/> for <see cref="NullOpenUrzednikLogger"/>.</param>

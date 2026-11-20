@@ -136,7 +136,7 @@ public partial class NbpConnectionTest
         var result = await connection.GetAsync("cenyzlota", NbpJsonContext.Default.GoldPriceDtoArray, TestContext.Current.CancellationToken);
 
         // Assert
-        // The span name is part of the telemetry contract (ADR-0003).
+        // The span name is part of the telemetry contract (ADR-0025).
         tracer.Received(1).StartSpan("nbp.http.get");
         result.Errors.ShouldHaveSingleItem().Message.ShouldBe("NBP API is unavailable, status 503.");
     }

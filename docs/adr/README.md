@@ -6,7 +6,7 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 |---|---|---|
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | superseded by [ADR-0022](0022-record-architecture-decisions-frozen-at-release.md) |
 | [0002](0002-result-pattern-and-error-handling.md) | Result pattern and error handling | released (v1.0.0) |
-| [0003](0003-telemetry-abstractions.md) | Telemetry abstractions and adapter packages | released (v1.0.0) |
+| [0003](0003-telemetry-abstractions.md) | Telemetry abstractions and adapter packages | superseded by [ADR-0025](0025-telemetry-abstractions-with-metrics.md) |
 | [0004](0004-dependency-policy.md) | Dependency policy | superseded by [ADR-0024](0024-dependency-policy-with-a-7z-reader.md) |
 | [0005](0005-target-frameworks.md) | Target frameworks and one public API | released (v1.0.0) |
 | [0006](0006-shared-http-layer.md) | Shared HTTP layer for REST providers | superseded by [ADR-0019](0019-shared-http-layer-tested-through-test-host.md) |
@@ -28,3 +28,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0022](0022-record-architecture-decisions-frozen-at-release.md) | Record architecture decisions, frozen at release | accepted |
 | [0023](0023-mf-white-list-provider.md) | MF White List provider (`OpenUrzednik.MF.WhiteList`) | accepted |
 | [0024](0024-dependency-policy-with-a-7z-reader.md) | Dependency policy, with a 7z reader for the White List flat-file package | accepted |
+| [0025](0025-telemetry-abstractions-with-metrics.md) | Telemetry abstractions and adapter packages, with per-operation metrics | accepted |

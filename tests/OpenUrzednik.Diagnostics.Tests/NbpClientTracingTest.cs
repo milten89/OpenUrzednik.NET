@@ -10,7 +10,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Diagnostics.Tests;
 
-// ADR-0003 confirmation: spans a real client starts reach an ActivityListener.
+// ADR-0025 confirmation: spans a real client starts reach an ActivityListener.
 // End-to-end through NbpGoldPriceClient, so not split into one file per method.
 public sealed class NbpClientTracingTest : IDisposable
 {

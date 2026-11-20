@@ -4,7 +4,7 @@ namespace OpenUrzednik.Core.Telemetry;
 /// Identifies a kind of log entry, like <c>EventId</c> in Microsoft.Extensions.Logging. Every entry a client writes has one.
 /// </summary>
 /// <remarks>
-/// The ids and names are part of the telemetry contract (ADR-0003): an id is never renumbered or reused within a major version.
+/// The ids and names are part of the telemetry contract (ADR-0025): an id is never renumbered or reused within a major version.
 /// Providers list theirs in a public class, e.g. <c>NbpLogEvents</c>.
 /// </remarks>
 public readonly struct OpenUrzednikEventId : IEquatable<OpenUrzednikEventId>

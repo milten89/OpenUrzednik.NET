@@ -1,7 +1,7 @@
 namespace OpenUrzednik.Nbp;
 
 /// <summary>
-/// The ids of the log events the NBP clients write (ADR-0003). Each event's name is the name of its constant,
+/// The ids of the log events the NBP clients write (ADR-0025). Each event's name is the name of its constant,
 /// e.g. <c>EventId(1001, "RequestTimedOut")</c> in Microsoft.Extensions.Logging.
 /// </summary>
 /// <remarks>

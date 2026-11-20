@@ -4,7 +4,7 @@ namespace OpenUrzednik.Core.Telemetry;
 
 /// <summary>
 /// An <see cref="IOpenUrzednikSpan"/> over a started <see cref="Activity"/>; disposing it stops the activity.
-/// Compiled into Core on the .NET targets and linked into <c>OpenUrzednik.Diagnostics</c> for netstandard2.0, so both use one implementation (ADR-0003).
+/// Compiled into Core on the .NET targets and linked into <c>OpenUrzednik.Diagnostics</c> for netstandard2.0, so both use one implementation (ADR-0025).
 /// </summary>
 internal sealed class ActivitySpan : IOpenUrzednikSpan
 {

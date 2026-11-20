@@ -11,7 +11,7 @@ using Shouldly;
 namespace OpenUrzednik.TestCommon;
 
 /// <summary>
-/// Proves a personal identifier (NIP, REGON, PESEL, bank account number) doesn't leak into what an app can see (ADR-0003,
+/// Proves a personal identifier (NIP, REGON, PESEL, bank account number) doesn't leak into what an app can see (ADR-0025,
 /// CLAUDE.md Telemetry): log templates and properties, span names, tags, statuses and events, error messages, codes and metadata,
 /// and exception messages, <see cref="Exception.Data"/> and the errors of an <see cref="OpenUrzednikException"/>, down the inner
 /// exceptions. A masked value (only the last <c>4</c> characters visible) passes. It doesn't see what Microsoft's

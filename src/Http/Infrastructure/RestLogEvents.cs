@@ -3,7 +3,7 @@ using OpenUrzednik.Core.Telemetry;
 namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
-/// The log events of the shared HTTP layer (ADR-0003). Ids 1000–1999 belong to it; providers number theirs from 2000.
+/// The log events of the shared HTTP layer (ADR-0025). Ids 1000–1999 belong to it; providers number theirs from 2000.
 /// Every provider lists them in its public log-events class (e.g. <c>NbpLogEvents</c>) with the same ids and names.
 /// Never renumber or reuse an id.
 /// </summary>
