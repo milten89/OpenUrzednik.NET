@@ -11,6 +11,7 @@
        test-only library, which Stryker.NET can mutate (ADR-0020). -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="System.Text.Json" />
     <ProjectReference Include="..\OpenUrzednik.Http.DependencyInjection.TestHost\OpenUrzednik.Http.DependencyInjection.TestHost.csproj" />
   </ItemGroup>
 

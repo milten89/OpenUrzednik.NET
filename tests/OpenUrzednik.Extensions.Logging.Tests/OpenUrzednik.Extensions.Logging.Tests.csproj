@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <!-- Diagnostics: the log and trace correlation tests use the real ActivityTraceSource on every target. -->
+    <PackageReference Include="System.Text.Json" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Diagnostics\OpenUrzednik.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Extensions.Logging\OpenUrzednik.Extensions.Logging.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
