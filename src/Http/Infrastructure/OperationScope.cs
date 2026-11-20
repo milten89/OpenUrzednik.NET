@@ -15,7 +15,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// </summary>
 /// <remarks>
 /// The operation is timed once and recorded while its span is still current, so a metric can link to its trace: with the
-/// span's own duration when the span can report it (<see cref="IOpenUrzednikSpanTiming"/>), else from the
+/// span's own duration when the span can report it (<see cref="IOpenUrzednikSpanTiming"/>), else from the client's
 /// <see cref="TimeProvider"/> timestamp taken at the start. An operation disposed without <see cref="Complete{T}"/> (it threw,
 /// e.g. the caller cancelled) is recorded with <c>error.type</c> <see cref="OtherErrorType"/>. With the metric disabled the
 /// scope holds only the span and allocates nothing.
@@ -25,22 +25,18 @@ internal readonly struct OperationScope : IDisposable
     /// <summary>OpenTelemetry's <c>error.type</c> when the error isn't known: the operation threw before it completed.</summary>
     internal const string OtherErrorType = "_OTHER";
 
-    private readonly IOpenUrzednikMetrics? _metrics;
+    // Only the span and the measurement: the scope lives across the operation's await in every client call, so it stays small
+    // when the metric is disabled.
     private readonly OperationMeasurement? _measurement;
-    private readonly TimeProvider? _timeProvider;
-    private readonly long _startTimestamp;
 
     /// <summary>A scope that only holds the span: the metric is disabled.</summary>
     internal OperationScope(IOpenUrzednikSpan span) => Span = span;
 
     /// <summary>A scope that measures the operation.</summary>
-    internal OperationScope(IOpenUrzednikSpan span, IOpenUrzednikMetrics metrics, OperationMeasurement measurement, TimeProvider timeProvider)
+    internal OperationScope(IOpenUrzednikSpan span, OperationMeasurement measurement)
     {
         Span = span;
-        _metrics = metrics;
         _measurement = measurement;
-        _timeProvider = timeProvider;
-        _startTimestamp = timeProvider.GetTimestamp();
     }
 
     /// <summary>The operation's trace span.</summary>
@@ -63,15 +59,5 @@ internal readonly struct OperationScope : IDisposable
         Span.Dispose();
     }
 
-    private void Record(string? errorType)
-    {
-        if (_measurement is null || _measurement.IsCompleted)
-        {
-            return;
-        }
-
-        var duration = (Span as IOpenUrzednikSpanTiming)?.StopTiming() ?? _timeProvider!.GetElapsedTime(_startTimestamp);
-        _measurement.Complete(duration, errorType);
-        _metrics!.Record(_measurement);
-    }
+    private void Record(string? errorType) => _measurement?.Record(Span, errorType);
 }

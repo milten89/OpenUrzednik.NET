@@ -17,7 +17,7 @@ public class OperationScopeTest
     private readonly RecordingMetrics _metrics = new();
 
     private OperationScope Measured(IOpenUrzednikSpan span)
-        => new(span, _metrics, new OperationMeasurement("test.operation", "test", "api.example.com", 443), _timeProvider);
+        => new(span, new OperationMeasurement("test.operation", "test", "api.example.com", 443, _metrics, _timeProvider));
 
     [Fact]
     public void Complete_Success_RecordsTheElapsedTimeWithoutErrorType()

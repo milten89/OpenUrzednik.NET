@@ -31,7 +31,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
     /// </summary>
     /// <param name="httpClient">HTTP client used for the requests. It isn't changed, so it can be shared with other code.</param>
     /// <param name="options">Base URL and timeout; <see langword="null"/> uses the defaults (see <see cref="NbpOptions"/>).</param>
-    /// <param name="timeProvider">Clock used for "today" (Europe/Warsaw date) and <c>Retry-After</c> dates; <see langword="null"/> uses <see cref="TimeProvider.System"/>.</param>
+    /// <param name="timeProvider">Clock used for "today" (Europe/Warsaw date), <c>Retry-After</c> dates and the duration of untraced operations in the metrics; <see langword="null"/> uses <see cref="TimeProvider.System"/>.</param>
     /// <param name="logger">Logger; <see langword="null"/> disables logging.</param>
     /// <param name="traceSource">Trace source for spans; <see langword="null"/> uses the <see cref="NbpTelemetry.SourceName"/> <c>ActivitySource</c> on .NET 8 and later, and disables tracing on .NET Framework (netstandard2.0).</param>
     /// <exception cref="ArgumentNullException"><paramref name="httpClient"/> is <see langword="null"/>.</exception>

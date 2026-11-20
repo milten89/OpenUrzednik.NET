@@ -70,6 +70,39 @@ public sealed class NbpClientMetricsTest : IDisposable
         result.IsFailure.ShouldBeTrue();
         Own().ShouldHaveSingleItem().Tags.ShouldContain(new KeyValuePair<string, object?>("error.type", NotFoundError.ErrorCode));
     }
+
+    // A method that lost its operation.Complete(...) would record error.type _OTHER here instead of the result's error.
+    [Fact]
+    public async Task CurrencyClient_NotFound_RecordsTheOperationWithTheErrorType()
+    {
+        // Arrange
+        var sut = new NbpCurrencyExchangeRateClient(new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound))),
+            new NbpOptions { ApiUrl = $"https://{_host}/api/" });
+
+        // Act
+        await sut.GetLatestAsync("USD", cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        var tags = Own().ShouldHaveSingleItem().Tags;
+        tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", "nbp.currency.latest"));
+        tags.ShouldContain(new KeyValuePair<string, object?>("error.type", NotFoundError.ErrorCode));
+    }
+
+    [Fact]
+    public async Task TableClient_NotFound_RecordsTheOperationWithTheErrorType()
+    {
+        // Arrange
+        var sut = new NbpExchangeRateTableClient(new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound))),
+            new NbpOptions { ApiUrl = $"https://{_host}/api/" });
+
+        // Act
+        await sut.GetBuySellLatestAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        var tags = Own().ShouldHaveSingleItem().Tags;
+        tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", "nbp.table.buy_sell_latest"));
+        tags.ShouldContain(new KeyValuePair<string, object?>("error.type", NotFoundError.ErrorCode));
+    }
 #else
     [Fact]
     public async Task GetLatestAsync_NetFrameworkWithoutMetrics_RecordsNothing()

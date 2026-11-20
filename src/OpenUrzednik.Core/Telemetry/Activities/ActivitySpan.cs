@@ -15,8 +15,15 @@ internal sealed class ActivitySpan : IOpenUrzednikSpan, IOpenUrzednikSpanTiming
     internal const string ExceptionStackTraceTag = "exception.stacktrace";
 
     private readonly Activity _activity;
+    // When the span started, on the Stopwatch: StopTiming sets the end time from the elapsed Stopwatch time, not from
+    // DateTime.UtcNow, which moves in ~15.6 ms steps on .NET Framework while the activity's start time is precise there.
+    private readonly long _startTimestamp;
 
-    internal ActivitySpan(Activity activity) => _activity = activity;
+    internal ActivitySpan(Activity activity)
+    {
+        _activity = activity;
+        _startTimestamp = Stopwatch.GetTimestamp();
+    }
 
     /// <summary>
     /// Starts an <see cref="ActivityKind.Internal"/> activity on <paramref name="source"/>. When nothing listens to the source,
@@ -62,12 +69,14 @@ internal sealed class ActivitySpan : IOpenUrzednikSpan, IOpenUrzednikSpanTiming
 
     /// <inheritdoc/>
     /// <remarks>
-    /// Sets the activity's end time, so <see cref="Activity.Duration"/> is final; <see cref="Activity.Stop"/> keeps an end time
-    /// that is already set, so the trace shows the same duration.
+    /// Sets the activity's end time to its start time plus the elapsed <see cref="Stopwatch"/> time, so
+    /// <see cref="Activity.Duration"/> is final and never negative; <see cref="Activity.Stop"/> keeps an end time that is
+    /// already set, so the trace shows the same duration. A later call moves the end time again.
     /// </remarks>
     public TimeSpan? StopTiming()
     {
-        _activity.SetEndTime(DateTime.UtcNow);
+        var elapsed = Stopwatch.GetTimestamp() - _startTimestamp;
+        _activity.SetEndTime(_activity.StartTimeUtc + TimeSpan.FromTicks((long)(elapsed * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency))));
         return _activity.Duration;
     }
 

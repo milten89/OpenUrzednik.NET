@@ -1,3 +1,4 @@
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 
 using Shouldly;
@@ -10,7 +11,7 @@ public class OperationMeasurementTest
 
     private static OperationMeasurement Measure(string operation, string provider, TimeSpan duration, string? errorType, string? serverAddress, object? serverPort)
     {
-        var measurement = new OperationMeasurement(operation, provider, serverAddress, serverPort);
+        var measurement = new OperationMeasurement(operation, provider, serverAddress, serverPort, NullOpenUrzednikMetrics.Instance, TimeProvider.System);
         measurement.Complete(duration, errorType);
         return measurement;
     }
@@ -19,7 +20,7 @@ public class OperationMeasurementTest
     public void Ctor_NotCompleted_HasNoValueOrErrorTypeYet()
     {
         // Act
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", "api.nbp.pl", Port);
+        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", "api.nbp.pl", Port, NullOpenUrzednikMetrics.Instance, TimeProvider.System);
 
         // Assert
         measurement.IsCompleted.ShouldBeFalse();
@@ -31,7 +32,7 @@ public class OperationMeasurementTest
     public void Complete_DurationAndErrorType_SetsValueAndErrorTag()
     {
         // Arrange
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", null, null);
+        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", null, null, NullOpenUrzednikMetrics.Instance, TimeProvider.System);
 
         // Act
         measurement.Complete(TimeSpan.FromMilliseconds(250), "not_found");

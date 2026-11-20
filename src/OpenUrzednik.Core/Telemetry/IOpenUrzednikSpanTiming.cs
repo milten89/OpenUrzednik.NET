@@ -7,7 +7,8 @@ namespace OpenUrzednik.Core.Telemetry;
 public interface IOpenUrzednikSpanTiming
 {
     /// <summary>
-    /// Fixes the span's end time now and returns its duration. Ending the span later keeps that end time.
+    /// Fixes the span's end time now and returns its duration. Ending the span later keeps that end time; calling this again
+    /// moves the end time to the new moment.
     /// </summary>
     /// <returns>The span's duration; <see langword="null"/> if the span measures no time.</returns>
     TimeSpan? StopTiming();
