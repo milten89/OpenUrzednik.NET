@@ -44,7 +44,7 @@ public partial class MeterMetricsTest
     }
 
     [Fact]
-    public void Record_AfterTheFactoryIsDisposed_RecordsNothingAndDoesNotThrow()
+    public void Create_FactoryDisposed_RecordsNothingAndDoesNotThrow()
     {
         // Arrange: the instrument exists before the container (the factory) is disposed
         var factory = new TestMeterFactory();

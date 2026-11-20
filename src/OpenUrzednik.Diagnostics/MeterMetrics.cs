@@ -12,8 +12,9 @@ namespace OpenUrzednik.Diagnostics;
 /// measurement recorded with its name; measurements of a kind this version doesn't know are ignored.
 /// </summary>
 /// <remarks>
-/// <see cref="GetShared"/> returns the metrics on the one meter per name for the process, shared with the clients' own default
-/// on .NET 8 and later; <see cref="Create"/> returns metrics on a DI container's <see cref="IMeterFactory"/> meter. Histogram bucket advice (<c>InstrumentAdvice</c>) is applied on .NET 10 and
+/// <see cref="GetShared"/> returns the metrics on the one meter per name for the process, shared with the clients' own
+/// default on .NET 8 and later; <see cref="Create"/> returns metrics on a DI container's <see cref="IMeterFactory"/> meter.
+/// Histogram bucket advice (<c>InstrumentAdvice</c>) is applied on .NET 10 and
 /// .NET Framework, not on .NET 8, whose built-in System.Diagnostics.DiagnosticSource predates it.
 /// </remarks>
 public sealed class MeterMetrics : IOpenUrzednikMetrics

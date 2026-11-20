@@ -45,7 +45,7 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(metrics => metrics.AddMeter("OpenUrzednik.*"));
 ```
 
-Na .NET 8 i nowszym to wystarczy. Na .NET Framework klient zapisuje metryki tylko wtedy, gdy podasz mu `Metrics = MeterMetrics.GetShared(NbpTelemetry.SourceName)` w `OpenUrzednikTelemetry`. `AddOpenUrzednikNbp()` robi to za ciebie.
+Na .NET 8 i nowszym to wystarczy. Na .NET Framework klient zapisuje metryki tylko wtedy, gdy podasz mu `Metrics = MeterMetrics.GetShared(NbpTelemetry.SourceName)` w `OpenUrzednikTelemetry`. `AddOpenUrzednikNbp()` podaje metryki za ciebie: jeśli kontener ma `IMeterFactory`, klienty zapisują w jego `Meter` ([szczegóły po angielsku](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Diagnostics/README.md#with-dependency-injection)).
 
 ## Więcej po angielsku
 

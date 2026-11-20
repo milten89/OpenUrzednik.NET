@@ -189,7 +189,6 @@ public static class NbpServiceCollectionExtensions
 
     private static IOpenUrzednikTraceSource TraceSource => ActivityTraceSource.GetShared(NbpTelemetry.SourceName);
 
-
     private static NbpOptions GetOptions(IServiceProvider provider) => provider.GetRequiredService<IOptions<NbpOptions>>().Value;
 
     private static NbpOptions GetOptions(IServiceProvider provider, string serviceKey)
@@ -206,11 +205,16 @@ public static class NbpServiceCollectionExtensions
 
     // The metrics of one container (ADR-0025): its IMeterFactory's OpenUrzednik.Nbp meter when it has a factory (on .NET 8 and
     // later AddHttpClient registers one), else the shared meter. A singleton, so the container's clients share one set of instruments.
-    private sealed class NbpContainerMetrics(IServiceProvider provider)
+    private sealed class NbpContainerMetrics
     {
-        public IOpenUrzednikMetrics Metrics { get; } = provider.GetService<IMeterFactory>() is { } meterFactory
-            ? MeterMetrics.Create(meterFactory, NbpTelemetry.SourceName)
-            : MeterMetrics.GetShared(NbpTelemetry.SourceName);
+        // A local, not a pattern declaration in the condition: Stryker's mutants of that leave it unassigned (CS0165).
+        public NbpContainerMetrics(IServiceProvider provider)
+        {
+            var meterFactory = provider.GetService<IMeterFactory>();
+            Metrics = meterFactory is not null ? MeterMetrics.Create(meterFactory, NbpTelemetry.SourceName) : MeterMetrics.GetShared(NbpTelemetry.SourceName);
+        }
+
+        public IOpenUrzednikMetrics Metrics { get; }
     }
 
     // Marks that the clients are registered, so a second call doesn't add them, or the rejection handler, again.
