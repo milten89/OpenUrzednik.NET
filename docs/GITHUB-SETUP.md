@@ -137,9 +137,13 @@ Release notes (`.github/release.yml`) group PRs by the **release labels**; every
 | `area:repo` | `#1D76DB` | GitHub settings, community files, agent instructions |
 | `area:telemetry` | `#1D76DB` | Telemetry contract, `OpenUrzednik.Diagnostics`, `OpenUrzednik.Extensions.Logging` |
 | `provider:nbp` | `#FBCA04` | Affects `OpenUrzednik.Nbp` |
+| `provider:white-list` | `#FBCA04` | Affects `OpenUrzednik.MF.WhiteList` (and its variants) |
+| `provider:flat-file` | `#FBCA04` | Affects `OpenUrzednik.MF.WhiteList.FlatFile` |
 | `provider-proposal` | `#C5DEF5` | Proposal for a new provider (issue form) |
 | `question` | `#d876e3` | A question rather than a change (GitHub default); the question form applies it |
 | `good first issue`, `help wanted`, `duplicate`, `invalid`, `wontfix` | GitHub defaults | As GitHub describes them |
+
+Every provider, and every variant package of one ([ADR-0016](adr/0016-next-providers-and-package-naming.md)), has a `provider:<name>` label (`<name>` in kebab case, color `#FBCA04`, "Affects `<package>`"), created when it is proposed (`/triage`), or by `/new-provider` if that was skipped. It goes on the proposal and on every issue and PR connected with it; a variant's items carry the base provider's label too.
 
 ## Milestones
 
