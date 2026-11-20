@@ -1,5 +1,5 @@
 ---
-status: released
+status: superseded by ADR-0024
 released-in: v1.0.0
 date: 2026-11-05
 confidence: high
@@ -117,6 +117,8 @@ The build checks every `src/` project's direct `PackageReference`s against an al
 * Bad, because on .NET Framework the package carries the `Activity` and `ActivitySource` code itself, so the app would not get its fixes.
 
 ## More Information
+
+* Superseded by [ADR-0024](0024-dependency-policy-with-a-7z-reader.md), which restates this policy and adds the 7z reader of the White List flat-file package.
 
 ### Changes before 1.0
 

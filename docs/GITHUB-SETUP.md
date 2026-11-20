@@ -108,7 +108,7 @@ To check it, look for the verified mark on a package page, or ask the search API
 | Private vulnerability reporting | on (linked from `SECURITY.md` and the issue chooser) |
 | Dependabot alerts | on |
 | Dependabot security updates | on |
-| Dependabot version updates | `.github/dependabot.yml` (weekly, NuGet + GitHub Actions, target `develop`); version updates of `*.Abstractions` are ignored (ADR-0004); a vulnerability in one always shows as a Dependabot alert |
+| Dependabot version updates | `.github/dependabot.yml` (weekly, NuGet + GitHub Actions, target `develop`); version updates of `*.Abstractions` are ignored (ADR-0024); a vulnerability in one always shows as a Dependabot alert |
 | Secret scanning | on |
 | Push protection | on |
 | Secret scanning: non-provider patterns, validity checks | not available (`disabled` in `security_and_analysis`): the settings page of a personal account's public repository doesn't offer them; they need GitHub Secret Protection on an organization |

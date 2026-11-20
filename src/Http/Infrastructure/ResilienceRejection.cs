@@ -2,7 +2,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
 /// Marks a request that a resilience handler rejected without sending it (an open circuit breaker or a rate limiter), so the executor
-/// returns a <c>ServiceUnavailableError</c> instead of a <c>ConnectionFailedError</c> (ADR-0002, ADR-0004).
+/// returns a <c>ServiceUnavailableError</c> instead of a <c>ConnectionFailedError</c> (ADR-0002, ADR-0024).
 /// The DI package compiles this file too and throws <see cref="Create"/>; the marker is an <see cref="Exception.Data"/> entry, because a
 /// marker type would differ per assembly unless it were public.
 /// </summary>

@@ -45,7 +45,7 @@ Chosen option: "One package per API, English names, an institution prefix where 
 * the **KRS** open API of the Ministry of Justice (the National Court Register), with a legal check before any implementation (see the checklist);
 * the **GUS BIR** service (the REGON register of Statistics Poland).
 
-Not chosen now: the White List flat file, which needs a library to read 7z archives (a dependency that needs its own ADR under ADR-0004), and any other API.
+Not chosen now: the White List flat file, which needs a library to read 7z archives (SharpCompress, decided in [ADR-0024](0024-dependency-policy-with-a-7z-reader.md)), and any other API.
 
 **Every provider ADR answers this readiness checklist:**
 
@@ -130,4 +130,8 @@ Not chosen now: the White List flat file, which needs a library to read 7z archi
   * KRS (a live call; the legal change from a secondary source, not the act itself): `GET https://api-krs.ms.gov.pl/api/krs/OdpisAktualny/{krs}?rejestr=P&format=json`, no authentication, JSON; names and PESEL numbers in the answer are masked. The 2025 amendment of the KRS Act (Dz.U. 2025 poz. 1556) introduces access by administrative decision and penalties for unauthorised network access; how it applies to the open API is not verified.
   * GUS BIR ([API REGON](https://api.stat.gov.pl/Home/RegonApi) and its technical manual): SOAP 1.2 with WS-Addressing; `Zaloguj` with a user key returns a session id sent in the `sid` HTTP header (valid 60 minutes); a test environment with a public test key; batch searches of up to 20 identifiers; results are XML strings inside the SOAP answer; per-hour, per-minute and per-second limits; production keys are free, by e-mail to GUS.
 * Follow-ups: the provider ADR issues [#212](https://github.com/milten89/OpenUrzednik.NET/issues/212) (White List), [#213](https://github.com/milten89/OpenUrzednik.NET/issues/213) (KRS) and [#214](https://github.com/milten89/OpenUrzednik.NET/issues/214) (GUS BIR); the skeleton removal ([#219](https://github.com/milten89/OpenUrzednik.NET/issues/219)) and the White List flat file ([#220](https://github.com/milten89/OpenUrzednik.NET/issues/220)).
-* An accepted record isn't edited later ([ADR-0001](0001-record-architecture-decisions.md)): a changed decision gets a new record that supersedes this one.
+* Until a release ships it, this accepted record is corrected in place, with a dated line under `Corrections before release`; a released record isn't edited ([ADR-0022](0022-record-architecture-decisions-frozen-at-release.md)): a changed decision gets a new record that supersedes this one.
+
+### Corrections before release
+
+* 2026-11-20 · [#220](https://github.com/milten89/OpenUrzednik.NET/issues/220) · The flat file's 7z reader is decided: SharpCompress, in [ADR-0024](0024-dependency-policy-with-a-7z-reader.md), which supersedes ADR-0004; the last More Information line now states ADR-0022's lifecycle instead of ADR-0001's. Reason: #220 chose the reader.

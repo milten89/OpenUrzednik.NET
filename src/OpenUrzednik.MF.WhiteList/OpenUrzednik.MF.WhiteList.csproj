@@ -22,7 +22,7 @@
   <!-- The shared date helpers and the DateOnly alias for netstandard2.0 (ADR-0005), compiled in as internal source. -->
   <Import Project="..\Dates\Dates.props" />
 
-  <!-- netstandard2.0 only: these types are built into .NET (ADR-0004, ADR-0005). -->
+  <!-- netstandard2.0 only: these types are built into .NET (ADR-0024, ADR-0005). -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
     <PackageReference Include="System.Net.Http.Json" />

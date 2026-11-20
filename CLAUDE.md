@@ -71,9 +71,9 @@ Look APIs up instead of relying on memory: .NET and other Microsoft APIs on Micr
 - **Never write `catch (Exception)` or a bare `catch`.** Catch specific types and convert them to errors. CA1031 flags it in `src/` (`src/.editorconfig`).
 - More rules: [`.claude/rules/errors.md`](.claude/rules/errors.md).
 
-**Dependencies ([ADR-0004](docs/adr/0004-dependency-policy.md))**
-- Core and provider packages take **no package dependencies** on .NET targets.
-- **If a change raises an abstraction above its minimum** (typically a Dependabot PR), stop and ask the maintainer explicitly what to do, naming the package, both versions and the rule. Don't merge, approve, rebase onto or build on that change until they answer explicitly.
+**Dependencies ([ADR-0024](docs/adr/0024-dependency-policy-with-a-7z-reader.md))**
+- Core and provider packages take **no package dependencies** on .NET targets. The one exception is SharpCompress, the 7z reader of the planned White List flat-file package (`OpenUrzednik.MF.WhiteList.FlatFile`), and only there.
+- **If a change raises an abstraction above its minimum, or raises SharpCompress so that its netstandard2.0 dependencies rise above 8.0.0** (typically a Dependabot PR), stop and ask the maintainer explicitly what to do, naming the package, both versions and the rule. Don't merge, approve, rebase onto or build on that change until they answer explicitly.
 - Do not add a `PackageReference` to a `src/` project without an ADR or explicit approval. The build fails on a package the project's list doesn't name (`CheckPackageReferenceAllowList` in `src/Directory.Build.targets`; the integration packages and Diagnostics set `OpenUrzednikAllowedPackageReferences` in their csproj). A build-only reference (`PrivateAssets="all"`) passes only when `OpenUrzednikBuildOnlyPackageReferences` names it (build tools and analyzers), and a `FrameworkReference` fails the build. Never extend a list to make a build pass.
 - More rules: [`.claude/rules/dependencies.md`](.claude/rules/dependencies.md).
 
