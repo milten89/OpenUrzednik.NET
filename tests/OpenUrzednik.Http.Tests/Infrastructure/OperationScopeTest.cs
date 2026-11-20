@@ -71,7 +71,8 @@ public class OperationScopeTest
     {
         // Arrange
         var span = Substitute.For<IOpenUrzednikSpan, IOpenUrzednikSpanTiming>();
-        ((IOpenUrzednikSpanTiming)span).StopTiming().Returns((TimeSpan?)null);
+        TimeSpan? noDuration = null;
+        ((IOpenUrzednikSpanTiming)span).StopTiming().Returns(noDuration);
         var scope = Measured(span);
         _timeProvider.Advance(TimeSpan.FromSeconds(3));
 
@@ -133,11 +134,12 @@ public class OperationScopeTest
     {
         // Arrange
         var span = Substitute.For<IOpenUrzednikSpan>();
-        var scope = Measured(span);
-        _timeProvider.Advance(TimeSpan.FromSeconds(1));
 
-        // Act
-        scope.Dispose();
+        // Act: the operation ends without Complete (it threw)
+        using (Measured(span))
+        {
+            _timeProvider.Advance(TimeSpan.FromSeconds(1));
+        }
 
         // Assert
         var recorded = _metrics.Recorded.ShouldHaveSingleItem();

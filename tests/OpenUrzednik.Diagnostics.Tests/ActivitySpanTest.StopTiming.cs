@@ -19,9 +19,9 @@ public sealed partial class ActivitySpanTest
         var activity = Stop(span);
 
         // Assert: Stop() kept the end time StopTiming set, so the later sleep isn't in the trace
-        duration.ShouldNotBeNull();
-        duration.Value.ShouldBeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(5), "the first sleep is in it");
-        duration.Value.ShouldBeLessThan(TimeSpan.FromSeconds(5));
-        activity.Duration.ShouldBe(duration.Value);
+        var value = duration.ShouldNotBeNull();
+        value.ShouldBeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(5), "the first sleep is in it");
+        value.ShouldBeLessThan(TimeSpan.FromSeconds(5));
+        activity.Duration.ShouldBe(value);
     }
 }
