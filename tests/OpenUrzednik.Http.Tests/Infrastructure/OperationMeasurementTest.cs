@@ -141,11 +141,11 @@ public class OperationMeasurementTest
     public void GetEnumerator_NonGeneric_YieldsTheSameTags()
     {
         // Arrange
-        var measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, "not_found", null, null);
+        System.Collections.IEnumerable measurement = new OperationMeasurement("nbp.gold.latest", "nbp", TimeSpan.Zero, "not_found", null, null);
         var tags = new List<object>();
 
-        // Act
-        foreach (var tag in (System.Collections.IEnumerable)measurement)
+        // Act: through the non-generic interface, so its explicit GetEnumerator runs
+        foreach (var tag in measurement)
         {
             tags.Add(tag);
         }
