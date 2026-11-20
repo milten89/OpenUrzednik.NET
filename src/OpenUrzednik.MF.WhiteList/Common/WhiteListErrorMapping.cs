@@ -77,7 +77,7 @@ internal static class WhiteListErrorMapping
     }
 
     /// <summary>
-    /// Masks every identifier the server's message echoes, so it never reaches messages or telemetry (ADR-0003): a run of at least
+    /// Masks every identifier the server's message echoes, so it never reaches messages or telemetry (ADR-0025): a run of at least
     /// <see cref="MinIdentifierDigits"/> digits, also when single separators of one style join them (<c>736-812-54-16</c>,
     /// <c>61 1090 1014 …</c>; a space or NBSP, <c>-</c>, <c>.</c> or <c>/</c>). Every digit but the last
     /// <see cref="SensitiveValue.VisibleCharacters"/> becomes <see cref="SensitiveValue.MaskCharacter"/>, and the separators stay

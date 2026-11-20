@@ -8,7 +8,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Architecture.Tests;
 
-// ADR-0003 and CLAUDE.md, Telemetry: IOpenUrzednikLogger calls use constant message templates, never interpolation, and a Debug or
+// ADR-0025 and CLAUDE.md, Telemetry: IOpenUrzednikLogger calls use constant message templates, never interpolation, and a Debug or
 // Trace entry is built only after IsEnabled said the level is on. Checked on src/ as syntax, with no compilation:
 // - A file with #if is parsed once per build it can be part of: netstandard2.0, net472 (which compiles the shared polyfills in
 //   the tests) and each .NET target of the root Directory.Build.props, in Debug and Release, so every branch any build compiles

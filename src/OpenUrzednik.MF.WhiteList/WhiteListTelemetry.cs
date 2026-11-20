@@ -1,7 +1,7 @@
 namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
-/// Names for connecting the MF White List clients to logging and tracing (ADR-0003).
+/// Names for connecting the MF White List clients to logging and tracing (ADR-0025).
 /// </summary>
 public static class WhiteListTelemetry
 {

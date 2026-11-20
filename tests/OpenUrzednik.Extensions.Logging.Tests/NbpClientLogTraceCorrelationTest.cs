@@ -12,7 +12,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Extensions.Logging.Tests;
 
-// Telemetry contract (ADR-0003): a client writes an operation's log entries while that operation's span, or its HTTP child
+// Telemetry contract (ADR-0025): a client writes an operation's log entries while that operation's span, or its HTTP child
 // span, is Activity.Current, so log providers can link them to the trace. End-to-end through NbpGoldPriceClient with the real
 // ActivityTraceSource and ILogger adapter, so not split into one file per method.
 public sealed class NbpClientLogTraceCorrelationTest : IDisposable

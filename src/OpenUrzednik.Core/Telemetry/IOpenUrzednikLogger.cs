@@ -1,7 +1,7 @@
 namespace OpenUrzednik.Core.Telemetry;
 
 /// <summary>
-/// A structured logger used by the OpenUrzednik.NET clients, so the core packages don't depend on a logging library (ADR-0003).
+/// A structured logger used by the OpenUrzednik.NET clients, so the core packages don't depend on a logging library (ADR-0025).
 /// Use <see cref="NullOpenUrzednikLogger"/> to log nothing, or the adapter in <c>OpenUrzednik.Extensions.Logging</c> to write to <c>ILogger</c>.
 /// </summary>
 /// <remarks>
@@ -9,7 +9,7 @@ namespace OpenUrzednik.Core.Telemetry;
 /// The generic overloads let implementations skip boxing when the level is disabled; callers should still check
 /// <see cref="IsEnabled"/> before building values for <see cref="OpenUrzednikLogLevel.Debug"/> and <see cref="OpenUrzednikLogLevel.Trace"/> entries.
 /// Every entry has an <see cref="OpenUrzednikEventId"/>.
-/// The library calls this interface, so it doesn't change within a major version; a new capability comes as a separate interface (ADR-0003).
+/// The library calls this interface, so it doesn't change within a major version; a new capability comes as a separate interface (ADR-0025).
 /// </remarks>
 public interface IOpenUrzednikLogger
 {

@@ -14,7 +14,7 @@ namespace OpenUrzednik.Identifiers;
 /// <summary>
 /// Base of the identifier validators: removes separators (<see cref="IdentifierNormalizer"/>) and the identifier's country prefix, if it
 /// accepts one, checks that the rest is digits of an allowed length, then the identifier's own rules. Errors never contain the value:
-/// the message names the parameter, and the error's value metadata is masked (<see cref="SensitiveValue.Mask"/>; ADR-0002, ADR-0003).
+/// the message names the parameter, and the error's value metadata is masked (<see cref="SensitiveValue.Mask"/>; ADR-0002, ADR-0025).
 /// </summary>
 internal abstract class IdentifierValidator : ValueValidator<string>
 {

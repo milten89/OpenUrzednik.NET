@@ -89,7 +89,7 @@ public class OpenUrzednikValidationExceptionTest
     public void Ctor_MessageRuleNameAndValue_PutsThemInData()
     {
         // Act
-        // The value as a validator reports an identifier: masked (ADR-0003).
+        // The value as a validator reports an identifier: masked (ADR-0025).
         var exception = new OpenUrzednikValidationException("message", "nip", "nip", "******7890");
 
         // Assert

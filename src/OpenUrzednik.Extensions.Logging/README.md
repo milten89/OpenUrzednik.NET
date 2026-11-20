@@ -50,4 +50,4 @@ The .NET builds (`net8.0`, `net10.0`) are trimming- and Native AOT-compatible: p
 
 ## Dependencies
 
-The package depends on `Microsoft.Extensions.Logging.Abstractions`. The core and provider packages have their own logging interfaces and don't need this dependency ([ADR-0003](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0003-telemetry-abstractions.md)).
+The package depends on `Microsoft.Extensions.Logging.Abstractions`. The core and provider packages have their own logging interfaces and don't need this dependency ([ADR-0025](https://github.com/milten89/OpenUrzednik.NET/blob/main/docs/adr/0025-telemetry-abstractions-with-metrics.md)).

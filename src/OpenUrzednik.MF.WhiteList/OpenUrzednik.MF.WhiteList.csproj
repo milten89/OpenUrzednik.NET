@@ -16,7 +16,7 @@
   <!-- The shared HTTP layer, compiled in as internal source (ADR-0019). -->
   <Import Project="..\Http\Http.props" />
 
-  <!-- The validators of Polish identifiers and, with them, the masking of src/Privacy, compiled in as internal source (ADR-0003). -->
+  <!-- The validators of Polish identifiers and, with them, the masking of src/Privacy, compiled in as internal source (ADR-0025). -->
   <Import Project="..\Identifiers\Identifiers.props" />
 
   <!-- The shared date helpers and the DateOnly alias for netstandard2.0 (ADR-0005), compiled in as internal source. -->

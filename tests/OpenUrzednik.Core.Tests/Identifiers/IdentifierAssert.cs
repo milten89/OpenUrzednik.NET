@@ -10,7 +10,7 @@ internal static class IdentifierAssert
     /// <summary>
     /// Asserts a single <see cref="ValidationError"/> for <paramref name="ruleName"/> and <paramref name="propertyName"/> whose message ends
     /// with <paramref name="messageEnd"/>, and that the value appears only masked: never in the message, at most its last 4 characters
-    /// in the metadata (ADR-0003).
+    /// in the metadata (ADR-0025).
     /// </summary>
     internal static void ShouldBeMaskedValidationError(this OpenUrzednikResult result, string ruleName, string propertyName, string? value, string messageEnd)
     {

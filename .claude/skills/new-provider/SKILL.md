@@ -41,7 +41,7 @@ Notation, with MF White List as the example:
 - [ ] `src/<Package>.DependencyInjection`: links `src/Http/Infrastructure/ResilienceRejection.cs`, sets `OpenUrzednikAllowedPackageReferences`, returns the `IHttpClientBuilder`, adds `AddOpenUrzednik<Name>RejectionHandler()` (ADR-0024). If request paths or queries carry identifiers: imports `src/Http/DependencyInjection/DependencyInjection.props`, calls `AddOpenUrzednikDisplayPathLogging()` on every named client, and has a test that the factory's logging carries no identifier ([ADR-0017](../../../docs/adr/0017-http-client-logging-for-identifier-paths.md)).
 - [ ] Every new project in `OpenUrzednik.slnx`; the `src/` ones also in **`OpenUrzednik.Packages.slnf`**.
 
-## 2. Telemetry (ADR-0003, ADR-0015)
+## 2. Telemetry (ADR-0025, ADR-0015)
 
 - [ ] `public static class <Prefix>Telemetry` with `SourceName = "<Package>"`, as `NbpTelemetry`.
 - [ ] `public static class <Prefix>LogEvents`: a REST provider mirrors the `RestLogEvents` ids (1xxx); the provider's own events from 2001 on; new ids only, never reused. A SOAP provider's ADR decides its HTTP-level ids.

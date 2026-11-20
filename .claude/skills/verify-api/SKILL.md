@@ -16,7 +16,7 @@ Read the provider's section under "Provider notes" first; a provider without one
 2. **Call the real API** with no state-changing calls (`curl -s` for REST; a SOAP session is closed with its logout call), for every request shape the client builds and for the error cases the provider notes list. Record the status code **and the body** of each error.
    - Keep the request count low: these are public services. Don't loop or hammer them, and count calls against any daily quota the provider notes give; stop and ask before a call would use a scarce quota.
    - Prefer the provider's test environment when it has one. Never send, print or save a real API key, session id or token; take keys from the environment, not from files you'd commit.
-   - Query with legal-person identifiers (companies), not a sole trader's NIP or a private account number, and write endpoints in the report as route templates (`search/nip/{nip}`): the report ends up in PRs (ADR-0003).
+   - Query with legal-person identifiers (companies), not a sole trader's NIP or a private account number, and write endpoints in the report as route templates (`search/nip/{nip}`): the report ends up in PRs (ADR-0025).
 3. **Compare with the DTOs:**
    - A `required` property missing from any real response is a **bug**: deserialization will fail.
    - Report extra fields we ignore, type mismatches (number vs string, date formats) and casing.

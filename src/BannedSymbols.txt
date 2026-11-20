@@ -57,5 +57,5 @@ P:System.DateTime.UtcNow;Use TimeProvider.GetUtcNow()
 P:System.DateTimeOffset.Now;Use TimeProvider.GetLocalNow() or GetUtcNow()
 P:System.DateTimeOffset.UtcNow;Use TimeProvider.GetUtcNow()
 
-# Tracing goes through IOpenUrzednikTraceSource; ActivitySource only in Core's Telemetry/Activities and OpenUrzednik.Diagnostics (ADR-0003).
-T:System.Diagnostics.ActivitySource;Use IOpenUrzednikTraceSource (ADR-0003)
+# Tracing goes through IOpenUrzednikTraceSource; ActivitySource only in Core's Telemetry/Activities and OpenUrzednik.Diagnostics (ADR-0025).
+T:System.Diagnostics.ActivitySource;Use IOpenUrzednikTraceSource (ADR-0025)

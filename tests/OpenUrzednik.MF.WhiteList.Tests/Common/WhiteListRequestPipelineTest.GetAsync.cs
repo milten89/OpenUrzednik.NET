@@ -130,7 +130,7 @@ public sealed partial class WhiteListRequestPipelineTest
             "reason", "MF White List API response is missing 'requestId'.");
     }
 
-    // ADR-0003: a NIP in the request path, and echoed in the API's error message, reaches no log, span or error. The NIP and the
+    // ADR-0025: a NIP in the request path, and echoed in the API's error message, reaches no log, span or error. The NIP and the
     // account number are fake, with valid check digits.
     private const string LeakNip = "7368125416";
     private const string LeakAccount = "61109010140000071219812874";

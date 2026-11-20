@@ -7,7 +7,7 @@ using Shouldly;
 
 namespace OpenUrzednik.Extensions.Logging.Tests;
 
-// ADR-0003 confirmation: entries a real client writes reach the ILogger.
+// ADR-0025 confirmation: entries a real client writes reach the ILogger.
 // End-to-end through NbpGoldPriceClient, so not split into one file per method.
 public sealed class NbpClientLoggingTest
 {

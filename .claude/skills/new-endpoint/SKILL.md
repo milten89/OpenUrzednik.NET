@@ -10,7 +10,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 
 ## 1. Understand the real API
 
-- Find the endpoint in the official docs (NBP: https://api.nbp.pl/; others: the provider ADR links them). Record the path, parameters, limits (date range, max count, earliest date, quota) and status codes, and whether the path or query carries a personal identifier (ADR-0003).
+- Find the endpoint in the official docs (NBP: https://api.nbp.pl/; others: the provider ADR links them). Record the path, parameters, limits (date range, max count, earliest date, quota) and status codes, and whether the path or query carries a personal identifier (ADR-0025).
 - **Fetch real responses** for success, empty or no data (404), and invalid input (400) with `/verify-api`. Save them as fixtures. Note which fields are actually present.
 
 ## 2. DTO (`src/<Package>/Dto/`)
@@ -35,7 +35,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 
 - Reuse or add an `internal sealed` `ValueValidator<T>` in `Validation/` for every documented limit. Combine results with `.And(...)`.
 - Messages are in English with invariant formatting (`yyyy-MM-dd`) and name the parameter.
-- A NIP, REGON, KRS number or bank account number uses the shared validator from `src/Identifiers` (the provider imports `Identifiers.props`): throw `ArgumentNullException` for `null` first, validate, and send the validator's `Normalized` digits, never the input. Its errors already mask the value; any other message or log that mentions an identifier masks it with `SensitiveValue.Mask` (ADR-0003).
+- A NIP, REGON, KRS number or bank account number uses the shared validator from `src/Identifiers` (the provider imports `Identifiers.props`): throw `ArgumentNullException` for `null` first, validate, and send the validator's `Normalized` digits, never the input. Its errors already mask the value; any other message or log that mentions an identifier masks it with `SensitiveValue.Mask` (ADR-0025).
 
 ## 6. Client method
 

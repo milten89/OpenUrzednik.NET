@@ -1,5 +1,5 @@
 ---
-status: released
+status: superseded by ADR-0025
 released-in: v1.0.0
 date: 2026-11-05
 confidence: high
@@ -74,6 +74,8 @@ Adapter packages have tests asserting that spans/log entries produced by a clien
 * Bad, because on .NET Framework (through netstandard2.0, [ADR-0005](0005-target-frameworks.md)) both are extra packages (`Microsoft.Extensions.Logging.Abstractions`, `System.Diagnostics.DiagnosticSource`) in the core and provider packages. The adapter packages bring the standard behaviour to apps that want it, and DI wires them automatically.
 
 ## More Information
+
+* Superseded by [ADR-0025](0025-telemetry-abstractions-with-metrics.md), which restates this record and adds per-operation metrics.
 
 ### Changes before 1.0
 
