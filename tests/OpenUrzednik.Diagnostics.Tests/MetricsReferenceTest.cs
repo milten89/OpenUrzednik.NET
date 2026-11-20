@@ -42,7 +42,8 @@ public sealed class MetricsReferenceTest
     // The table row of the instrument: | `name` | histogram, seconds (`s`) | `tag` (note), `tag`, … |
     private static (string Unit, string[] Tags) ReadRow(string readme)
     {
-        var row = File.ReadLines(Path.Combine(RepositoryRoot(), readme))
+        // Concatenated as RepositoryFiles.PathOf does: Path.Combine would drop the root if the path were absolute.
+        var row = File.ReadLines(RepositoryRoot() + Path.DirectorySeparatorChar + readme.Replace('/', Path.DirectorySeparatorChar))
             .Where(line => line.StartsWith($"| `{InstrumentName}` |", StringComparison.Ordinal))
             .ShouldHaveSingleItem($"{readme} lists {InstrumentName} once");
         var cells = row.Split(['|'], StringSplitOptions.RemoveEmptyEntries).Select(cell => cell.Trim()).ToArray();
