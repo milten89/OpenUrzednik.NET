@@ -78,7 +78,7 @@ public sealed partial class WhiteListConnectionTest
         using var httpClient = new HttpClient(new StubHttpMessageHandler(response));
         // 23:00 in Warsaw (CET).
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(2026, 11, 10, 22, 0, 0, TimeSpan.Zero));
-        var connection = WhiteListConnection.CreateStatus(httpClient, null, new OpenUrzednikTelemetry(), timeProvider);
+        var connection = WhiteListConnection.CreateStatus(httpClient, null, new ClientTelemetry(), timeProvider);
 
         // Act
         var result = await connection.GetAsync("status/nip/1234567890", "status/nip/{nip}", WhiteListJsonContext.Default.ErrorDto,

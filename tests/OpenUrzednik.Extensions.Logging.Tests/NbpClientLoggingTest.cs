@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
 
@@ -17,7 +18,7 @@ public sealed class NbpClientLoggingTest
         // Arrange
         var logger = new RecordingLogger();
         using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage()));
-        var sut = new NbpGoldPriceClient(httpClient, logger: new OpenUrzednikLogger(logger));
+        var sut = new NbpGoldPriceClient(httpClient, null, null, new OpenUrzednikTelemetry { Logger = new OpenUrzednikLogger(logger) });
 
         // Act
         await sut.GetTopCountAsync(0, TestContext.Current.CancellationToken);
@@ -37,7 +38,7 @@ public sealed class NbpClientLoggingTest
         var logger = new RecordingLogger();
         var thrown = new HttpRequestException("Connection refused");
         using var httpClient = new HttpClient(new StubHttpMessageHandler(thrown));
-        var sut = new NbpGoldPriceClient(httpClient, logger: new OpenUrzednikLogger(logger));
+        var sut = new NbpGoldPriceClient(httpClient, null, null, new OpenUrzednikTelemetry { Logger = new OpenUrzednikLogger(logger) });
 
         // Act
         await sut.GetLatestAsync(TestContext.Current.CancellationToken);

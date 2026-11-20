@@ -17,11 +17,14 @@ dotnet add package OpenUrzednik.Extensions.Logging
 ## Użycie
 
 ```csharp
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.Nbp;
 
-var client = new NbpGoldPriceClient(httpClient,
-    logger: loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>());
+var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: null, telemetry: new OpenUrzednikTelemetry
+{
+    Logger = loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(),
+});
 ```
 
 Jeśli masz już `ILogger`, użyj `new OpenUrzednikLogger(logger)`.

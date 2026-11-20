@@ -110,7 +110,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Arrange
         var handler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
         using var httpClient = new HttpClient(handler);
-        var sut = new NbpCurrencyExchangeRateClient(httpClient, timeProvider: new FakeTimeProvider(new DateTimeOffset(2100, 1, 1, 12, 0, 0, TimeSpan.Zero)));
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, null, new FakeTimeProvider(new DateTimeOffset(2100, 1, 1, 12, 0, 0, TimeSpan.Zero)));
         var futureForTheSystemClock = new DateOnly(2099, 6, 1);
 
         // Act
@@ -129,7 +129,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         using var httpClient = new HttpClient(handler);
         var (logger, _, tracer) = CreateTelemetrySubstitutes();
         logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
-        var sut = new NbpCurrencyExchangeRateClient(httpClient, logger: logger, traceSource: tracer);
+        var sut = new NbpCurrencyExchangeRateClient(httpClient, null, null, new OpenUrzednikTelemetry { Logger = logger, TraceSource = tracer });
 
         // Act
         await sut.GetAsync("USD", new DateOnly(1990, 1, 1), cancellationToken: TestContext.Current.CancellationToken);

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.MF.WhiteList;
@@ -58,14 +59,17 @@ using var loggerFactory = LoggerFactory.Create(logging => logging.AddProvider(lo
 // 1. The clients without DI, with the logging and tracing adapters.
 using (var httpClient = new HttpClient(new FixtureHandler()))
 {
-    var gold = new NbpGoldPriceClient(httpClient, null, null,
-        loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(), ActivityTraceSource.GetShared(NbpTelemetry.SourceName),
-        MeterMetrics.GetShared(NbpTelemetry.SourceName));
+    var gold = new NbpGoldPriceClient(httpClient, null, null, new OpenUrzednikTelemetry
+    {
+        Logger = loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(),
+        TraceSource = ActivityTraceSource.GetShared(NbpTelemetry.SourceName),
+        Metrics = MeterMetrics.GetShared(NbpTelemetry.SourceName),
+    });
     var goldLatest = await gold.GetLatestAsync();
     Check("gold: latest price", goldLatest.IsSuccess && goldLatest.Value.Price == 517.55m, Describe(goldLatest));
 
     var rates = new NbpCurrencyExchangeRateClient(httpClient, null, null,
-        loggerFactory.CreateOpenUrzednikLogger<NbpCurrencyExchangeRateClient>());
+        new OpenUrzednikTelemetry { Logger = loggerFactory.CreateOpenUrzednikLogger<NbpCurrencyExchangeRateClient>() });
     var usd = await rates.GetLatestAsync("USD");
     Check("currency: USD mid rate", usd.IsSuccess && usd.Value.Rates[0].Price == 3.8762m, Describe(usd));
     var usdBuySell = await rates.GetBuySellLatestAsync("USD");

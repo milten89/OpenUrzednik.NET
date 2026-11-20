@@ -35,9 +35,9 @@ public partial class ClientConventionsTest
         // Arrange
         // The response arrives asynchronously, so every await in the client and its pipeline suspends.
         using var httpClient = new HttpClient(new AsyncStubHttpMessageHandler(() => new HttpResponseMessage(HttpStatusCode.NotFound)));
-        var rates = new NbpCurrencyExchangeRateClient(httpClient, timeProvider: TestClock.FarFuture());
-        var tables = new NbpExchangeRateTableClient(httpClient, timeProvider: TestClock.FarFuture());
-        var gold = new NbpGoldPriceClient(httpClient, timeProvider: TestClock.FarFuture());
+        var rates = new NbpCurrencyExchangeRateClient(httpClient, null, TestClock.FarFuture());
+        var tables = new NbpExchangeRateTableClient(httpClient, null, TestClock.FarFuture());
+        var gold = new NbpGoldPriceClient(httpClient, null, TestClock.FarFuture());
         var date = new DateTime(2026, 10, 2);
         var from = date.AddDays(-7);
         var cancellationToken = TestContext.Current.CancellationToken;

@@ -173,19 +173,19 @@ public sealed class NbpClientMetricsTest : IDisposable
             case "gold":
                 var gold = obsolete
                     ? new NbpGoldPriceClient(httpClient, options, null, null, null)
-                    : new NbpGoldPriceClient(httpClient, options, metrics: metrics);
+                    : new NbpGoldPriceClient(httpClient, options, null, new OpenUrzednikTelemetry { Metrics = metrics });
                 (await gold.GetLatestAsync(cancellationToken)).IsFailure.ShouldBeTrue();
                 return "nbp.gold.latest";
             case "currency":
                 var currency = obsolete
                     ? new NbpCurrencyExchangeRateClient(httpClient, options, null, null, null)
-                    : new NbpCurrencyExchangeRateClient(httpClient, options, metrics: metrics);
+                    : new NbpCurrencyExchangeRateClient(httpClient, options, null, new OpenUrzednikTelemetry { Metrics = metrics });
                 (await currency.GetLatestAsync("USD", cancellationToken: cancellationToken)).IsFailure.ShouldBeTrue();
                 return "nbp.currency.latest";
             default:
                 var table = obsolete
                     ? new NbpExchangeRateTableClient(httpClient, options, null, null, null)
-                    : new NbpExchangeRateTableClient(httpClient, options, metrics: metrics);
+                    : new NbpExchangeRateTableClient(httpClient, options, null, new OpenUrzednikTelemetry { Metrics = metrics });
                 (await table.GetBuySellLatestAsync(cancellationToken)).IsFailure.ShouldBeTrue();
                 return "nbp.table.buy_sell_latest";
         }

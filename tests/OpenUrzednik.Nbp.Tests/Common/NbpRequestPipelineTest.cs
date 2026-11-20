@@ -28,7 +28,7 @@ public sealed partial class NbpRequestPipelineTest : IDisposable
         handler = new StubHttpMessageHandler(response);
         var httpClient = new HttpClient(handler);
         _httpClients.Add(httpClient);
-        var telemetry = new OpenUrzednikTelemetry();
+        var telemetry = new ClientTelemetry();
         return new NbpRequestPipeline(NbpConnection.Create(httpClient, null, telemetry, TimeProvider.System), telemetry);
     }
 
@@ -37,7 +37,7 @@ public sealed partial class NbpRequestPipelineTest : IDisposable
     {
         var httpClient = new HttpClient(new AsyncStubHttpMessageHandler(() => Json(body)));
         _httpClients.Add(httpClient);
-        var telemetry = new OpenUrzednikTelemetry();
+        var telemetry = new ClientTelemetry();
         return new NbpRequestPipeline(NbpConnection.Create(httpClient, null, telemetry, TimeProvider.System), telemetry);
     }
 

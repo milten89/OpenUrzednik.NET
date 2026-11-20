@@ -23,7 +23,7 @@ public partial class RestRequestExecutorTest
         var span = Substitute.For<IOpenUrzednikSpan>();
         tracer.StartSpan("test.operation").Returns(span);
         var executor = new RestRequestExecutor(new HttpClient(), new Uri("https://api.example.com:8443/base/"), Profile,
-            telemetry: new OpenUrzednikTelemetry(traceSource: tracer, metrics: metrics), timeProvider: _timeProvider);
+            telemetry: new ClientTelemetry(traceSource: tracer, metrics: metrics), timeProvider: _timeProvider);
 
         // Act
         using (var operation = executor.StartOperation("test.operation"))
@@ -50,7 +50,7 @@ public partial class RestRequestExecutorTest
         // Arrange
         var metrics = new RecordingMetrics(enabled: false);
         var executor = new RestRequestExecutor(new HttpClient(), new Uri("https://api.example.com/"), Profile,
-            telemetry: new OpenUrzednikTelemetry(metrics: metrics), timeProvider: _timeProvider);
+            telemetry: new ClientTelemetry(metrics: metrics), timeProvider: _timeProvider);
 
         // Act
         using (var operation = executor.StartOperation("test.operation"))
@@ -79,7 +79,7 @@ public partial class RestRequestExecutorTest
         ActivitySource.AddActivityListener(listener);
         var metrics = new RecordingMetrics();
         var executor = new RestRequestExecutor(new HttpClient(), new Uri("https://api.example.com/"), Profile,
-            telemetry: new OpenUrzednikTelemetry(sourceName: sourceName, metrics: metrics), timeProvider: _timeProvider);
+            telemetry: new ClientTelemetry(sourceName: sourceName, metrics: metrics), timeProvider: _timeProvider);
 
         // Act
         using (var operation = executor.StartOperation("test.operation"))

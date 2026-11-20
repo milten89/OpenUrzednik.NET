@@ -96,7 +96,7 @@ public partial class NbpExchangeRateTableClientTest
         // Arrange
         var handler = new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound));
         using var httpClient = new HttpClient(handler);
-        var sut = new NbpExchangeRateTableClient(httpClient, timeProvider: new FakeTimeProvider(new DateTimeOffset(2100, 1, 1, 12, 0, 0, TimeSpan.Zero)));
+        var sut = new NbpExchangeRateTableClient(httpClient, null, new FakeTimeProvider(new DateTimeOffset(2100, 1, 1, 12, 0, 0, TimeSpan.Zero)));
         var futureForTheSystemClock = new DateOnly(2099, 6, 1);
 
         // Act
@@ -115,7 +115,7 @@ public partial class NbpExchangeRateTableClientTest
         using var httpClient = new HttpClient(handler);
         var (logger, _, tracer) = CreateTelemetrySubstitutes();
         logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
-        var sut = new NbpExchangeRateTableClient(httpClient, logger: logger, traceSource: tracer);
+        var sut = new NbpExchangeRateTableClient(httpClient, null, null, new OpenUrzednikTelemetry { Logger = logger, TraceSource = tracer });
 
         // Act
         await sut.GetAsync(TableType.A, new DateOnly(1990, 1, 1), TestContext.Current.CancellationToken);

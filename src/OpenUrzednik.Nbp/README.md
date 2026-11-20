@@ -156,23 +156,27 @@ The package also runs on .NET Framework 4.7.2 or later (through `netstandard2.0`
 
 ## Logging and tracing
 
-The clients take optional `logger` and `traceSource` parameters. Without a logger they log nothing. Without a trace source, on .NET 8 and later they record spans on the `OpenUrzednik.Nbp` `ActivitySource` (`NbpTelemetry.SourceName`), which costs nothing while no one listens to it; on .NET Framework they record none. To use `ILogger` and OpenTelemetry, install the [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) and [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics) adapters:
+The clients take an optional `telemetry` parameter, an `OpenUrzednikTelemetry` with `Logger`, `TraceSource` and `Metrics` properties; a property you leave `null` keeps its default. Without a logger they log nothing. Without a trace source, on .NET 8 and later they record spans on the `OpenUrzednik.Nbp` `ActivitySource` (`NbpTelemetry.SourceName`), which costs nothing while no one listens to it; on .NET Framework they record none. To use `ILogger` and OpenTelemetry, install the [OpenUrzednik.Extensions.Logging](https://www.nuget.org/packages/OpenUrzednik.Extensions.Logging) and [OpenUrzednik.Diagnostics](https://www.nuget.org/packages/OpenUrzednik.Diagnostics) adapters:
 
 ```csharp
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.Nbp;
 
-var client = new NbpGoldPriceClient(httpClient,
-    logger: loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(),
-    traceSource: ActivityTraceSource.GetShared(NbpTelemetry.SourceName));
+var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: null, telemetry: new OpenUrzednikTelemetry
+{
+    Logger = loggerFactory.CreateOpenUrzednikLogger<NbpGoldPriceClient>(),
+    TraceSource = ActivityTraceSource.GetShared(NbpTelemetry.SourceName),
+    Metrics = MeterMetrics.GetShared(NbpTelemetry.SourceName),
+});
 ```
 
-On .NET 8 and later the `traceSource` line is optional; to turn spans off, pass `NullOpenUrzednikTraceSource.Instance`. Subscribe with `AddSource("OpenUrzednik.*")` or `AddSource(NbpTelemetry.SourceName)`. Logs go to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`).
+On .NET 8 and later the `TraceSource` and `Metrics` lines are optional; to turn spans off, pass `NullOpenUrzednikTraceSource.Instance`. Subscribe with `AddSource("OpenUrzednik.*")` or `AddSource(NbpTelemetry.SourceName)`. Logs go to a category named after the client's full type name (e.g. `OpenUrzednik.Nbp.NbpGoldPriceClient`).
 
-The clients also take an optional `metrics` parameter. Without it, on .NET 8 and later they record each operation's duration on the `OpenUrzednik.Nbp` `Meter`, which costs nothing while no one listens to it; on .NET Framework they record none. With OpenUrzednik.Diagnostics, pass `metrics: MeterMetrics.GetShared(NbpTelemetry.SourceName)` to record on .NET Framework too (the DI package does this for you), and subscribe with `AddMeter("OpenUrzednik.*")` or `AddMeter(NbpTelemetry.SourceName)`.
+Without `Metrics`, on .NET 8 and later the clients record each operation's duration on the `OpenUrzednik.Nbp` `Meter`, which costs nothing while no one listens to it; on .NET Framework they record none. Set `Metrics = MeterMetrics.GetShared(NbpTelemetry.SourceName)` (OpenUrzednik.Diagnostics) to record on .NET Framework too (the DI package does this for you), and subscribe with `AddMeter("OpenUrzednik.*")` or `AddMeter(NbpTelemetry.SourceName)`.
 
-The clients use their own interfaces (`IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` and `IOpenUrzednikMetrics` from OpenUrzednik.Core), not `ILogger`, `ActivitySource` and `Meter`. So this package needs neither `Microsoft.Extensions.Logging.Abstractions` nor any other logging or tracing package. Only the adapters connect it to `ILogger`, `ActivitySource` and `Meter`.
+The 1.0 constructor with `logger` and `traceSource` parameters still works, but it is obsolete and is removed in 2.0. The clients use their own interfaces (`IOpenUrzednikLogger`, `IOpenUrzednikTraceSource` and `IOpenUrzednikMetrics` from OpenUrzednik.Core), not `ILogger`, `ActivitySource` and `Meter`. So this package needs neither `Microsoft.Extensions.Logging.Abstractions` nor any other logging or tracing package. Only the adapters connect it to `ILogger`, `ActivitySource` and `Meter`.
 
 ## Telemetry reference
 

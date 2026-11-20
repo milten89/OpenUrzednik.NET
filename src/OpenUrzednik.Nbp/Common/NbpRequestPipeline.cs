@@ -14,9 +14,9 @@ namespace OpenUrzednik.Nbp.Common;
 internal sealed class NbpRequestPipeline
 {
     private readonly RestRequestExecutor _connection;
-    private readonly OpenUrzednikTelemetry _telemetry;
+    private readonly ClientTelemetry _telemetry;
 
-    internal NbpRequestPipeline(RestRequestExecutor connection, OpenUrzednikTelemetry telemetry)
+    internal NbpRequestPipeline(RestRequestExecutor connection, ClientTelemetry telemetry)
     {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(telemetry);

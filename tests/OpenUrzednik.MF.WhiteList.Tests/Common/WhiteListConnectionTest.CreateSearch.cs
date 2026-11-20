@@ -140,7 +140,7 @@ public sealed partial class WhiteListConnectionTest
         using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
         var tracer = Substitute.For<IOpenUrzednikTraceSource>();
         tracer.StartSpan(Arg.Any<string>()).Returns(Substitute.For<IOpenUrzednikSpan>());
-        var connection = WhiteListConnection.CreateSearch(httpClient, null, new OpenUrzednikTelemetry(NullOpenUrzednikLogger.Instance, tracer), new FakeTimeProvider());
+        var connection = WhiteListConnection.CreateSearch(httpClient, null, new ClientTelemetry(NullOpenUrzednikLogger.Instance, tracer), new FakeTimeProvider());
 
         // Act
         var result = await connection.GetAsync("search/nip/1234567890", "search/nip/{nip}", WhiteListJsonContext.Default.ErrorDto,

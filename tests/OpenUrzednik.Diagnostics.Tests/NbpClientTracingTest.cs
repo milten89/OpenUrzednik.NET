@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text;
 
+using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
 
@@ -19,7 +20,7 @@ public sealed class NbpClientTracingTest : IDisposable
     public void Dispose() => _recorder.Dispose();
 
     private NbpGoldPriceClient CreateSut(HttpClient httpClient)
-        => new(httpClient, traceSource: new ActivityTraceSource(_recorder.Source));
+        => new(httpClient, null, null, new OpenUrzednikTelemetry { TraceSource = new ActivityTraceSource(_recorder.Source) });
 
     [Fact]
     public async Task GetLatestAsync_Success_RecordsOperationAndHttpActivities()
@@ -60,7 +61,7 @@ public sealed class NbpClientTracingTest : IDisposable
         };
         using var httpClient = new HttpClient(new StubHttpMessageHandler(response));
         var sut = new NbpGoldPriceClient(httpClient, new NbpOptions { ApiUrl = "https://gateway.example.com:8443/nbp/" },
-            traceSource: new ActivityTraceSource(_recorder.Source));
+            null, new OpenUrzednikTelemetry { TraceSource = new ActivityTraceSource(_recorder.Source) });
 
         // Act
         var result = await sut.GetLatestAsync(TestContext.Current.CancellationToken);

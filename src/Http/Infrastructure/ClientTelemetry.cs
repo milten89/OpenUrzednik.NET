@@ -5,9 +5,8 @@ using OpenUrzednik.Core.Telemetry;
 namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
-/// The logger, trace source and metrics a provider client uses, with defaults (ADR-0025).
-/// For provider authors; applications pass <see cref="IOpenUrzednikLogger"/>, <see cref="IOpenUrzednikTraceSource"/> and
-/// <see cref="IOpenUrzednikMetrics"/> to the clients.
+/// The logger, trace source and metrics a provider client uses, with the defaults resolved (ADR-0025).
+/// For provider authors; applications pass an <see cref="OpenUrzednikTelemetry"/> to the clients.
 /// </summary>
 /// <param name="logger">The logger, or <see langword="null"/> for <see cref="NullOpenUrzednikLogger"/>.</param>
 /// <param name="traceSource">
@@ -19,7 +18,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// The metrics, or <see langword="null"/> for the default: on the .NET targets the process-wide <c>Meter</c> named
 /// <paramref name="sourceName"/>, on netstandard2.0 (or without a name) <see cref="NullOpenUrzednikMetrics"/>.
 /// </param>
-internal sealed class OpenUrzednikTelemetry(IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null, string? sourceName = null,
+internal sealed class ClientTelemetry(IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null, string? sourceName = null,
     IOpenUrzednikMetrics? metrics = null)
 {
     /// <summary>

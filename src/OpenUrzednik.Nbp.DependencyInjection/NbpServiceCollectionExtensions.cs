@@ -69,13 +69,13 @@ public static class NbpServiceCollectionExtensions
 
         builder.AddTypedClient((httpClient, provider) => new NbpCurrencyExchangeRateClient(httpClient, GetOptions(provider),
             provider.GetService<TimeProvider>(),
-            CreateLogger<NbpCurrencyExchangeRateClient>(provider), TraceSource, Metrics));
+            Telemetry<NbpCurrencyExchangeRateClient>(provider)));
         builder.AddTypedClient((httpClient, provider) => new NbpExchangeRateTableClient(httpClient, GetOptions(provider),
             provider.GetService<TimeProvider>(),
-            CreateLogger<NbpExchangeRateTableClient>(provider), TraceSource, Metrics));
+            Telemetry<NbpExchangeRateTableClient>(provider)));
         builder.AddTypedClient((httpClient, provider) => new NbpGoldPriceClient(httpClient, GetOptions(provider),
             provider.GetService<TimeProvider>(),
-            CreateLogger<NbpGoldPriceClient>(provider), TraceSource, Metrics));
+            Telemetry<NbpGoldPriceClient>(provider)));
 
         services.TryAddTransient<INbpCurrencyExchangeRateClient>(provider => provider.GetRequiredService<NbpCurrencyExchangeRateClient>());
         services.TryAddTransient<INbpExchangeRateTableClient>(provider => provider.GetRequiredService<NbpExchangeRateTableClient>());
@@ -131,13 +131,13 @@ public static class NbpServiceCollectionExtensions
 
         services.TryAddKeyedTransient(serviceKey, (provider, _) => new NbpCurrencyExchangeRateClient(CreateHttpClient(provider, httpClientName),
             GetOptions(provider, serviceKey), provider.GetService<TimeProvider>(),
-            CreateLogger<NbpCurrencyExchangeRateClient>(provider), TraceSource, Metrics));
+            Telemetry<NbpCurrencyExchangeRateClient>(provider)));
         services.TryAddKeyedTransient(serviceKey, (provider, _) => new NbpExchangeRateTableClient(CreateHttpClient(provider, httpClientName),
             GetOptions(provider, serviceKey), provider.GetService<TimeProvider>(),
-            CreateLogger<NbpExchangeRateTableClient>(provider), TraceSource, Metrics));
+            Telemetry<NbpExchangeRateTableClient>(provider)));
         services.TryAddKeyedTransient(serviceKey, (provider, _) => new NbpGoldPriceClient(CreateHttpClient(provider, httpClientName),
             GetOptions(provider, serviceKey), provider.GetService<TimeProvider>(),
-            CreateLogger<NbpGoldPriceClient>(provider), TraceSource, Metrics));
+            Telemetry<NbpGoldPriceClient>(provider)));
 
         services.TryAddKeyedTransient<INbpCurrencyExchangeRateClient>(serviceKey,
             (provider, key) => provider.GetRequiredKeyedService<NbpCurrencyExchangeRateClient>(key));
@@ -197,6 +197,10 @@ public static class NbpServiceCollectionExtensions
 
     private static IOpenUrzednikLogger? CreateLogger<TClient>(IServiceProvider provider)
         => provider.GetService<ILoggerFactory>()?.CreateOpenUrzednikLogger<TClient>();
+
+    // One container per client: the logger's category is the client's type (ADR-0025).
+    private static OpenUrzednikTelemetry Telemetry<TClient>(IServiceProvider provider)
+        => new() { Logger = CreateLogger<TClient>(provider), TraceSource = TraceSource, Metrics = Metrics };
 
     // Marks that the clients are registered, so a second call doesn't add them, or the rejection handler, again.
     private sealed class NbpRegistration;

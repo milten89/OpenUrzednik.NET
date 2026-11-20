@@ -36,7 +36,7 @@ internal sealed class RestRequestExecutor
     private readonly HttpClient _httpClient;
     private readonly TimeSpan? _timeout;
     private readonly RestProviderProfile _profile;
-    private readonly OpenUrzednikTelemetry _telemetry;
+    private readonly ClientTelemetry _telemetry;
     private readonly TimeProvider _timeProvider;
     private readonly string _spanName;
     // The span's server.address and server.port: request paths are relative, so the authority is the base address's.
@@ -64,7 +64,7 @@ internal sealed class RestRequestExecutor
     /// <exception cref="ArgumentException">Thrown when <paramref name="baseAddress"/> isn't absolute.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> isn't positive, isn't at most <see cref="int.MaxValue"/> milliseconds, and isn't <see cref="Timeout.InfiniteTimeSpan"/>.</exception>
     public RestRequestExecutor(HttpClient httpClient, Uri baseAddress, RestProviderProfile profile, TimeSpan? timeout = null,
-        OpenUrzednikTelemetry? telemetry = null, TimeProvider? timeProvider = null)
+        ClientTelemetry? telemetry = null, TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(baseAddress);
@@ -78,7 +78,7 @@ internal sealed class RestRequestExecutor
         BaseAddress = baseAddress;
         _profile = profile;
         _timeout = timeout;
-        _telemetry = telemetry ?? new OpenUrzednikTelemetry();
+        _telemetry = telemetry ?? new ClientTelemetry();
         _timeProvider = timeProvider ?? TimeProvider.System;
         _spanName = profile.Name + ".http.get";
         _serverAddress = baseAddress.IdnHost;

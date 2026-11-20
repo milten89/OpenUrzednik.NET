@@ -13,7 +13,7 @@ public class OpenUrzednikTelemetryTest
     public void Ctor_NoArguments_UsesNullImplementations()
     {
         // Act
-        var telemetry = new OpenUrzednikTelemetry();
+        var telemetry = new ClientTelemetry();
 
         // Assert
         telemetry.Logger.ShouldBeSameAs(NullOpenUrzednikLogger.Instance);
@@ -25,12 +25,12 @@ public class OpenUrzednikTelemetryTest
     public void Ctor_SourceNameWithoutMetrics_UsesSharedMeterOnDotNet()
     {
         // Act
-        var telemetry = new OpenUrzednikTelemetry(sourceName: "OpenUrzednik.Tests.Fallback");
+        var telemetry = new ClientTelemetry(sourceName: "OpenUrzednik.Tests.Fallback");
 
         // Assert
 #if NET
         telemetry.Metrics.ShouldNotBeSameAs(NullOpenUrzednikMetrics.Instance);
-        telemetry.Metrics.ShouldBeSameAs(new OpenUrzednikTelemetry(sourceName: "OpenUrzednik.Tests.Fallback").Metrics);
+        telemetry.Metrics.ShouldBeSameAs(new ClientTelemetry(sourceName: "OpenUrzednik.Tests.Fallback").Metrics);
 #else
         telemetry.Metrics.ShouldBeSameAs(NullOpenUrzednikMetrics.Instance);
 #endif
@@ -40,12 +40,12 @@ public class OpenUrzednikTelemetryTest
     public void Ctor_SourceNameWithoutTraceSource_UsesSharedSourceOnDotNet()
     {
         // Act
-        var telemetry = new OpenUrzednikTelemetry(sourceName: "OpenUrzednik.Tests.Fallback");
+        var telemetry = new ClientTelemetry(sourceName: "OpenUrzednik.Tests.Fallback");
 
         // Assert
 #if NET
         telemetry.TraceSource.ShouldNotBeSameAs(NullOpenUrzednikTraceSource.Instance);
-        telemetry.TraceSource.ShouldBeSameAs(new OpenUrzednikTelemetry(sourceName: "OpenUrzednik.Tests.Fallback").TraceSource);
+        telemetry.TraceSource.ShouldBeSameAs(new ClientTelemetry(sourceName: "OpenUrzednik.Tests.Fallback").TraceSource);
 #else
         telemetry.TraceSource.ShouldBeSameAs(NullOpenUrzednikTraceSource.Instance);
 #endif
@@ -60,7 +60,7 @@ public class OpenUrzednikTelemetryTest
         var metrics = Substitute.For<IOpenUrzednikMetrics>();
 
         // Act
-        var telemetry = new OpenUrzednikTelemetry(logger, traceSource, "OpenUrzednik.Tests.Custom", metrics);
+        var telemetry = new ClientTelemetry(logger, traceSource, "OpenUrzednik.Tests.Custom", metrics);
 
         // Assert
         telemetry.Logger.ShouldBeSameAs(logger);
