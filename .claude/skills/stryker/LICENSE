@@ -26,8 +26,8 @@ Third-party notice
 
 The agent-friendly option advice in SKILL.md, section 1, is adapted from the
 `run-stryker` skill of Stryker.NET (.github/skills/run-stryker/SKILL.md,
-https://github.com/stryker-mutator/stryker-net, tag dotnet-stryker@5.0.0,
-commit 6e77a3451bac4793e9c839c3ff4055c1b30ca3af), by the Stryker.NET
+https://github.com/stryker-mutator/stryker-net, tag dotnet-stryker@5.1.0,
+commit 7052fa6c646a6bdfb143608e695d11542e2be815), by the Stryker.NET
 contributors, licensed under the Apache License, Version 2.0:
 https://www.apache.org/licenses/LICENSE-2.0. That part stays under the Apache
 License 2.0; the modifications are described in SKILL.md, section 1.

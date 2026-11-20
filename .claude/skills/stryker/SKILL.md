@@ -6,7 +6,7 @@ argument-hint: "[shard | src file | path to mutation-report.json]"
 
 # Mutation testing with Stryker.NET
 
-[ADR-0020](../../../docs/adr/0020-mutation-testing-of-every-target-branch.md) is binding; this skill is the working manual. Stryker.NET is a local tool pinned to **5.0.0** (`.config/dotnet-tools.json`, `rollForward: false`). Facts about Stryker cite the 5.0.0 source (tag `dotnet-stryker@5.0.0`, commit `6e77a34`; short paths such as `Compiling/…` are under `src/Stryker.Core/Stryker.Core/`, other projects' paths start with the project folder), its docs, or an issue (`sn#N` = stryker-mutator/stryker-net#N).
+[ADR-0020](../../../docs/adr/0020-mutation-testing-of-every-target-branch.md) is binding; this skill is the working manual. Stryker.NET is a local tool pinned to **5.1.0** (`.config/dotnet-tools.json`, `rollForward: false`). Facts about Stryker cite the 5.1.0 source (tag `dotnet-stryker@5.1.0`, commit `7052fa6`; short paths such as `Compiling/…` are under `src/Stryker.Core/Stryker.Core/`, other projects' paths start with the project folder), its docs, or an issue (`sn#N` = stryker-mutator/stryker-net#N).
 
 Read a reference file only when its case comes up:
 
@@ -46,7 +46,7 @@ uv run tests/Mutation/run.py --changed-since origin/develop --all   # only the s
 - Output: `artifacts/mutation/<shard>/reports/mutation-report.{json,html,md}`, plus `artifacts/mutation/summary.md` (git-ignored). `run.py` deletes the old `reports/` first, so a failed run never leaves a stale report behind.
 - Exit codes of `run.py`: 0 every shard passed, 1 a gate failed, 2 a shard couldn't run, has no report, tested no mutant, or has a strict glob matching no file.
 - Time: about 1–6 minutes per shard on CI including setup, locally of the same order (single-threaded, `concurrency: 1`).
-- **Never run two Stryker runs, or Stryker and `dotnet build`/`test`, at the same time in one checkout.** They share `obj/` and `bin/`; corrupted `obj/` has been seen here. For parallel work use a separate `git worktree`. `run.py` also gives each shard its own `TEMP`, because the MTP runner passes the active mutant through a fixed file in the temp folder (`stryker-mutant-<id>.txt`, `Stryker.TestRunner.MicrosoftTestPlatform/MicrosoftTestingPlatformRunner.cs:78`).
+- **Never run two Stryker runs, or Stryker and `dotnet build`/`test`, at the same time in one checkout.** They share `obj/` and `bin/`; corrupted `obj/` has been seen here. For parallel work use a separate `git worktree`. `run.py` also gives each shard its own `TEMP`: before 5.1.0 the MTP runner passed the active mutant through a temp file without a run identity (sn#3818). 5.1.0 adds one (`stryker-mutant-{pid}-{id}-{nonce}.txt`, `Stryker.TestRunner.MicrosoftTestPlatform/MicrosoftTestingPlatformRunner.cs:92-93`), so the separate `TEMP` stays only until a run shows it can go, in its own PR.
 
 ### Scoped run (one file, fast loop)
 
@@ -129,12 +129,12 @@ Configuration (`ignore-mutations`, `ignore-methods`) can't free collateral; only
 
 ## 6. MTP and xUnit v3 specifics
 
-- `test-runner: mtp` is required (VSTest can't run xUnit v3) and is a preview: if a Stryker bug fails a shard, rerun it, and if it persists, fix or pin the tool before releasing. `concurrency: 1` stays until sn#3897 ships (sn#3832: parallel runs under-report kills).
+- `test-runner: mtp` is required (VSTest can't run xUnit v3) and is a preview: if a Stryker bug fails a shard, rerun it, and if it persists, fix or pin the tool before releasing. `concurrency: 1` stays until sn#3897 ships (sn#3832: parallel runs under-report kills; not in 5.1.0).
 - Only `net10.0` is mutated; Stryker can't run the net472 tests (MTP: sn#3421; VSTest with xUnit v3 activates no mutant, sn#3920). The netstandard2.0 branches of shared source are mutated anyway: the `-netstandard` hosts compile them on net10.0 without the `NET` symbol ([setup.md](references/setup.md), ADR-0020). A test there runs on .NET's runtime, so a branch only .NET Framework reaches (`HttpContentJson`'s `null` content) needs a direct test. `Polyfills/` and net8.0-only branches aren't mutated; the net472 test jobs run the real netstandard2.0 build.
 - Stryker 5 needs the .NET 10 runtime, and restore needs the newest 10.0 SDK (the `global.json` pin). Restore the solution before running: without restored packages Stryker's design-time build drops test projects silently (fewer tests, false NoCoverage). CI does this.
 - A run that tested nothing exits 0 (in a shallow clone, Nerdbank.GitVersioning makes every mutant a RuntimeError); check the summary, not only the exit code, when running Stryker by hand. Keep the test suite green: under MTP one failing test aborts the run.
 
-Every other known bug, with its state in 5.0.0 and the workaround used here: [references/known-issues.md](references/known-issues.md). Check it before blaming the code, and add to it when you find a new one.
+Every other known bug, with its state in 5.1.0 and the workaround used here: [references/known-issues.md](references/known-issues.md). Check it before blaming the code, and add to it when you find a new one.
 
 ## 7. Keep the known issues current
 
@@ -142,4 +142,4 @@ Update [references/known-issues.md](references/known-issues.md) when Stryker.NET
 
 ---
 
-License: MIT ([LICENSE](LICENSE)); copy and adapt it freely. Option advice in section 1 is adapted from Stryker.NET's `run-stryker` agent skill (`.github/skills/run-stryker/SKILL.md`, stryker-mutator/stryker-net at `dotnet-stryker@5.0.0`, commit 6e77a3451bac4793e9c839c3ff4055c1b30ca3af), Apache License 2.0; see the notice in [LICENSE](LICENSE).
+License: MIT ([LICENSE](LICENSE)); copy and adapt it freely. Option advice in section 1 is adapted from Stryker.NET's `run-stryker` agent skill (`.github/skills/run-stryker/SKILL.md`, stryker-mutator/stryker-net at `dotnet-stryker@5.1.0`, commit 7052fa6c646a6bdfb143608e695d11542e2be815; unchanged since 5.0.0), Apache License 2.0; see the notice in [LICENSE](LICENSE).

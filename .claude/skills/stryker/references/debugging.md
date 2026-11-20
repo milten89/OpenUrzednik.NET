@@ -8,7 +8,7 @@ Part of `/stryker` ([SKILL.md](../SKILL.md)); notation for source paths and `sn#
 |---|---|---|
 | Which mutants were rolled back and why | default `info` | `Safe Mode! Stryker will remove all mutations in <method>…` and `An unidentified mutation … resulted in a compile error` warnings (`Compiling/CSharpRollbackProcess.cs:232-240`) |
 | Each rollback step | `--verbosity debug` | `RollBacking mutations from <file>`, `Found mutant <id> of type '<Mutator>'`, `Trying compilation for the N time` |
-| The injected code | `--diag --verbosity trace` | the full mutated syntax tree per file (`MutationTest/CsharpMutationProcess.cs:50-53`) and compiler errors with source lines (`Dumping build error in file`). The messages come in the OS language without the `CS` id (Polish on this machine). The docs call this flag `--dev-mode`; the 5.0.0 CLI flag is `--diag` (`CommandLineConfigReader.cs:213`, sn#3977). |
+| The injected code | `--diag --verbosity trace` | the full mutated syntax tree per file (`MutationTest/CsharpMutationProcess.cs:50-53`) and compiler errors with source lines (`Dumping build error in file`). The messages come in the OS language without the `CS` id (Polish on this machine). The docs call this flag `--dev-mode`; the CLI flag is `--diag` (5.0.0 and 5.1.0) (`CommandLineConfigReader.cs:213`, sn#3977). |
 | A log file | `-L` / `--log-to-file` | `<output>/logs/log-<date>.txt` |
 
 ## How CLI options combine with the config
