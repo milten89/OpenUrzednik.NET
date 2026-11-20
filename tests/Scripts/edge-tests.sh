@@ -14,7 +14,8 @@
 # D build.yml PR notes check, E release-label.yml, F build.yml test (net472) loop,
 # H/I the /prepare-release scripts (check_packages.py with generated packages, check_nuget.py's SemVer order offline),
 # J mutation.yml's shard selection (tests/Mutation/run.py --changed-since) on a copy of the repo's projects and configs,
-# K .github/scripts/package_guard.py on generated repositories, L mutation.yml's summary and aggregate check.
+# K .github/scripts/package_guard.py on generated repositories, L mutation.yml's summary and aggregate check,
+# M the /prepare-release script that moves the unshipped public API to the shipped list.
 # When a script or a workflow step with logic is added or changed, add its cases here: the normal case, then the edge cases
 # (empty or missing input, unusual names and characters, re-runs, failures of the tools it calls). Single-command steps
 # (`dotnet build …`) need none. Exempt: assets/branding/generate.py, a one-off script rerun only for a new provider icon.
@@ -410,6 +411,54 @@ d="$work/k-nogit"; mkdir -p "$d"
 expect "K12 guard: outside a git repository exits 2" 2 "can't check the repository" guard "$d"
 d=$(kg nojson); printf '{' > "$d/version.json"; kcommit "$d"
 expect "K12b guard: an unreadable version.json exits 2" 2 "can't check the repository" guard "$d"
+
+d=$(kg apistable); kversion "$d" 1.0.1; printf '#nullable enable\nOpenUrzednik.P.New() -> void\n' > "$d/src/P/PublicAPI.Unshipped.txt"; : > "$d/src/P/PublicAPI.Shipped.txt"; kcommit "$d"
+expect "K13 guard: unshipped API entries on a stable version (a hotfix) fail" 1 "1 unshipped API entry on a stable version" guard "$d"
+d=$(kg apiheader); kversion "$d" 1.0.1; printf '#nullable enable\n' > "$d/src/P/PublicAPI.Unshipped.txt"; kcommit "$d"
+expect "K13b guard: an unshipped file with only its header passes on a stable version" 0 "Package guard: OK" guard "$d"
+d=$(kg apipreview); printf '#nullable enable\nOpenUrzednik.P.New() -> void\n' > "$d/src/P/PublicAPI.Unshipped.txt"; kcommit "$d"
+expect "K13c guard: unshipped entries on a preview version pass" 0 "Package guard: OK" guard "$d"
+d=$(kg apinet); kversion "$d" 1.0.1; mkdir -p "$d/src/P/PublicAPI/net"; printf '#nullable enable\nOpenUrzednik.P.NetOnly() -> void\n\n' > "$d/src/P/PublicAPI/net/PublicAPI.Unshipped.txt"; kcommit "$d"
+expect "K13d guard: entries in a .NET-only unshipped file count too" 1 "PublicAPI/net/PublicAPI.Unshipped.txt: 1 unshipped" guard "$d"
+d=$(kg apinotpackable); kversion "$d" 1.0.1; kprop "$d/src/P/P.csproj" '<IsPackable>false</IsPackable>'
+printf '#nullable enable\nOpenUrzednik.P.New() -> void\n' > "$d/src/P/PublicAPI.Unshipped.txt"; mkdir -p "$d/src/P/PublicAPI/net"
+printf '#nullable enable\nOpenUrzednik.P.NetOnly() -> void\n' > "$d/src/P/PublicAPI/net/PublicAPI.Unshipped.txt"; kcommit "$d"
+expect "K13e guard: a package that isn't packable yet keeps its unshipped entries, .NET-only ones too" 0 "Package guard: OK" guard "$d"
+
+# ---------- M: .claude/skills/prepare-release/scripts/ship_public_api.py ----------
+ship="$repo/.claude/skills/prepare-release/scripts/ship_public_api.py"
+# m <name> -> a folder with src/P (shipped A, B; unshipped C and *REMOVED*B) and src/Q R (a space) with a .NET-only folder
+m() {
+  local d="$work/m $1"; rm -rf "$d"; mkdir -p "$d/src/P" "$d/src/Q R/PublicAPI/net"
+  printf '#nullable enable\nP.A() -> void\nP.B() -> void\n' > "$d/src/P/PublicAPI.Shipped.txt"
+  printf '#nullable enable\nP.C() -> void\n*REMOVED*P.B() -> void\n' > "$d/src/P/PublicAPI.Unshipped.txt"
+  printf '#nullable enable\n' > "$d/src/Q R/PublicAPI.Shipped.txt"; printf '#nullable enable\n' > "$d/src/Q R/PublicAPI.Unshipped.txt"
+  printf '#nullable enable\nQ.Old() -> void\n' > "$d/src/Q R/PublicAPI/net/PublicAPI.Shipped.txt"
+  printf '#nullable enable\nQ.NetOnly(System.DateOnly date) -> void\n' > "$d/src/Q R/PublicAPI/net/PublicAPI.Unshipped.txt"
+  echo "$d"
+}
+d=$(m ok)
+expect "M1 ship: entries move, *REMOVED* ones leave the shipped list, unshipped keeps its header" 0 "" bash -c "python3 -I -B '$ship' '$d' >/dev/null &&
+  [ \"\$(cat '$d/src/P/PublicAPI.Shipped.txt')\" = \"\$(printf '#nullable enable\nP.A() -> void\nP.C() -> void')\" ] &&
+  [ \"\$(cat '$d/src/P/PublicAPI.Unshipped.txt')\" = '#nullable enable' ]"
+expect "M2 ship: the .NET-only folder and a folder name with a space are handled" 0 "" bash -c "
+  [ \"\$(cat '$d/src/Q R/PublicAPI/net/PublicAPI.Shipped.txt')\" = \"\$(printf '#nullable enable\nQ.NetOnly(System.DateOnly date) -> void\nQ.Old() -> void')\" ] &&
+  [ \"\$(cat '$d/src/Q R/PublicAPI/net/PublicAPI.Unshipped.txt')\" = '#nullable enable' ]"
+expect "M3 ship: a second run moves nothing" 0 "0 moved to shipped" python3 -I -B "$ship" "$d"
+d=$(m noshipped); rm "$d/src/P/PublicAPI.Shipped.txt"
+expect "M4 ship: an unshipped file without a shipped one fails" 1 "no PublicAPI.Shipped.txt next to it" python3 -I -B "$ship" "$d"
+expect "M4b ship: ... and writes nothing, in any package" 0 "" bash -c "grep -q 'NetOnly' '$d/src/Q R/PublicAPI/net/PublicAPI.Unshipped.txt'"
+d=$(m badremove); printf '#nullable enable\n*REMOVED*P.Z() -> void\n' > "$d/src/P/PublicAPI.Unshipped.txt"
+expect "M5 ship: a removed entry the shipped list doesn't have fails" 1 "REMOVED\\* P.Z\\(\\) -> void isn't in" python3 -I -B "$ship" "$d"
+d=$(m bom); printf '\xef\xbb\xbf#nullable enable\nP.A() -> void\n' > "$d/src/P/PublicAPI.Shipped.txt"; printf '#nullable enable\r\nP.D() -> void\r\n\r\n' > "$d/src/P/PublicAPI.Unshipped.txt"
+expect "M6 ship: a BOM and CRLF line ends are read, and LF without a BOM is written" 0 "" bash -c "python3 -I -B '$ship' '$d' >/dev/null &&
+  [ \"\$(od -An -c -N3 '$d/src/P/PublicAPI.Shipped.txt' | tr -d ' ')\" = '#nu' ] && ! grep -q \$'\\r' '$d/src/P/PublicAPI.Shipped.txt' &&
+  grep -qx 'P.D() -> void' '$d/src/P/PublicAPI.Shipped.txt'"
+d="$work/m none"; mkdir -p "$d/src"
+expect "M7 ship: no unshipped file at all is nothing to do" 0 "0 unshipped file\\(s\\), 0 moved" python3 -I -B "$ship" "$d"
+d=$(m notpackable); printf '<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup>\n    <IsPackable>False</IsPackable>\n  </PropertyGroup>\n</Project>\n' > "$d/src/Q R/Q.csproj"
+expect "M8 ship: a project that isn't packable keeps its entries, its .NET-only ones too" 0 "kept \\(not packable\\)" bash -c "python3 -I -B '$ship' '$d' &&
+  grep -q 'NetOnly' '$d/src/Q R/PublicAPI/net/PublicAPI.Unshipped.txt' && grep -qx 'P.C() -> void' '$d/src/P/PublicAPI.Shipped.txt'"
 
 # ---------- L: mutation.yml "Add the summary" and "Check every shard" ----------
 sum_step="$(step mutation.yml shard "Add the summary")"

@@ -20,7 +20,9 @@ in the release workflow and locally. It fails when:
     assemblyVersion.precision other than `major`;
   * PackageValidationBaselineVersion isn't the latest stable vX.Y.Z tag merged into HEAD, a project sets an empty baseline
     although that tag shipped it, or version.json is a prerelease that wasn't raised above that tag.
-    A tag of the stable version being built (a re-run of a release) is skipped.
+    A tag of the stable version being built (a re-run of a release) is skipped;
+  * version.json is a stable version (a release, hotfix or backport branch) and a packable package's PublicAPI.Unshipped.txt
+    still lists entries: a release moves them to PublicAPI.Shipped.txt (/prepare-release), and a patch adds no public API (ADR-0011).
 Exit codes: 0 every rule holds, 1 a rule is broken, 2 the repository can't be read (or its tags weren't fetched).
 """
 
@@ -245,6 +247,26 @@ def check_version(raw: str, building: Version, stable: bool, precision: str, rel
         errors.append(f"version.json: assemblyVersion.precision is '{precision}'; it stays 'major' (ADR-0005).")
 
 
+def api_packable(repo: Repo, path: str, files: list[str]) -> bool:
+    """Whether the project a PublicAPI file belongs to (its folder, or two up for PublicAPI/net/) is packable: one with
+    IsPackable false ships nothing, so its entries stay unshipped through a release."""
+    folder = path.rsplit("/", 1)[0].removesuffix("/PublicAPI/net")
+    projects = [file for file in files if file.startswith(folder + "/") and file.endswith(".csproj") and "/" not in file[len(folder) + 1:]]
+    return not any(re.search(r"<IsPackable>\s*false\s*</IsPackable>", repo.read(project), re.IGNORECASE) for project in projects)
+
+
+def check_public_api(repo: Repo, files: list[str], stable: bool, errors: list[str]) -> None:
+    if not stable:
+        return
+    for path in files:
+        if path.startswith("src/") and path.endswith("/PublicAPI.Unshipped.txt") and api_packable(repo, path, files):
+            listed = [line for line in repo.read(path).splitlines() if line.strip() and line.strip() != "#nullable enable"]
+            if listed:
+                errors.append(f"{path}: {len(listed)} unshipped API entr{'y' if len(listed) == 1 else 'ies'} on a stable version; "
+                              "a release moves them to PublicAPI.Shipped.txt (ship_public_api.py, /prepare-release), and a "
+                              "patch adds no public API (ADR-0011).")
+
+
 def check_key(repo: Repo, errors: list[str]) -> None:
     snk = repo.root / "OpenUrzednik.snk"
     if not snk.is_file() or hashlib.sha256(snk.read_bytes()).hexdigest() != SNK_SHA256:
@@ -267,6 +289,7 @@ def main() -> int:
         check_suppressions(repo, files, building, release, errors)
         check_msbuild(repo, files, release, errors)
         check_version(raw, building, stable, precision, release, errors)
+        check_public_api(repo, files, stable, errors)
         check_key(repo, errors)
     except (RepoError, OSError, subprocess.CalledProcessError, KeyError, json.JSONDecodeError) as ex:
         print(f"package_guard: can't check the repository: {ex}", file=sys.stderr)

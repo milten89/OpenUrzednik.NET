@@ -37,6 +37,17 @@
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- The public API of each package, tracked in text files next to its project (RS0016/RS0017, ADR-0011): PublicAPI.Shipped.txt
+       holds what a release shipped, PublicAPI.Unshipped.txt what was added since. The API every target has goes there; members
+       only the .NET builds have (#if NET) go in PublicAPI/net/, read by those builds only. /prepare-release moves Unshipped to
+       Shipped (docs/RELEASE-PROCESS.md). -->
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI.Shipped.txt;PublicAPI.Unshipped.txt" />
+    <AdditionalFiles Include="PublicAPI\net\PublicAPI.Shipped.txt;PublicAPI\net\PublicAPI.Unshipped.txt"
+                     Condition="$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) == '.NETCoreApp' and Exists('PublicAPI\net\PublicAPI.Shipped.txt')" />
   </ItemGroup>
 
   <!-- APIs the ADRs rule out in library code (RS0030); the places allowed to use them are exempt in src/.editorconfig. -->

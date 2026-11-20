@@ -45,7 +45,7 @@ updates:
         patterns: [ "xunit*", "Microsoft.NET.Test.Sdk", "Microsoft.Testing.*", "NSubstitute*", "Shouldly", "Bogus", "WireMock.Net*", "TngTech.ArchUnitNET", "Microsoft.CodeAnalysis.CSharp",
                     "Microsoft.Extensions.TimeProvider.Testing", "Microsoft.Extensions.Http.Resilience" ]
       build-tooling:
-        patterns: [ "Nerdbank.GitVersioning", "Microsoft.CodeAnalysis.BannedApiAnalyzers" ]
+        patterns: [ "Nerdbank.GitVersioning", "Microsoft.CodeAnalysis.BannedApiAnalyzers", "Microsoft.CodeAnalysis.PublicApiAnalyzers" ]
 
   - package-ecosystem: "github-actions"
     directory: "/"

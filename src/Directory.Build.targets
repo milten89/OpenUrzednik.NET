@@ -17,7 +17,7 @@
        names it, so PrivateAssets="all" can't let another package through. A FrameworkReference (e.g. Microsoft.AspNetCore.App)
        is a dependency of the package too, and src/ takes none. -->
   <PropertyGroup>
-    <OpenUrzednikBuildOnlyPackageReferences>Nerdbank.GitVersioning;Microsoft.CodeAnalysis.BannedApiAnalyzers</OpenUrzednikBuildOnlyPackageReferences>
+    <OpenUrzednikBuildOnlyPackageReferences>Nerdbank.GitVersioning;Microsoft.CodeAnalysis.BannedApiAnalyzers;Microsoft.CodeAnalysis.PublicApiAnalyzers</OpenUrzednikBuildOnlyPackageReferences>
   </PropertyGroup>
   <PropertyGroup Condition="'$(OpenUrzednikAllowedPackageReferences)' == '' and '$(TargetFramework)' == 'netstandard2.0'">
     <OpenUrzednikAllowedPackageReferences>System.Text.Json;System.Net.Http.Json;Microsoft.Bcl.TimeProvider;Microsoft.Bcl.HashCode</OpenUrzednikAllowedPackageReferences>

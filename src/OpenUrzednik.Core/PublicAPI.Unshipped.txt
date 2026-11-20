@@ -1,0 +1,41 @@
+#nullable enable
+OpenUrzednik.Core.Errors.BadRequestError.BadRequestError(string! message) -> void
+OpenUrzednik.Core.Errors.NotFoundError.NotFoundError(string! message) -> void
+OpenUrzednik.Core.Errors.RangeValidationError
+OpenUrzednik.Core.Errors.RangeValidationError.EndName.get -> string!
+OpenUrzednik.Core.Errors.RangeValidationError.StartName.get -> string!
+OpenUrzednik.Core.Errors.RangeValidationError<T>
+OpenUrzednik.Core.Errors.RangeValidationError<T>.End.get -> T
+OpenUrzednik.Core.Errors.RangeValidationError<T>.RangeValidationError(string! message, string! ruleName, string! startName, T start, string! endName, T end) -> void
+OpenUrzednik.Core.Errors.RangeValidationError<T>.Start.get -> T
+OpenUrzednik.Core.Errors.RateLimitExceededError.RateLimitExceededError(string! message, System.TimeSpan? retryAfter) -> void
+OpenUrzednik.Core.Errors.RequestTimeoutError.RequestTimeoutError(string! message) -> void
+OpenUrzednik.Core.Errors.RequestTimeoutError.RequestTimeoutError(string! message, System.TimeSpan? timeout) -> void
+OpenUrzednik.Core.Errors.RequestTimeoutError.RequestTimeoutError(string! message, System.TimeSpan? timeout, System.Exception? exception) -> void
+OpenUrzednik.Core.Errors.ServiceUnavailableError.ServiceUnavailableError(string! message) -> void
+OpenUrzednik.Core.Errors.ServiceUnavailableError.ServiceUnavailableError(string! message, System.Exception? exception) -> void
+OpenUrzednik.Core.Errors.UnauthorizedError.UnauthorizedError(string! message) -> void
+OpenUrzednik.Core.Errors.UnknownError.UnknownError(string! message) -> void
+OpenUrzednik.Core.Errors.ValidationError.Name.get -> string?
+OpenUrzednik.Core.Errors.ValidationError.RuleName.get -> string!
+OpenUrzednik.Core.Errors.ValidationError<T>
+OpenUrzednik.Core.Errors.ValidationError<T>.ValidationError(string! message, string! ruleName, string? name, T value) -> void
+OpenUrzednik.Core.Errors.ValidationError<T>.Value.get -> T
+const OpenUrzednik.Core.Errors.RangeValidationError.EndMetadataKey = "end" -> string!
+const OpenUrzednik.Core.Errors.RangeValidationError.EndNameMetadataKey = "endName" -> string!
+const OpenUrzednik.Core.Errors.RangeValidationError.StartMetadataKey = "start" -> string!
+const OpenUrzednik.Core.Errors.RangeValidationError.StartNameMetadataKey = "startName" -> string!
+const OpenUrzednik.Core.Errors.RateLimitExceededError.RetryAfterDurationMetadataKey = "retryAfterDuration" -> string!
+const OpenUrzednik.Core.Errors.RequestTimeoutError.TimeoutMetadataKey = "timeout" -> string!
+override OpenUrzednik.Core.Errors.BadRequestError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+override OpenUrzednik.Core.Errors.NotFoundError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+override OpenUrzednik.Core.Errors.RateLimitExceededError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Core.Errors.RateLimitExceededError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+override OpenUrzednik.Core.Errors.RequestTimeoutError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Core.Errors.RequestTimeoutError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+override OpenUrzednik.Core.Errors.ServiceUnavailableError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+override OpenUrzednik.Core.Errors.UnauthorizedError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+override OpenUrzednik.Core.Errors.UnknownError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+override OpenUrzednik.Core.Errors.ValidationError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Core.Errors.ValidationError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+virtual OpenUrzednik.Core.Errors.OpenUrzednikError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void

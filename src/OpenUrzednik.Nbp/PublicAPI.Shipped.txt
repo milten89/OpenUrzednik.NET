@@ -1,0 +1,253 @@
+#nullable enable
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.<Clone>$() -> OpenUrzednik.Nbp.Currency.BuySellExchangeRates!
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.BuySellExchangeRates(string! CurrencyName, string! CurrencyCode, System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Currency.CurrencyBuySellRate!>! Rates) -> void
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.CurrencyCode.get -> string!
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.CurrencyCode.init -> void
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.CurrencyName.get -> string!
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.CurrencyName.init -> void
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.Deconstruct(out string! CurrencyName, out string! CurrencyCode, out System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Currency.CurrencyBuySellRate!>! Rates) -> void
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.Equals(OpenUrzednik.Nbp.Currency.BuySellExchangeRates? other) -> bool
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.Rates.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Currency.CurrencyBuySellRate!>!
+OpenUrzednik.Nbp.Currency.BuySellExchangeRates.Rates.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.<Clone>$() -> OpenUrzednik.Nbp.Currency.CurrencyBuySellRate!
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.Ask.get -> decimal
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.Ask.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.Bid.get -> decimal
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.Bid.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.CurrencyBuySellRate(string! TableId, System.DateTime PublicationDate, decimal Ask, decimal Bid) -> void
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.Deconstruct(out string! TableId, out System.DateTime PublicationDate, out decimal Ask, out decimal Bid) -> void
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.Equals(OpenUrzednik.Nbp.Currency.CurrencyBuySellRate? other) -> bool
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.PublicationDate.get -> System.DateTime
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.PublicationDate.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.TableId.get -> string!
+OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.TableId.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.<Clone>$() -> OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.CurrencyCode.get -> string!
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.CurrencyCode.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.CurrencyExchangeRates(string! CurrencyName, string! CurrencyCode, System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Currency.CurrencyRate!>! Rates) -> void
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.CurrencyName.get -> string!
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.CurrencyName.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.Deconstruct(out string! CurrencyName, out string! CurrencyCode, out System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Currency.CurrencyRate!>! Rates) -> void
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.Equals(OpenUrzednik.Nbp.Currency.CurrencyExchangeRates? other) -> bool
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.Rates.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Currency.CurrencyRate!>!
+OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.Rates.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyRate
+OpenUrzednik.Nbp.Currency.CurrencyRate.<Clone>$() -> OpenUrzednik.Nbp.Currency.CurrencyRate!
+OpenUrzednik.Nbp.Currency.CurrencyRate.CurrencyRate(string! TableId, System.DateTime PublicationDate, decimal Price) -> void
+OpenUrzednik.Nbp.Currency.CurrencyRate.Deconstruct(out string! TableId, out System.DateTime PublicationDate, out decimal Price) -> void
+OpenUrzednik.Nbp.Currency.CurrencyRate.Equals(OpenUrzednik.Nbp.Currency.CurrencyRate? other) -> bool
+OpenUrzednik.Nbp.Currency.CurrencyRate.Price.get -> decimal
+OpenUrzednik.Nbp.Currency.CurrencyRate.Price.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyRate.PublicationDate.get -> System.DateTime
+OpenUrzednik.Nbp.Currency.CurrencyRate.PublicationDate.init -> void
+OpenUrzednik.Nbp.Currency.CurrencyRate.TableId.get -> string!
+OpenUrzednik.Nbp.Currency.CurrencyRate.TableId.init -> void
+OpenUrzednik.Nbp.Gold.GoldPrice
+OpenUrzednik.Nbp.Gold.GoldPrice.<Clone>$() -> OpenUrzednik.Nbp.Gold.GoldPrice!
+OpenUrzednik.Nbp.Gold.GoldPrice.Date.get -> System.DateTime
+OpenUrzednik.Nbp.Gold.GoldPrice.Date.init -> void
+OpenUrzednik.Nbp.Gold.GoldPrice.Deconstruct(out System.DateTime Date, out decimal Price) -> void
+OpenUrzednik.Nbp.Gold.GoldPrice.Equals(OpenUrzednik.Nbp.Gold.GoldPrice? other) -> bool
+OpenUrzednik.Nbp.Gold.GoldPrice.GoldPrice(System.DateTime Date, decimal Price) -> void
+OpenUrzednik.Nbp.Gold.GoldPrice.Price.get -> decimal
+OpenUrzednik.Nbp.Gold.GoldPrice.Price.init -> void
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetAsync(string! currency, System.DateTime date, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetAsync(string! currency, System.DateTime from, System.DateTime to, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetBuySellAsync(string! currency, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetBuySellAsync(string! currency, System.DateTime from, System.DateTime to, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetBuySellLastPublishedBeforeAsync(string! currency, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetBuySellLatestAsync(string! currency, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetBuySellTodayAsync(string! currency, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetBuySellTopCountAsync(string! currency, int topCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetLastPublishedBeforeAsync(string! currency, System.DateTime date, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetLatestAsync(string! currency, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetTodayAsync(string! currency, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.INbpCurrencyExchangeRateClient.GetTopCountAsync(string! currency, int topCount, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetAsync(OpenUrzednik.Nbp.Table.TableType table, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.ExchangeRateTable!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetAsync(OpenUrzednik.Nbp.Table.TableType table, System.DateTime from, System.DateTime to, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.ExchangeRateTable!>!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetBuySellAsync(System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetBuySellAsync(System.DateTime from, System.DateTime to, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetBuySellLastPublishedBeforeAsync(System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetBuySellLatestAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetBuySellTodayAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetBuySellTopCountAsync(int topCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetLastPublishedBeforeAsync(OpenUrzednik.Nbp.Table.TableType table, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.ExchangeRateTable!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetLatestAsync(OpenUrzednik.Nbp.Table.TableType table, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.ExchangeRateTable!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetTodayAsync(OpenUrzednik.Nbp.Table.TableType table, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.ExchangeRateTable!>>!
+OpenUrzednik.Nbp.INbpExchangeRateTableClient.GetTopCountAsync(OpenUrzednik.Nbp.Table.TableType table, int topCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.ExchangeRateTable!>!>>!
+OpenUrzednik.Nbp.INbpGoldPriceClient
+OpenUrzednik.Nbp.INbpGoldPriceClient.GetAsync(System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Gold.GoldPrice!>>!
+OpenUrzednik.Nbp.INbpGoldPriceClient.GetAsync(System.DateTime from, System.DateTime to, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Gold.GoldPrice!>!>>!
+OpenUrzednik.Nbp.INbpGoldPriceClient.GetLastPublishedBeforeAsync(System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Gold.GoldPrice!>>!
+OpenUrzednik.Nbp.INbpGoldPriceClient.GetLatestAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Gold.GoldPrice!>>!
+OpenUrzednik.Nbp.INbpGoldPriceClient.GetTodayAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Gold.GoldPrice!>>!
+OpenUrzednik.Nbp.INbpGoldPriceClient.GetTopCountAsync(int topCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Gold.GoldPrice!>!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetAsync(string! currency, System.DateTime date, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetAsync(string! currency, System.DateTime from, System.DateTime to, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetBuySellAsync(string! currency, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetBuySellAsync(string! currency, System.DateTime from, System.DateTime to, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetBuySellLastPublishedBeforeAsync(string! currency, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetBuySellLatestAsync(string! currency, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetBuySellTodayAsync(string! currency, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetBuySellTopCountAsync(string! currency, int topCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.BuySellExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetLastPublishedBeforeAsync(string! currency, System.DateTime date, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetLatestAsync(string! currency, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetTodayAsync(string! currency, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.GetTopCountAsync(string! currency, int topCount, OpenUrzednik.Nbp.Table.TableType table = OpenUrzednik.Nbp.Table.TableType.A, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Currency.CurrencyExchangeRates!>>!
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.NbpCurrencyExchangeRateClient(System.Net.Http.HttpClient! httpClient) -> void
+OpenUrzednik.Nbp.NbpCurrencyExchangeRateClient.NbpCurrencyExchangeRateClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options = null, System.TimeProvider? timeProvider = null, OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger? logger = null, OpenUrzednik.Core.Telemetry.IOpenUrzednikTraceSource? traceSource = null) -> void
+OpenUrzednik.Nbp.NbpExchangeRateTableClient
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetAsync(OpenUrzednik.Nbp.Table.TableType table, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.ExchangeRateTable!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetAsync(OpenUrzednik.Nbp.Table.TableType table, System.DateTime from, System.DateTime to, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.ExchangeRateTable!>!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetBuySellAsync(System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetBuySellAsync(System.DateTime from, System.DateTime to, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetBuySellLastPublishedBeforeAsync(System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetBuySellLatestAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetBuySellTodayAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetBuySellTopCountAsync(int topCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!>!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetLastPublishedBeforeAsync(OpenUrzednik.Nbp.Table.TableType table, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.ExchangeRateTable!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetLatestAsync(OpenUrzednik.Nbp.Table.TableType table, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.ExchangeRateTable!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetTodayAsync(OpenUrzednik.Nbp.Table.TableType table, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Table.ExchangeRateTable!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.GetTopCountAsync(OpenUrzednik.Nbp.Table.TableType table, int topCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.ExchangeRateTable!>!>>!
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.NbpExchangeRateTableClient(System.Net.Http.HttpClient! httpClient) -> void
+OpenUrzednik.Nbp.NbpExchangeRateTableClient.NbpExchangeRateTableClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options = null, System.TimeProvider? timeProvider = null, OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger? logger = null, OpenUrzednik.Core.Telemetry.IOpenUrzednikTraceSource? traceSource = null) -> void
+OpenUrzednik.Nbp.NbpGoldPriceClient
+OpenUrzednik.Nbp.NbpGoldPriceClient.GetAsync(System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Gold.GoldPrice!>>!
+OpenUrzednik.Nbp.NbpGoldPriceClient.GetAsync(System.DateTime from, System.DateTime to, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Gold.GoldPrice!>!>>!
+OpenUrzednik.Nbp.NbpGoldPriceClient.GetLastPublishedBeforeAsync(System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Gold.GoldPrice!>>!
+OpenUrzednik.Nbp.NbpGoldPriceClient.GetLatestAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Gold.GoldPrice!>>!
+OpenUrzednik.Nbp.NbpGoldPriceClient.GetTodayAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.Nbp.Gold.GoldPrice!>>!
+OpenUrzednik.Nbp.NbpGoldPriceClient.GetTopCountAsync(int topCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Gold.GoldPrice!>!>>!
+OpenUrzednik.Nbp.NbpGoldPriceClient.NbpGoldPriceClient(System.Net.Http.HttpClient! httpClient) -> void
+OpenUrzednik.Nbp.NbpGoldPriceClient.NbpGoldPriceClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.Nbp.NbpOptions? options = null, System.TimeProvider? timeProvider = null, OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger? logger = null, OpenUrzednik.Core.Telemetry.IOpenUrzednikTraceSource? traceSource = null) -> void
+OpenUrzednik.Nbp.NbpLogEvents
+OpenUrzednik.Nbp.NbpOptions
+OpenUrzednik.Nbp.NbpOptions.ApiUrl.get -> string?
+OpenUrzednik.Nbp.NbpOptions.ApiUrl.set -> void
+OpenUrzednik.Nbp.NbpOptions.NbpOptions() -> void
+OpenUrzednik.Nbp.NbpOptions.Timeout.get -> System.TimeSpan?
+OpenUrzednik.Nbp.NbpOptions.Timeout.set -> void
+OpenUrzednik.Nbp.NbpOptions.Validate() -> void
+OpenUrzednik.Nbp.NbpTelemetry
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.<Clone>$() -> OpenUrzednik.Nbp.Table.BuySellExchangeRateTable!
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.BuySellExchangeRateTable(string! TableId, System.DateTime TradingDate, System.DateTime PublicationDate, System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.TableBuySellRate!>! Rates) -> void
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.Deconstruct(out string! TableId, out System.DateTime TradingDate, out System.DateTime PublicationDate, out System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.TableBuySellRate!>! Rates) -> void
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.Equals(OpenUrzednik.Nbp.Table.BuySellExchangeRateTable? other) -> bool
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.PublicationDate.get -> System.DateTime
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.PublicationDate.init -> void
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.Rates.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.TableBuySellRate!>!
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.Rates.init -> void
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.TableId.get -> string!
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.TableId.init -> void
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.TradingDate.get -> System.DateTime
+OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.TradingDate.init -> void
+OpenUrzednik.Nbp.Table.ExchangeRateTable
+OpenUrzednik.Nbp.Table.ExchangeRateTable.<Clone>$() -> OpenUrzednik.Nbp.Table.ExchangeRateTable!
+OpenUrzednik.Nbp.Table.ExchangeRateTable.Deconstruct(out string! TableId, out System.DateTime PublicationDate, out System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.TableRate!>! Rates) -> void
+OpenUrzednik.Nbp.Table.ExchangeRateTable.Equals(OpenUrzednik.Nbp.Table.ExchangeRateTable? other) -> bool
+OpenUrzednik.Nbp.Table.ExchangeRateTable.ExchangeRateTable(string! TableId, System.DateTime PublicationDate, System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.TableRate!>! Rates) -> void
+OpenUrzednik.Nbp.Table.ExchangeRateTable.PublicationDate.get -> System.DateTime
+OpenUrzednik.Nbp.Table.ExchangeRateTable.PublicationDate.init -> void
+OpenUrzednik.Nbp.Table.ExchangeRateTable.Rates.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.Nbp.Table.TableRate!>!
+OpenUrzednik.Nbp.Table.ExchangeRateTable.Rates.init -> void
+OpenUrzednik.Nbp.Table.ExchangeRateTable.TableId.get -> string!
+OpenUrzednik.Nbp.Table.ExchangeRateTable.TableId.init -> void
+OpenUrzednik.Nbp.Table.TableBuySellRate
+OpenUrzednik.Nbp.Table.TableBuySellRate.<Clone>$() -> OpenUrzednik.Nbp.Table.TableBuySellRate!
+OpenUrzednik.Nbp.Table.TableBuySellRate.Ask.get -> decimal
+OpenUrzednik.Nbp.Table.TableBuySellRate.Ask.init -> void
+OpenUrzednik.Nbp.Table.TableBuySellRate.Bid.get -> decimal
+OpenUrzednik.Nbp.Table.TableBuySellRate.Bid.init -> void
+OpenUrzednik.Nbp.Table.TableBuySellRate.CurrencyCode.get -> string!
+OpenUrzednik.Nbp.Table.TableBuySellRate.CurrencyCode.init -> void
+OpenUrzednik.Nbp.Table.TableBuySellRate.CurrencyName.get -> string!
+OpenUrzednik.Nbp.Table.TableBuySellRate.CurrencyName.init -> void
+OpenUrzednik.Nbp.Table.TableBuySellRate.Deconstruct(out string! CurrencyName, out string! CurrencyCode, out decimal Ask, out decimal Bid) -> void
+OpenUrzednik.Nbp.Table.TableBuySellRate.Equals(OpenUrzednik.Nbp.Table.TableBuySellRate? other) -> bool
+OpenUrzednik.Nbp.Table.TableBuySellRate.TableBuySellRate(string! CurrencyName, string! CurrencyCode, decimal Ask, decimal Bid) -> void
+OpenUrzednik.Nbp.Table.TableRate
+OpenUrzednik.Nbp.Table.TableRate.<Clone>$() -> OpenUrzednik.Nbp.Table.TableRate!
+OpenUrzednik.Nbp.Table.TableRate.CurrencyCode.get -> string!
+OpenUrzednik.Nbp.Table.TableRate.CurrencyCode.init -> void
+OpenUrzednik.Nbp.Table.TableRate.CurrencyName.get -> string!
+OpenUrzednik.Nbp.Table.TableRate.CurrencyName.init -> void
+OpenUrzednik.Nbp.Table.TableRate.Deconstruct(out string! CurrencyName, out string! CurrencyCode, out decimal Price) -> void
+OpenUrzednik.Nbp.Table.TableRate.Equals(OpenUrzednik.Nbp.Table.TableRate? other) -> bool
+OpenUrzednik.Nbp.Table.TableRate.Price.get -> decimal
+OpenUrzednik.Nbp.Table.TableRate.Price.init -> void
+OpenUrzednik.Nbp.Table.TableRate.TableRate(string! CurrencyName, string! CurrencyCode, decimal Price) -> void
+OpenUrzednik.Nbp.Table.TableType
+OpenUrzednik.Nbp.Table.TableType.A = 0 -> OpenUrzednik.Nbp.Table.TableType
+OpenUrzednik.Nbp.Table.TableType.B = 1 -> OpenUrzednik.Nbp.Table.TableType
+const OpenUrzednik.Nbp.NbpLogEvents.BadRequest = 1102 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.ConnectionFailed = 1002 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.DecodingFailed = 1203 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.DeserializationFailed = 1202 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.EmptyResponse = 1201 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.ErrorBodyUnreadable = 1109 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.ErrorResponse = 1108 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.MappingFailed = 2003 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.NoData = 2002 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.NotFound = 1101 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.RateLimited = 1105 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.RequestRejected = 1003 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.RequestTimedOut = 1001 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.RequestTimeoutStatus = 1104 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.ServiceUnavailable = 1106 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.Unauthorized = 1103 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.UnexpectedStatus = 1107 -> int
+const OpenUrzednik.Nbp.NbpLogEvents.ValidationFailed = 2001 -> int
+const OpenUrzednik.Nbp.NbpOptions.DefaultApiUrl = "https://api.nbp.pl/api/" -> string!
+const OpenUrzednik.Nbp.NbpTelemetry.SourceName = "OpenUrzednik.Nbp" -> string!
+override OpenUrzednik.Nbp.Currency.BuySellExchangeRates.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Currency.BuySellExchangeRates.GetHashCode() -> int
+override OpenUrzednik.Nbp.Currency.BuySellExchangeRates.ToString() -> string!
+override OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.GetHashCode() -> int
+override OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.ToString() -> string!
+override OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.GetHashCode() -> int
+override OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.ToString() -> string!
+override OpenUrzednik.Nbp.Currency.CurrencyRate.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Currency.CurrencyRate.GetHashCode() -> int
+override OpenUrzednik.Nbp.Currency.CurrencyRate.ToString() -> string!
+override OpenUrzednik.Nbp.Gold.GoldPrice.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Gold.GoldPrice.GetHashCode() -> int
+override OpenUrzednik.Nbp.Gold.GoldPrice.ToString() -> string!
+override OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.GetHashCode() -> int
+override OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.ToString() -> string!
+override OpenUrzednik.Nbp.Table.ExchangeRateTable.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Table.ExchangeRateTable.GetHashCode() -> int
+override OpenUrzednik.Nbp.Table.ExchangeRateTable.ToString() -> string!
+override OpenUrzednik.Nbp.Table.TableBuySellRate.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Table.TableBuySellRate.GetHashCode() -> int
+override OpenUrzednik.Nbp.Table.TableBuySellRate.ToString() -> string!
+override OpenUrzednik.Nbp.Table.TableRate.Equals(object? obj) -> bool
+override OpenUrzednik.Nbp.Table.TableRate.GetHashCode() -> int
+override OpenUrzednik.Nbp.Table.TableRate.ToString() -> string!
+static OpenUrzednik.Nbp.Currency.BuySellExchangeRates.operator !=(OpenUrzednik.Nbp.Currency.BuySellExchangeRates? left, OpenUrzednik.Nbp.Currency.BuySellExchangeRates? right) -> bool
+static OpenUrzednik.Nbp.Currency.BuySellExchangeRates.operator ==(OpenUrzednik.Nbp.Currency.BuySellExchangeRates? left, OpenUrzednik.Nbp.Currency.BuySellExchangeRates? right) -> bool
+static OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.operator !=(OpenUrzednik.Nbp.Currency.CurrencyBuySellRate? left, OpenUrzednik.Nbp.Currency.CurrencyBuySellRate? right) -> bool
+static OpenUrzednik.Nbp.Currency.CurrencyBuySellRate.operator ==(OpenUrzednik.Nbp.Currency.CurrencyBuySellRate? left, OpenUrzednik.Nbp.Currency.CurrencyBuySellRate? right) -> bool
+static OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.operator !=(OpenUrzednik.Nbp.Currency.CurrencyExchangeRates? left, OpenUrzednik.Nbp.Currency.CurrencyExchangeRates? right) -> bool
+static OpenUrzednik.Nbp.Currency.CurrencyExchangeRates.operator ==(OpenUrzednik.Nbp.Currency.CurrencyExchangeRates? left, OpenUrzednik.Nbp.Currency.CurrencyExchangeRates? right) -> bool
+static OpenUrzednik.Nbp.Currency.CurrencyRate.operator !=(OpenUrzednik.Nbp.Currency.CurrencyRate? left, OpenUrzednik.Nbp.Currency.CurrencyRate? right) -> bool
+static OpenUrzednik.Nbp.Currency.CurrencyRate.operator ==(OpenUrzednik.Nbp.Currency.CurrencyRate? left, OpenUrzednik.Nbp.Currency.CurrencyRate? right) -> bool
+static OpenUrzednik.Nbp.Gold.GoldPrice.operator !=(OpenUrzednik.Nbp.Gold.GoldPrice? left, OpenUrzednik.Nbp.Gold.GoldPrice? right) -> bool
+static OpenUrzednik.Nbp.Gold.GoldPrice.operator ==(OpenUrzednik.Nbp.Gold.GoldPrice? left, OpenUrzednik.Nbp.Gold.GoldPrice? right) -> bool
+static OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.operator !=(OpenUrzednik.Nbp.Table.BuySellExchangeRateTable? left, OpenUrzednik.Nbp.Table.BuySellExchangeRateTable? right) -> bool
+static OpenUrzednik.Nbp.Table.BuySellExchangeRateTable.operator ==(OpenUrzednik.Nbp.Table.BuySellExchangeRateTable? left, OpenUrzednik.Nbp.Table.BuySellExchangeRateTable? right) -> bool
+static OpenUrzednik.Nbp.Table.ExchangeRateTable.operator !=(OpenUrzednik.Nbp.Table.ExchangeRateTable? left, OpenUrzednik.Nbp.Table.ExchangeRateTable? right) -> bool
+static OpenUrzednik.Nbp.Table.ExchangeRateTable.operator ==(OpenUrzednik.Nbp.Table.ExchangeRateTable? left, OpenUrzednik.Nbp.Table.ExchangeRateTable? right) -> bool
+static OpenUrzednik.Nbp.Table.TableBuySellRate.operator !=(OpenUrzednik.Nbp.Table.TableBuySellRate? left, OpenUrzednik.Nbp.Table.TableBuySellRate? right) -> bool
+static OpenUrzednik.Nbp.Table.TableBuySellRate.operator ==(OpenUrzednik.Nbp.Table.TableBuySellRate? left, OpenUrzednik.Nbp.Table.TableBuySellRate? right) -> bool
+static OpenUrzednik.Nbp.Table.TableRate.operator !=(OpenUrzednik.Nbp.Table.TableRate? left, OpenUrzednik.Nbp.Table.TableRate? right) -> bool
+static OpenUrzednik.Nbp.Table.TableRate.operator ==(OpenUrzednik.Nbp.Table.TableRate? left, OpenUrzednik.Nbp.Table.TableRate? right) -> bool

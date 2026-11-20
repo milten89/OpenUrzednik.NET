@@ -1,0 +1,11 @@
+#nullable enable
+OpenUrzednik.Extensions.Logging.OpenUrzednikLogger
+OpenUrzednik.Extensions.Logging.OpenUrzednikLogger.IsEnabled(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level) -> bool
+OpenUrzednik.Extensions.Logging.OpenUrzednikLogger.Log(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate) -> void
+OpenUrzednik.Extensions.Logging.OpenUrzednikLogger.Log(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string!, object?>>! properties) -> void
+OpenUrzednik.Extensions.Logging.OpenUrzednikLogger.Log<T0, T1, T2>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0, string! name1, T1 value1, string! name2, T2 value2) -> void
+OpenUrzednik.Extensions.Logging.OpenUrzednikLogger.Log<T0, T1>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0, string! name1, T1 value1) -> void
+OpenUrzednik.Extensions.Logging.OpenUrzednikLogger.Log<T0>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0) -> void
+OpenUrzednik.Extensions.Logging.OpenUrzednikLogger.OpenUrzednikLogger(Microsoft.Extensions.Logging.ILogger! logger) -> void
+OpenUrzednik.Extensions.Logging.OpenUrzednikLoggerFactoryExtensions
+static OpenUrzednik.Extensions.Logging.OpenUrzednikLoggerFactoryExtensions.CreateOpenUrzednikLogger<TClient>(this Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger!
