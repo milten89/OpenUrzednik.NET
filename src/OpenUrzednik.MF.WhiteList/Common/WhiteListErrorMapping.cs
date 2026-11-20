@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net;
-using System.Text;
 using System.Text.Json;
 
 using OpenUrzednik.Core.Errors;
@@ -29,6 +28,9 @@ internal static class WhiteListErrorMapping
 
     // The prefix of the API's own codes (WL-100 to WL-197).
     private const string CodePrefix = "WL-";
+
+    // No separator: not one that joins an identifier's digits, or none seen yet in the run.
+    private const char NoSeparator = '\0';
 
     private const HttpStatusCode TooManyRequests = (HttpStatusCode)429;
 
@@ -75,37 +77,95 @@ internal static class WhiteListErrorMapping
     }
 
     /// <summary>
-    /// Replaces every run of at least <see cref="MinIdentifierDigits"/> digits with its masked form (<see cref="SensitiveValue.Mask"/>), so an
-    /// identifier the server's message echoes never reaches messages or telemetry (ADR-0003).
+    /// Masks every identifier the server's message echoes, so it never reaches messages or telemetry (ADR-0003): a run of at least
+    /// <see cref="MinIdentifierDigits"/> digits, also when single separators of one style join them (<c>736-812-54-16</c>,
+    /// <c>61 1090 1014 …</c>; a space or NBSP, <c>-</c>, <c>.</c> or <c>/</c>). Every digit but the last
+    /// <see cref="SensitiveValue.VisibleCharacters"/> becomes <see cref="SensitiveValue.MaskCharacter"/>, and the separators stay
+    /// (<c>***-***-54-16</c>). A separator of another style ends the run, and the next run starts with the ended run's last group of
+    /// digits, so a date and a time (<c>2026-11-19 10:15:30</c>) stay as they are, and a number before an identifier
+    /// (<c>10:15:30 736-812-54-16</c>) doesn't keep it from being masked. Not masked: an identifier whose own separators mix styles, or are anything else
+    /// (a tab, a narrow no-break space); the API sends identifiers as plain digits.
     /// </summary>
     internal static string MaskIdentifiers(string text)
     {
-        StringBuilder? masked = null;
-        var copied = 0;
+        char[]? masked = null;
         var start = 0;
-        // Each non-digit, and the end of the text, closes the run of digits [start, index), which may be empty. One loop with no inner
-        // skip, so that mutation testing has no equivalent mutant here (ADR-0020).
-        for (var index = 0; index <= text.Length; index++)
+        var digits = 0;
+        var groupStart = 0;
+        var groupDigits = 0;
+        var style = NoSeparator;
+        // A digit extends the run and its current group; a separator of the run's style (or the first one) followed by a digit starts
+        // a new group; one of another style followed by a digit closes the run and starts the next one at the last group; anything
+        // else closes the run [start, index), and the end of the text closes the last one. Runs may overlap: masking only ever hides
+        // digits. One loop with no inner skip, so that mutation testing has no equivalent mutant here (ADR-0020).
+        for (var index = 0; index < text.Length; index++)
         {
-            if (index < text.Length && IsDigit(text[index]))
-                continue;
-
-            var length = index - start;
-            if (length >= MinIdentifierDigits)
+            if (IsDigit(text[index]))
             {
-                masked ??= new StringBuilder(text.Length);
-                masked.Append(text, copied, start - copied).Append(SensitiveValue.Mask(text.Substring(start, length)));
-                copied = index;
+                if (digits == 0)
+                    start = index;
+                if (groupDigits == 0)
+                    groupStart = index;
+                digits++;
+                groupDigits++;
+                continue;
             }
 
-            start = index + 1;
+            // Read for every non-digit, not only inside a run: there the character before is always a digit, so a lookbehind
+            // mutant would be equivalent; here it fails on the first character. A separator before a run's first digit only sets
+            // the style the run's own first separator would set or restart from, so it needs no check of its own.
+            var nextIsDigit = index + 1 < text.Length && IsDigit(text[index + 1]);
+            var separator = nextIsDigit ? SeparatorStyle(text[index]) : NoSeparator;
+            if (separator != NoSeparator && (style == NoSeparator || style == separator))
+            {
+                style = separator;
+                groupDigits = 0;
+                continue;
+            }
+
+            Mask(ref masked, text, start, index, digits);
+            if (separator != NoSeparator)
+            {
+                // Another style: the last group begins the next run.
+                start = groupStart;
+                digits = groupDigits;
+                groupDigits = 0;
+                style = separator;
+                continue;
+            }
+
+            digits = 0;
+            groupDigits = 0;
+            style = NoSeparator;
         }
 
-        if (masked is null)
-            return text;
-
-        return masked.Append(text, copied, text.Length - copied).ToString();
+        Mask(ref masked, text, start, text.Length, digits);
+        return masked is null ? text : new string(masked);
     }
+
+    // Hides the digits of the run [start, end) but its last VisibleCharacters, when it holds an identifier; separators stay.
+    private static void Mask(ref char[]? masked, string text, int start, int end, int digits)
+    {
+        if (digits < MinIdentifierDigits)
+            return;
+
+        masked ??= text.ToCharArray();
+        var hidden = digits - SensitiveValue.VisibleCharacters;
+        for (var index = start; index < end; index++)
+        {
+            if (IsDigit(text[index]) && hidden-- > 0)
+                masked[index] = SensitiveValue.MaskCharacter;
+        }
+    }
+
+    // The style of a separator that may join an identifier's digits: a space (NBSP included), '-', '.' or '/'; NoSeparator for
+    // anything else.
+    private static char SeparatorStyle(char value) => value switch
+    {
+        ' ' or '\u00A0' => ' ',
+        '-' or '.' or '/' => value,
+        _ => NoSeparator,
+    };
 
     /// <summary>
     /// The server's code when it has a documented shape: <c>WL-</c> and three digits (<c>WL-115</c>), or WL2's single upper-case letter

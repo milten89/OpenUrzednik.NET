@@ -312,6 +312,8 @@ internal sealed class RestRequestExecutor
 
     // A DNS, TLS or connection failure, or a broken body read, is a ConnectionFailedError. A resilience handler's rejection (open circuit
     // breaker, rate limiter) also arrives as an HttpRequestException, marked by the DI package, and stays a ServiceUnavailableError.
+    // The exception passes through unchanged (.claude/rules/http.md): .NET's messages name the host, not the path, and an exception an
+    // app's own handler throws is the app's to keep free of identifiers.
     private OpenUrzednikResult NetworkFailure(string messagePath, IOpenUrzednikSpan traceSpan, Exception exception)
     {
         var rejected = ResilienceRejection.IsRejection(exception);
