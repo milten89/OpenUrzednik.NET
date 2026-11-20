@@ -15,8 +15,9 @@ internal sealed class ActivitySpan : IOpenUrzednikSpan, IOpenUrzednikSpanTiming
     internal const string ExceptionStackTraceTag = "exception.stacktrace";
 
     private readonly Activity _activity;
-    // When the span started, on the Stopwatch: StopTiming sets the end time from the elapsed Stopwatch time, not from
-    // DateTime.UtcNow, which moves in ~15.6 ms steps on .NET Framework while the activity's start time is precise there.
+    // When the span started, as a Stopwatch timestamp: StopTiming sets the end time from the elapsed
+    // Stopwatch time, not from DateTime.UtcNow, which moves in ~15.6 ms steps on .NET Framework while the activity's start
+    // time is precise there.
     private readonly long _startTimestamp;
 
     internal ActivitySpan(Activity activity)
@@ -75,10 +76,18 @@ internal sealed class ActivitySpan : IOpenUrzednikSpan, IOpenUrzednikSpanTiming
     /// </remarks>
     public TimeSpan? StopTiming()
     {
-        var elapsed = Stopwatch.GetTimestamp() - _startTimestamp;
-        _activity.SetEndTime(_activity.StartTimeUtc + TimeSpan.FromTicks((long)(elapsed * ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency))));
+        _activity.SetEndTime(_activity.StartTimeUtc + Elapsed());
         return _activity.Duration;
     }
 
     public void Dispose() => _activity.Dispose();
+
+#if NET
+    private TimeSpan Elapsed() => Stopwatch.GetElapsedTime(_startTimestamp);
+#else
+    // netstandard2.0 (linked into OpenUrzednik.Diagnostics) has no Stopwatch.GetElapsedTime.
+    private static readonly double TicksPerTimestamp = (double)TimeSpan.TicksPerSecond / Stopwatch.Frequency;
+
+    private TimeSpan Elapsed() => TimeSpan.FromTicks((long)((Stopwatch.GetTimestamp() - _startTimestamp) * TicksPerTimestamp));
+#endif
 }
