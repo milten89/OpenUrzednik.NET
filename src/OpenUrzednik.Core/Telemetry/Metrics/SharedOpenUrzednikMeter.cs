@@ -53,9 +53,7 @@ internal sealed class SharedOpenUrzednikMeter : IOpenUrzednikMetrics
 
         if (!_histograms.TryGetValue(measurement.Name, out var histogram))
         {
-            // Rare (once per instrument), so the closure doesn't matter; the factory overload with a state argument
-            // doesn't exist on netstandard2.0.
-            histogram = _histograms.GetOrAdd(measurement.Name, _ => CreateHistogram(Meter, histogramMeasurement));
+            histogram = GetOrCreateHistogram(histogramMeasurement);
         }
 
         if (!histogram.Enabled)
@@ -72,6 +70,12 @@ internal sealed class SharedOpenUrzednikMeter : IOpenUrzednikMetrics
 
         histogram.Record(histogramMeasurement.Value, in tags);
     }
+
+    // Once per instrument. A separate method, so the closure is allocated only here and not on every Record (a captured
+    // variable of Record would make the compiler create it at the start of Record); the GetOrAdd overload with a state
+    // argument doesn't exist on netstandard2.0.
+    private Histogram<double> GetOrCreateHistogram(IOpenUrzednikHistogramMeasurement measurement)
+        => _histograms.GetOrAdd(measurement.Name, _ => CreateHistogram(Meter, measurement));
 
     private static Histogram<double> CreateHistogram(Meter meter, IOpenUrzednikHistogramMeasurement measurement)
 #if NET9_0_OR_GREATER || NETSTANDARD2_0

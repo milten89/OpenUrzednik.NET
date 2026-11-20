@@ -141,7 +141,7 @@ using (var provider = services.BuildServiceProvider())
     Check("di: keyed client", keyedRates.IsSuccess, Describe(keyedRates));
 }
 
-// 4. Metrics: MeterMetrics creates an instrument from a measurement and records it, with its tags and advice.
+// 4. Metrics: MeterMetrics creates an instrument from a measurement and records its value and tags.
 var measurements = new List<(string Instrument, double Value, int Tags)>();
 using (var meterListener = new System.Diagnostics.Metrics.MeterListener())
 {

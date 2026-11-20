@@ -68,6 +68,20 @@ public class MeterMetricsTest
     }
 
     [Fact]
+    public void IsEnabled_NullName_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => MeterMetrics.GetShared(UniqueName()).IsEnabled(null!)).ParamName.ShouldBe("measurementName");
+    }
+
+    [Fact]
+    public void Record_NullMeasurement_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => MeterMetrics.GetShared(UniqueName()).Record(null!)).ParamName.ShouldBe("measurement");
+    }
+
+    [Fact]
     public void Record_HistogramMeasurement_CreatesTheInstrumentAndRecordsValueAndTags()
     {
         // Arrange
@@ -215,6 +229,28 @@ public class MeterMetricsTest
         // Act & Assert
         Should.NotThrow(() => metrics.Record(measurement));
     }
+
+#if NET
+    [Fact]
+    public void Record_InstrumentWithoutListener_AllocatesNothing()
+    {
+        // Arrange
+        var metrics = MeterMetrics.GetShared(UniqueName());
+        var measurement = new TestHistogramMeasurement(1);
+        for (var i = 0; i < 100; i++)
+        {
+            metrics.Record(measurement);
+        }
+
+        // Act
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        metrics.Record(measurement);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        // Assert: nothing per call besides the measurement the caller made
+        allocated.ShouldBe(0);
+    }
+#endif
 
     private sealed class TestHistogramMeasurement(double value, params (string Key, object? Value)[] tags) : IOpenUrzednikHistogramMeasurement
     {

@@ -15,6 +15,6 @@ public sealed class NullOpenUrzednikMetrics : IOpenUrzednikMetrics
     public bool IsEnabled(string measurementName) => false;
 
     /// <inheritdoc/>
-    /// <remarks>Does nothing.</remarks>
+    /// <remarks>Does nothing, also for <see langword="null"/>.</remarks>
     public void Record(IOpenUrzednikMeasurement measurement) { }
 }

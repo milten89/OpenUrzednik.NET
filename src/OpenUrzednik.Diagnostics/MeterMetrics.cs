@@ -47,8 +47,18 @@ public sealed class MeterMetrics : IOpenUrzednikMetrics
     /// <see langword="true"/> while no instrument has this name yet (the first <see cref="Record"/> creates it), then whether a
     /// listener is enabled for that instrument.
     /// </remarks>
-    public bool IsEnabled(string measurementName) => _meter.IsEnabled(measurementName);
+    /// <exception cref="ArgumentNullException"><paramref name="measurementName"/> is <see langword="null"/>.</exception>
+    public bool IsEnabled(string measurementName)
+    {
+        ArgumentNullException.ThrowIfNull(measurementName);
+        return _meter.IsEnabled(measurementName);
+    }
 
     /// <inheritdoc/>
-    public void Record(IOpenUrzednikMeasurement measurement) => _meter.Record(measurement);
+    /// <exception cref="ArgumentNullException"><paramref name="measurement"/> is <see langword="null"/>.</exception>
+    public void Record(IOpenUrzednikMeasurement measurement)
+    {
+        ArgumentNullException.ThrowIfNull(measurement);
+        _meter.Record(measurement);
+    }
 }
