@@ -100,7 +100,7 @@ public class IdentifierLeakTest
         var telemetry = new RecordingTelemetry();
         Log(telemetry, $"Searching {Masked} at 2026-01-05T10:15:30Z, status 404.");
         telemetry.Log(OpenUrzednikLogLevel.Debug, Event, null, "Searching {nip}.", "nip", Masked);
-        var span = telemetry.StartSpan("mf_white_list.search.by_nip");
+        var span = telemetry.StartSpan("mf_white_list.search.nip");
         span.SetTag("url.path", "/api/search/nip/{nip}");
         span.SetTag("http.response.status_code", 404);
         span.SetStatus(OpenUrzednikSpanStatus.Error, "Not found");
