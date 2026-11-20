@@ -205,16 +205,13 @@ public static class NbpServiceCollectionExtensions
 
     // The metrics of one container (ADR-0025): its IMeterFactory's OpenUrzednik.Nbp meter when it has a factory (on .NET 8 and
     // later AddHttpClient registers one), else the shared meter. A singleton, so the container's clients share one set of instruments.
-    private sealed class NbpContainerMetrics
+    internal sealed class NbpContainerMetrics(IServiceProvider provider)
     {
-        // A local, not a pattern declaration in the condition: Stryker's mutants of that leave it unassigned (CS0165).
-        public NbpContainerMetrics(IServiceProvider provider)
-        {
-            var meterFactory = provider.GetService<IMeterFactory>();
-            Metrics = meterFactory is not null ? MeterMetrics.Create(meterFactory, NbpTelemetry.SourceName) : MeterMetrics.GetShared(NbpTelemetry.SourceName);
-        }
+        public IOpenUrzednikMetrics Metrics { get; } = For(provider.GetService<IMeterFactory>());
 
-        public IOpenUrzednikMetrics Metrics { get; }
+        // A method of its own, so a test can pass no factory on .NET too, where AddHttpClient always registers one (and needs it).
+        internal static IOpenUrzednikMetrics For(IMeterFactory? meterFactory)
+            => meterFactory is not null ? MeterMetrics.Create(meterFactory, NbpTelemetry.SourceName) : MeterMetrics.GetShared(NbpTelemetry.SourceName);
     }
 
     // Marks that the clients are registered, so a second call doesn't add them, or the rejection handler, again.
