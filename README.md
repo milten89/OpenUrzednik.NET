@@ -33,7 +33,7 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 | :--- | :--- | :--- | :--- |
 | [**OpenUrzednik.Core**](src/OpenUrzednik.Core/README.md) | ✅ Stable | `OpenUrzednikResult`, `OpenUrzednikResult<T>`, `OpenUrzednikError`, `OpenUrzednikException` and `EnsureSuccess()` / `EnsureSuccessAsync()` | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Extensions.Logging**](src/OpenUrzednik.Extensions.Logging/README.md) | ✅ Stable | Sends the clients' logs to `ILogger` from Microsoft.Extensions.Logging | `netstandard2.0`, `net8.0`, `net10.0` |
-| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | ✅ Stable | Turns the clients' spans into `Activity` objects for OpenTelemetry (`AddSource("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | ✅ Stable | Turns the clients' spans into `Activity` objects and records their metrics on a `Meter`, for OpenTelemetry (`AddSource("OpenUrzednik.*")`, `AddMeter("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | ✅ Stable | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | ✅ Stable | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Transport.Http**](src/OpenUrzednik.Transport.Http/README.md) | 🆕 1.1 | The errors caused by HTTP responses (`HttpNotFoundError` and the others) and `IOpenUrzednikHttpStatusCode`; installed with every REST provider | `netstandard2.0`, `net8.0`, `net10.0` |
@@ -55,7 +55,7 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 
 ## Versioning and support
 
-The packages share one version and follow [Semantic Versioning](https://semver.org/). From 1.0, a minor or patch version doesn't break the public API on any target, documented behaviour, error types and codes (`notFound`, `rateLimitExceeded`, …) or telemetry names (sources, spans, tags, log event ids).
+The packages share one version and follow [Semantic Versioning](https://semver.org/). From 1.0, a minor or patch version doesn't break the public API on any target, documented behaviour, error types and codes (`notFound`, `rateLimitExceeded`, …) or telemetry names (sources, spans, tags, meters, instruments and their units, log event ids).
 
 A minor version may add client methods, model properties and options, raise a dependency's minimum version, or drop a .NET target that isn't the lowest one once Microsoft has ended its support. A patch version may raise a dependency's patch version to fix a vulnerability. Log and exception message text can change in any version, and previews may break anything. The full rules are in [ADR-0011](docs/adr/0011-compatibility-policy.md).
 
