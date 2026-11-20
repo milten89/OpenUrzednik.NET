@@ -30,6 +30,7 @@ Notation, with MF White List as the example:
 - [ ] `src/<Package>/<Package>.csproj`:
   - `Description` ("Unofficial …", "Not affiliated with …"), `PackageTags`, `OpenUrzednikPackageIcon` = `<icon>.png`, `<None Include="README.md" Pack="true" PackagePath="\" Visible="false" />`;
   - **`IsPackable=false` until the package has a usable client** (ADR-0016): every merge into `develop` publishes previews of all packable projects;
+  - `PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` next to the csproj, each starting with `#nullable enable` (a missing one fails the build, CS2001); the new API goes into Unshipped, and `PublicAPI/net/` holds members only the .NET builds have;
   - an **empty** `PackageValidationBaselineVersion` until its first release (the back-merge after that release removes it; `.github/scripts/package_guard.py` fails once a released package still has it);
   - `InternalsVisibleTo` for its test projects, and `DynamicProxyGenAssembly2` with Castle's `Key` if tests mock internals (copy it from `OpenUrzednik.Nbp.csproj`);
   - netstandard2.0-only BCL packages in a `Condition="'$(TargetFramework)' == 'netstandard2.0'"` group, never `Version=` (ADR-0004); the allow-list in `src/Directory.Build.targets` fails the build on anything else;

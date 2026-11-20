@@ -1,0 +1,59 @@
+#nullable enable
+OpenUrzednik.MF.WhiteList.IWhiteListErrorCode
+OpenUrzednik.MF.WhiteList.IWhiteListErrorCode.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListBadRequestError
+OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListBadRequestError(string! message, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
+OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListErrorMetadata
+OpenUrzednik.MF.WhiteList.WhiteListLogEvents
+OpenUrzednik.MF.WhiteList.WhiteListNotFoundError
+OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestDateTime.get -> System.DateTimeOffset
+OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestId.get -> string!
+OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.WhiteListNotFoundError(string! message, string! requestId, System.DateTimeOffset requestDateTime) -> void
+OpenUrzednik.MF.WhiteList.WhiteListOptions
+OpenUrzednik.MF.WhiteList.WhiteListOptions.ApiUrl.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListOptions.ApiUrl.set -> void
+OpenUrzednik.MF.WhiteList.WhiteListOptions.Timeout.get -> System.TimeSpan?
+OpenUrzednik.MF.WhiteList.WhiteListOptions.Timeout.set -> void
+OpenUrzednik.MF.WhiteList.WhiteListOptions.Validate() -> void
+OpenUrzednik.MF.WhiteList.WhiteListOptions.WhiteListOptions() -> void
+OpenUrzednik.MF.WhiteList.WhiteListQueryRejectedError
+OpenUrzednik.MF.WhiteList.WhiteListQueryRejectedError.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListQueryRejectedError.WhiteListQueryRejectedError(string! message, string? whiteListCode) -> void
+OpenUrzednik.MF.WhiteList.WhiteListRateLimitExceededError
+OpenUrzednik.MF.WhiteList.WhiteListRateLimitExceededError.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListRateLimitExceededError.WhiteListRateLimitExceededError(string! message, System.TimeSpan? retryAfter, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
+OpenUrzednik.MF.WhiteList.WhiteListServiceInactiveError
+OpenUrzednik.MF.WhiteList.WhiteListServiceInactiveError.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListServiceInactiveError.WhiteListServiceInactiveError(string! message, string? whiteListCode) -> void
+OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError
+OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError.WhiteListServiceUnavailableError(string! message, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
+OpenUrzednik.MF.WhiteList.WhiteListTelemetry
+OpenUrzednik.MF.WhiteList.WhiteListUnknownError
+OpenUrzednik.MF.WhiteList.WhiteListUnknownError.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListUnknownError.WhiteListUnknownError(string! message, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
+const OpenUrzednik.MF.WhiteList.WhiteListErrorMetadata.WhiteListCodeMetadataKey = "whiteListCode" -> string!
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.BadRequest = 1102 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.ConnectionFailed = 1002 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.DecodingFailed = 1203 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.DeserializationFailed = 1202 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.EmptyResponse = 1201 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.ErrorBodyUnreadable = 1109 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.ErrorResponse = 1108 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.MappingFailed = 2003 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.NotFound = 1101 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.NotOnList = 2002 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.RateLimited = 1105 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.RequestRejected = 1003 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.RequestTimedOut = 1001 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.RequestTimeoutStatus = 1104 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.ServiceUnavailable = 1106 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.Unauthorized = 1103 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.UnexpectedStatus = 1107 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.ValidationFailed = 2001 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestDateTimeMetadataKey = "requestDateTime" -> string!
+const OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestIdMetadataKey = "requestId" -> string!
+const OpenUrzednik.MF.WhiteList.WhiteListOptions.DefaultApiUrl = "https://wykazpodatnikowvat.mf.gov.pl/" -> string!
+const OpenUrzednik.MF.WhiteList.WhiteListOptions.TestApiUrl = "https://wykazpodatnikowvat-test.mf.gov.pl/" -> string!
+const OpenUrzednik.MF.WhiteList.WhiteListTelemetry.SourceName = "OpenUrzednik.MF.WhiteList" -> string!

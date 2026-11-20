@@ -1,0 +1,194 @@
+#nullable enable
+OpenUrzednik.Core.Errors.BadRequestError
+OpenUrzednik.Core.Errors.BadRequestError.BadRequestError(string! message, int? statusCode = null) -> void
+OpenUrzednik.Core.Errors.ConnectionFailedError
+OpenUrzednik.Core.Errors.ConnectionFailedError.ConnectionFailedError(string! message, System.Exception? exception = null) -> void
+OpenUrzednik.Core.Errors.ConnectionFailedError.Exception.get -> System.Exception?
+OpenUrzednik.Core.Errors.HttpErrorMetadata
+OpenUrzednik.Core.Errors.NotFoundError
+OpenUrzednik.Core.Errors.NotFoundError.NotFoundError(string! message, int? statusCode = null) -> void
+OpenUrzednik.Core.Errors.OpenUrzednikError
+OpenUrzednik.Core.Errors.OpenUrzednikError.AddMetadata(string! key, object? value) -> void
+OpenUrzednik.Core.Errors.OpenUrzednikError.Code.get -> string!
+OpenUrzednik.Core.Errors.OpenUrzednikError.Message.get -> string!
+OpenUrzednik.Core.Errors.OpenUrzednikError.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
+OpenUrzednik.Core.Errors.OpenUrzednikError.OpenUrzednikError(string! code, string! message) -> void
+OpenUrzednik.Core.Errors.OpenUrzednikError.ToException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+OpenUrzednik.Core.Errors.RateLimitExceededError
+OpenUrzednik.Core.Errors.RateLimitExceededError.RateLimitExceededError(string! message, System.TimeSpan? retryAfter, int? statusCode = null) -> void
+OpenUrzednik.Core.Errors.RateLimitExceededError.RetryAfter.get -> System.TimeSpan?
+OpenUrzednik.Core.Errors.RequestTimeoutError
+OpenUrzednik.Core.Errors.RequestTimeoutError.Exception.get -> System.Exception?
+OpenUrzednik.Core.Errors.RequestTimeoutError.RequestTimeoutError(string! message, System.TimeSpan? timeout = null, System.Exception? exception = null, int? statusCode = null) -> void
+OpenUrzednik.Core.Errors.RequestTimeoutError.Timeout.get -> System.TimeSpan?
+OpenUrzednik.Core.Errors.SerializationError
+OpenUrzednik.Core.Errors.SerializationError.Exception.get -> System.Exception?
+OpenUrzednik.Core.Errors.SerializationError.SerializationError(string! message, System.Exception? exception = null) -> void
+OpenUrzednik.Core.Errors.ServiceUnavailableError
+OpenUrzednik.Core.Errors.ServiceUnavailableError.Exception.get -> System.Exception?
+OpenUrzednik.Core.Errors.ServiceUnavailableError.ServiceUnavailableError(string! message, int? statusCode = null, System.Exception? exception = null) -> void
+OpenUrzednik.Core.Errors.UnauthorizedError
+OpenUrzednik.Core.Errors.UnauthorizedError.UnauthorizedError(string! message, int? statusCode = null) -> void
+OpenUrzednik.Core.Errors.UnknownError
+OpenUrzednik.Core.Errors.UnknownError.UnknownError(string! message, int? statusCode = null) -> void
+OpenUrzednik.Core.Errors.ValidationError
+OpenUrzednik.Core.Errors.ValidationError.ValidationError(string! message, string! ruleName, string? name, object? value) -> void
+OpenUrzednik.Core.Exceptions.BadRequestException
+OpenUrzednik.Core.Exceptions.BadRequestException.BadRequestException(string! message) -> void
+OpenUrzednik.Core.Exceptions.BadRequestException.BadRequestException(string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.ConnectionFailedException
+OpenUrzednik.Core.Exceptions.ConnectionFailedException.ConnectionFailedException(string! message) -> void
+OpenUrzednik.Core.Exceptions.ConnectionFailedException.ConnectionFailedException(string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.NotFoundException
+OpenUrzednik.Core.Exceptions.NotFoundException.NotFoundException(string! message) -> void
+OpenUrzednik.Core.Exceptions.NotFoundException.NotFoundException(string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.OpenUrzednikException
+OpenUrzednik.Core.Exceptions.OpenUrzednikException.Code.get -> string!
+OpenUrzednik.Core.Exceptions.OpenUrzednikException.Error.get -> OpenUrzednik.Core.Errors.OpenUrzednikError?
+OpenUrzednik.Core.Exceptions.OpenUrzednikException.Errors.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.Core.Errors.OpenUrzednikError!>!
+OpenUrzednik.Core.Exceptions.OpenUrzednikException.OpenUrzednikException(string! code, string! message) -> void
+OpenUrzednik.Core.Exceptions.OpenUrzednikException.OpenUrzednikException(string! code, string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.OpenUrzednikSerializationException
+OpenUrzednik.Core.Exceptions.OpenUrzednikSerializationException.OpenUrzednikSerializationException(string! message) -> void
+OpenUrzednik.Core.Exceptions.OpenUrzednikSerializationException.OpenUrzednikSerializationException(string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.OpenUrzednikValidationException
+OpenUrzednik.Core.Exceptions.OpenUrzednikValidationException.OpenUrzednikValidationException(System.Collections.Generic.IReadOnlyList<OpenUrzednik.Core.Errors.ValidationError!>! errors) -> void
+OpenUrzednik.Core.Exceptions.OpenUrzednikValidationException.OpenUrzednikValidationException(string! message, string! ruleName, string? name, object? value) -> void
+OpenUrzednik.Core.Exceptions.RateLimitExceededException
+OpenUrzednik.Core.Exceptions.RateLimitExceededException.RateLimitExceededException(string! message, System.TimeSpan? retryAfter) -> void
+OpenUrzednik.Core.Exceptions.RateLimitExceededException.RateLimitExceededException(string! message, System.TimeSpan? retryAfter, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.RateLimitExceededException.RetryAfter.get -> System.TimeSpan?
+OpenUrzednik.Core.Exceptions.RequestTimeoutException
+OpenUrzednik.Core.Exceptions.RequestTimeoutException.RequestTimeoutException(string! message) -> void
+OpenUrzednik.Core.Exceptions.RequestTimeoutException.RequestTimeoutException(string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.ServiceUnavailableException
+OpenUrzednik.Core.Exceptions.ServiceUnavailableException.ServiceUnavailableException(string! message) -> void
+OpenUrzednik.Core.Exceptions.ServiceUnavailableException.ServiceUnavailableException(string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.UnauthorizedException
+OpenUrzednik.Core.Exceptions.UnauthorizedException.UnauthorizedException(string! message) -> void
+OpenUrzednik.Core.Exceptions.UnauthorizedException.UnauthorizedException(string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.Exceptions.UnknownException
+OpenUrzednik.Core.Exceptions.UnknownException.UnknownException(string! message) -> void
+OpenUrzednik.Core.Exceptions.UnknownException.UnknownException(string! message, System.Exception! innerException) -> void
+OpenUrzednik.Core.OpenUrzednikResult
+OpenUrzednik.Core.OpenUrzednikResult.And(OpenUrzednik.Core.OpenUrzednikResult other) -> OpenUrzednik.Core.OpenUrzednikResult
+OpenUrzednik.Core.OpenUrzednikResult.Bind<TOut>(System.Func<OpenUrzednik.Core.OpenUrzednikResult<TOut>>! next) -> OpenUrzednik.Core.OpenUrzednikResult<TOut>
+OpenUrzednik.Core.OpenUrzednikResult.BindAsync<TOut>(System.Func<System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<TOut>>!>! next) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<TOut>>!
+OpenUrzednik.Core.OpenUrzednikResult.EnsureSuccess() -> void
+OpenUrzednik.Core.OpenUrzednikResult.Errors.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.Core.Errors.OpenUrzednikError!>!
+OpenUrzednik.Core.OpenUrzednikResult.IsFailure.get -> bool
+OpenUrzednik.Core.OpenUrzednikResult.IsSuccess.get -> bool
+OpenUrzednik.Core.OpenUrzednikResult.Match<TOut>(System.Func<TOut>! onSuccess, System.Func<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Core.Errors.OpenUrzednikError!>!, TOut>! onFailure) -> TOut
+OpenUrzednik.Core.OpenUrzednikResult.OpenUrzednikResult() -> void
+OpenUrzednik.Core.OpenUrzednikResult.OpenUrzednikResult(OpenUrzednik.Core.Errors.OpenUrzednikError! error) -> void
+OpenUrzednik.Core.OpenUrzednikResult.OpenUrzednikResult(System.Collections.Generic.IEnumerable<OpenUrzednik.Core.Errors.OpenUrzednikError!>! errors) -> void
+OpenUrzednik.Core.OpenUrzednikResult<TValue>
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.Bind<TOut>(System.Func<TValue, OpenUrzednik.Core.OpenUrzednikResult<TOut>>! next) -> OpenUrzednik.Core.OpenUrzednikResult<TOut>
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.BindAsync<TOut>(System.Func<TValue, System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<TOut>>!>! next) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<TOut>>!
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.EnsureSuccess() -> TValue
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.Errors.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.Core.Errors.OpenUrzednikError!>!
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.IsFailure.get -> bool
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.IsSuccess.get -> bool
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.Map<TOut>(System.Func<TValue, TOut>! map) -> OpenUrzednik.Core.OpenUrzednikResult<TOut>
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.Match<TOut>(System.Func<TValue, TOut>! onSuccess, System.Func<System.Collections.Generic.IReadOnlyList<OpenUrzednik.Core.Errors.OpenUrzednikError!>!, TOut>! onFailure) -> TOut
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.OpenUrzednikResult() -> void
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.OpenUrzednikResult(OpenUrzednik.Core.Errors.OpenUrzednikError! error) -> void
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.OpenUrzednikResult(System.Collections.Generic.IEnumerable<OpenUrzednik.Core.Errors.OpenUrzednikError!>! errors) -> void
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.OpenUrzednikResult(TValue value) -> void
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.TryGetValue(out TValue value) -> bool
+OpenUrzednik.Core.OpenUrzednikResult<TValue>.Value.get -> TValue
+OpenUrzednik.Core.OpenUrzednikResultExtensions
+OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger
+OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger.IsEnabled(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level) -> bool
+OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger.Log(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger.Log(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string!, object?>>! properties) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger.Log<T0, T1, T2>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0, string! name1, T1 value1, string! name2, T2 value2) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger.Log<T0, T1>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0, string! name1, T1 value1) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikLogger.Log<T0>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan.AddEvent(string! name) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan.AddEvent<T>(string! name, string! tagKey, T tagValue) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan.IsRecording.get -> bool
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan.RecordException(System.Exception! exception) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan.SetStatus(OpenUrzednik.Core.Telemetry.OpenUrzednikSpanStatus status, string? description = null) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan.SetTag<T>(string! key, T value) -> void
+OpenUrzednik.Core.Telemetry.IOpenUrzednikSpanExtensions
+OpenUrzednik.Core.Telemetry.IOpenUrzednikTraceSource
+OpenUrzednik.Core.Telemetry.IOpenUrzednikTraceSource.StartSpan(string! operationName) -> OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan!
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger.IsEnabled(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level) -> bool
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger.Log(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate) -> void
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger.Log(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string!, object?>>! properties) -> void
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger.Log<T0, T1, T2>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0, string! name1, T1 value1, string! name2, T2 value2) -> void
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger.Log<T0, T1>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0, string! name1, T1 value1) -> void
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger.Log<T0>(OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel level, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId eventId, System.Exception? exception, string! messageTemplate, string! name0, T0 value0) -> void
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikTraceSource
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikTraceSource.NullOpenUrzednikTraceSource() -> void
+OpenUrzednik.Core.Telemetry.NullOpenUrzednikTraceSource.StartSpan(string! operationName) -> OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan!
+OpenUrzednik.Core.Telemetry.OpenUrzednikEventId
+OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.Equals(OpenUrzednik.Core.Telemetry.OpenUrzednikEventId other) -> bool
+OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.Id.get -> int
+OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.Name.get -> string?
+OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.OpenUrzednikEventId() -> void
+OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.OpenUrzednikEventId(int id, string! name) -> void
+OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel
+OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel.Critical = 5 -> OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel
+OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel.Debug = 1 -> OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel
+OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel.Error = 4 -> OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel
+OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel.Information = 2 -> OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel
+OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel.None = 6 -> OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel
+OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel.Trace = 0 -> OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel
+OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel.Warning = 3 -> OpenUrzednik.Core.Telemetry.OpenUrzednikLogLevel
+OpenUrzednik.Core.Telemetry.OpenUrzednikSpanStatus
+OpenUrzednik.Core.Telemetry.OpenUrzednikSpanStatus.Error = 2 -> OpenUrzednik.Core.Telemetry.OpenUrzednikSpanStatus
+OpenUrzednik.Core.Telemetry.OpenUrzednikSpanStatus.Ok = 1 -> OpenUrzednik.Core.Telemetry.OpenUrzednikSpanStatus
+OpenUrzednik.Core.Telemetry.OpenUrzednikSpanStatus.Unset = 0 -> OpenUrzednik.Core.Telemetry.OpenUrzednikSpanStatus
+OpenUrzednik.Core.Validation.ValueValidator<T>
+OpenUrzednik.Core.Validation.ValueValidator<T>.GetValidationErrorResult(string! message) -> OpenUrzednik.Core.OpenUrzednikResult
+OpenUrzednik.Core.Validation.ValueValidator<T>.GetValidationErrorResult(string! message, string? propertyName, object! value) -> OpenUrzednik.Core.OpenUrzednikResult
+OpenUrzednik.Core.Validation.ValueValidator<T>.PropertyName.get -> string!
+OpenUrzednik.Core.Validation.ValueValidator<T>.Value.get -> T
+OpenUrzednik.Core.Validation.ValueValidator<T>.ValueValidator(string! propertyName, T value) -> void
+abstract OpenUrzednik.Core.Errors.OpenUrzednikError.CreateException() -> OpenUrzednik.Core.Exceptions.OpenUrzednikException!
+abstract OpenUrzednik.Core.Validation.ValueValidator<T>.Name.get -> string!
+abstract OpenUrzednik.Core.Validation.ValueValidator<T>.Validate() -> OpenUrzednik.Core.OpenUrzednikResult
+const OpenUrzednik.Core.Errors.BadRequestError.ErrorCode = "badRequest" -> string!
+const OpenUrzednik.Core.Errors.ConnectionFailedError.ErrorCode = "connectionFailed" -> string!
+const OpenUrzednik.Core.Errors.HttpErrorMetadata.StatusCodeKey = "statusCode" -> string!
+const OpenUrzednik.Core.Errors.NotFoundError.ErrorCode = "notFound" -> string!
+const OpenUrzednik.Core.Errors.RateLimitExceededError.ErrorCode = "rateLimitExceeded" -> string!
+const OpenUrzednik.Core.Errors.RateLimitExceededError.RetryAfterMetadataKey = "retryAfter" -> string!
+const OpenUrzednik.Core.Errors.RequestTimeoutError.ErrorCode = "requestTimeout" -> string!
+const OpenUrzednik.Core.Errors.SerializationError.ErrorCode = "serialization" -> string!
+const OpenUrzednik.Core.Errors.ServiceUnavailableError.ErrorCode = "serviceUnavailable" -> string!
+const OpenUrzednik.Core.Errors.UnauthorizedError.ErrorCode = "unauthorized" -> string!
+const OpenUrzednik.Core.Errors.UnknownError.ErrorCode = "unknown" -> string!
+const OpenUrzednik.Core.Errors.ValidationError.ErrorCode = "validation" -> string!
+const OpenUrzednik.Core.Errors.ValidationError.NameMetadataKey = "name" -> string!
+const OpenUrzednik.Core.Errors.ValidationError.RuleNameMetadataKey = "ruleName" -> string!
+const OpenUrzednik.Core.Errors.ValidationError.ValueMetadataKey = "value" -> string!
+override OpenUrzednik.Core.Errors.OpenUrzednikError.ToString() -> string!
+override OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.Equals(object? obj) -> bool
+override OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.GetHashCode() -> int
+override OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.ToString() -> string!
+static OpenUrzednik.Core.Errors.HttpErrorMetadata.GetHttpStatusCode(this OpenUrzednik.Core.Errors.OpenUrzednikError! error) -> int?
+static OpenUrzednik.Core.Errors.HttpErrorMetadata.TryGetHttpStatusCode(this OpenUrzednik.Core.Errors.OpenUrzednikError! error, out int statusCode) -> bool
+static OpenUrzednik.Core.OpenUrzednikResult.Failure(OpenUrzednik.Core.Errors.OpenUrzednikError! error) -> OpenUrzednik.Core.OpenUrzednikResult
+static OpenUrzednik.Core.OpenUrzednikResult.Failure(System.Collections.Generic.IEnumerable<OpenUrzednik.Core.Errors.OpenUrzednikError!>! errors) -> OpenUrzednik.Core.OpenUrzednikResult
+static OpenUrzednik.Core.OpenUrzednikResult.Failure<T>(OpenUrzednik.Core.Errors.OpenUrzednikError! error) -> OpenUrzednik.Core.OpenUrzednikResult<T>
+static OpenUrzednik.Core.OpenUrzednikResult.Failure<T>(System.Collections.Generic.IEnumerable<OpenUrzednik.Core.Errors.OpenUrzednikError!>! errors) -> OpenUrzednik.Core.OpenUrzednikResult<T>
+static OpenUrzednik.Core.OpenUrzednikResult.Success() -> OpenUrzednik.Core.OpenUrzednikResult
+static OpenUrzednik.Core.OpenUrzednikResult.Success<T>(T value) -> OpenUrzednik.Core.OpenUrzednikResult<T>
+static OpenUrzednik.Core.OpenUrzednikResult.implicit operator OpenUrzednik.Core.OpenUrzednikResult(OpenUrzednik.Core.Errors.OpenUrzednikError! error) -> OpenUrzednik.Core.OpenUrzednikResult
+static OpenUrzednik.Core.OpenUrzednikResult<TValue>.implicit operator OpenUrzednik.Core.OpenUrzednikResult<TValue>(OpenUrzednik.Core.OpenUrzednikResult result) -> OpenUrzednik.Core.OpenUrzednikResult<TValue>
+static OpenUrzednik.Core.OpenUrzednikResultExtensions.BindAsync<T, TOut>(this System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<T>>! resultTask, System.Func<T, OpenUrzednik.Core.OpenUrzednikResult<TOut>>! next) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<TOut>>!
+static OpenUrzednik.Core.OpenUrzednikResultExtensions.BindAsync<T, TOut>(this System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<T>>! resultTask, System.Func<T, System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<TOut>>!>! next) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<TOut>>!
+static OpenUrzednik.Core.OpenUrzednikResultExtensions.EnsureSuccessAsync(this System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult>! resultTask) -> System.Threading.Tasks.Task!
+static OpenUrzednik.Core.OpenUrzednikResultExtensions.EnsureSuccessAsync<T>(this System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<T>>! resultTask) -> System.Threading.Tasks.Task<T>!
+static OpenUrzednik.Core.OpenUrzednikResultExtensions.MapAsync<T, TOut>(this System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<T>>! resultTask, System.Func<T, TOut>! map) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<TOut>>!
+static OpenUrzednik.Core.Telemetry.IOpenUrzednikSpanExtensions.RecordError(this OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan! span, OpenUrzednik.Core.Errors.OpenUrzednikError! error) -> void
+static OpenUrzednik.Core.Telemetry.IOpenUrzednikSpanExtensions.RecordErrors(this OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan! span, System.Collections.Generic.IReadOnlyList<OpenUrzednik.Core.Errors.OpenUrzednikError!>! errors) -> void
+static OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.operator !=(OpenUrzednik.Core.Telemetry.OpenUrzednikEventId left, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId right) -> bool
+static OpenUrzednik.Core.Telemetry.OpenUrzednikEventId.operator ==(OpenUrzednik.Core.Telemetry.OpenUrzednikEventId left, OpenUrzednik.Core.Telemetry.OpenUrzednikEventId right) -> bool
+static readonly OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger.Instance -> OpenUrzednik.Core.Telemetry.NullOpenUrzednikLogger!
+static readonly OpenUrzednik.Core.Telemetry.NullOpenUrzednikTraceSource.Instance -> OpenUrzednik.Core.Telemetry.NullOpenUrzednikTraceSource!

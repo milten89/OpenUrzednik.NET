@@ -1,0 +1,6 @@
+#nullable enable
+Microsoft.Extensions.DependencyInjection.NbpServiceCollectionExtensions
+const Microsoft.Extensions.DependencyInjection.NbpServiceCollectionExtensions.HttpClientName = "OpenUrzednik.Nbp" -> string!
+static Microsoft.Extensions.DependencyInjection.NbpServiceCollectionExtensions.AddKeyedOpenUrzednikNbp(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! serviceKey, System.Action<OpenUrzednik.Nbp.NbpOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.DependencyInjection.NbpServiceCollectionExtensions.AddOpenUrzednikNbp(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<OpenUrzednik.Nbp.NbpOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.DependencyInjection.NbpServiceCollectionExtensions.AddOpenUrzednikNbpRejectionHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!

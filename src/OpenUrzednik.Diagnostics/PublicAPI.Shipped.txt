@@ -1,0 +1,6 @@
+#nullable enable
+OpenUrzednik.Diagnostics.ActivityTraceSource
+OpenUrzednik.Diagnostics.ActivityTraceSource.ActivityTraceSource(System.Diagnostics.ActivitySource! source) -> void
+OpenUrzednik.Diagnostics.ActivityTraceSource.Source.get -> System.Diagnostics.ActivitySource!
+OpenUrzednik.Diagnostics.ActivityTraceSource.StartSpan(string! operationName) -> OpenUrzednik.Core.Telemetry.IOpenUrzednikSpan!
+static OpenUrzednik.Diagnostics.ActivityTraceSource.GetShared(string! name) -> OpenUrzednik.Diagnostics.ActivityTraceSource!

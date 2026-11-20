@@ -42,7 +42,7 @@ With Claude Code, `/prepare-release` runs steps 1–5 with extra checks, and `/p
    + "version": "1.1.0",
    ```
 
-   In the same commit, mark the ADRs the release ships ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)): every `accepted` ADR gets `status: released` and `released-in: v1.1.0`, and its row in `docs/adr/README.md` says `released (v1.1.0)`. From the moment the branch is cut they are frozen, also on `develop` until the back-merge.
+   In the same commit, ship the public API: `python .claude/skills/prepare-release/scripts/ship_public_api.py` moves every package's `PublicAPI.Unshipped.txt` entries into its `PublicAPI.Shipped.txt` (and drops the `*REMOVED*` ones), so the release tag holds empty unshipped lists; `.github/scripts/package_guard.py` fails a stable version that still has entries. Also mark the ADRs the release ships ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)): every `accepted` ADR gets `status: released` and `released-in: v1.1.0`, and its row in `docs/adr/README.md` says `released (v1.1.0)`. From the moment the branch is cut they are frozen, also on `develop` until the back-merge.
 
 3. Check the packages locally. Builds of the release branch still get `1.1.0-g<commit id>`, because `release/X.Y` isn't a public ref, so pack with `PublicRelease=true` into a folder that doesn't exist yet (delete `artifacts/release` first):
 
@@ -70,7 +70,7 @@ Which fixes become a hotfix: the maintainer decides at triage and writes "hotfix
    git checkout -b hotfix/nbp-bug123 v1.0.0
    ```
 
-2. Set the root `version.json` to the next patch, `"1.0.1"`. NBGV doesn't raise the patch by itself: a version with three parts is used as written, and the git height goes only into the assembly file version. Set `PackageValidationBaselineVersion` in `src/Directory.Build.props` to the tag's version (`1.0.0`): at the tag it still names the release before, because the back-merge raises it only on `develop`. Remove the empty `PackageValidationBaselineVersion` of every package that tag published for the first time. Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)) and run `uv run .github/scripts/package_guard.py`.
+2. Set the root `version.json` to the next patch, `"1.0.1"`. NBGV doesn't raise the patch by itself: a version with three parts is used as written, and the git height goes only into the assembly file version. Set `PackageValidationBaselineVersion` in `src/Directory.Build.props` to the tag's version (`1.0.0`): at the tag it still names the release before, because the back-merge raises it only on `develop`. Remove the empty `PackageValidationBaselineVersion` of every package that tag published for the first time. A hotfix adds no public API, so every `PublicAPI.Unshipped.txt` stays empty (`package_guard.py` fails otherwise). Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)) and run `uv run .github/scripts/package_guard.py`.
 3. Fix the bug and open a PR **hotfix → `main`** (required, since `main` is protected), labelled `bug`. An ADR the hotfix adds or ships is marked `released` with `released-in: v1.0.1` in the same PR ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)). Then run `/release-notes 1.0.1`, and commit and push `docs/release-notes/v1.0.1.md`: the notes list the hotfix PR itself, so it must exist first, and the PR's `build (net10.0)` job fails until the file is there. The PR runs the `mutation` check too, when the tag already contains `mutation.yml` ([ADR-0020](adr/0020-mutation-testing-of-every-target-branch.md)): the fix comes with tests that kill its mutants.
 4. Merge (merge commit) → `nuget-release.yml` publishes `1.0.1`, tags `v1.0.1`, creates the GitHub Release.
 5. Back-merge (below), so the fix reaches `develop`. `develop` keeps its own version (e.g. `"1.1.0-preview.{height}"`).
@@ -88,6 +88,9 @@ git merge --no-commit origin/develop   # on a version.json conflict, keep develo
 git diff origin/develop -- version.json   # after a hotfix: no output; after a release: only the next-minor change
 # set PackageValidationBaselineVersion in src/Directory.Build.props to the released version (e.g. 1.1.0 or 1.0.1)
 # remove the empty PackageValidationBaselineVersion of every package this release published for the first time
+# PublicAPI files, after a release: keep main's PublicAPI.Shipped.txt; in PublicAPI.Unshipped.txt keep only develop's lines
+#   that Shipped lacks (the API added since the cut), and write a member changed on develop since the cut as *REMOVED*<old line>
+#   plus its new line; then `dotnet build OpenUrzednik.Packages.slnf` must report no RS0016 or RS0017
 uv run .github/scripts/package_guard.py   # the check CI runs; it must pass
 dotnet pack OpenUrzednik.Packages.slnf -c Release -p:ApiCompatGenerateSuppressionFile=true   # drops suppressions the new baseline no longer needs
 git diff -- src   # the suppression files may only lose entries (or be deleted); a new entry means a real break
@@ -141,7 +144,7 @@ git push origin "$(git tag --list 'v1.*' --sort=-v:refname | head -n 1)^{commit}
    git cherry-pick -x <commit>…   # on a conflict, resolve it and keep the "cherry picked from" line
    ```
 
-2. Set the root `version.json` to the next patch of that line (e.g. `"1.4.3"` after `v1.4.2`), and `PackageValidationBaselineVersion` in `src/Directory.Build.props` to that line's latest release (`1.4.2`), and remove the empty `PackageValidationBaselineVersion` of every package that release shipped. Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)) and run `uv run .github/scripts/package_guard.py`.
+2. Set the root `version.json` to the next patch of that line (e.g. `"1.4.3"` after `v1.4.2`), and `PackageValidationBaselineVersion` in `src/Directory.Build.props` to that line's latest release (`1.4.2`), and remove the empty `PackageValidationBaselineVersion` of every package that release shipped. The backport adds no public API, so every `PublicAPI.Unshipped.txt` stays empty (`package_guard.py` fails otherwise). Then refresh the suppression files (see [the back-merge](#back-merge-after-a-release-or-hotfix)) and run `uv run .github/scripts/package_guard.py`.
 3. Open a PR **hotfix → `release/1.x`**, labelled `bug`. An ADR the backport adds is marked `released` with `released-in: v1.4.3` in the same PR ([ADR-0022](adr/0022-record-architecture-decisions-frozen-at-release.md)). Then run `/release-notes 1.4.3`, and commit and push `docs/release-notes/v1.4.3.md`; the PR's `build (net10.0)` job fails until the file is there.
 4. Merge (merge commit) → `nuget-release.yml` publishes `1.4.3`, tags `v1.4.3` and creates the GitHub Release (not marked Latest).
 5. **No back-merge:** `release/1.x` is never merged into `main` or `develop`, which carry the newer major and already have the fix. Its release notes stay on `release/1.x` and in the GitHub Release.
@@ -150,7 +153,7 @@ Only security fixes go into the support branch. A CI or tooling change needed to
 
 ## Dev-only dependencies vs. the published package
 
-`Nerdbank.GitVersioning` must have `PrivateAssets="all"` so it doesn't end up as a dependency of the published package. It is referenced once for all libraries in `src/Directory.Build.props`, like the analyzer `Microsoft.CodeAnalysis.BannedApiAnalyzers`; the version is managed centrally in `Directory.Packages.props`. A `PrivateAssets="all"` reference in `src/` must also be on the build-only list (`OpenUrzednikBuildOnlyPackageReferences` in `src/Directory.Build.targets`), or the build fails:
+`Nerdbank.GitVersioning` must have `PrivateAssets="all"` so it doesn't end up as a dependency of the published package. It is referenced once for all libraries in `src/Directory.Build.props`, like the analyzers `Microsoft.CodeAnalysis.BannedApiAnalyzers` and `Microsoft.CodeAnalysis.PublicApiAnalyzers`; the version is managed centrally in `Directory.Packages.props`. A `PrivateAssets="all"` reference in `src/` must also be on the build-only list (`OpenUrzednikBuildOnlyPackageReferences` in `src/Directory.Build.targets`), or the build fails:
 
 ```xml
 <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />

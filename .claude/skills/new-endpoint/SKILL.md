@@ -71,6 +71,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 - The provider's mutation shard: `uv run tests/Mutation/run.py <shard>` (`/stryker`). The provider shards have `break` 100 (`tests/Mutation/shards.json`), so no mutant may survive.
 - The Native AOT smoke app, when the method adds a DTO, a `JsonTypeInfo` or other serialization code: add an offline call with a captured fixture to `tests/OpenUrzednik.AotSmoke/Program.cs` for a new response type, then `dotnet publish tests/OpenUrzednik.AotSmoke -f net10.0` and run the binary (needs clang on Linux or the C++ build tools on Windows; CI does both as `aot (net10.0)`). The publish checks all library code, since every assembly is rooted; the run exercises only the calls in `Program.cs`.
 - The provider's notes in `/verify-api` (endpoint, error cases, quota, test environment), in the same PR.
+- Public API files: the build fails on each new or changed public member (RS0016) until its line is in the package's `PublicAPI.Unshipped.txt` (`PublicAPI/net/` for a member only the .NET builds have); the IDE's RS0016 fix writes it. Read that diff: it is the change's whole public surface.
 - Update the package README (`README.md`, English) if the public API changed. Add a new span, tag or log event to its telemetry reference. If an informational part changed (description, installation, quick start, the list of English sections), update `README.pl.md` too (ADR-0009).
 - The PR body starts with `Closes #<issue>` for the issue this work comes from.
 - Run the `reviewer` agent on the diff.

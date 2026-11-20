@@ -8,6 +8,12 @@ dotnet_diagnostic.CA2007.severity = warning   # ConfigureAwait(false) on every a
 dotnet_diagnostic.CA2016.severity = warning   # pass the CancellationToken on to the methods that take one
 dotnet_diagnostic.CA1068.severity = warning   # CancellationToken is the last parameter (CLAUDE.md, Client API)
 
+# The public API analyzer's optional-parameter rules count `CancellationToken cancellationToken = default` (ADR-0007) as an
+# optional parameter, so they would flag every overload set of an async method. tests/OpenUrzednik.Architecture.Tests
+# (OptionalParametersTest) checks the same rules with the token left out.
+dotnet_diagnostic.RS0026.severity = none   # do not add multiple public overloads with optional parameters
+dotnet_diagnostic.RS0027.severity = none   # the overload with optional parameters has the most parameters
+
 # Banned APIs (RS0030, src/BannedSymbols.txt): only the places the ADRs allow may use them. RS0030 is one diagnostic for every
 # banned symbol, so an exempt file may use all of them: keep these sections to single files or folders.
 

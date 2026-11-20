@@ -1,0 +1,35 @@
+#nullable enable
+OpenUrzednik.Transport.Http.HttpBadRequestError
+OpenUrzednik.Transport.Http.HttpBadRequestError.HttpBadRequestError(string! message, System.Net.HttpStatusCode statusCode) -> void
+OpenUrzednik.Transport.Http.HttpBadRequestError.StatusCode.get -> System.Net.HttpStatusCode
+OpenUrzednik.Transport.Http.HttpNotFoundError
+OpenUrzednik.Transport.Http.HttpNotFoundError.HttpNotFoundError(string! message, System.Net.HttpStatusCode statusCode) -> void
+OpenUrzednik.Transport.Http.HttpNotFoundError.StatusCode.get -> System.Net.HttpStatusCode
+OpenUrzednik.Transport.Http.HttpRateLimitExceededError
+OpenUrzednik.Transport.Http.HttpRateLimitExceededError.HttpRateLimitExceededError(string! message, System.TimeSpan? retryAfter, System.Net.HttpStatusCode statusCode) -> void
+OpenUrzednik.Transport.Http.HttpRateLimitExceededError.StatusCode.get -> System.Net.HttpStatusCode
+OpenUrzednik.Transport.Http.HttpRequestTimeoutError
+OpenUrzednik.Transport.Http.HttpRequestTimeoutError.HttpRequestTimeoutError(string! message, System.Net.HttpStatusCode statusCode) -> void
+OpenUrzednik.Transport.Http.HttpRequestTimeoutError.StatusCode.get -> System.Net.HttpStatusCode
+OpenUrzednik.Transport.Http.HttpServiceUnavailableError
+OpenUrzednik.Transport.Http.HttpServiceUnavailableError.HttpServiceUnavailableError(string! message, System.Net.HttpStatusCode statusCode) -> void
+OpenUrzednik.Transport.Http.HttpServiceUnavailableError.StatusCode.get -> System.Net.HttpStatusCode
+OpenUrzednik.Transport.Http.HttpStatusExtensions
+OpenUrzednik.Transport.Http.HttpUnauthorizedError
+OpenUrzednik.Transport.Http.HttpUnauthorizedError.HttpUnauthorizedError(string! message, System.Net.HttpStatusCode statusCode) -> void
+OpenUrzednik.Transport.Http.HttpUnauthorizedError.StatusCode.get -> System.Net.HttpStatusCode
+OpenUrzednik.Transport.Http.HttpUnknownError
+OpenUrzednik.Transport.Http.HttpUnknownError.HttpUnknownError(string! message, System.Net.HttpStatusCode statusCode) -> void
+OpenUrzednik.Transport.Http.HttpUnknownError.StatusCode.get -> System.Net.HttpStatusCode
+OpenUrzednik.Transport.Http.IOpenUrzednikHttpStatusCode
+OpenUrzednik.Transport.Http.IOpenUrzednikHttpStatusCode.StatusCode.get -> System.Net.HttpStatusCode
+const OpenUrzednik.Transport.Http.HttpStatusExtensions.StatusCodeMetadataKey = "statusCode" -> string!
+override OpenUrzednik.Transport.Http.HttpBadRequestError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Transport.Http.HttpNotFoundError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Transport.Http.HttpRateLimitExceededError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Transport.Http.HttpRequestTimeoutError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Transport.Http.HttpServiceUnavailableError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Transport.Http.HttpUnauthorizedError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+override OpenUrzednik.Transport.Http.HttpUnknownError.CollectMetadata(System.Collections.Generic.IDictionary<string!, object?>! metadata) -> void
+static OpenUrzednik.Transport.Http.HttpStatusExtensions.GetHttpStatus(this OpenUrzednik.Core.Errors.OpenUrzednikError! error) -> System.Net.HttpStatusCode?
+static OpenUrzednik.Transport.Http.HttpStatusExtensions.TryGetHttpStatus(this OpenUrzednik.Core.Errors.OpenUrzednikError! error, out System.Net.HttpStatusCode statusCode) -> bool
