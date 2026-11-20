@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <!-- The core package only, with Shouldly asserts: ArchUnitNET.xUnitV3 pins old xunit.v3.assert and System.* packages. -->
-    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="TngTech.ArchUnitNET" />
     <!-- Syntax trees only (LoggingTest reads src/ as text): no compilation, no MSBuild workspace. -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />

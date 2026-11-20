@@ -11,8 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="6.0.2" />
-    <PackageReference Include="System.Text.Json" />
     <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
     <ProjectReference Include="..\OpenUrzednik.Http.NetStandardBranch.TestHost\OpenUrzednik.Http.NetStandardBranch.TestHost.csproj" />
   </ItemGroup>

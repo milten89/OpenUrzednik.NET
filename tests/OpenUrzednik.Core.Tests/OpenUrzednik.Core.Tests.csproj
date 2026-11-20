@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="6.0.2" />
-    <PackageReference Include="System.Text.Json" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Core\OpenUrzednik.Core.csproj" />
     <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
     <!-- The identifier validators (src/Identifiers) and the masking helper they bring (src/Privacy) are internal source that Core
