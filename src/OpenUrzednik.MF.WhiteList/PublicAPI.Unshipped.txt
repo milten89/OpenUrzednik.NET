@@ -1,9 +1,103 @@
 #nullable enable
+OpenUrzednik.MF.WhiteList.IWhiteListClient
+OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByBankAccountAsync(string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult!>>!
+OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByNipAsync(string! nip, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
+OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByRegonAsync(string! regon, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
 OpenUrzednik.MF.WhiteList.IWhiteListErrorCode
 OpenUrzednik.MF.WhiteList.IWhiteListErrorCode.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject
+OpenUrzednik.MF.WhiteList.Search.Subject.<Clone>$() -> OpenUrzednik.MF.WhiteList.Search.Subject!
+OpenUrzednik.MF.WhiteList.Search.Subject.AccountNumbers.get -> System.Collections.Generic.IReadOnlyList<string!>!
+OpenUrzednik.MF.WhiteList.Search.Subject.AccountNumbers.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.AuthorizedClerks.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.SubjectPerson!>!
+OpenUrzednik.MF.WhiteList.Search.Subject.AuthorizedClerks.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Deconstruct(out string! Name) -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Equals(OpenUrzednik.MF.WhiteList.Search.Subject? other) -> bool
+OpenUrzednik.MF.WhiteList.Search.Subject.ExemptionSmeDate.get -> System.DateTime?
+OpenUrzednik.MF.WhiteList.Search.Subject.ExemptionSmeDate.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.HasVirtualAccounts.get -> bool?
+OpenUrzednik.MF.WhiteList.Search.Subject.HasVirtualAccounts.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Krs.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject.Krs.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Name.get -> string!
+OpenUrzednik.MF.WhiteList.Search.Subject.Name.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Nip.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject.Nip.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Partners.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.SubjectPerson!>!
+OpenUrzednik.MF.WhiteList.Search.Subject.Partners.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.RegistrationDenialBasis.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject.RegistrationDenialBasis.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.RegistrationDenialDate.get -> System.DateTime?
+OpenUrzednik.MF.WhiteList.Search.Subject.RegistrationDenialDate.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.RegistrationLegalDate.get -> System.DateTime?
+OpenUrzednik.MF.WhiteList.Search.Subject.RegistrationLegalDate.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Regon.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject.Regon.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.RemovalBasis.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject.RemovalBasis.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.RemovalDate.get -> System.DateTime?
+OpenUrzednik.MF.WhiteList.Search.Subject.RemovalDate.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Representatives.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.SubjectPerson!>!
+OpenUrzednik.MF.WhiteList.Search.Subject.Representatives.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.ResidenceAddress.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject.ResidenceAddress.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.RestorationBasis.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject.RestorationBasis.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.RestorationDate.get -> System.DateTime?
+OpenUrzednik.MF.WhiteList.Search.Subject.RestorationDate.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.Subject(string! Name) -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.VatStatus.get -> OpenUrzednik.MF.WhiteList.Search.VatStatus?
+OpenUrzednik.MF.WhiteList.Search.Subject.VatStatus.init -> void
+OpenUrzednik.MF.WhiteList.Search.Subject.WorkingAddress.get -> string?
+OpenUrzednik.MF.WhiteList.Search.Subject.WorkingAddress.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.<Clone>$() -> OpenUrzednik.MF.WhiteList.Search.SubjectPerson!
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.CompanyName.get -> string?
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.CompanyName.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.Deconstruct(out string? CompanyName, out string? FirstName, out string? LastName, out string? Nip) -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.Equals(OpenUrzednik.MF.WhiteList.Search.SubjectPerson? other) -> bool
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.FirstName.get -> string?
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.FirstName.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.LastName.get -> string?
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.LastName.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.Nip.get -> string?
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.Nip.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectPerson.SubjectPerson(string? CompanyName, string? FirstName, string? LastName, string? Nip) -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.<Clone>$() -> OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.Deconstruct(out OpenUrzednik.MF.WhiteList.Search.Subject! Subject, out string! RequestId, out System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.Equals(OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult? other) -> bool
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.RequestDateTime.get -> System.DateTimeOffset
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.RequestDateTime.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.RequestId.get -> string!
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.RequestId.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.Subject.get -> OpenUrzednik.MF.WhiteList.Search.Subject!
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.Subject.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.SubjectSearchResult(OpenUrzednik.MF.WhiteList.Search.Subject! Subject, string! RequestId, System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.<Clone>$() -> OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult!
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.Deconstruct(out System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.Subject!>! Subjects, out string! RequestId, out System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.Equals(OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? other) -> bool
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.RequestDateTime.get -> System.DateTimeOffset
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.RequestDateTime.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.RequestId.get -> string!
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.RequestId.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.Subjects.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.Subject!>!
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.Subjects.init -> void
+OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.SubjectsSearchResult(System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.Subject!>! Subjects, string! RequestId, System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Search.VatStatus
+OpenUrzednik.MF.WhiteList.Search.VatStatus.Active = 1 -> OpenUrzednik.MF.WhiteList.Search.VatStatus
+OpenUrzednik.MF.WhiteList.Search.VatStatus.Exempt = 2 -> OpenUrzednik.MF.WhiteList.Search.VatStatus
+OpenUrzednik.MF.WhiteList.Search.VatStatus.NotRegistered = 3 -> OpenUrzednik.MF.WhiteList.Search.VatStatus
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListBadRequestError(string! message, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.WhiteListClient
+OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByBankAccountAsync(string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByNipAsync(string! nip, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByRegonAsync(string! regon, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListClient.WhiteListClient(System.Net.Http.HttpClient! httpClient) -> void
+OpenUrzednik.MF.WhiteList.WhiteListClient.WhiteListClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.MF.WhiteList.WhiteListOptions? options = null, System.TimeProvider? timeProvider = null, OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry? telemetry = null) -> void
 OpenUrzednik.MF.WhiteList.WhiteListErrorMetadata
 OpenUrzednik.MF.WhiteList.WhiteListLogEvents
 OpenUrzednik.MF.WhiteList.WhiteListNotFoundError
@@ -57,3 +151,23 @@ const OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestIdMetadataKey = "r
 const OpenUrzednik.MF.WhiteList.WhiteListOptions.DefaultApiUrl = "https://wykazpodatnikowvat.mf.gov.pl/" -> string!
 const OpenUrzednik.MF.WhiteList.WhiteListOptions.TestApiUrl = "https://wykazpodatnikowvat-test.mf.gov.pl/" -> string!
 const OpenUrzednik.MF.WhiteList.WhiteListTelemetry.SourceName = "OpenUrzednik.MF.WhiteList" -> string!
+override OpenUrzednik.MF.WhiteList.Search.Subject.Equals(object? obj) -> bool
+override OpenUrzednik.MF.WhiteList.Search.Subject.GetHashCode() -> int
+override OpenUrzednik.MF.WhiteList.Search.Subject.ToString() -> string!
+override OpenUrzednik.MF.WhiteList.Search.SubjectPerson.Equals(object? obj) -> bool
+override OpenUrzednik.MF.WhiteList.Search.SubjectPerson.GetHashCode() -> int
+override OpenUrzednik.MF.WhiteList.Search.SubjectPerson.ToString() -> string!
+override OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.Equals(object? obj) -> bool
+override OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.GetHashCode() -> int
+override OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.ToString() -> string!
+override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.Equals(object? obj) -> bool
+override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.GetHashCode() -> int
+override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.ToString() -> string!
+static OpenUrzednik.MF.WhiteList.Search.Subject.operator !=(OpenUrzednik.MF.WhiteList.Search.Subject? left, OpenUrzednik.MF.WhiteList.Search.Subject? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.Subject.operator ==(OpenUrzednik.MF.WhiteList.Search.Subject? left, OpenUrzednik.MF.WhiteList.Search.Subject? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.SubjectPerson.operator !=(OpenUrzednik.MF.WhiteList.Search.SubjectPerson? left, OpenUrzednik.MF.WhiteList.Search.SubjectPerson? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.SubjectPerson.operator ==(OpenUrzednik.MF.WhiteList.Search.SubjectPerson? left, OpenUrzednik.MF.WhiteList.Search.SubjectPerson? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.operator !=(OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult? left, OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.operator ==(OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult? left, OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.operator !=(OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? left, OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.operator ==(OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? left, OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? right) -> bool

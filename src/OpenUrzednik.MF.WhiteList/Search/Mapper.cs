@@ -1,0 +1,135 @@
+using OpenUrzednik.Core;
+using OpenUrzednik.MF.WhiteList.Common;
+using OpenUrzednik.MF.WhiteList.Dto;
+
+namespace OpenUrzednik.MF.WhiteList.Search;
+
+/// <summary>
+/// Maps the search answers to the public models. Data the models can't take is an <see cref="InvalidPayloadException"/> (the pipeline
+/// returns it as a <c>SerializationError</c>); an answer without a subject is a <see cref="WhiteListNotFoundError"/> with the proof.
+/// </summary>
+internal static class Mapper
+{
+    // The register's statusVat values.
+    internal const string Active = "Czynny";
+    internal const string Exempt = "Zwolniony";
+    internal const string NotRegistered = "Niezarejestrowany";
+
+    internal const string SubjectNotOnListMessage = "MF White List API has no subject on the list for the identifier on the requested date.";
+    internal const string AccountNotOnListMessage = "MF White List API has no subject on the list with the account number on the requested date.";
+
+    /// <summary>The subject of a search by NIP or REGON, or a <see cref="WhiteListNotFoundError"/> when the answer has none.</summary>
+    internal static OpenUrzednikResult<SubjectSearchResult> MapToSubjectSearchResult(EntityResponseDto dto)
+    {
+        WhiteListPayload.EnsurePresent(dto, "result");
+        var result = dto.Result;
+        WhiteListPayload.EnsurePresent(result, "result");
+        WhiteListPayload.EnsurePresent(result.RequestId, "requestId");
+        var requestDateTime = WhiteListPayload.ParseRequestDateTime(result.RequestDateTime);
+
+        if (result.Subject is null)
+            return OpenUrzednikResult.Failure<SubjectSearchResult>(new WhiteListNotFoundError(SubjectNotOnListMessage, result.RequestId, requestDateTime));
+
+        return OpenUrzednikResult.Success(new SubjectSearchResult(MapToSubject(result.Subject), result.RequestId, requestDateTime));
+    }
+
+    /// <summary>
+    /// The subjects of a search by account number, or a <see cref="WhiteListNotFoundError"/> when the answer has none (<c>subjects: []</c>,
+    /// or no list at all).
+    /// </summary>
+    internal static OpenUrzednikResult<SubjectsSearchResult> MapToSubjectsSearchResult(EntityListResponseDto dto)
+    {
+        WhiteListPayload.EnsurePresent(dto, "result");
+        var result = dto.Result;
+        WhiteListPayload.EnsurePresent(result, "result");
+        WhiteListPayload.EnsurePresent(result.RequestId, "requestId");
+        var requestDateTime = WhiteListPayload.ParseRequestDateTime(result.RequestDateTime);
+
+        var subjects = result.Subjects;
+        if (subjects is null || subjects.Length == 0)
+            return OpenUrzednikResult.Failure<SubjectsSearchResult>(new WhiteListNotFoundError(AccountNotOnListMessage, result.RequestId, requestDateTime));
+
+        var mapped = new Subject[subjects.Length];
+        for (var i = 0; i < mapped.Length; i++)
+        {
+            var subject = subjects[i];
+            WhiteListPayload.EnsurePresent(subject, "subjects[]");
+            mapped[i] = MapToSubject(subject);
+        }
+
+        return OpenUrzednikResult.Success(new SubjectsSearchResult(Array.AsReadOnly(mapped), result.RequestId, requestDateTime));
+    }
+
+    internal static Subject MapToSubject(EntityDto dto)
+    {
+        WhiteListPayload.EnsurePresent(dto.Name, "subject.name");
+
+        return new Subject(dto.Name)
+        {
+            Nip = dto.Nip,
+            VatStatus = MapToVatStatus(dto.StatusVat),
+            Regon = dto.Regon,
+            Krs = dto.Krs,
+            ResidenceAddress = dto.ResidenceAddress,
+            WorkingAddress = dto.WorkingAddress,
+            Representatives = MapToPersons(dto.Representatives, "representatives[]"),
+            AuthorizedClerks = MapToPersons(dto.AuthorizedClerks, "authorizedClerks[]"),
+            Partners = MapToPersons(dto.Partners, "partners[]"),
+            RegistrationLegalDate = dto.RegistrationLegalDate?.ToPublicDate(),
+            RegistrationDenialDate = dto.RegistrationDenialDate?.ToPublicDate(),
+            RegistrationDenialBasis = NullIfEmpty(dto.RegistrationDenialBasis),
+            RestorationDate = dto.RestorationDate?.ToPublicDate(),
+            RestorationBasis = NullIfEmpty(dto.RestorationBasis),
+            RemovalDate = dto.RemovalDate?.ToPublicDate(),
+            RemovalBasis = NullIfEmpty(dto.RemovalBasis),
+            ExemptionSmeDate = dto.ExemptionSmeDate?.ToPublicDate(),
+            AccountNumbers = MapToAccountNumbers(dto.AccountNumbers),
+            HasVirtualAccounts = dto.HasVirtualAccounts,
+        };
+    }
+
+    /// <summary>The status; any value the contract doesn't list is an <see cref="InvalidPayloadException"/>, never a guess.</summary>
+    internal static VatStatus? MapToVatStatus(string? statusVat) => statusVat switch
+    {
+        null => null,
+        Active => VatStatus.Active,
+        Exempt => VatStatus.Exempt,
+        NotRegistered => VatStatus.NotRegistered,
+        _ => throw new InvalidPayloadException("MF White List API response has an unknown 'statusVat'."),
+    };
+
+    private static IReadOnlyList<SubjectPerson> MapToPersons(EntityPersonDto?[]? dtos, string name)
+    {
+        if (dtos is null)
+            return Array.Empty<SubjectPerson>();
+
+        var persons = new SubjectPerson[dtos.Length];
+        for (var i = 0; i < persons.Length; i++)
+        {
+            var dto = dtos[i];
+            WhiteListPayload.EnsurePresent(dto, name);
+            persons[i] = new SubjectPerson(dto.CompanyName, dto.FirstName, dto.LastName, dto.Nip);
+        }
+
+        return Array.AsReadOnly(persons);
+    }
+
+    private static IReadOnlyList<string> MapToAccountNumbers(string?[]? accountNumbers)
+    {
+        if (accountNumbers is null)
+            return Array.Empty<string>();
+
+        var copy = new string[accountNumbers.Length];
+        for (var i = 0; i < copy.Length; i++)
+        {
+            var accountNumber = accountNumbers[i];
+            WhiteListPayload.EnsurePresent(accountNumber, "accountNumbers[]");
+            copy[i] = accountNumber;
+        }
+
+        return Array.AsReadOnly(copy);
+    }
+
+    // The test host sends "" for a basis production leaves null: both are "no basis".
+    private static string? NullIfEmpty(string? value) => value?.Length == 0 ? null : value;
+}

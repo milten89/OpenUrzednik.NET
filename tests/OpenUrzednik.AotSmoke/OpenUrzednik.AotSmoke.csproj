@@ -47,4 +47,11 @@
     <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\Nbp\Fixtures\error-404.txt" LogicalName="error-404.txt" />
   </ItemGroup>
 
+  <!-- Bodies captured from the MF White List API (provenance: WhiteListFixtures in the IntegrationTests). -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\search-nip.json" LogicalName="wl-search-nip.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\search-nip-not-found.json" LogicalName="wl-search-nip-not-found.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\search-bank-account.json" LogicalName="wl-search-bank-account.json" />
+  </ItemGroup>
+
 </Project>

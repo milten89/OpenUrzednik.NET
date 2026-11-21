@@ -1,5 +1,5 @@
 // Native AOT smoke test (#118): runs the published libraries as native code, offline. A stub handler answers with bodies
-// captured from the real NBP API; each check prints PASS or FAIL, and any failure makes the exit code 1.
+// captured from the real NBP and MF White List APIs; each check prints PASS or FAIL, and any failure makes the exit code 1.
 using System.Diagnostics;
 using System.Net;
 using System.Reflection;
@@ -14,6 +14,7 @@ using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.MF.WhiteList;
+using OpenUrzednik.MF.WhiteList.Search;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Transport.Http;
@@ -128,8 +129,8 @@ Check("metadata: durations are ISO 8601 and the HTTP status an int",
         && Equals(timedOut.Metadata["timeout"], "PT0.5S"),
     $"{rateLimited.Metadata["retryAfterDuration"]} {rateLimited.Metadata["statusCode"]} {timedOut.Metadata["timeout"]}");
 
-// MF White List (ADR-0023): the skeleton has no client yet, so its public error types are built directly and read as an app would,
-// through the provider's detail interface, the HTTP status accessor and Metadata.
+// MF White List (ADR-0023): its public error types built directly and read as an app would, through the provider's detail interface,
+// the HTTP status accessor and Metadata; then the client's searches, offline.
 var whiteListBadRequest = new WhiteListBadRequestError("MF White List API rejected the request: WL-115 Invalid NIP.", HttpStatusCode.BadRequest, "WL-115");
 Check("mf white list: a 400 with WL-115 is WhiteListBadRequestError with its code and status",
     whiteListBadRequest is BadRequestError and IWhiteListErrorCode { WhiteListCode: "WL-115" }
@@ -143,6 +144,31 @@ Check("mf white list: the proof of a check is in Metadata, the time as ISO 8601 
         && Equals(whiteListNotFound.Metadata[WhiteListNotFoundError.RequestIdMetadataKey], "Ab12c-3d4ef5g")
         && Equals(whiteListNotFound.Metadata[WhiteListNotFoundError.RequestDateTimeMetadataKey], "2026-11-08T14:05:09+01:00"),
     $"{whiteListNotFound.Metadata[WhiteListNotFoundError.RequestDateTimeMetadataKey]}");
+
+// The White List client offline, with answers captured from the API: both result types and a subject that isn't on the list.
+var whiteListDate = DateTime.Today.AddDays(-1);
+using (var httpClient = new HttpClient(new FixtureHandler()))
+{
+    var whiteList = new WhiteListClient(httpClient);
+    var byNip = await whiteList.SearchByNipAsync("3245174504", whiteListDate);
+    Check("mf white list: a NIP search maps the subject and the proof",
+        byNip.IsSuccess && byNip.Value.Subject.Name == "Nazwa Firmy 1" && byNip.Value.Subject.VatStatus == VatStatus.Active
+            && byNip.Value.RequestId == "EftiD-99alll1" && byNip.Value.RequestDateTime.Offset == TimeSpan.FromHours(1),
+        Describe(byNip));
+    var byAccount = await whiteList.SearchByBankAccountAsync("10101010100038252231000000", whiteListDate);
+    Check("mf white list: an account search maps the subjects and the proof",
+        byAccount.IsSuccess && byAccount.Value.Subjects is [{ Nip: "5260250274", HasVirtualAccounts: true }] && byAccount.Value.RequestId == "R43vM-99alln9",
+        Describe(byAccount));
+}
+
+using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl-search-nip-not-found.json")))
+{
+    var notOnList = await new WhiteListClient(httpClient).SearchByRegonAsync("000002217", whiteListDate);
+    Check("mf white list: a subject not on the list is WhiteListNotFoundError with the proof",
+        notOnList.IsFailure && notOnList.Errors[0] is WhiteListNotFoundError { RequestId: "rd9zq-99alll1" } notFound
+            && Equals(notFound.Metadata[WhiteListNotFoundError.RequestDateTimeMetadataKey], "2026-11-20T22:44:25+01:00"),
+        Describe(notOnList));
+}
 
 // 3. Dependency injection: the default and a keyed registration, with logging.
 var services = new ServiceCollection();
@@ -220,6 +246,8 @@ internal sealed class FixtureHandler(HttpStatusCode? status = null, string? reso
             _ when path.EndsWith("/rates/c/USD", StringComparison.OrdinalIgnoreCase) => "rates-c-latest.json",
             _ when path.EndsWith("/tables/a", StringComparison.OrdinalIgnoreCase) => "tables-a-latest.json",
             _ when path.EndsWith("/tables/c", StringComparison.OrdinalIgnoreCase) => "tables-c-latest.json",
+            _ when path.Contains("/api/search/nip/") => "wl-search-nip.json",
+            _ when path.Contains("/api/search/bank-account/") => "wl-search-bank-account.json",
             _ => null,
         };
         var content = body ?? (name is null ? null : Read(name));

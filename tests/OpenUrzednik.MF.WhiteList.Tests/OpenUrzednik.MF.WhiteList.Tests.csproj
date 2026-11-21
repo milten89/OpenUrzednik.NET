@@ -10,4 +10,9 @@
     <Using Include="OpenUrzednik.Dates" />
   </ItemGroup>
 
+  <!-- The bodies captured from the API for the WireMock tests (their provenance is in WhiteListFixtures there), shared with the unit tests. -->
+  <ItemGroup>
+    <None Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\*.json" Link="Fixtures\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

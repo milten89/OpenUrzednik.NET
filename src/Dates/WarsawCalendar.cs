@@ -25,6 +25,31 @@ internal static class WarsawCalendar
         return new DateTimeOffset(nextMidnight, Warsaw.GetUtcOffset(nextMidnight)) - now;
     }
 
+    /// <summary>
+    /// The instant of a Warsaw local time (e.g. an API's timestamp without an offset) with its Warsaw offset: <c>+01:00</c> in winter,
+    /// <c>+02:00</c> in summer. The hour repeated when daylight saving time ends (02:00–02:59 on the last Sunday of October) is
+    /// ambiguous, and gets the standard offset <c>+01:00</c>. <see langword="null"/> for a time that doesn't exist in Warsaw: the hour
+    /// skipped when daylight saving time starts (02:00–02:59 on the last Sunday of March), or a time on 1 January of year 1 whose UTC
+    /// time would fall before year 1.
+    /// </summary>
+    /// <param name="local">The local time in Warsaw; its <see cref="DateTime.Kind"/> is ignored.</param>
+    internal static DateTimeOffset? ToWarsawOffset(DateTime local)
+    {
+        var time = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+        if (Warsaw.IsInvalidTime(time))
+            return null;
+
+        // An Unspecified time is read as the zone's own local time; an ambiguous one gets the standard offset (TimeZoneInfo.GetUtcOffset).
+        var offset = Warsaw.GetUtcOffset(time);
+
+        // Warsaw's offset is never negative, so only the start of 1 January of year 1 has no instant (its UTC time is before year 1).
+        if (time.Ticks < offset.Ticks)
+            return null;
+
+        return new DateTimeOffset(time, offset);
+    }
+
+    // Stryker disable once Block : false survivor, only the static field initializer calls this method and the reused test host runs it once, so Stryker can't activate the mutant; an empty body leaves the zone null, which fails every WarsawCalendar test (checked by hand)
     private static TimeZoneInfo FindWarsaw()
     {
         // IANA id on Linux/macOS and on Windows with ICU; Windows id as a fallback.

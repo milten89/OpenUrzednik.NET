@@ -149,7 +149,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var sut = CreateSut(Json(status, body), out _, new ClientTelemetry(telemetry, telemetry));
 
         // Act
-        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
+        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
             () => $"search/nip/{LeakNip}", DisplayPath, WhiteListJsonContext.Default.ErrorDto, dto => dto.Code, TestContext.Current.CancellationToken);
 
         // Assert
@@ -170,7 +170,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var sut = CreateSut(Json(HttpStatusCode.BadRequest, body), out _, new ClientTelemetry(telemetry, telemetry));
 
         // Act
-        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
+        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
             () => $"search/nip/{LeakNip}", DisplayPath, WhiteListJsonContext.Default.ErrorDto, dto => dto.Code, TestContext.Current.CancellationToken);
 
         // Assert
@@ -206,7 +206,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var sut = CreateSut(Json(HttpStatusCode.OK, """{"code":"WL-0","message":"ok"}"""), out _, new ClientTelemetry(telemetry, telemetry));
 
         // Act
-        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.by_nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
+        var result = await sut.GetAsync(telemetry.StartSpan("mf_white_list.search.nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
             () => $"search/nip/{LeakNip}", DisplayPath, WhiteListJsonContext.Default.ErrorDto, dto => dto.Code, TestContext.Current.CancellationToken);
 
         // Assert
