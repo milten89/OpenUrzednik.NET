@@ -45,7 +45,8 @@ OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByRegonsAsync(System.Collection
 OpenUrzednik.MF.WhiteList.IWhiteListErrorCode
 OpenUrzednik.MF.WhiteList.IWhiteListErrorCode.WhiteListCode.get -> string?
 OpenUrzednik.MF.WhiteList.IWhiteListStatusClient
-OpenUrzednik.MF.WhiteList.IWhiteListStatusClient.GetVatStatusByNipAsync(string! nip, System.DateTime? date = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.VatStatusResult!>>!
+OpenUrzednik.MF.WhiteList.IWhiteListStatusClient.GetVatStatusByNipAsync(string! nip, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.VatStatusResult!>>!
+OpenUrzednik.MF.WhiteList.IWhiteListStatusClient.GetVatStatusByNipAsync(string! nip, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.VatStatusResult!>>!
 OpenUrzednik.MF.WhiteList.Subject
 OpenUrzednik.MF.WhiteList.Subject.<Clone>$() -> OpenUrzednik.MF.WhiteList.Subject!
 OpenUrzednik.MF.WhiteList.Subject.AccountNumbers.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -183,7 +184,8 @@ OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError
 OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError.WhiteListCode.get -> string?
 OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError.WhiteListServiceUnavailableError(string! message, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
 OpenUrzednik.MF.WhiteList.WhiteListStatusClient
-OpenUrzednik.MF.WhiteList.WhiteListStatusClient.GetVatStatusByNipAsync(string! nip, System.DateTime? date = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.VatStatusResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListStatusClient.GetVatStatusByNipAsync(string! nip, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.VatStatusResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListStatusClient.GetVatStatusByNipAsync(string! nip, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.VatStatusResult!>>!
 OpenUrzednik.MF.WhiteList.WhiteListStatusClient.WhiteListStatusClient(System.Net.Http.HttpClient! httpClient) -> void
 OpenUrzednik.MF.WhiteList.WhiteListStatusClient.WhiteListStatusClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.MF.WhiteList.WhiteListOptions? options = null, System.TimeProvider? timeProvider = null, OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry? telemetry = null) -> void
 OpenUrzednik.MF.WhiteList.WhiteListTelemetry
