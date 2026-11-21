@@ -172,7 +172,9 @@ internal sealed class RestRequestExecutor
         traceSpan.SetTag("http.request.method", "GET");
         traceSpan.SetTag("server.address", _serverAddress);
         traceSpan.SetTag("server.port", _serverPort);
-        traceSpan.SetTag("url.path", displayPath is null ? requestUri.AbsolutePath : DisplayUrlPath(displayPath));
+        // Built only while recording: both values allocate (#345).
+        if (traceSpan.IsRecording)
+            traceSpan.SetTag("url.path", displayPath is null ? requestUri.AbsolutePath : DisplayUrlPath(displayPath));
 
         // Expected failures are returned as errors; this only marks the span when something unexpected escapes,
         // without catching it (ADR-0002 forbids catch (Exception)).
@@ -218,7 +220,9 @@ internal sealed class RestRequestExecutor
             return OpenUrzednikResult.Failure<TDto>(sendResult.Errors);
 
         using var response = sentResponse;
-        traceSpan.SetTag("http.response.status_code", (int)response.StatusCode);
+        // Only while recording: the Activity adapter boxes the int (#345).
+        if (traceSpan.IsRecording)
+            traceSpan.SetTag("http.response.status_code", (int)response.StatusCode);
 
         if (!response.IsSuccessStatusCode)
             return await MapErrorResponseAsync(response, messagePath, displayUri, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);

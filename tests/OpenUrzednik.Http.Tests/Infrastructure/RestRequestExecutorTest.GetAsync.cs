@@ -803,6 +803,7 @@ public partial class RestRequestExecutorTest
         var faker = new Faker().WithConstantSeed();
         var dto = new TestDto(faker.Random.Word(), faker.Random.Int());
         var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(true);
         var relativePath = faker.Internet.UrlRootedPath();
         using var httpClient = CreateHttpClient(faker, CreateJsonResponse(HttpStatusCode.OK, dto));
 
@@ -860,6 +861,7 @@ public partial class RestRequestExecutorTest
     {
         // Arrange
         var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(true);
         using var httpClient = new HttpClient(new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("a", 1))))
         {
             BaseAddress = new Uri("https://api.example.com/api/"),
@@ -870,6 +872,44 @@ public partial class RestRequestExecutorTest
 
         // Assert
         span.Received(1).SetTag("url.path", "/api/cenyzlota/last/3");
+    }
+
+    [Fact]
+    public async Task GetAsync_SpanNotRecording_DoesNotSetTheUrlPathOrStatusCodeTags()
+    {
+        // Arrange: a span nobody records gets no url.path or status code, so the request doesn't build or box them (#345)
+        var (telemetryProvider, _, span) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(false);
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("a", 1))))
+        {
+            BaseAddress = new Uri("https://api.example.com/api/"),
+        };
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync("/cenyzlota/last/3", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert: the request still succeeds and the other tags are still set
+        result.IsSuccess.ShouldBeTrue();
+        span.DidNotReceive().SetTag("url.path", Arg.Any<string>());
+        span.DidNotReceive().SetTag("http.response.status_code", Arg.Any<int>());
+        span.Received(1).SetTag("http.request.method", "GET");
+    }
+
+    [Fact]
+    public async Task GetAsync_DisplayPathSpanNotRecording_DoesNotBuildTheUrlPathTag()
+    {
+        // Arrange
+        var handler = new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("n", 1)));
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(DisplayBaseAddress) };
+        var (telemetry, _, span) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(false);
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("/" + IdentifierPath, "/" + DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        span.DidNotReceive().SetTag("url.path", Arg.Any<string>());
     }
 
     [Fact]
@@ -1482,6 +1522,7 @@ public partial class RestRequestExecutorTest
         var handler = new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, dto));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(DisplayBaseAddress) };
         var (telemetry, _, span) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(true);
 
         // Act
         var result = await CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("/" + IdentifierPath, "/" + DisplayPath, TypeInfo, TestContext.Current.CancellationToken);
@@ -1503,6 +1544,7 @@ public partial class RestRequestExecutorTest
         var handler = new StubHttpMessageHandler(CreateJsonResponse(HttpStatusCode.OK, new TestDto("n", 1)));
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(DisplayBaseAddress) };
         var (telemetry, _, span) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(true);
 
         // Act
         var result = await CreateConnection(httpClient, telemetry, _timeProvider).GetAsync(relativePath, displayPath, TypeInfo, TestContext.Current.CancellationToken);
