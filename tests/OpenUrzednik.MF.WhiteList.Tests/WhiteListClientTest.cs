@@ -7,7 +7,6 @@ using NSubstitute;
 
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
-using OpenUrzednik.MF.WhiteList.Search;
 using OpenUrzednik.TestCommon;
 
 namespace OpenUrzednik.MF.WhiteList.Tests;

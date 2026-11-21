@@ -1,4 +1,4 @@
-namespace OpenUrzednik.MF.WhiteList.Search;
+namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// A subject of the VAT White List (Wykaz podatników VAT) on the requested date: who it is, its VAT status, its registration history and

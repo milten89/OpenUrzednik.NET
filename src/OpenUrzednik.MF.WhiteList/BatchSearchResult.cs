@@ -1,4 +1,4 @@
-namespace OpenUrzednik.MF.WhiteList.Search;
+namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// The answer of a batch search by NIPs, REGONs or account numbers: one entry per identifier sent, in the order sent (a duplicate gets

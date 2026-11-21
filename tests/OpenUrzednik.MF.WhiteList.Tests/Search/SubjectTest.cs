@@ -1,5 +1,3 @@
-using OpenUrzednik.MF.WhiteList.Search;
-
 namespace OpenUrzednik.MF.WhiteList.Tests.Search;
 
 // Shared helpers; tests are in one file per method.

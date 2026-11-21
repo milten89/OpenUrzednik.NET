@@ -8,8 +8,6 @@ using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
 using OpenUrzednik.IntegrationTests.Nbp.WireMock;
 using OpenUrzednik.MF.WhiteList;
-using OpenUrzednik.MF.WhiteList.Search;
-using OpenUrzednik.MF.WhiteList.Status;
 using OpenUrzednik.Transport.Http;
 
 using Shouldly;

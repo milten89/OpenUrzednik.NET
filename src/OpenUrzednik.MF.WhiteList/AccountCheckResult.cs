@@ -1,4 +1,4 @@
-namespace OpenUrzednik.MF.WhiteList.Check;
+namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// The answer of a check whether an account number belongs to a VAT taxpayer: the verdict, with the proof of the check.

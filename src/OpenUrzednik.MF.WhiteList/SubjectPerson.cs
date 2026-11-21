@@ -1,4 +1,4 @@
-namespace OpenUrzednik.MF.WhiteList.Search;
+namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// A person or company named on a subject's entry: a representative, a proxy (<c>authorizedClerks</c>) or a partner. The register lists

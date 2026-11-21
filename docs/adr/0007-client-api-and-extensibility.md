@@ -1,5 +1,5 @@
 ---
-status: released
+status: superseded by ADR-0026
 released-in: v1.0.0
 date: 2026-11-05
 confidence: high
@@ -62,6 +62,8 @@ Public interfaces with public defaults, passed as optional constructor parameter
 * Bad, because an implementation detail (URL building) is a required constructor argument, so the default case needs knowledge of internals.
 
 ## More Information
+
+* Superseded by [ADR-0026](0026-client-api-with-one-public-namespace-per-provider.md), which restates this record and moves a provider's models into its root namespace.
 
 ### Changes before 1.0
 

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Time.Testing;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.IntegrationTests.Nbp.WireMock;
 using OpenUrzednik.MF.WhiteList;
-using OpenUrzednik.MF.WhiteList.Search;
 
 using Shouldly;
 

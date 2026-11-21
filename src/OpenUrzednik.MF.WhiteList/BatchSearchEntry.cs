@@ -1,6 +1,6 @@
 using OpenUrzednik.Core.Errors;
 
-namespace OpenUrzednik.MF.WhiteList.Search;
+namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// One entry of a batch search: the identifier and either the subjects the list has for it on the requested date, or why it has none.

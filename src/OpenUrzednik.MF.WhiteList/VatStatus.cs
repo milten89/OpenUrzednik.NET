@@ -1,4 +1,4 @@
-namespace OpenUrzednik.MF.WhiteList.Search;
+namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// A subject's status as a VAT taxpayer on the requested date (<c>statusVat</c>).

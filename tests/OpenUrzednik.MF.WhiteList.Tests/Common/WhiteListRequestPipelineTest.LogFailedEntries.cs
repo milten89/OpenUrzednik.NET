@@ -5,7 +5,6 @@ using NSubstitute;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.MF.WhiteList.Common;
-using OpenUrzednik.MF.WhiteList.Search;
 
 namespace OpenUrzednik.MF.WhiteList.Tests.Common;
 

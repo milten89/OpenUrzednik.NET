@@ -1,5 +1,4 @@
 using OpenUrzednik.Core;
-using OpenUrzednik.MF.WhiteList.Status;
 
 namespace OpenUrzednik.MF.WhiteList;
 

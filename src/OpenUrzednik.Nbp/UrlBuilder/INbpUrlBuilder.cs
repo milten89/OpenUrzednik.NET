@@ -2,7 +2,7 @@ namespace OpenUrzednik.Nbp.UrlBuilder;
 
 /// <summary>
 /// Builds the request paths of one NBP API resource (a table, a currency in a table, or gold prices).
-/// Internal (ADR-0007): tests pass a substitute <see cref="INbpUrlBuilderFactory"/> through the clients' internal constructors.
+/// Internal (ADR-0026): tests pass a substitute <see cref="INbpUrlBuilderFactory"/> through the clients' internal constructors.
 /// </summary>
 internal interface INbpUrlBuilder
 {

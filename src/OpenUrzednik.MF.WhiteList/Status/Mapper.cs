@@ -1,7 +1,6 @@
 using OpenUrzednik.Core;
 using OpenUrzednik.MF.WhiteList.Common;
 using OpenUrzednik.MF.WhiteList.Dto;
-using OpenUrzednik.MF.WhiteList.Search;
 
 namespace OpenUrzednik.MF.WhiteList.Status;
 

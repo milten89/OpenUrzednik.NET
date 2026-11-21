@@ -1,6 +1,5 @@
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
-using OpenUrzednik.MF.WhiteList.Search;
 
 using Shouldly;
 

@@ -67,7 +67,7 @@ Not chosen now: the White List flat file, which needs a library to read 7z archi
 * `OpenUrzednik.<Institution>.<Api>` when the institution has or may get several APIs: `OpenUrzednik.MF.WhiteList`, `OpenUrzednik.Gus.Regon`. `OpenUrzednik.<Register>` when users know the register rather than the institution behind it: `OpenUrzednik.Krs`.
 * A variant of an API with a different transport, other dependencies or a different way of use gets its own package, `<Package>.<Variant>`, which depends on the base package; the base package holds the models both share (e.g. `OpenUrzednik.MF.WhiteList.FlatFile`). More endpoints of the same API on the same transport (e.g. the White List's status-only WL2 endpoints) stay in the base package, as another client if needed.
 * Names are English. .NET casing applies: two-letter acronyms in capitals (`MF`), longer ones in Pascal case (`Gus`, `Krs`).
-* The root namespace equals the package id; models go in area namespaces below it ([ADR-0007](0007-client-api-and-extensibility.md)).
+* The root namespace equals the package id, and every public type of the package is in it, models included ([ADR-0026](0026-client-api-with-one-public-namespace-per-provider.md)).
 * The nuget.org ids of the deprecated skeleton previews: `OpenUrzednik.Gus` and `OpenUrzednik.Mf` are not reused. `OpenUrzednik.Krs` is reused: its first real version must sort above `1.0.13-preview.gde7b6f8597`, the highest deprecated preview, which every lockstep version from `1.1.0-preview` on does ([ADR-0008](0008-branching-versioning-and-release.md)). A new provider is a feature, so it ships in a minor release.
 
 **Telemetry names per package** (applying [ADR-0003](0003-telemetry-abstractions.md)):
@@ -135,3 +135,4 @@ Not chosen now: the White List flat file, which needs a library to read 7z archi
 ### Corrections before release
 
 * 2026-11-20 · [#220](https://github.com/milten89/OpenUrzednik.NET/issues/220) · The flat file's 7z reader is decided: SharpCompress, in [ADR-0024](0024-dependency-policy-with-a-7z-reader.md), which supersedes ADR-0004; the last More Information line now states ADR-0022's lifecycle instead of ADR-0001's. Reason: #220 chose the reader.
+* 2026-11-21 · [#350](https://github.com/milten89/OpenUrzednik.NET/issues/350) · Every public type of a package goes in its root namespace instead of models in area namespaces below it: [ADR-0026](0026-client-api-with-one-public-namespace-per-provider.md) supersedes ADR-0007. Reason: the maintainer's decision after a survey of .NET SDKs.
