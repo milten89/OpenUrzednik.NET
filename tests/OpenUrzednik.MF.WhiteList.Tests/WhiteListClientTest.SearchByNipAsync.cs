@@ -1,7 +1,6 @@
 using System.Net;
 
 using OpenUrzednik.Core.Errors;
-using OpenUrzednik.MF.WhiteList.Search;
 using OpenUrzednik.TestCommon;
 
 using Shouldly;

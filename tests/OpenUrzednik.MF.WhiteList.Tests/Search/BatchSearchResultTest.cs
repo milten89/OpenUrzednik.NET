@@ -1,5 +1,3 @@
-using OpenUrzednik.MF.WhiteList.Search;
-
 using Shouldly;
 
 namespace OpenUrzednik.MF.WhiteList.Tests.Search;

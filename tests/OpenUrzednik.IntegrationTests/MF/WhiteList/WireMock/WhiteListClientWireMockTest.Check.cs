@@ -5,7 +5,6 @@ using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Exceptions;
 using OpenUrzednik.MF.WhiteList;
-using OpenUrzednik.MF.WhiteList.Check;
 using OpenUrzednik.Transport.Http;
 
 using Shouldly;

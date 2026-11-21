@@ -1,6 +1,4 @@
-using OpenUrzednik.MF.WhiteList.Search;
-
-namespace OpenUrzednik.MF.WhiteList.Status;
+namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// The answer of the WL2 status service: a NIP's status as a VAT taxpayer on a day, with the proof of the check.

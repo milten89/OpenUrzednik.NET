@@ -72,7 +72,7 @@ internal static class RestOptions
     /// <summary>
     /// Picks a client's base address: the options' URL, then the <see cref="HttpClient.BaseAddress"/>, then the provider's default.
     /// The first two are checked with <paramref name="parse"/>, which names the parameter the value came from: <c>options</c> or
-    /// <c>httpClient</c>, the parameter names of the clients' constructors (ADR-0007). The default isn't checked: it's the provider's constant.
+    /// <c>httpClient</c>, the parameter names of the clients' constructors (ADR-0026). The default isn't checked: it's the provider's constant.
     /// </summary>
     /// <param name="optionsUrl">The options' <c>ApiUrl</c>, or <see langword="null"/> when there are no options or it isn't set.</param>
     /// <param name="httpClient">The client's <see cref="HttpClient"/>; it isn't changed.</param>

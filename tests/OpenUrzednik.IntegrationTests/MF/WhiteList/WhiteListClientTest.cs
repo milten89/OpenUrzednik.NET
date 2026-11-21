@@ -1,7 +1,6 @@
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.IntegrationTests.Nbp;
 using OpenUrzednik.MF.WhiteList;
-using OpenUrzednik.MF.WhiteList.Search;
 using OpenUrzednik.TestCommon.Attributes;
 
 using Shouldly;

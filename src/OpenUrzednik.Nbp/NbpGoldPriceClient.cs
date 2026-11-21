@@ -78,7 +78,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null)
         : this(httpClient, new NbpUrlBuilderFactory(), options, timeProvider, logger, traceSource) { }
 
-    // Tests replace the request paths through this constructor; applications can't (ADR-0007).
+    // Tests replace the request paths through this constructor; applications can't (ADR-0026).
     internal NbpGoldPriceClient(HttpClient httpClient, INbpUrlBuilderFactory urlBuilderFactory, NbpOptions? options = null,
         TimeProvider? timeProvider = null, IOpenUrzednikLogger? logger = null, IOpenUrzednikTraceSource? traceSource = null,
         IOpenUrzednikMetrics? metrics = null)

@@ -5,7 +5,6 @@ using NSubstitute;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.MF.WhiteList.Common;
-using OpenUrzednik.MF.WhiteList.Search;
 using OpenUrzednik.TestCommon;
 
 using Shouldly;

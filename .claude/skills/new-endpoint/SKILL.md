@@ -25,7 +25,7 @@ Work through every step. Do not skip tests. If a step conflicts with an ADR, sto
 - `public sealed record` with XML docs on every parameter. Use `IReadOnlyList<T>` for collections and override `Equals`/`GetHashCode` when the record holds a list.
 - Adding data to an existing model: a non-`required` `init` property, not a new positional parameter, and include it in a custom `Equals`/`GetHashCode` (ADR-0011).
 - Dates: public parameters and model properties are `DateTime` on every target (ADR-0005): convert arguments with `DateOnly.FromDateTime` at the start of the method, return `ToPublicDate()` from the mapper, and add the `DateOnly` overload to the provider's `<Prefix>DateOnlyExtensions` (.NET only; NBP: `NbpDateOnlyExtensions`). DTOs, validators and URL builders use `DateOnly` (an alias for `DateTime` on netstandard2.0). Money and rates: `decimal`.
-- Check for name clashes with types in other namespaces of the same package.
+- Put it in the provider's root namespace, with its file in the project root (ADR-0026; NBP keeps its area folders and namespaces until 2.0, #351). Its name carries its own context (`VatStatusResult`, not `Result`), and must not clash with another type of the package.
 
 ## 4. Mapper
 

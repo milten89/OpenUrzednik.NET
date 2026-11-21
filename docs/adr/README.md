@@ -10,7 +10,7 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0004](0004-dependency-policy.md) | Dependency policy | superseded by [ADR-0024](0024-dependency-policy-with-a-7z-reader.md) |
 | [0005](0005-target-frameworks.md) | Target frameworks and one public API | released (v1.0.0) |
 | [0006](0006-shared-http-layer.md) | Shared HTTP layer for REST providers | superseded by [ADR-0019](0019-shared-http-layer-tested-through-test-host.md) |
-| [0007](0007-client-api-and-extensibility.md) | Client API: simple defaults, internal request shaping | released (v1.0.0) |
+| [0007](0007-client-api-and-extensibility.md) | Client API: simple defaults, internal request shaping | superseded by [ADR-0026](0026-client-api-with-one-public-namespace-per-provider.md) |
 | [0008](0008-branching-versioning-and-release.md) | Branching, versioning and release | released (v1.0.0) |
 | [0009](0009-documentation-language.md) | Documentation language | released (v1.0.0) |
 | [0010](0010-provider-readiness-gate.md) | Framework first: NBP as the reference provider | superseded by [ADR-0016](0016-next-providers-and-package-naming.md) |
@@ -29,3 +29,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0023](0023-mf-white-list-provider.md) | MF White List provider (`OpenUrzednik.MF.WhiteList`) | accepted |
 | [0024](0024-dependency-policy-with-a-7z-reader.md) | Dependency policy, with a 7z reader for the White List flat-file package | accepted |
 | [0025](0025-telemetry-abstractions-with-metrics.md) | Telemetry abstractions and adapter packages, with per-operation metrics | accepted |
+| [0026](0026-client-api-with-one-public-namespace-per-provider.md) | Client API: simple defaults, internal request shaping, one public namespace per provider | accepted |

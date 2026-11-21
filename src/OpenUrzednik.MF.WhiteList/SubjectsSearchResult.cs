@@ -1,4 +1,4 @@
-namespace OpenUrzednik.MF.WhiteList.Search;
+namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// The answer of a search by one account number: the subjects on the list that have the account, with the proof of the check.

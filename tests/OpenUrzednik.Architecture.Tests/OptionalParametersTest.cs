@@ -5,7 +5,7 @@ using Shouldly;
 namespace OpenUrzednik.Architecture.Tests;
 
 // The public API analyzer's RS0026 and RS0027 (off in src/.editorconfig) count `CancellationToken cancellationToken = default`
-// (ADR-0007) as an optional parameter, so they would flag every overload set of an async method. These tests keep what the two
+// (ADR-0026) as an optional parameter, so they would flag every overload set of an async method. These tests keep what the two
 // rules guard against, the token aside:
 // - two overloads with the same required parameters and any optional ones (the token included) are ambiguous for a call that
 //   passes only the required arguments (CS0121), so no two such overloads exist;

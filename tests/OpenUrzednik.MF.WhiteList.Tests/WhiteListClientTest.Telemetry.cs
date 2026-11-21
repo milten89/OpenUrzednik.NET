@@ -316,7 +316,7 @@ public sealed partial class WhiteListClientTest
         _ => "SearchByBankAccountsAsync",
     };
 
-    private static Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult>> CallBatchAsync(WhiteListClient sut, string method,
+    private static Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.BatchSearchResult>> CallBatchAsync(WhiteListClient sut, string method,
         string[] identifiers, DateTime date)
     {
         var cancellationToken = TestContext.Current.CancellationToken;

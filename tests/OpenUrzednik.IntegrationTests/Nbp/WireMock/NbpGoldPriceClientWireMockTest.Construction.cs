@@ -4,7 +4,7 @@ using Shouldly;
 
 namespace OpenUrzednik.IntegrationTests.Nbp.WireMock;
 
-// ADR-0007: the one-line constructor, and one HttpClient shared by clients with different base URLs.
+// ADR-0026: the one-line constructor, and one HttpClient shared by clients with different base URLs.
 public partial class NbpGoldPriceClientWireMockTest
 {
     private HttpClient CreatePlainHttpClient()

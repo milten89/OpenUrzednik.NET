@@ -5,8 +5,6 @@ using OpenUrzednik.MF.WhiteList.Status;
 
 using Shouldly;
 
-using VatStatus = OpenUrzednik.MF.WhiteList.Search.VatStatus;
-
 namespace OpenUrzednik.MF.WhiteList.Tests.Status;
 
 public sealed class MapperTest
