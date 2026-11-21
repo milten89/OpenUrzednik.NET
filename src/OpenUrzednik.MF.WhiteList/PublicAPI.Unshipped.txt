@@ -1,5 +1,18 @@
 #nullable enable
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.<Clone>$() -> OpenUrzednik.MF.WhiteList.Check.AccountCheckResult!
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.AccountAssigned.get -> bool
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.AccountAssigned.init -> void
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.AccountCheckResult(bool AccountAssigned, string! RequestId, System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.Deconstruct(out bool AccountAssigned, out string! RequestId, out System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.Equals(OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? other) -> bool
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.RequestDateTime.get -> System.DateTimeOffset
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.RequestDateTime.init -> void
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.RequestId.get -> string!
+OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.RequestId.init -> void
 OpenUrzednik.MF.WhiteList.IWhiteListClient
+OpenUrzednik.MF.WhiteList.IWhiteListClient.CheckNipBankAccountAsync(string! nip, string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Check.AccountCheckResult!>>!
+OpenUrzednik.MF.WhiteList.IWhiteListClient.CheckRegonBankAccountAsync(string! regon, string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Check.AccountCheckResult!>>!
 OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByBankAccountAsync(string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult!>>!
 OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByBankAccountsAsync(System.Collections.Generic.IReadOnlyList<string!>! bankAccounts, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByNipAsync(string! nip, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
@@ -119,6 +132,8 @@ OpenUrzednik.MF.WhiteList.WhiteListBadRequestError
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListBadRequestError(string! message, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListCode.get -> string?
 OpenUrzednik.MF.WhiteList.WhiteListClient
+OpenUrzednik.MF.WhiteList.WhiteListClient.CheckNipBankAccountAsync(string! nip, string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Check.AccountCheckResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListClient.CheckRegonBankAccountAsync(string! regon, string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Check.AccountCheckResult!>>!
 OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByBankAccountAsync(string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult!>>!
 OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByBankAccountsAsync(System.Collections.Generic.IReadOnlyList<string!>! bankAccounts, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByNipAsync(string! nip, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
@@ -180,6 +195,9 @@ const OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestIdMetadataKey = "r
 const OpenUrzednik.MF.WhiteList.WhiteListOptions.DefaultApiUrl = "https://wykazpodatnikowvat.mf.gov.pl/" -> string!
 const OpenUrzednik.MF.WhiteList.WhiteListOptions.TestApiUrl = "https://wykazpodatnikowvat-test.mf.gov.pl/" -> string!
 const OpenUrzednik.MF.WhiteList.WhiteListTelemetry.SourceName = "OpenUrzednik.MF.WhiteList" -> string!
+override OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.Equals(object? obj) -> bool
+override OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.GetHashCode() -> int
+override OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.ToString() -> string!
 override OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Equals(object? obj) -> bool
 override OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.GetHashCode() -> int
 override OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.ToString() -> string!
@@ -198,6 +216,8 @@ override OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.ToString() -> stri
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.Equals(object? obj) -> bool
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.GetHashCode() -> int
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.ToString() -> string!
+static OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.operator !=(OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? left, OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? right) -> bool
+static OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.operator ==(OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? left, OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.operator !=(OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? left, OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.operator ==(OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? left, OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.operator !=(OpenUrzednik.MF.WhiteList.Search.BatchSearchResult? left, OpenUrzednik.MF.WhiteList.Search.BatchSearchResult? right) -> bool

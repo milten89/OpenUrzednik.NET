@@ -17,6 +17,12 @@ namespace OpenUrzednik.IntegrationTests.MF.WhiteList;
 /// <item><description>Production <c>wykazpodatnikowvat.mf.gov.pl</c>, for the Ministry of Finance, a legal person whose entry is public:
 /// <c>search-regon.json</c> (REGON 000002217) and <c>search-bank-account.json</c> (one of its accounts). The test host's subjects have no
 /// account numbers, and its 14-digit test REGONs fail the API's own check (WL-107).</description></item>
+/// <item><description>The test host, captured on 2026-11-21, the checks of an account number: <c>check-nip-not-assigned.json</c> (NIP
+/// 3245174504 with a fake account number: NIE), <c>check-regon-not-assigned.json</c> (REGON 216973362: NIE) and
+/// <c>check-nip-not-on-list.json</c> (NIP 5260250274, which the test host doesn't have: NIE too, never a not-found).</description></item>
+/// <item><description>Production, captured on 2026-11-21, the checks that answer TAK, for the Ministry of Finance and one of its accounts
+/// (59101010100075912222000000): <c>check-nip-assigned.json</c> (NIP 5260250274) and <c>check-regon-assigned.json</c> (REGON 000002217).
+/// The test host can't answer TAK, because its subjects have no account numbers.</description></item>
 /// <item><description>Not captured: <c>*.from-error-table.json</c> are built from the ministry's error-code table (WL-191 with 429, WL-195
 /// with 400, WL-197 with 500), because the test host never answered them (ADR-0023).</description></item>
 /// </list>

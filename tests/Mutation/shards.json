@@ -49,6 +49,7 @@
       "strict": [
         "src/OpenUrzednik.MF.WhiteList/Common/**",
         "src/OpenUrzednik.MF.WhiteList/Search/**",
+        "src/OpenUrzednik.MF.WhiteList/Check/**",
         "src/OpenUrzednik.MF.WhiteList/Validation/**",
         "src/OpenUrzednik.MF.WhiteList/WhiteListOptions.cs",
         "src/OpenUrzednik.MF.WhiteList/WhiteListOptionsValidator.cs",

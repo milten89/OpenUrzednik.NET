@@ -134,6 +134,42 @@ public class WhiteListClientTest : IClassFixture<NbpHttpClientFixture>
         ShouldBeAProof(error.RequestId, error.RequestDateTime);
     }
 
+    [ManualFact]
+    public async Task CheckNipBankAccountAsync_TestSubjectWithAnAccountItDoesNotHave_ReturnsFalseWithTheProof()
+    {
+        // Act: the test subjects have no accounts, so the test host can only answer NIE (TAK is captured from production)
+        var result = await _client.CheckNipBankAccountAsync(TestNip, AccountNotOnTheTestHost, Yesterday(), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.AccountAssigned.ShouldBeFalse();
+        ShouldBeAProof(result.Value.RequestId, result.Value.RequestDateTime);
+    }
+
+    [ManualFact]
+    public async Task CheckNipBankAccountAsync_NipNotOnTheTestList_ReturnsFalseNotNotFound()
+    {
+        // Act
+        var result = await _client.CheckNipBankAccountAsync(NipNotOnTheTestHost, AccountNotOnTheTestHost, Yesterday(), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.AccountAssigned.ShouldBeFalse();
+        ShouldBeAProof(result.Value.RequestId, result.Value.RequestDateTime);
+    }
+
+    [ManualFact]
+    public async Task CheckRegonBankAccountAsync_TestSubjectWithAnAccountItDoesNotHave_ReturnsFalseWithTheProof()
+    {
+        // Act
+        var result = await _client.CheckRegonBankAccountAsync(TestRegon, AccountNotOnTheTestHost, Yesterday(), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.AccountAssigned.ShouldBeFalse();
+        ShouldBeAProof(result.Value.RequestId, result.Value.RequestDateTime);
+    }
+
     // The answer came minutes ago, in Warsaw time (+01:00 or +02:00).
     private static void ShouldBeAProof(string requestId, DateTimeOffset requestDateTime)
     {

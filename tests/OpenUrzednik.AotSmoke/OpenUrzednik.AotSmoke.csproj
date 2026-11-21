@@ -53,6 +53,8 @@
     <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\search-nip-not-found.json" LogicalName="wl-search-nip-not-found.json" />
     <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\search-bank-account.json" LogicalName="wl-search-bank-account.json" />
     <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\search-nips.json" LogicalName="wl-search-nips.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\check-nip-assigned.json" LogicalName="wl-check-nip-assigned.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\check-nip-not-assigned.json" LogicalName="wl-check-nip-not-assigned.json" />
   </ItemGroup>
 
 </Project>

@@ -121,4 +121,40 @@ public sealed class WhiteListClientLoggingTest
         logger.Entries.ShouldContain(e => e.Level == LogLevel.Warning && e.EventId.Id == WhiteListLogEvents.ErrorResponse);
         logger.Entries.ShouldAllBe(e => !e.Message.Contains("68125") && e.State.All(item => !$"{item.Value}".Contains("68125")));
     }
+
+    [Fact]
+    public async Task CheckNipBankAccountAsync_DateOutOfRange_LogsDebugEntry()
+    {
+        // Arrange
+        var logger = new RecordingLogger();
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage()));
+
+        // Act
+        await CreateSut(httpClient, logger).CheckNipBankAccountAsync(Nip, "61109010140000071219812874", new DateTime(2020, 12, 31), TestContext.Current.CancellationToken);
+
+        // Assert
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.Level.ShouldBe(LogLevel.Debug);
+        entry.EventId.ShouldBe(new EventId(WhiteListLogEvents.ValidationFailed, nameof(WhiteListLogEvents.ValidationFailed)));
+        entry.Message.ShouldBe("Validation failed for CheckNipBankAccountAsync");
+    }
+
+    [Fact]
+    public async Task CheckRegonBankAccountAsync_BadRequestEchoingTheValues_LogsNothingUnmasked()
+    {
+        // Arrange
+        var logger = new RecordingLogger();
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new StringContent("""{"message":"Nieprawidłowy 593728162 lub 61109010140000071219812874.","code":"WL-107"}""", Encoding.UTF8, "application/json"),
+        }));
+
+        // Act
+        await CreateSut(httpClient, logger).CheckRegonBankAccountAsync("593728162", "61109010140000071219812874", new DateTime(2026, 11, 2), TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Entries.ShouldContain(e => e.Level == LogLevel.Warning && e.EventId.Id == WhiteListLogEvents.ErrorResponse);
+        logger.Entries.ShouldAllBe(e => !e.Message.Contains("37281") && !e.Message.Contains("10901")
+            && e.State.All(item => !$"{item.Value}".Contains("37281") && !$"{item.Value}".Contains("10901")));
+    }
 }
