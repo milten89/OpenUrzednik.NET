@@ -14,6 +14,7 @@ using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Diagnostics;
 using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.MF.WhiteList;
+using OpenUrzednik.MF.WhiteList.Check;
 using OpenUrzednik.MF.WhiteList.Search;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Table;
@@ -175,6 +176,22 @@ using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl
         Describe(notOnList));
 }
 
+using (var httpClient = new HttpClient(new FixtureHandler()))
+{
+    var assigned = await new WhiteListClient(httpClient).CheckNipBankAccountAsync("5260250274", "59101010100075912222000000", whiteListDate);
+    Check("mf white list: a check answering TAK maps to true with the proof",
+        assigned.IsSuccess && assigned.Value == new AccountCheckResult(true, "PxqUV-99b2nhh", new DateTimeOffset(2026, 11, 21, 18, 14, 17, TimeSpan.FromHours(1))),
+        Describe(assigned));
+}
+
+using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl-check-nip-not-assigned.json")))
+{
+    var notAssigned = await new WhiteListClient(httpClient).CheckNipBankAccountAsync("3245174504", "61109010140000071219812874", whiteListDate);
+    Check("mf white list: a check answering NIE maps to false with the proof",
+        notAssigned.IsSuccess && notAssigned.Value is { AccountAssigned: false, RequestId: "wAaOW-99b2nhg" },
+        Describe(notAssigned));
+}
+
 // 3. Dependency injection: the default and a keyed registration, with logging.
 var services = new ServiceCollection();
 services.AddLogging(logging => logging.SetMinimumLevel(LogLevel.Debug));
@@ -252,6 +269,7 @@ internal sealed class FixtureHandler(HttpStatusCode? status = null, string? reso
             _ when path.EndsWith("/tables/a", StringComparison.OrdinalIgnoreCase) => "tables-a-latest.json",
             _ when path.EndsWith("/tables/c", StringComparison.OrdinalIgnoreCase) => "tables-c-latest.json",
             _ when path.Contains("/api/search/nip/") => "wl-search-nip.json",
+            _ when path.Contains("/api/check/nip/") => "wl-check-nip-assigned.json",
             _ when path.Contains("/api/search/bank-account/") => "wl-search-bank-account.json",
             _ when path.Contains("/api/search/nips/") => "wl-search-nips.json",
             _ => null,

@@ -38,7 +38,7 @@ public sealed partial class ClientConventionsTest
         // which runs the whole path: request, mapping and, for a single search, the not-on-list log; a batch of one gets it as its entry.
         using var httpClient = new HttpClient(new AsyncResponseHandler(() => new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent("""{"result":{"subject":null,"subjects":[],"entries":[{"identifier":"0","subjects":[]}],"requestDateTime":"20-11-2026 22:44:25","requestId":"rd9zq-99alll1"}}""",
+            Content = new StringContent("""{"result":{"subject":null,"subjects":[],"accountAssigned":"NIE","entries":[{"identifier":"0","subjects":[]}],"requestDateTime":"20-11-2026 22:44:25","requestId":"rd9zq-99alll1"}}""",
                 Encoding.UTF8, "application/json"),
         }));
         var clock = new FakeTimeProvider(new DateTimeOffset(2026, 11, 20, 11, 0, 0, TimeSpan.Zero));
@@ -55,6 +55,8 @@ public sealed partial class ClientConventionsTest
             "WhiteListClient.SearchByNipsAsync(nips, date)" => client.SearchByNipsAsync(["7368125416"], date, cancellationToken),
             "WhiteListClient.SearchByRegonsAsync(regons, date)" => client.SearchByRegonsAsync(["593728162"], date, cancellationToken),
             "WhiteListClient.SearchByBankAccountsAsync(bankAccounts, date)" => client.SearchByBankAccountsAsync(["61109010140000071219812874"], date, cancellationToken),
+            "WhiteListClient.CheckNipBankAccountAsync(nip, bankAccount, date)" => client.CheckNipBankAccountAsync("7368125416", "61109010140000071219812874", date, cancellationToken),
+            "WhiteListClient.CheckRegonBankAccountAsync(regon, bankAccount, date)" => client.CheckRegonBankAccountAsync("593728162", "61109010140000071219812874", date, cancellationToken),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, "A new public client method: add its call here."),
         });
 

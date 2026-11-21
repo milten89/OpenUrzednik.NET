@@ -1,16 +1,18 @@
 using OpenUrzednik.Core;
+using OpenUrzednik.MF.WhiteList.Check;
 using OpenUrzednik.MF.WhiteList.Search;
 
 namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// Searches the Ministry of Finance VAT White List (Wykaz podatników VAT, the API's <c>api/</c> path): the subject with a NIP or REGON, or
-/// the subjects with an account number, on a date; one identifier at a time or up to 30 in one batch.
+/// the subjects with an account number, on a date, one identifier at a time or up to 30 in one batch; and checks whether an account
+/// number is on the list for a NIP or REGON on a date.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Every answer of the register carries the proof of the check, <c>RequestId</c> and <c>RequestDateTime</c>: on the result, or, when the
-/// subject isn't on the list, on the <see cref="WhiteListNotFoundError"/>. The ministry stores every query; the <c>RequestId</c> may confirm
+/// Every answer of the register carries the proof of the check, <c>RequestId</c> and <c>RequestDateTime</c>: on the result, or, when a
+/// searched subject isn't on the list, on the <see cref="WhiteListNotFoundError"/>. A check always carries it on its result. The ministry stores every query; the <c>RequestId</c> may confirm
 /// before the tax authorities that the check was made, and the ministry advises keeping it. The library gives no legal advice.
 /// </para>
 /// <para>
@@ -168,4 +170,58 @@ public interface IWhiteListClient
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="bankAccounts"/> or one of its elements is <see langword="null"/>.</exception>
     Task<OpenUrzednikResult<BatchSearchResult>> SearchByBankAccountsAsync(IReadOnlyList<string> bankAccounts, DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks whether an account number is on the list for the NIP on a date (<c>check/nip/{nip}/bank-account/{account}</c>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The answer is <see cref="AccountCheckResult.AccountAssigned"/>: <see langword="true"/> (the API's <c>TAK</c>) when the account is on
+    /// the list for that active VAT taxpayer on the date, <see langword="false"/> (<c>NIE</c>) when it isn't. <c>NIE</c> covers an account
+    /// of another entity, and an entity that isn't on the list or isn't an active VAT taxpayer on the date: a check never returns a
+    /// <see cref="WhiteListNotFoundError"/>. The result carries the proof of the check, <c>RequestId</c> and <c>RequestDateTime</c>; the
+    /// ministry stores every query and advises keeping the <c>RequestId</c>. The library gives no legal advice.
+    /// </para>
+    /// <para>
+    /// The ministry limits each IP to 5,000 entities checked a day (this method checks one; the quota is separate from the 100 searches).
+    /// The date and identifiers are validated first, all errors together, and no request is sent for an invalid one; the identifiers
+    /// are masked everywhere the library writes them.
+    /// </para>
+    /// </remarks>
+    /// <param name="nip">The NIP: 10 digits, with or without spaces, hyphens and the <c>PL</c> prefix.</param>
+    /// <param name="bankAccount">The account number (NRB): 26 digits, with or without spaces, hyphens and the <c>PL</c> prefix.</param>
+    /// <param name="date">The date of the check: from 1 January of the fifth year back to today (Europe/Warsaw).</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>
+    /// The verdict with the proof of the check; a validation error for an invalid NIP, account number or date; or another error.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="nip"/> or <paramref name="bankAccount"/> is <see langword="null"/>.</exception>
+    Task<OpenUrzednikResult<AccountCheckResult>> CheckNipBankAccountAsync(string nip, string bankAccount, DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks whether an account number is on the list for the REGON on a date (<c>check/regon/{regon}/bank-account/{account}</c>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The answer is <see cref="AccountCheckResult.AccountAssigned"/>: <see langword="true"/> (the API's <c>TAK</c>) when the account is on
+    /// the list for that active VAT taxpayer on the date, <see langword="false"/> (<c>NIE</c>) when it isn't. <c>NIE</c> covers an account
+    /// of another entity, and an entity that isn't on the list or isn't an active VAT taxpayer on the date: a check never returns a
+    /// <see cref="WhiteListNotFoundError"/>. The result carries the proof of the check, <c>RequestId</c> and <c>RequestDateTime</c>; the
+    /// ministry stores every query and advises keeping the <c>RequestId</c>. The library gives no legal advice.
+    /// </para>
+    /// <para>
+    /// The ministry limits each IP to 5,000 entities checked a day (this method checks one; the quota is separate from the 100 searches).
+    /// The date and identifiers are validated first, all errors together, and no request is sent for an invalid one; the identifiers
+    /// are masked everywhere the library writes them.
+    /// </para>
+    /// </remarks>
+    /// <param name="regon">The REGON: 9 or 14 digits, with or without spaces and hyphens.</param>
+    /// <param name="bankAccount">The account number (NRB): 26 digits, with or without spaces, hyphens and the <c>PL</c> prefix.</param>
+    /// <param name="date">The date of the check: from 1 January of the fifth year back to today (Europe/Warsaw).</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>
+    /// The verdict with the proof of the check; a validation error for an invalid REGON, account number or date; or another error.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="regon"/> or <paramref name="bankAccount"/> is <see langword="null"/>.</exception>
+    Task<OpenUrzednikResult<AccountCheckResult>> CheckRegonBankAccountAsync(string regon, string bankAccount, DateTime date, CancellationToken cancellationToken = default);
 }

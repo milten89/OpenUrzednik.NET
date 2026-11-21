@@ -114,4 +114,26 @@ public sealed class WhiteListClientMetricsTest : IDisposable
         measurement.Tags.ShouldNotContain(tag => tag.Key == "error.type");
         measurement.Tags.ShouldAllBe(tag => !$"{tag.Value}".Contains("10901"));
     }
+
+    [Fact]
+    public async Task Constructor_MeterMetrics_CheckRecordsOnThatMeterWithoutIdentifiers()
+    {
+        // Arrange: a check answers NIE for an entity not on the list; that's a success, no error type
+        var meterName = $"OpenUrzednik.Tests.{Guid.NewGuid():N}";
+        using var recorder = new MeterRecorder(meterName);
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(
+            Json(HttpStatusCode.OK, """{"result":{"accountAssigned":"NIE","requestDateTime":"21-11-2026 18:14:16","requestId":"hifVE-99b2nhg"}}""")));
+        var sut = new WhiteListClient(httpClient, new WhiteListOptions { ApiUrl = $"https://{_host}/" }, Clock,
+            new OpenUrzednikTelemetry { Metrics = MeterMetrics.GetShared(meterName) });
+
+        // Act
+        var result = await sut.CheckNipBankAccountAsync("7368125416", "61109010140000071219812874", Date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var measurement = recorder.Measurements.ShouldHaveSingleItem();
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", "mf_white_list.check.nip_bank_account"));
+        measurement.Tags.ShouldNotContain(tag => tag.Key == "error.type");
+        measurement.Tags.ShouldAllBe(tag => !$"{tag.Value}".Contains("10901") && !$"{tag.Value}".Contains("68125"));
+    }
 }

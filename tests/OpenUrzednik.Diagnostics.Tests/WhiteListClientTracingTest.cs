@@ -109,4 +109,50 @@ public sealed class WhiteListClientTracingTest : IDisposable
         => _recorder.Stopped.SelectMany(activity => activity.TagObjects.Select(tag => $"{tag.Value}")
             .Concat(activity.Events.SelectMany(e => e.Tags.Select(tag => $"{tag.Value}")))
             .Append(activity.StatusDescription ?? string.Empty));
+
+    [Fact]
+    public async Task CheckNipBankAccountAsync_Answered_RecordsOperationAndHttpActivitiesWithoutNipOrAccount()
+    {
+        // Arrange: NIE, a success
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(
+            Json(HttpStatusCode.OK, """{"result":{"accountAssigned":"NIE","requestDateTime":"21-11-2026 18:14:16","requestId":"wAaOW-99b2nhg"}}""")));
+
+        // Act
+        var result = await CreateSut(httpClient).CheckNipBankAccountAsync(Nip, BankAccount, Date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Value.AccountAssigned.ShouldBeFalse();
+        var http = _recorder.Stopped[0];
+        var operation = _recorder.Stopped[1];
+        operation.OperationName.ShouldBe("mf_white_list.check.nip_bank_account");
+        operation.GetTagItem("mf_white_list.nip").ShouldBe("******5416");
+        operation.GetTagItem("mf_white_list.bank_account").ShouldBe("**********************2874");
+        operation.GetTagItem("mf_white_list.date").ShouldBe("2026-11-02");
+        operation.GetTagItem("error.type").ShouldBeNull();
+        operation.Status.ShouldBe(ActivityStatusCode.Unset);
+        http.GetTagItem("url.path").ShouldBe("/api/check/nip/{nip}/bank-account/{account}");
+        AllTagsAndEvents().ShouldAllBe(text => !text.Contains("68125") && !text.Contains("10901"));
+    }
+
+    [Fact]
+    public async Task CheckRegonBankAccountAsync_RateLimited_RecordsTheErrorWithoutRegonOrAccount()
+    {
+        // Arrange
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(
+            Json((HttpStatusCode)429, """{"message":"Limit żądań dla tego adresu IP został na dziś wyczerpany.","code":"WL-191"}""")));
+
+        // Act
+        var result = await CreateSut(httpClient).CheckRegonBankAccountAsync("593728162", BankAccount, Date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<WhiteListRateLimitExceededError>();
+        var http = _recorder.Stopped[0];
+        var operation = _recorder.Stopped[1];
+        operation.OperationName.ShouldBe("mf_white_list.check.regon_bank_account");
+        operation.GetTagItem("mf_white_list.regon").ShouldBe("*****8162");
+        operation.GetTagItem("mf_white_list.bank_account").ShouldBe("**********************2874");
+        operation.GetTagItem("error.type").ShouldBe("rateLimitExceeded");
+        http.GetTagItem("url.path").ShouldBe("/api/check/regon/{regon}/bank-account/{account}");
+        AllTagsAndEvents().ShouldAllBe(text => !text.Contains("37281") && !text.Contains("10901"));
+    }
 }
