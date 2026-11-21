@@ -58,7 +58,8 @@
         "src/OpenUrzednik.MF.WhiteList/Validation/**",
         "src/OpenUrzednik.MF.WhiteList/WhiteListOptions.cs",
         "src/OpenUrzednik.MF.WhiteList/WhiteListOptionsValidator.cs",
-        "src/OpenUrzednik.MF.WhiteList/WhiteList*Error.cs"
+        "src/OpenUrzednik.MF.WhiteList/WhiteList*Error.cs",
+        "src/OpenUrzednik.MF.WhiteList/WhiteListDateOnlyExtensions.cs"
       ],
       "break": 100
     },

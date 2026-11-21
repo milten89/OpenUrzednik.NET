@@ -45,6 +45,20 @@ public sealed partial class WhiteListStatusClientTest
     };
 
     [Fact]
+    public void GetVatStatusByNipAsync_NoDateNullNip_ThrowsBeforeReturningATask()
+    {
+        // Arrange
+        var sut = CreateSut(Fixture("status-nip-active.json"), out var handler);
+
+        // Act
+        var exception = Should.Throw<ArgumentNullException>(() => { _ = sut.GetVatStatusByNipAsync(null!, TestContext.Current.CancellationToken); });
+
+        // Assert
+        exception.ParamName.ShouldBe("nip");
+        handler.Request.ShouldBeNull();
+    }
+
+    [Fact]
     public void GetVatStatusByNipAsync_NullNip_ThrowsBeforeReturningATask()
     {
         // Arrange
@@ -431,6 +445,36 @@ public sealed partial class WhiteListStatusClientTest
 
         // Assert
         result.ShouldNotLeak(telemetry, Nip);
+    }
+
+    [Theory]
+    [MemberData(nameof(LeakAnswers))]
+    public async Task GetVatStatusByNipAsync_NoDateAnyAnswer_LeaksNoNip(int status, string body)
+    {
+        // Arrange
+        var telemetry = new RecordingTelemetry();
+        var sut = CreateSut(Json((HttpStatusCode)status, body.Replace("{id}", Nip)), out _, telemetry);
+
+        // Act
+        var result = await sut.GetVatStatusByNipAsync(Nip, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ShouldNotLeak(telemetry, Nip);
+    }
+
+    [Fact]
+    public async Task GetVatStatusByNipAsync_NoDateInvalidNip_LeaksNothing()
+    {
+        // Arrange
+        var telemetry = new RecordingTelemetry();
+        var sut = CreateSut(Fixture("status-nip-active.json"), out _, telemetry);
+
+        // Act
+        var result = await sut.GetVatStatusByNipAsync("7368125417", TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.ShouldNotLeak(telemetry, "7368125417");
     }
 
     [Fact]

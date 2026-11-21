@@ -58,6 +58,7 @@ public sealed partial class ClientConventionsTest
             "WhiteListClient.SearchByBankAccountsAsync(bankAccounts, date)" => client.SearchByBankAccountsAsync(["61109010140000071219812874"], date, cancellationToken),
             "WhiteListClient.CheckNipBankAccountAsync(nip, bankAccount, date)" => client.CheckNipBankAccountAsync("7368125416", "61109010140000071219812874", date, cancellationToken),
             "WhiteListClient.CheckRegonBankAccountAsync(regon, bankAccount, date)" => client.CheckRegonBankAccountAsync("593728162", "61109010140000071219812874", date, cancellationToken),
+            "WhiteListStatusClient.GetVatStatusByNipAsync(nip)" => statusClient.GetVatStatusByNipAsync("7368125416", cancellationToken),
             "WhiteListStatusClient.GetVatStatusByNipAsync(nip, date)" => statusClient.GetVatStatusByNipAsync("7368125416", date, cancellationToken),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, "A new public client method: add its call here."),
         });

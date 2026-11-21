@@ -44,16 +44,28 @@ namespace OpenUrzednik.MF.WhiteList;
 public interface IWhiteListStatusClient
 {
     /// <summary>
-    /// Gets the VAT status of a NIP on a date (<c>status/nip/{nip}</c>).
+    /// Gets the VAT status of a NIP today (<c>status/nip/{nip}</c> without a date): the API answers for its own today, and
+    /// <see cref="VatStatusResult.Date"/> says which day that was.
     /// </summary>
     /// <param name="nip">The NIP: 10 digits, with or without spaces, hyphens and the <c>PL</c> prefix.</param>
-    /// <param name="date">The day to ask for: from 1 January of the fifth year back to today (Europe/Warsaw); <see langword="null"/> asks for
-    /// today, and <see cref="VatStatusResult.Date"/> then says which day the API answered for.</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>
+    /// The status with the proof of the check; a <see cref="WhiteListNotFoundError"/> with the proof when the NIP isn't in the VAT register;
+    /// a validation error for an invalid NIP; or another error.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="nip"/> is <see langword="null"/>.</exception>
+    Task<OpenUrzednikResult<VatStatusResult>> GetVatStatusByNipAsync(string nip, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the VAT status of a NIP on a date (<c>status/nip/{nip}?date=…</c>).
+    /// </summary>
+    /// <param name="nip">The NIP: 10 digits, with or without spaces, hyphens and the <c>PL</c> prefix.</param>
+    /// <param name="date">The day to ask for: from 1 January of the fifth year back to today (Europe/Warsaw); the time of day is ignored.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>
     /// The status with the proof of the check; a <see cref="WhiteListNotFoundError"/> with the proof when the NIP isn't in the VAT register;
     /// a validation error for an invalid NIP or date; or another error.
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="nip"/> is <see langword="null"/>.</exception>
-    Task<OpenUrzednikResult<VatStatusResult>> GetVatStatusByNipAsync(string nip, DateTime? date = null, CancellationToken cancellationToken = default);
+    Task<OpenUrzednikResult<VatStatusResult>> GetVatStatusByNipAsync(string nip, DateTime date, CancellationToken cancellationToken = default);
 }

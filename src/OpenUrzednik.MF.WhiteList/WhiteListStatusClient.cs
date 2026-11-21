@@ -47,7 +47,15 @@ public sealed class WhiteListStatusClient : IWhiteListStatusClient
     }
 
     /// <inheritdoc/>
-    public Task<OpenUrzednikResult<VatStatusResult>> GetVatStatusByNipAsync(string nip, DateTime? date = null, CancellationToken cancellationToken = default)
+    public Task<OpenUrzednikResult<VatStatusResult>> GetVatStatusByNipAsync(string nip, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(nip);
+
+        return GetVatStatusByNipCoreAsync(nip, null, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public Task<OpenUrzednikResult<VatStatusResult>> GetVatStatusByNipAsync(string nip, DateTime date, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(nip);
 
