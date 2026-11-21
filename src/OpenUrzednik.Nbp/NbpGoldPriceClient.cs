@@ -131,7 +131,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         var day = DateOnly.FromDateTime(date);
         using var operation = _pipeline.StartOperation("nbp.gold.date");
         var traceSpan = operation.Span;
-        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.date", day, static d => d.ToIso8601String());
 
         var validation = new GoldDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate();
 
@@ -146,8 +146,8 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         var toDay = DateOnly.FromDateTime(to);
         using var operation = _pipeline.StartOperation("nbp.gold.range");
         var traceSpan = operation.Span;
-        traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
-        traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.from", fromDay, static d => d.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.to", toDay, static d => d.ToIso8601String());
 
         var validation = new GoldDateValidator(nameof(to), toDay, WarsawCalendar.Today(_timeProvider)).Validate()
             .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxRatesDateRange).Validate());
@@ -162,7 +162,7 @@ public sealed class NbpGoldPriceClient : INbpGoldPriceClient
         var day = DateOnly.FromDateTime(date);
         using var operation = _pipeline.StartOperation("nbp.gold.last_published_before");
         var traceSpan = operation.Span;
-        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.date", day, static d => d.ToIso8601String());
 
         var validation = new LastPublishedBeforeDateValidator(nameof(date), day, GoldDateValidator.MinDate, WarsawCalendar.Today(_timeProvider)).Validate();
 

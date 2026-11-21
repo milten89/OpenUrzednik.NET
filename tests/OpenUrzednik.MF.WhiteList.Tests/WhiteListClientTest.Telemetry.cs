@@ -46,6 +46,24 @@ public sealed partial class WhiteListClientTest
 
     [Theory]
     [MemberData(nameof(Methods))]
+    public async Task SearchAsync_SpanNotRecording_DoesNotMaskTheIdentifierForATag(string method, string spanName, string tag, string masked)
+    {
+        // Arrange: a span nobody records gets no masked identifier, so the call doesn't build one (#345)
+        var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(false);
+        var sut = CreateSut(new HttpResponseMessage(HttpStatusCode.NotFound), out _, traceSource: tracer);
+
+        // Act
+        await CallAsync(sut, method, Date);
+
+        // Assert
+        tracer.Received(1).StartSpan(spanName);
+        span.DidNotReceive().SetTag(tag, Arg.Any<string>());
+        span.DidNotReceive().SetTag(Arg.Any<string>(), masked);
+    }
+
+    [Theory]
+    [MemberData(nameof(Methods))]
     public async Task SearchAsync_NotOnTheList_LogsNotOnListAndRecordsNotFoundOnTheSpan(string method, string spanName, string tag, string masked)
     {
         // Arrange

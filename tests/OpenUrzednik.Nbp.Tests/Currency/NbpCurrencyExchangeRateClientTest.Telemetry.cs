@@ -167,14 +167,17 @@ public partial class NbpCurrencyExchangeRateClientTest
         span.Received(1).SetTag("nbp.table", "A");
     }
 
-    [Fact]
-    public async Task GetAsync_Date_StartsSpanWithCurrencyAndDateTags()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetAsync_Date_SetsTheDateTagOnlyWhileRecording(bool recording)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var date = faker.Date.AfterCurrencyMinDate();
         var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, currency, urlBuilder);
@@ -188,11 +191,13 @@ public partial class NbpCurrencyExchangeRateClientTest
         tracer.Received(1).StartSpan("nbp.currency.date");
         span.Received(1).SetTag("nbp.currency", currency);
         span.Received(1).SetTag("nbp.table", "A");
-        span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
-    [Fact]
-    public async Task GetAsync_DateRange_StartsSpanWithCurrencyAndRangeTags()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetAsync_DateRange_SetsTheDateTagsOnlyWhileRecording(bool recording)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -200,6 +205,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var from = faker.Date.AfterCurrencyMinDate();
         var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, currency, urlBuilder);
@@ -213,8 +219,8 @@ public partial class NbpCurrencyExchangeRateClientTest
         tracer.Received(1).StartSpan("nbp.currency.range");
         span.Received(1).SetTag("nbp.currency", currency);
         span.Received(1).SetTag("nbp.table", "A");
-        span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-        span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -282,14 +288,17 @@ public partial class NbpCurrencyExchangeRateClientTest
         span.Received(1).SetTag("nbp.currency", currency);
     }
 
-    [Fact]
-    public async Task GetBuySellAsync_Date_StartsSpanWithTags()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetBuySellAsync_Date_SetsTheDateTagOnlyWhileRecording(bool recording)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var currency = faker.Finance.Currency().Code;
         var date = faker.Date.AfterCurrencyMinDate();
         var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
@@ -302,11 +311,13 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.buy_sell_date");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
-    [Fact]
-    public async Task GetBuySellAsync_DateRange_StartsSpanWithTags()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetBuySellAsync_DateRange_SetsTheDateTagsOnlyWhileRecording(bool recording)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -314,6 +325,7 @@ public partial class NbpCurrencyExchangeRateClientTest
         var from = faker.Date.AfterCurrencyMinDate();
         var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
         var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
@@ -326,8 +338,61 @@ public partial class NbpCurrencyExchangeRateClientTest
         // Assert
         tracer.Received(1).StartSpan("nbp.currency.buy_sell_range");
         span.Received(1).SetTag("nbp.currency", currency);
-        span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-        span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetLastPublishedBeforeAsync_Date_SetsTheDateTagOnlyWhileRecording(bool recording)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        var date = faker.Date.AfterCurrencyMinDate();
+        var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDateRange(date.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), date.AddDays(-1)).Returns(faker.Internet.UrlRootedPath());
+        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.A, currency, urlBuilder);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
+
+        // Act
+        await sut.GetLastPublishedBeforeAsync(currency, date, cancellationToken: TestContext.Current.CancellationToken);
+
+        // Assert
+        tracer.Received(1).StartSpan("nbp.currency.last_published_before");
+        span.Received(1).SetTag("nbp.currency", currency);
+        span.Received(1).SetTag("nbp.table", "A");
+        span.Received(recording ? 1 : 0).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetBuySellLastPublishedBeforeAsync_Date_SetsTheDateTagOnlyWhileRecording(bool recording)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var currency = faker.Finance.Currency().Code;
+        var date = faker.Date.AfterCurrencyMinDate();
+        var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDateRange(date.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), date.AddDays(-1)).Returns(faker.Internet.UrlRootedPath());
+        var urlBuilderFactory = CreateUrlBuilderFactory(NbpTable.C, currency, urlBuilder);
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, urlBuilderFactory, tracer: tracer);
+
+        // Act
+        await sut.GetBuySellLastPublishedBeforeAsync(currency, date, TestContext.Current.CancellationToken);
+
+        // Assert
+        tracer.Received(1).StartSpan("nbp.currency.buy_sell_last_published_before");
+        span.Received(1).SetTag("nbp.currency", currency);
+        span.Received(recording ? 1 : 0).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     private static (IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span, IOpenUrzednikTraceSource Tracer) CreateTelemetrySubstitutes()

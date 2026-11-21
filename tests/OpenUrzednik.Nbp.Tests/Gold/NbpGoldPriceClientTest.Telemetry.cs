@@ -16,13 +16,16 @@ namespace OpenUrzednik.Nbp.Tests.Gold;
 
 public partial class NbpGoldPriceClientTest
 {
-    [Fact]
-    public async Task GetAsync_Date_StartsSpanWithDateTag()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetAsync_Date_SetsTheDateTagOnlyWhileRecording(bool recording)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var date = faker.Date.AfterGoldMinDate();
         var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDate(date).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
@@ -33,7 +36,7 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         tracer.Received(1).StartSpan("nbp.gold.date");
-        span.Received(1).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -152,14 +155,17 @@ public partial class NbpGoldPriceClientTest
         tracer.Received(1).StartSpan("nbp.gold.today");
     }
 
-    [Fact]
-    public async Task GetAsync_DateRange_StartsSpanWithRangeTags()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetAsync_DateRange_SetsTheDateTagsOnlyWhileRecording(bool recording)
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
         var from = faker.Date.AfterGoldMinDate();
         var to = from.AddDays(faker.Random.Int(1, DateRangeValidator.MaxRatesDateRange));
         var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
         var urlBuilder = Substitute.For<INbpUrlBuilder>();
         urlBuilder.ForDateRange(from, to).Returns(faker.Internet.UrlRootedPath());
         using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
@@ -170,10 +176,32 @@ public partial class NbpGoldPriceClientTest
 
         // Assert
         tracer.Received(1).StartSpan("nbp.gold.range");
-        span.Received(1).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-        span.Received(1).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        span.Received(recording ? 1 : 0).SetTag("nbp.to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetLastPublishedBeforeAsync_Date_SetsTheDateTagOnlyWhileRecording(bool recording)
+    {
+        // Arrange
+        var faker = new Faker().WithConstantSeed();
+        var date = faker.Date.AfterGoldMinDate();
+        var (_, span, tracer) = CreateTelemetrySubstitutes();
+        span.IsRecording.Returns(recording);
+        var urlBuilder = Substitute.For<INbpUrlBuilder>();
+        urlBuilder.ForDateRange(date.AddDays(-LastPublishedBeforeDateValidator.DailyWindowDays), date.AddDays(-1)).Returns(faker.Internet.UrlRootedPath());
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.NotFound), out _);
+        var sut = CreateApiClient(httpClient, urlBuilder, tracer: tracer);
+
+        // Act
+        await sut.GetLastPublishedBeforeAsync(date, TestContext.Current.CancellationToken);
+
+        // Assert
+        tracer.Received(1).StartSpan("nbp.gold.last_published_before");
+        span.Received(recording ? 1 : 0).SetTag("nbp.date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+    }
 
     private static (IOpenUrzednikLogger Logger, IOpenUrzednikSpan Span, IOpenUrzednikTraceSource Tracer) CreateTelemetrySubstitutes()
     {

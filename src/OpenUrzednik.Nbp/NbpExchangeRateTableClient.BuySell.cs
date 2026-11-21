@@ -1,4 +1,5 @@
 using OpenUrzednik.Core;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Nbp.UrlBuilder;
 using OpenUrzednik.Nbp.Validation;
@@ -46,7 +47,7 @@ public sealed partial class NbpExchangeRateTableClient
         var day = DateOnly.FromDateTime(date);
         using var operation = _pipeline.StartOperation("nbp.table.buy_sell_date");
         var traceSpan = operation.Span;
-        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.date", day, static d => d.ToIso8601String());
 
         var validation = new CurrencyDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate();
 
@@ -61,8 +62,8 @@ public sealed partial class NbpExchangeRateTableClient
         var toDay = DateOnly.FromDateTime(to);
         using var operation = _pipeline.StartOperation("nbp.table.buy_sell_range");
         var traceSpan = operation.Span;
-        traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
-        traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.from", fromDay, static d => d.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.to", toDay, static d => d.ToIso8601String());
 
         var validation = new CurrencyDateValidator(nameof(to), toDay, WarsawCalendar.Today(_timeProvider)).Validate()
             .And(new DateRangeValidator(nameof(from), nameof(to), (fromDay, toDay), DateRangeValidator.MaxTablesDateRange).Validate());
@@ -77,7 +78,7 @@ public sealed partial class NbpExchangeRateTableClient
         var day = DateOnly.FromDateTime(date);
         using var operation = _pipeline.StartOperation("nbp.table.buy_sell_last_published_before");
         var traceSpan = operation.Span;
-        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.date", day, static d => d.ToIso8601String());
 
         var validation = new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, WarsawCalendar.Today(_timeProvider)).Validate();
 

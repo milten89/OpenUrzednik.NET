@@ -1,4 +1,5 @@
 using OpenUrzednik.Core;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Identifiers;
 using OpenUrzednik.MF.WhiteList.Common;
 using OpenUrzednik.MF.WhiteList.Search;
@@ -22,7 +23,7 @@ public sealed partial class WhiteListClient
         var day = DateOnly.FromDateTime(date);
         using var operation = _pipeline.StartOperation("mf_white_list.search.nip");
         var traceSpan = operation.Span;
-        traceSpan.SetTag("mf_white_list.nip", SensitiveValue.Mask(nip));
+        traceSpan.SetTagIfRecording("mf_white_list.nip", nip, static v => SensitiveValue.Mask(v));
         var dayText = day.ToIso8601String();
         traceSpan.SetTag("mf_white_list.date", dayText);
 

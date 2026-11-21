@@ -1,4 +1,5 @@
 using OpenUrzednik.Core;
+using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.Nbp.Currency;
 using OpenUrzednik.Nbp.Extensions;
 using OpenUrzednik.Nbp.Table;
@@ -92,7 +93,7 @@ public sealed partial class NbpCurrencyExchangeRateClient
         var traceSpan = operation.Span;
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table.ToTagValue());
-        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.date", day, static d => d.ToIso8601String());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
             .And(new CurrencyDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate());
@@ -118,8 +119,8 @@ public sealed partial class NbpCurrencyExchangeRateClient
         var traceSpan = operation.Span;
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table.ToTagValue());
-        traceSpan.SetTag("nbp.from", fromDay.ToIso8601String());
-        traceSpan.SetTag("nbp.to", toDay.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.from", fromDay, static d => d.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.to", toDay, static d => d.ToIso8601String());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
             .And(new CurrencyDateValidator(nameof(to), toDay, WarsawCalendar.Today(_timeProvider)).Validate())
@@ -145,7 +146,7 @@ public sealed partial class NbpCurrencyExchangeRateClient
         var traceSpan = operation.Span;
         traceSpan.SetTag("nbp.currency", currency);
         traceSpan.SetTag("nbp.table", table.ToTagValue());
-        traceSpan.SetTag("nbp.date", day.ToIso8601String());
+        traceSpan.SetTagIfRecording("nbp.date", day, static d => d.ToIso8601String());
 
         var validation = new Iso4217Validator(nameof(currency), currency).Validate()
             .And(new LastPublishedBeforeDateValidator(nameof(date), day, CurrencyDateValidator.MinDate, WarsawCalendar.Today(_timeProvider)).Validate());
