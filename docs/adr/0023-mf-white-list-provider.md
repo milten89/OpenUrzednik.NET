@@ -63,7 +63,7 @@ Chosen option: the first, because it follows the reference provider's structure,
 
 * `null` throws `ArgumentNullException` synchronously (ADR-0002).
 * NIP, REGON and account numbers go through the shared validators of `src/Identifiers` (separators, and a `PL` prefix for NIP and accounts, are accepted; the normalized digits are sent); an invalid one is a `ValidationError<string>` with the value masked.
-* A date, required on `api/` and optional on WL2, must not be in the future and not before 1 January of the fifth year back, both by the Warsaw calendar (`TimeProvider`), as art. 96b ust. 2 sets for the list: a `ValidationError<DateTime>`. The ministry doesn't document WL2's range; its `D` code (below) covers a difference.
+* A date, required on `api/` and optional on WL2, must not be in the future and not before 1 January of the fifth year back, both by the Warsaw calendar (`TimeProvider`), as art. 96b ust. 2 sets for the list: a `ValidationError<DateTime>`. The ministry doesn't document WL2's range, but the test host enforced the same one on 2026-11-21; its `D` code (below) covers a later difference.
 * A batch takes 1 to 30 identifiers: a `null` collection or a `null` element throws `ArgumentNullException`, and an empty one or more than 30 is a `ValidationError`. Every invalid identifier is a `ValidationError<string>` named after its position (`nips[3]`, the value masked), and the call returns all of them, which `EnsureSuccess()` throws as one `OpenUrzednikValidationException` (ADR-0002). Duplicates are sent, as the API accepts them.
 
 **Answers and the proof**
@@ -107,7 +107,7 @@ The profile's `MapErrorAsync` reads `{message, code}`, masks the identifiers the
 * Tags: `mf_white_list.date`; `mf_white_list.nip`, `mf_white_list.regon` and `mf_white_list.bank_account`, always through `SensitiveValue.Mask`; `mf_white_list.count` for a batch, which carries no identifiers.
 * Every request uses a display path (`search/nip/{nip}`, `search/nips/{nips}`, `check/nip/{nip}/bank-account/{account}`, `status/nip/{nip}`, relative to the client's base address), which replaces the URI in `url.path`, logs, messages and `ErrorResponseContext.RequestPath` ([ADR-0019](0019-shared-http-layer-tested-through-test-host.md)); the DI package uses `AddOpenUrzednikDisplayPathLogging()` ([ADR-0017](0017-http-client-logging-for-identifier-paths.md)). The README says that traces (`url.full`) still carry the path.
 * Response data (names, addresses, accounts) is never logged or put into errors; it goes only to the caller, who is responsible for it under the GDPR.
-* `WhiteListLogEvents` lists the shared HTTP events (1xxx) and the provider's own (2xxx).
+* `WhiteListLogEvents` lists the shared HTTP events (1xxx) and the provider's own (2xxx). Not on the list (`api/` no subject, WL2 `B`) is `NotOnList` at Debug; a rejection inside a 200 that the local validation should have prevented, or the service switched off (WL2 `I`, `D`, `X`), is `QueryRejected` at Warning, with only the operation and the one-letter code, never the NIP.
 
 **Implementation:** issues [#257](https://github.com/milten89/OpenUrzednik.NET/issues/257)–[#264](https://github.com/milten89/OpenUrzednik.NET/issues/264), one per PR. The packages stay `IsPackable=false` until the last one (ADR-0016).
 
@@ -122,7 +122,7 @@ The profile's `MapErrorAsync` reads `{message, code}`, masks the identifiers the
 * Bad, because an app plugs the retry filter into its handler itself (a few lines), instead of one call.
 * Bad, because the date bound, the quota and the midnight block come from the statute and the ministry's pages, not from a contract: if the ministry changes them, local validation may reject a date the API accepts, or `RetryAfter` may be wrong, until a patch.
 * Bad, because the 429 fixture is built from the error-code table, not captured.
-* Bad, because WL2 reuses `api/`'s date bound, which the ministry doesn't document for WL2.
+* Bad, because WL2 reuses `api/`'s date bound, which the ministry doesn't document for WL2 (it matched on the test host on 2026-11-21, but may change without notice).
 
 ### Confirmation
 
@@ -167,7 +167,7 @@ The profile's `MapErrorAsync` reads `{message, code}`, masks the identifiers the
 ## More Information
 
 * Sources, read on 2026-11-08: the [API page](https://www.gov.pl/web/kas/api-wykazu-podatnikow-vat) with the specification v1.6.2 of 05.11.2026, its [Swagger contract](https://www.gov.pl/attachment/a4ef85db-b8ae-47b0-becf-ca18673c8826), [description](https://www.gov.pl/attachment/6edec876-361c-4b01-b601-2c9257dc49d4), [error-code table](https://www.gov.pl/attachment/0e0722a4-6313-4259-9c6c-6a4b13a79800) and [test data](https://www.gov.pl/attachment/0daec8b8-5ff3-4e92-852d-b7a49fd80bff); the [FAQ](https://www.gov.pl/web/kas/pytania-i-odpowiedzi) and the [list's page](https://www.gov.pl/web/kas/wykaz-podatnikow-vat); the acts linked above (consolidated texts of 2025–2026). Live probes of the test and production hosts on the same day (the date bound, the batch limit and duplicates, the quota).
-* Not documented by the ministry: whether a batch counts as one or as up to 30 of the 100 daily searches, the real body of a blocked response, the rules for querying too fast, and WL2's date range.
+* Not documented by the ministry: whether a batch counts as one or as up to 30 of the 100 daily searches, the real body of a blocked response, the rules for querying too fast, and WL2's date range (observed on the test host on 2026-11-21 to match `api/`'s: a date before 1 January five years back or in the future answered `D`, and a query without a date answered with today's `requestedDate`).
 * Issue: [#212](https://github.com/milten89/OpenUrzednik.NET/issues/212). The maintainer settled the open decisions in chat on 2026-11-08.
 
 ### Corrections before release
@@ -175,3 +175,4 @@ The profile's `MapErrorAsync` reads `{message, code}`, masks the identifiers the
 * 2026-11-10 · [#258](https://github.com/milten89/OpenUrzednik.NET/issues/258) · The error types and `IWhiteListErrorCode` live in the root namespace `OpenUrzednik.MF.WhiteList`; the shared key `whiteListCode` is `WhiteListErrorMetadata.WhiteListCodeMetadataKey`, and `requestId` and `requestDateTime` are constants on `WhiteListNotFoundError`; `WhiteListCode` holds only a code of the documented shape (`WL-` and three digits, or one WL2 letter), else `null`; `ApiUrl` is the host root, and a path ending in `api/` or `api2/` is rejected. Reason: the skeleton's review placed the keys like Core's (a key one type adds is a constant on that type), kept a proxy's or a changed API's text out of messages and metadata, and caught a doubled `api/api/` path.
 * 2026-11-19 · [#311](https://github.com/milten89/OpenUrzednik.NET/issues/311) · `MapErrorAsync` also masks identifiers the API echoes with separators (`736-812-54-16`, a grouped account number), not only plain digit runs. An identifier whose own separators mix styles stays unmasked, which the method's documentation states (the API echoes the plain digits it was sent). Reason: the review of #310 showed formatted echoes passing unmasked.
 * 2026-11-20 · [#220](https://github.com/milten89/OpenUrzednik.NET/issues/220) · The flat-file package's 7z reader is SharpCompress ([ADR-0024](0024-dependency-policy-with-a-7z-reader.md), which supersedes ADR-0004 and is now cited instead); the record no longer points to a future ADR. Reason: #220 decided it.
+* 2026-11-21 · [#262](https://github.com/milten89/OpenUrzednik.NET/issues/262) · WL2's date range was observed on the test host to match `api/`'s, so the record says so instead of only "not documented"; WL2's `I`, `D` and `X` answers are logged as a new event `QueryRejected` (2004) at Warning, with only the operation and the code. Reason: probes for #262 and the maintainer's decision.

@@ -21,6 +21,8 @@ OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByRegonAsync(string! regon, Sys
 OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByRegonsAsync(System.Collections.Generic.IReadOnlyList<string!>! regons, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.IWhiteListErrorCode
 OpenUrzednik.MF.WhiteList.IWhiteListErrorCode.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.IWhiteListStatusClient
+OpenUrzednik.MF.WhiteList.IWhiteListStatusClient.GetVatStatusByNipAsync(string! nip, System.DateTime? date = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Status.VatStatusResult!>>!
 OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry
 OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.<Clone>$() -> OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry!
 OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.BatchSearchEntry(string! Identifier, System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.Subject!>! Subjects, OpenUrzednik.Core.Errors.OpenUrzednikError? Error) -> void
@@ -128,6 +130,19 @@ OpenUrzednik.MF.WhiteList.Search.VatStatus
 OpenUrzednik.MF.WhiteList.Search.VatStatus.Active = 1 -> OpenUrzednik.MF.WhiteList.Search.VatStatus
 OpenUrzednik.MF.WhiteList.Search.VatStatus.Exempt = 2 -> OpenUrzednik.MF.WhiteList.Search.VatStatus
 OpenUrzednik.MF.WhiteList.Search.VatStatus.NotRegistered = 3 -> OpenUrzednik.MF.WhiteList.Search.VatStatus
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.<Clone>$() -> OpenUrzednik.MF.WhiteList.Status.VatStatusResult!
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.Date.get -> System.DateTime
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.Date.init -> void
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.Deconstruct(out OpenUrzednik.MF.WhiteList.Search.VatStatus VatStatus, out System.DateTime Date, out string! RequestId, out System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.Equals(OpenUrzednik.MF.WhiteList.Status.VatStatusResult? other) -> bool
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.RequestDateTime.get -> System.DateTimeOffset
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.RequestDateTime.init -> void
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.RequestId.get -> string!
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.RequestId.init -> void
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.VatStatus.get -> OpenUrzednik.MF.WhiteList.Search.VatStatus
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.VatStatus.init -> void
+OpenUrzednik.MF.WhiteList.Status.VatStatusResult.VatStatusResult(OpenUrzednik.MF.WhiteList.Search.VatStatus VatStatus, System.DateTime Date, string! RequestId, System.DateTimeOffset RequestDateTime) -> void
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListBadRequestError(string! message, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListCode.get -> string?
@@ -167,6 +182,10 @@ OpenUrzednik.MF.WhiteList.WhiteListServiceInactiveError.WhiteListServiceInactive
 OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError
 OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError.WhiteListCode.get -> string?
 OpenUrzednik.MF.WhiteList.WhiteListServiceUnavailableError.WhiteListServiceUnavailableError(string! message, System.Net.HttpStatusCode statusCode, string? whiteListCode) -> void
+OpenUrzednik.MF.WhiteList.WhiteListStatusClient
+OpenUrzednik.MF.WhiteList.WhiteListStatusClient.GetVatStatusByNipAsync(string! nip, System.DateTime? date = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Status.VatStatusResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListStatusClient.WhiteListStatusClient(System.Net.Http.HttpClient! httpClient) -> void
+OpenUrzednik.MF.WhiteList.WhiteListStatusClient.WhiteListStatusClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.MF.WhiteList.WhiteListOptions? options = null, System.TimeProvider? timeProvider = null, OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry? telemetry = null) -> void
 OpenUrzednik.MF.WhiteList.WhiteListTelemetry
 OpenUrzednik.MF.WhiteList.WhiteListUnknownError
 OpenUrzednik.MF.WhiteList.WhiteListUnknownError.WhiteListCode.get -> string?
@@ -182,6 +201,7 @@ const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.ErrorResponse = 1108 -> int
 const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.MappingFailed = 2003 -> int
 const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.NotFound = 1101 -> int
 const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.NotOnList = 2002 -> int
+const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.QueryRejected = 2004 -> int
 const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.RateLimited = 1105 -> int
 const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.RequestRejected = 1003 -> int
 const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.RequestTimedOut = 1001 -> int
@@ -216,6 +236,9 @@ override OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.ToString() -> stri
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.Equals(object? obj) -> bool
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.GetHashCode() -> int
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.ToString() -> string!
+override OpenUrzednik.MF.WhiteList.Status.VatStatusResult.Equals(object? obj) -> bool
+override OpenUrzednik.MF.WhiteList.Status.VatStatusResult.GetHashCode() -> int
+override OpenUrzednik.MF.WhiteList.Status.VatStatusResult.ToString() -> string!
 static OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.operator !=(OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? left, OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? right) -> bool
 static OpenUrzednik.MF.WhiteList.Check.AccountCheckResult.operator ==(OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? left, OpenUrzednik.MF.WhiteList.Check.AccountCheckResult? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.operator !=(OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? left, OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? right) -> bool
@@ -230,3 +253,5 @@ static OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.operator !=(OpenUrze
 static OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.operator ==(OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult? left, OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.operator !=(OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? left, OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.operator ==(OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? left, OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult? right) -> bool
+static OpenUrzednik.MF.WhiteList.Status.VatStatusResult.operator !=(OpenUrzednik.MF.WhiteList.Status.VatStatusResult? left, OpenUrzednik.MF.WhiteList.Status.VatStatusResult? right) -> bool
+static OpenUrzednik.MF.WhiteList.Status.VatStatusResult.operator ==(OpenUrzednik.MF.WhiteList.Status.VatStatusResult? left, OpenUrzednik.MF.WhiteList.Status.VatStatusResult? right) -> bool

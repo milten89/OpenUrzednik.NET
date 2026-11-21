@@ -76,6 +76,88 @@ public sealed class WhiteListPayloadTest
     }
 
     [Fact]
+    public void ParseRequestDateTime_WithAFieldName_ReturnsTheInstant()
+    {
+        // Act
+        var result = WhiteListPayload.ParseRequestDateTime("21-11-2026 19:58:34", WhiteListPayload.ResponseDateTimeField);
+
+        // Assert
+        result.ShouldBe(new DateTimeOffset(2026, 11, 21, 19, 58, 34, TimeSpan.FromHours(1)));
+    }
+
+    [Fact]
+    public void ParseRequestDateTime_NullWithAFieldName_ThrowsNamingThatField()
+    {
+        // Act & Assert
+        Should.Throw<InvalidPayloadException>(() => WhiteListPayload.ParseRequestDateTime(null, "responseDateTime"))
+            .Message.ShouldBe("MF White List API response is missing 'responseDateTime'.");
+    }
+
+    [Fact]
+    public void ParseRequestDateTime_OtherFormatWithAFieldName_ThrowsNamingThatField()
+    {
+        // Act & Assert
+        Should.Throw<InvalidPayloadException>(() => WhiteListPayload.ParseRequestDateTime("2026-11-21", "responseDateTime"))
+            .Message.ShouldBe("MF White List API response has a 'responseDateTime' not in the format dd-MM-yyyy HH:mm:ss.");
+    }
+
+    [Fact]
+    public void ParseRequestDateTime_TimeInTheSpringGapWithAFieldName_ThrowsNamingThatField()
+    {
+        // Act & Assert
+        Should.Throw<InvalidPayloadException>(() => WhiteListPayload.ParseRequestDateTime("29-03-2026 02:30:00", "responseDateTime"))
+            .Message.ShouldBe("MF White List API response has a 'responseDateTime' that doesn't exist in Warsaw (the hour skipped when daylight saving time starts, or before year 1).");
+    }
+
+    [Theory]
+    [InlineData("02-11-2026", 2026, 11, 2)]
+    [InlineData("31-12-2020", 2020, 12, 31)]
+    [InlineData("01-01-2021", 2021, 1, 1)]
+    public void ParseRequestedDate_DayMonthYear_ReturnsMidnightWithUnspecifiedKind(string value, int year, int month, int day)
+    {
+        // Act
+        var result = WhiteListPayload.ParseRequestedDate(value);
+
+        // Assert
+        result.ShouldBe(new DateTime(year, month, day));
+        result.Kind.ShouldBe(DateTimeKind.Unspecified);
+    }
+
+    [Fact]
+    public void ParseRequestedDate_Null_ThrowsMissing()
+    {
+        // Act & Assert
+        Should.Throw<InvalidPayloadException>(() => WhiteListPayload.ParseRequestedDate(null))
+            .Message.ShouldBe("MF White List API response is missing 'requestedDate'.");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("2026-11-02")] // ISO order
+    [InlineData("2-11-2026")] // no leading zero
+    [InlineData("02-11-2026 10:00:00")] // with a time
+    [InlineData("31-11-2026")] // no such day
+    public void ParseRequestedDate_OtherFormat_ThrowsWithoutTheValue(string value)
+    {
+        // Act & Assert
+        Should.Throw<InvalidPayloadException>(() => WhiteListPayload.ParseRequestedDate(value))
+            .Message.ShouldBe("MF White List API response has a 'requestedDate' not in the format dd-MM-yyyy.");
+    }
+
+    [Fact]
+    public void ParseRequestedDate_AnotherCulture_UsesTheInvariantCalendar()
+    {
+        // Arrange: a culture with another calendar must not shift the year
+        using var _ = new OpenUrzednik.TestCommon.CultureScope("th-TH");
+
+        // Act
+        var result = WhiteListPayload.ParseRequestedDate("02-11-2026");
+
+        // Assert
+        result.Year.ShouldBe(2026);
+    }
+
+    [Fact]
     public void ParseRequestDateTime_AnotherCulture_UsesTheInvariantCalendar()
     {
         // Arrange: a culture with another calendar must not shift the year

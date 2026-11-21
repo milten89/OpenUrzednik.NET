@@ -22,7 +22,7 @@ public sealed partial class WhiteListRequestPipelineTest
         => OpenUrzednikResult.Failure<string?>(new WhiteListNotFoundError("Not on the list.", "rd9zq-99alll1", Answered));
 
     [Fact]
-    public async Task GetOrNotOnListAsync_MapSucceeds_ReturnsTheModelAndLogsNothing()
+    public async Task GetAnswerAsync_MapSucceeds_ReturnsTheModelAndLogsNothing()
     {
         // Arrange
         var logger = CreateLogger();
@@ -30,7 +30,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var span = CreateRecordingSpan();
 
         // Act
-        var result = await sut.GetOrNotOnListAsync(span, "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
+        var result = await sut.GetAnswerAsync(span, "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
             WhiteListJsonContext.Default.ErrorDto, dto => OpenUrzednikResult.Success(dto.Code), TestContext.Current.CancellationToken);
 
         // Assert
@@ -40,7 +40,7 @@ public sealed partial class WhiteListRequestPipelineTest
     }
 
     [Fact]
-    public async Task GetOrNotOnListAsync_MapReturnsNotOnList_ReturnsItLogsAndRecordsIt()
+    public async Task GetAnswerAsync_MapReturnsNotOnList_ReturnsItLogsAndRecordsIt()
     {
         // Arrange
         var logger = CreateLogger();
@@ -48,7 +48,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var span = CreateRecordingSpan();
 
         // Act
-        var result = await sut.GetOrNotOnListAsync(span, "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
+        var result = await sut.GetAnswerAsync(span, "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
             WhiteListJsonContext.Default.ErrorDto, NotOnTheList, TestContext.Current.CancellationToken);
 
         // Assert
@@ -61,8 +61,65 @@ public sealed partial class WhiteListRequestPipelineTest
         span.Received(1).AddEvent("error", "error.type", NotFoundError.ErrorCode);
     }
 
+    private static OpenUrzednikResult<string?> Rejected(Dto.ErrorDto _)
+        => OpenUrzednikResult.Failure<string?>(new WhiteListQueryRejectedError("Rejected: invalid NIP.", "I"));
+
     [Fact]
-    public async Task GetOrNotOnListAsync_DebugDisabled_DoesNotLogButRecords()
+    public async Task GetAnswerAsync_MapReturnsARejection_LogsQueryRejectedWithTheCodeAndRecordsIt()
+    {
+        // Arrange
+        var logger = CreateLogger();
+        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new ClientTelemetry(logger));
+        var span = CreateRecordingSpan();
+
+        // Act
+        var result = await sut.GetAnswerAsync(span, "GetVatStatusByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
+            WhiteListJsonContext.Default.ErrorDto, Rejected, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<WhiteListQueryRejectedError>().WhiteListCode.ShouldBe("I");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, WhiteListEvents.QueryRejected, null, "MF White List API rejected {operation} with code {code}",
+            "operation", "GetVatStatusByNipAsync", "code", "I");
+        logger.DidNotReceive().Log(OpenUrzednikLogLevel.Debug, WhiteListEvents.NotOnList, Arg.Any<Exception?>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        span.Received(1).SetTag("error.type", BadRequestError.ErrorCode);
+    }
+
+    [Fact]
+    public async Task GetAnswerAsync_MapReturnsAServiceInactive_LogsQueryRejectedWithItsCode()
+    {
+        // Arrange
+        var logger = CreateLogger();
+        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new ClientTelemetry(logger));
+
+        // Act
+        await sut.GetAnswerAsync(CreateRecordingSpan(), "GetVatStatusByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
+            WhiteListJsonContext.Default.ErrorDto, _ => OpenUrzednikResult.Failure<string?>(new WhiteListServiceInactiveError("Inactive.", "X")),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, WhiteListEvents.QueryRejected, null, "MF White List API rejected {operation} with code {code}",
+            "operation", "GetVatStatusByNipAsync", "code", "X");
+    }
+
+    [Fact]
+    public async Task GetAnswerAsync_FailureWithoutAWhiteListCode_LogsQueryRejectedWithANullCode()
+    {
+        // Arrange
+        var logger = CreateLogger();
+        var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new ClientTelemetry(logger));
+
+        // Act
+        await sut.GetAnswerAsync(CreateRecordingSpan(), "GetVatStatusByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
+            WhiteListJsonContext.Default.ErrorDto, _ => OpenUrzednikResult.Failure<string?>(new ValidationError("Invalid.", "rule", "nip", null)),
+            TestContext.Current.CancellationToken);
+
+        // Assert
+        logger.Received(1).Log(OpenUrzednikLogLevel.Warning, WhiteListEvents.QueryRejected, null, "MF White List API rejected {operation} with code {code}",
+            "operation", "GetVatStatusByNipAsync", "code", (string?)null);
+    }
+
+    [Fact]
+    public async Task GetAnswerAsync_DebugDisabled_DoesNotLogButRecords()
     {
         // Arrange
         var logger = Substitute.For<IOpenUrzednikLogger>();
@@ -70,7 +127,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var span = CreateRecordingSpan();
 
         // Act
-        await sut.GetOrNotOnListAsync(span, "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
+        await sut.GetAnswerAsync(span, "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath, DisplayPath,
             WhiteListJsonContext.Default.ErrorDto, NotOnTheList, TestContext.Current.CancellationToken);
 
         // Assert
@@ -80,7 +137,7 @@ public sealed partial class WhiteListRequestPipelineTest
     }
 
     [Fact]
-    public async Task GetOrNotOnListAsync_ValidationFails_SendsNothingAndDoesNotMap()
+    public async Task GetAnswerAsync_ValidationFails_SendsNothingAndDoesNotMap()
     {
         // Arrange
         var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out var handler);
@@ -88,7 +145,7 @@ public sealed partial class WhiteListRequestPipelineTest
         var error = new ValidationError("Invalid.", "rule", "nip", null);
 
         // Act
-        var result = await sut.GetOrNotOnListAsync(CreateRecordingSpan(), "SearchByNipAsync", OpenUrzednikResult.Failure(error), () => RelativePath,
+        var result = await sut.GetAnswerAsync(CreateRecordingSpan(), "SearchByNipAsync", OpenUrzednikResult.Failure(error), () => RelativePath,
             DisplayPath, WhiteListJsonContext.Default.ErrorDto, dto =>
             {
                 mapped = true;
@@ -102,14 +159,14 @@ public sealed partial class WhiteListRequestPipelineTest
     }
 
     [Fact]
-    public async Task GetOrNotOnListAsync_RequestFails_ReturnsTheErrorWithoutNotOnList()
+    public async Task GetAnswerAsync_RequestFails_ReturnsTheErrorWithoutNotOnList()
     {
         // Arrange
         var logger = CreateLogger();
         var sut = CreateSut(new HttpResponseMessage(HttpStatusCode.NotFound), out _, new ClientTelemetry(logger));
 
         // Act
-        var result = await sut.GetOrNotOnListAsync(CreateRecordingSpan(), "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath,
+        var result = await sut.GetAnswerAsync(CreateRecordingSpan(), "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath,
             DisplayPath, WhiteListJsonContext.Default.ErrorDto, NotOnTheList, TestContext.Current.CancellationToken);
 
         // Assert
@@ -118,14 +175,14 @@ public sealed partial class WhiteListRequestPipelineTest
     }
 
     [Fact]
-    public async Task GetOrNotOnListAsync_MapperRejectsPayload_ReturnsSerializationError()
+    public async Task GetAnswerAsync_MapperRejectsPayload_ReturnsSerializationError()
     {
         // Arrange
         var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _);
         var span = CreateRecordingSpan();
 
         // Act
-        var result = await sut.GetOrNotOnListAsync<Dto.ErrorDto, string?>(span, "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath,
+        var result = await sut.GetAnswerAsync<Dto.ErrorDto, string?>(span, "SearchByNipAsync", OpenUrzednikResult.Success(), () => RelativePath,
             DisplayPath, WhiteListJsonContext.Default.ErrorDto, _ => throw new InvalidPayloadException("MF White List API response is missing 'requestId'."),
             TestContext.Current.CancellationToken);
 
@@ -135,14 +192,14 @@ public sealed partial class WhiteListRequestPipelineTest
     }
 
     [Fact]
-    public async Task GetOrNotOnListAsync_NotOnList_LeaksNothing()
+    public async Task GetAnswerAsync_NotOnList_LeaksNothing()
     {
         // Arrange
         var telemetry = new RecordingTelemetry();
         var sut = CreateSut(Json(HttpStatusCode.OK, "{}"), out _, new ClientTelemetry(telemetry, telemetry));
 
         // Act
-        var result = await sut.GetOrNotOnListAsync(telemetry.StartSpan("mf_white_list.search.nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
+        var result = await sut.GetAnswerAsync(telemetry.StartSpan("mf_white_list.search.nip"), "SearchByNipAsync", OpenUrzednikResult.Success(),
             () => $"search/nip/{LeakNip}", DisplayPath, WhiteListJsonContext.Default.ErrorDto, NotOnTheList, TestContext.Current.CancellationToken);
 
         // Assert

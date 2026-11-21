@@ -55,6 +55,8 @@
     <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\search-nips.json" LogicalName="wl-search-nips.json" />
     <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\check-nip-assigned.json" LogicalName="wl-check-nip-assigned.json" />
     <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\check-nip-not-assigned.json" LogicalName="wl-check-nip-not-assigned.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\status-nip-active.json" LogicalName="wl-status-nip-active.json" />
+    <EmbeddedResource Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\status-nip-not-on-list.json" LogicalName="wl-status-nip-not-on-list.json" />
   </ItemGroup>
 
 </Project>

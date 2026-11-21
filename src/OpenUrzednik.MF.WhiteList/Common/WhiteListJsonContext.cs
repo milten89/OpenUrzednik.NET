@@ -9,4 +9,5 @@ namespace OpenUrzednik.MF.WhiteList.Common;
 [JsonSerializable(typeof(EntityListResponseDto))]
 [JsonSerializable(typeof(EntryListResponseDto))]
 [JsonSerializable(typeof(EntityCheckResponseDto))]
+[JsonSerializable(typeof(StatusResponseDto))]
 internal sealed partial class WhiteListJsonContext : JsonSerializerContext;

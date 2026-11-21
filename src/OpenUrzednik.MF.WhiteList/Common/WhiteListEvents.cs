@@ -9,5 +9,6 @@ internal static class WhiteListEvents
 {
     internal static readonly OpenUrzednikEventId ValidationFailed = new(WhiteListLogEvents.ValidationFailed, nameof(WhiteListLogEvents.ValidationFailed));
     internal static readonly OpenUrzednikEventId NotOnList = new(WhiteListLogEvents.NotOnList, nameof(WhiteListLogEvents.NotOnList));
+    internal static readonly OpenUrzednikEventId QueryRejected = new(WhiteListLogEvents.QueryRejected, nameof(WhiteListLogEvents.QueryRejected));
     internal static readonly OpenUrzednikEventId MappingFailed = new(WhiteListLogEvents.MappingFailed, nameof(WhiteListLogEvents.MappingFailed));
 }

@@ -115,6 +115,33 @@ public sealed class WhiteListClientMetricsTest : IDisposable
         measurement.Tags.ShouldAllBe(tag => !$"{tag.Value}".Contains("10901"));
     }
 
+    [Theory]
+    [InlineData("B", NotFoundError.ErrorCode)]
+    [InlineData("I", BadRequestError.ErrorCode)]
+    [InlineData("X", ServiceUnavailableError.ErrorCode)]
+    [InlineData("C", null)]
+    public async Task Constructor_MeterMetrics_StatusRecordsOnThatMeterWithTheErrorTypeOfItsCode(string code, string? errorType)
+    {
+        // Arrange: WL2 answers every outcome with a 200; the code decides the error type
+        var meterName = $"OpenUrzednik.Tests.{Guid.NewGuid():N}";
+        using var recorder = new MeterRecorder(meterName);
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(Json(HttpStatusCode.OK,
+            $$$$"""{"result":{"subject":{"statusCode":"{{{{code}}}}","requestedDate":"02-11-2026","responseDateTime":"21-11-2026 19:58:34","requestId":"MdAhc-99b3aea"}}}""")));
+        var sut = new WhiteListStatusClient(httpClient, new WhiteListOptions { ApiUrl = $"https://{_host}/" }, Clock,
+            new OpenUrzednikTelemetry { Metrics = MeterMetrics.GetShared(meterName) });
+
+        // Act
+        await sut.GetVatStatusByNipAsync("7368125416", Date, TestContext.Current.CancellationToken);
+
+        // Assert
+        var measurement = recorder.Measurements.ShouldHaveSingleItem();
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", "mf_white_list.status.nip"));
+        measurement.Tags.Any(tag => tag.Key == "error.type").ShouldBe(errorType is not null);
+        if (errorType is not null)
+            measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("error.type", errorType));
+        measurement.Tags.ShouldAllBe(tag => !$"{tag.Value}".Contains("68125"));
+    }
+
     [Fact]
     public async Task Constructor_MeterMetrics_CheckRecordsOnThatMeterWithoutIdentifiers()
     {

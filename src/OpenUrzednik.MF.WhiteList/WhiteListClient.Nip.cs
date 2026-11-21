@@ -34,7 +34,7 @@ public sealed partial class WhiteListClient
         var validation = validator.Validate()
             .And(new WhiteListDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate());
 
-        return operation.Complete(await _pipeline.GetOrNotOnListAsync(traceSpan, nameof(SearchByNipAsync), validation,
+        return operation.Complete(await _pipeline.GetAnswerAsync(traceSpan, nameof(SearchByNipAsync), validation,
             () => $"search/nip/{validator.Normalized}?date={dayText}", "search/nip/{nip}",
             WhiteListJsonContext.Default.EntityResponseDto, Mapper.MapToSubjectSearchResult, cancellationToken).ConfigureAwait(false));
     }

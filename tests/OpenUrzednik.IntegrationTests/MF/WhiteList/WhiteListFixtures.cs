@@ -23,6 +23,13 @@ namespace OpenUrzednik.IntegrationTests.MF.WhiteList;
 /// <item><description>Production, captured on 2026-11-21, the checks that answer TAK, for the Ministry of Finance and one of its accounts
 /// (59101010100075912222000000): <c>check-nip-assigned.json</c> (NIP 5260250274) and <c>check-regon-assigned.json</c> (REGON 000002217).
 /// The test host can't answer TAK, because its subjects have no account numbers.</description></item>
+/// <item><description>The test host, captured on 2026-11-21, the WL2 status answers (<c>api2/status/nip/{nip}</c>, fictitious official test
+/// data): <c>status-nip-active.json</c> (NIP 1476620167, C, with a date), <c>status-nip-active-no-date.json</c> (the same NIP without a date:
+/// <c>requestedDate</c> is today), <c>status-nip-exempt.json</c> (2295628674, Z), <c>status-nip-not-registered.json</c> (2242366993, N),
+/// <c>status-nip-not-on-list.json</c> (0074370710, B), <c>status-nip-invalid-nip.json</c> (1234567890, a wrong check digit: I) and
+/// <c>status-nip-date-out-of-range.json</c> (1476620167 on 2020-12-31: D). Every outcome is HTTP 200.</description></item>
+/// <item><description>Not captured: <c>status-nip-service-inactive.from-contract.json</c> is built from the contract (X, "service
+/// inactive"), because the test host never answered it, as with the error-table files below.</description></item>
 /// <item><description>Not captured: <c>*.from-error-table.json</c> are built from the ministry's error-code table (WL-191 with 429, WL-195
 /// with 400, WL-197 with 500), because the test host never answered them (ADR-0023).</description></item>
 /// </list>

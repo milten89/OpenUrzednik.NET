@@ -77,4 +77,11 @@ public static class WhiteListLogEvents
 
     /// <summary>A payload was missing data the model needs. Error.</summary>
     public const int MappingFailed = 2003;
+
+    /// <summary>
+    /// The API rejected a query inside a successful answer, or the service is switched off: the status service's <c>I</c> (invalid NIP),
+    /// <c>D</c> (date out of range) or <c>X</c> (service inactive). The local validation should have prevented the first two. Warning. Only
+    /// the operation and the one-letter code are logged, never the NIP.
+    /// </summary>
+    public const int QueryRejected = 2004;
 }
