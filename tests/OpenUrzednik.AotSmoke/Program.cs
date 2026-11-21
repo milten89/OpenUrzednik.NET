@@ -159,6 +159,11 @@ using (var httpClient = new HttpClient(new FixtureHandler()))
     Check("mf white list: an account search maps the subjects and the proof",
         byAccount.IsSuccess && byAccount.Value.Subjects is [{ Nip: "5260250274", HasVirtualAccounts: true }] && byAccount.Value.RequestId == "R43vM-99alln9",
         Describe(byAccount));
+    var byNips = await whiteList.SearchByNipsAsync(["3245174504", "5260250274", "7368125416", "3245174504"], whiteListDate);
+    Check("mf white list: a batch search maps each entry, its subjects or its error, and the proof",
+        byNips.IsSuccess && byNips.Value.RequestId == "r5wrK-99b0ck2"
+            && byNips.Value.Entries is [{ IsSuccess: true, Subjects: [{ Name: "Nazwa Firmy 1" }] }, { Error: WhiteListNotFoundError { RequestId: "r5wrK-99b0ck2" } }, { Error: WhiteListQueryRejectedError { WhiteListCode: "WL-115" } }, { IsSuccess: true }],
+        Describe(byNips));
 }
 
 using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl-search-nip-not-found.json")))
@@ -248,6 +253,7 @@ internal sealed class FixtureHandler(HttpStatusCode? status = null, string? reso
             _ when path.EndsWith("/tables/c", StringComparison.OrdinalIgnoreCase) => "tables-c-latest.json",
             _ when path.Contains("/api/search/nip/") => "wl-search-nip.json",
             _ when path.Contains("/api/search/bank-account/") => "wl-search-bank-account.json",
+            _ when path.Contains("/api/search/nips/") => "wl-search-nips.json",
             _ => null,
         };
         var content = body ?? (name is null ? null : Read(name));

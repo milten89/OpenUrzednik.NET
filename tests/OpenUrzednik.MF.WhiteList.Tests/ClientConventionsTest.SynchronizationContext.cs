@@ -35,10 +35,10 @@ public sealed partial class ClientConventionsTest
     {
         // Arrange
         // The response arrives asynchronously, so every await in the client and its pipeline suspends; the answer is "not on the list",
-        // which runs the whole path: request, mapping and the not-on-list log.
+        // which runs the whole path: request, mapping and, for a single search, the not-on-list log; a batch of one gets it as its entry.
         using var httpClient = new HttpClient(new AsyncResponseHandler(() => new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent("""{"result":{"subject":null,"subjects":[],"requestDateTime":"20-11-2026 22:44:25","requestId":"rd9zq-99alll1"}}""",
+            Content = new StringContent("""{"result":{"subject":null,"subjects":[],"entries":[{"identifier":"0","subjects":[]}],"requestDateTime":"20-11-2026 22:44:25","requestId":"rd9zq-99alll1"}}""",
                 Encoding.UTF8, "application/json"),
         }));
         var clock = new FakeTimeProvider(new DateTimeOffset(2026, 11, 20, 11, 0, 0, TimeSpan.Zero));
@@ -52,6 +52,9 @@ public sealed partial class ClientConventionsTest
             "WhiteListClient.SearchByNipAsync(nip, date)" => client.SearchByNipAsync("7368125416", date, cancellationToken),
             "WhiteListClient.SearchByRegonAsync(regon, date)" => client.SearchByRegonAsync("593728162", date, cancellationToken),
             "WhiteListClient.SearchByBankAccountAsync(bankAccount, date)" => client.SearchByBankAccountAsync("61109010140000071219812874", date, cancellationToken),
+            "WhiteListClient.SearchByNipsAsync(nips, date)" => client.SearchByNipsAsync(["7368125416"], date, cancellationToken),
+            "WhiteListClient.SearchByRegonsAsync(regons, date)" => client.SearchByRegonsAsync(["593728162"], date, cancellationToken),
+            "WhiteListClient.SearchByBankAccountsAsync(bankAccounts, date)" => client.SearchByBankAccountsAsync(["61109010140000071219812874"], date, cancellationToken),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, "A new public client method: add its call here."),
         });
 

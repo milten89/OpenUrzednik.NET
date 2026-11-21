@@ -4,6 +4,7 @@ using OpenUrzednik.Core;
 using OpenUrzednik.Core.Errors;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
+using OpenUrzednik.MF.WhiteList.Search;
 
 namespace OpenUrzednik.MF.WhiteList.Common;
 
@@ -97,6 +98,39 @@ internal sealed class WhiteListRequestPipeline
             _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, WhiteListEvents.NotOnList, null, "MF White List API has no entity on the list for {operation}", "operation", operation);
         traceSpan.RecordErrors(result.Errors);
         return result;
+    }
+
+    /// <summary>
+    /// Logs at Debug how many entries of a successful batch failed: not on the list, or rejected by the API. Only the operation and the
+    /// counts, never an identifier (ADR-0023). Nothing is logged when every entry succeeded or Debug is off; the call itself succeeded,
+    /// so nothing is recorded on the span.
+    /// </summary>
+    /// <param name="operation">The client method name, for logs.</param>
+    /// <param name="entries">The batch's entries.</param>
+    internal void LogFailedEntries(string operation, IReadOnlyList<BatchSearchEntry> entries)
+    {
+        if (!_telemetry.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
+            return;
+
+        var notOnList = 0;
+        var rejected = 0;
+        // A local, not `entries.Count` in the loop condition, so that mutation testing checks it (see Core's RecordErrors).
+        var count = entries.Count;
+        for (var i = 0; i < count; i++)
+        {
+            var error = entries[i].Error;
+            if (error is NotFoundError)
+                notOnList++;
+            else if (error is not null)
+                rejected++;
+        }
+
+        if (notOnList == 0 && rejected == 0)
+            return;
+
+        _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, WhiteListEvents.NotOnList, null,
+            "MF White List API answered {operation} with {notOnList} entries not on the list and {rejected} rejected",
+            "operation", operation, "notOnList", notOnList, "rejected", rejected);
     }
 
     private OpenUrzednikResult<TModel> Map<TDto, TModel>(TDto dto, Func<TDto, TModel> map, IOpenUrzednikSpan traceSpan)

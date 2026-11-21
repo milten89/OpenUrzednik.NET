@@ -1,6 +1,9 @@
+using OpenUrzednik.Core;
 using OpenUrzednik.Core.Telemetry;
 using OpenUrzednik.Http.Infrastructure;
 using OpenUrzednik.MF.WhiteList.Common;
+using OpenUrzednik.MF.WhiteList.Search;
+using OpenUrzednik.MF.WhiteList.Validation;
 
 namespace OpenUrzednik.MF.WhiteList;
 
@@ -39,5 +42,32 @@ public sealed partial class WhiteListClient : IWhiteListClient
         _timeProvider = timeProvider ?? TimeProvider.System;
         var clientTelemetry = new ClientTelemetry(telemetry?.Logger, telemetry?.TraceSource, WhiteListTelemetry.SourceName, telemetry?.Metrics);
         _pipeline = new WhiteListRequestPipeline(WhiteListConnection.CreateSearch(httpClient, options, clientTelemetry, _timeProvider), clientTelemetry);
+    }
+
+    // The steps the three batch searches share (ADR-0023): one operation, the count and the date as tags (never the identifiers), the
+    // identifiers and the date validated together, the normalized identifiers joined with commas into the path.
+    private async Task<OpenUrzednikResult<BatchSearchResult>> SearchBatchCoreAsync(string spanName, string methodName, WhiteListBatchValidator validator,
+        DateTime date, string path, string displayPath, CancellationToken cancellationToken)
+    {
+        var day = DateOnly.FromDateTime(date);
+        using var operation = _pipeline.StartOperation(spanName);
+        var traceSpan = operation.Span;
+        var count = validator.Value.Count;
+        traceSpan.SetTag("mf_white_list.count", count);
+        var dayText = day.ToIso8601String();
+        traceSpan.SetTag("mf_white_list.date", dayText);
+
+        var validation = validator.Validate()
+            .And(new WhiteListDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate());
+
+        var result = await _pipeline.GetAsync(traceSpan, methodName, validation,
+            () => $"{path}{validator.Joined()}?date={dayText}", displayPath,
+            WhiteListJsonContext.Default.EntryListResponseDto, dto => Mapper.MapToBatchSearchResult(dto, count), cancellationToken).ConfigureAwait(false);
+
+        // While the operation's span is still current (ADR-0015).
+        if (result.IsSuccess)
+            _pipeline.LogFailedEntries(methodName, result.Value.Entries);
+
+        return operation.Complete(result);
     }
 }

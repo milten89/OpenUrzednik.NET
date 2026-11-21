@@ -92,4 +92,26 @@ public sealed class WhiteListClientMetricsTest : IDisposable
         measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("error.type", NotFoundError.ErrorCode));
         measurement.Tags.ShouldAllBe(tag => !$"{tag.Value}".Contains("10901"));
     }
+
+    [Fact]
+    public async Task Constructor_MeterMetrics_BatchWithAFailedEntryRecordsNoErrorType()
+    {
+        // Arrange: an account no subject on the list has; the batch call itself succeeds (ADR-0023)
+        var meterName = $"OpenUrzednik.Tests.{Guid.NewGuid():N}";
+        using var recorder = new MeterRecorder(meterName);
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(Json(HttpStatusCode.OK,
+            """{"result":{"entries":[{"identifier":"61109010140000071219812874","subjects":[]}],"requestDateTime":"21-11-2026 08:48:50","requestId":"3h7uz-99b0ck2"}}""")));
+        var sut = new WhiteListClient(httpClient, new WhiteListOptions { ApiUrl = $"https://{_host}/" }, Clock,
+            new OpenUrzednikTelemetry { Metrics = MeterMetrics.GetShared(meterName) });
+
+        // Act
+        var result = await sut.SearchByBankAccountsAsync(["61109010140000071219812874"], Date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Value.Entries.ShouldHaveSingleItem().IsSuccess.ShouldBeFalse();
+        var measurement = recorder.Measurements.ShouldHaveSingleItem();
+        measurement.Tags.ShouldContain(new KeyValuePair<string, object?>("openurzednik.operation", "mf_white_list.search.bank_accounts"));
+        measurement.Tags.ShouldNotContain(tag => tag.Key == "error.type");
+        measurement.Tags.ShouldAllBe(tag => !$"{tag.Value}".Contains("10901"));
+    }
 }
