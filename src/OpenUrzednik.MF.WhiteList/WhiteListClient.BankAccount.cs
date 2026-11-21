@@ -34,7 +34,7 @@ public sealed partial class WhiteListClient
         var validation = validator.Validate()
             .And(new WhiteListDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate());
 
-        return operation.Complete(await _pipeline.GetOrNotOnListAsync(traceSpan, nameof(SearchByBankAccountAsync), validation,
+        return operation.Complete(await _pipeline.GetAnswerAsync(traceSpan, nameof(SearchByBankAccountAsync), validation,
             () => $"search/bank-account/{validator.Normalized}?date={dayText}", "search/bank-account/{account}",
             WhiteListJsonContext.Default.EntityListResponseDto, Mapper.MapToSubjectsSearchResult, cancellationToken).ConfigureAwait(false));
     }

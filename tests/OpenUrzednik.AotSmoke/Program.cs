@@ -16,6 +16,7 @@ using OpenUrzednik.Extensions.Logging;
 using OpenUrzednik.MF.WhiteList;
 using OpenUrzednik.MF.WhiteList.Check;
 using OpenUrzednik.MF.WhiteList.Search;
+using OpenUrzednik.MF.WhiteList.Status;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.Nbp.Table;
 using OpenUrzednik.Transport.Http;
@@ -192,6 +193,22 @@ using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl
         Describe(notAssigned));
 }
 
+using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl-status-nip-active.json")))
+{
+    var status = await new WhiteListStatusClient(httpClient).GetVatStatusByNipAsync("1476620167", new DateTime(2026, 11, 2));
+    Check("mf white list: a WL2 status C maps to Active with the day and the proof",
+        status.IsSuccess && status.Value == new VatStatusResult(VatStatus.Active, new DateTime(2026, 11, 2), "Oytfp-99b3aea", new DateTimeOffset(2026, 11, 21, 19, 58, 34, TimeSpan.FromHours(1))),
+        Describe(status));
+}
+
+using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl-status-nip-not-on-list.json")))
+{
+    var notInRegister = await new WhiteListStatusClient(httpClient).GetVatStatusByNipAsync("0074370710", new DateTime(2026, 11, 2));
+    Check("mf white list: a WL2 status B is WhiteListNotFoundError with the proof",
+        notInRegister.IsFailure && notInRegister.Errors[0] is WhiteListNotFoundError { RequestId: "MdAhc-99b3aea" },
+        Describe(notInRegister));
+}
+
 // 3. Dependency injection: the default and a keyed registration, with logging.
 var services = new ServiceCollection();
 services.AddLogging(logging => logging.SetMinimumLevel(LogLevel.Debug));
@@ -270,6 +287,7 @@ internal sealed class FixtureHandler(HttpStatusCode? status = null, string? reso
             _ when path.EndsWith("/tables/c", StringComparison.OrdinalIgnoreCase) => "tables-c-latest.json",
             _ when path.Contains("/api/search/nip/") => "wl-search-nip.json",
             _ when path.Contains("/api/check/nip/") => "wl-check-nip-assigned.json",
+            _ when path.Contains("/api2/status/nip/") => "wl-status-nip-active.json",
             _ when path.Contains("/api/search/bank-account/") => "wl-search-bank-account.json",
             _ when path.Contains("/api/search/nips/") => "wl-search-nips.json",
             _ => null,

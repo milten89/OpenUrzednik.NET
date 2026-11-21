@@ -31,6 +31,14 @@ internal static class WhiteListWireMockServerExtensions
                 .WithHeader("Content-Type", "application/json")
                 .WithBody(body));
 
+    /// <summary>Answers a GET of <paramref name="path"/> whatever its query (e.g. one without a date) with a fixture as JSON.</summary>
+    public static void GivenFixtureForAnyQuery(this WireMockServer server, string path, string fixture, HttpStatusCode statusCode = HttpStatusCode.OK)
+        => server.Given(Request.Create().WithPath(path).UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(statusCode)
+                .WithHeader("Content-Type", "application/json")
+                .WithBody(WhiteListFixtures.Load(fixture)));
+
     /// <summary>Answers with a status and no body.</summary>
     public static void GivenStatus(this WireMockServer server, string path, HttpStatusCode statusCode)
         => server.Given(Request.Create().WithPath(path).UsingGet()).RespondWith(Response.Create().WithStatusCode(statusCode));

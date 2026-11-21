@@ -15,7 +15,7 @@ namespace OpenUrzednik.MF.WhiteList.Tests;
 // come from the clients' public methods, so a new method fails here until it has its call below.
 public sealed partial class ClientConventionsTest
 {
-    private static readonly Type[] Clients = [typeof(WhiteListClient)];
+    private static readonly Type[] Clients = [typeof(WhiteListClient), typeof(WhiteListStatusClient)];
 
     public static TheoryData<string> PublicClientMethods()
     {
@@ -43,6 +43,7 @@ public sealed partial class ClientConventionsTest
         }));
         var clock = new FakeTimeProvider(new DateTimeOffset(2026, 11, 20, 11, 0, 0, TimeSpan.Zero));
         var client = new WhiteListClient(httpClient, null, clock);
+        var statusClient = new WhiteListStatusClient(httpClient, null, clock);
         var date = new DateTime(2026, 11, 2);
         var cancellationToken = TestContext.Current.CancellationToken;
 
@@ -57,6 +58,7 @@ public sealed partial class ClientConventionsTest
             "WhiteListClient.SearchByBankAccountsAsync(bankAccounts, date)" => client.SearchByBankAccountsAsync(["61109010140000071219812874"], date, cancellationToken),
             "WhiteListClient.CheckNipBankAccountAsync(nip, bankAccount, date)" => client.CheckNipBankAccountAsync("7368125416", "61109010140000071219812874", date, cancellationToken),
             "WhiteListClient.CheckRegonBankAccountAsync(regon, bankAccount, date)" => client.CheckRegonBankAccountAsync("593728162", "61109010140000071219812874", date, cancellationToken),
+            "WhiteListStatusClient.GetVatStatusByNipAsync(nip, date)" => statusClient.GetVatStatusByNipAsync("7368125416", date, cancellationToken),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, "A new public client method: add its call here."),
         });
 

@@ -63,10 +63,11 @@ internal sealed class WhiteListRequestPipeline
     }
 
     /// <summary>
-    /// Like <see cref="GetAsync{TDto, TModel}"/>, for an answer of the register that may say the entity isn't on the list: <paramref name="map"/>
-    /// returns a success with the model, or, when the register has no entity for the query, a failure with a
-    /// <see cref="WhiteListNotFoundError"/> that keeps the answer's proof (ADR-0023). That failure is logged
-    /// (<see cref="WhiteListEvents.NotOnList"/>, Debug) and recorded on the span.
+    /// Like <see cref="GetAsync{TDto, TModel}"/>, for an answer of the register that may say more than "here is the model": <paramref name="map"/>
+    /// returns a success with the model, or a failure. A <see cref="WhiteListNotFoundError"/> (the register has no entity for the query,
+    /// with the answer's proof, ADR-0023) is logged as <see cref="WhiteListEvents.NotOnList"/> at Debug; another failure, a rejection
+    /// inside a successful answer or an inactive service, as <see cref="WhiteListEvents.QueryRejected"/> at Warning, with the operation and
+    /// the API's code. Both are recorded on the span.
     /// </summary>
     /// <param name="traceSpan">The span of the client method; failures are recorded on it.</param>
     /// <param name="operation">The client method name, for logs.</param>
@@ -74,10 +75,10 @@ internal sealed class WhiteListRequestPipeline
     /// <param name="path">Builds the request path. Called only after validation succeeds, because it takes the validated identifiers.</param>
     /// <param name="displayPath">The route template written instead of the path (e.g. <c>search/nip/{nip}</c>), relative like the path.</param>
     /// <param name="typeInfo">Source-generated metadata of the payload.</param>
-    /// <param name="map">Maps the payload to the public model, or to the not-on-the-list failure; it throws <see cref="InvalidPayloadException"/>
+    /// <param name="map">Maps the payload to the public model, or to the failure of the answer; it throws <see cref="InvalidPayloadException"/>
     /// for data the model can't take.</param>
     /// <param name="cancellationToken">Cancels the request.</param>
-    internal async Task<OpenUrzednikResult<TModel>> GetOrNotOnListAsync<TDto, TModel>(IOpenUrzednikSpan traceSpan, string operation,
+    internal async Task<OpenUrzednikResult<TModel>> GetAnswerAsync<TDto, TModel>(IOpenUrzednikSpan traceSpan, string operation,
         OpenUrzednikResult validation, Func<string> path, string displayPath, JsonTypeInfo<TDto> typeInfo, Func<TDto, OpenUrzednikResult<TModel>> map,
         CancellationToken cancellationToken)
     {
@@ -88,14 +89,24 @@ internal sealed class WhiteListRequestPipeline
             return OpenUrzednikResult.Failure<TModel>(answer.Errors);
 
         var result = answer.Value;
-        return result.IsSuccess ? result : NotOnList(result, traceSpan, operation);
+        return result.IsSuccess ? result : AnsweredWithFailure(result, traceSpan, operation);
     }
 
-    private OpenUrzednikResult<TModel> NotOnList<TModel>(OpenUrzednikResult<TModel> result, IOpenUrzednikSpan traceSpan, string operation)
+    private OpenUrzednikResult<TModel> AnsweredWithFailure<TModel>(OpenUrzednikResult<TModel> result, IOpenUrzednikSpan traceSpan, string operation)
     {
-        // The operation, never the identifier: the query's path and the answer are kept out of logs (ADR-0023).
-        if (_telemetry.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
-            _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, WhiteListEvents.NotOnList, null, "MF White List API has no entity on the list for {operation}", "operation", operation);
+        // The operation and the API's code, never the identifier: the query's path and the answer are kept out of logs (ADR-0023).
+        var error = result.Errors[0];
+        if (error is NotFoundError)
+        {
+            if (_telemetry.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
+                _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, WhiteListEvents.NotOnList, null, "MF White List API has no entity on the list for {operation}", "operation", operation);
+        }
+        else
+        {
+            var code = (error as IWhiteListErrorCode)?.WhiteListCode;
+            _telemetry.Logger.Log(OpenUrzednikLogLevel.Warning, WhiteListEvents.QueryRejected, null, "MF White List API rejected {operation} with code {code}", "operation", operation, "code", code);
+        }
+
         traceSpan.RecordErrors(result.Errors);
         return result;
     }

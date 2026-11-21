@@ -34,7 +34,7 @@ public sealed partial class WhiteListClient
         var validation = validator.Validate()
             .And(new WhiteListDateValidator(nameof(date), day, WarsawCalendar.Today(_timeProvider)).Validate());
 
-        return operation.Complete(await _pipeline.GetOrNotOnListAsync(traceSpan, nameof(SearchByRegonAsync), validation,
+        return operation.Complete(await _pipeline.GetAnswerAsync(traceSpan, nameof(SearchByRegonAsync), validation,
             () => $"search/regon/{validator.Normalized}?date={dayText}", "search/regon/{regon}",
             WhiteListJsonContext.Default.EntityResponseDto, Mapper.MapToSubjectSearchResult, cancellationToken).ConfigureAwait(false));
     }
