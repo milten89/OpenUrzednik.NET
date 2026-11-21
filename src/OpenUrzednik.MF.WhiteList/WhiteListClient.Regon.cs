@@ -10,6 +10,9 @@ namespace OpenUrzednik.MF.WhiteList;
 
 public sealed partial class WhiteListClient
 {
+    // Stryker disable once String : false survivor, Stryker can't activate a static field initializer; an empty name makes the element names "[0]", "[1]", …, which fails the tests of invalid identifiers (checked by hand)
+    private static readonly string[] RegonsElementNames = WhiteListBatchValidator.ElementNames("regons");
+
     /// <inheritdoc/>
     public Task<OpenUrzednikResult<SubjectSearchResult>> SearchByRegonAsync(string regon, DateTime date, CancellationToken cancellationToken = default)
     {
@@ -34,5 +37,15 @@ public sealed partial class WhiteListClient
         return operation.Complete(await _pipeline.GetOrNotOnListAsync(traceSpan, nameof(SearchByRegonAsync), validation,
             () => $"search/regon/{validator.Normalized}?date={dayText}", "search/regon/{regon}",
             WhiteListJsonContext.Default.EntityResponseDto, Mapper.MapToSubjectSearchResult, cancellationToken).ConfigureAwait(false));
+    }
+
+    /// <inheritdoc/>
+    public Task<OpenUrzednikResult<BatchSearchResult>> SearchByRegonsAsync(IReadOnlyList<string> regons, DateTime date, CancellationToken cancellationToken = default)
+    {
+        WhiteListBatchValidator.ThrowIfAnyNull(regons, nameof(regons));
+
+        return SearchBatchCoreAsync("mf_white_list.search.regons", nameof(SearchByRegonsAsync),
+            new WhiteListBatchValidator(nameof(regons), regons, RegonsElementNames, static (name, value) => new RegonValidator(name, value)),
+            date, "search/regons/", "search/regons/{regons}", cancellationToken);
     }
 }

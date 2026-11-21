@@ -90,6 +90,50 @@ public class WhiteListClientTest : IClassFixture<NbpHttpClientFixture>
             result.Errors.ShouldHaveSingleItem().ShouldBeOfType<WhiteListNotFoundError>();
     }
 
+    [ManualFact]
+    public async Task SearchByNipsAsync_TestSubjectUnknownNipAndDuplicate_ReturnsAnEntryPerNipWithTheProof()
+    {
+        // Act
+        var result = await _client.SearchByNipsAsync([TestNip, NipNotOnTheTestHost, TestNip], Yesterday(), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var entries = result.Value.Entries;
+        entries.Select(e => e.Identifier).ShouldBe([TestNip, NipNotOnTheTestHost, TestNip]);
+        entries[0].Subjects.ShouldHaveSingleItem().Name.ShouldBe("Nazwa Firmy 1");
+        entries[2].ShouldBe(entries[0]);
+        entries[1].Error.ShouldBeOfType<WhiteListNotFoundError>().RequestId.ShouldBe(result.Value.RequestId);
+        ShouldBeAProof(result.Value.RequestId, result.Value.RequestDateTime);
+    }
+
+    [ManualFact]
+    public async Task SearchByRegonsAsync_TestSubject_ReturnsItsEntryWithTheProof()
+    {
+        // Act
+        var result = await _client.SearchByRegonsAsync([TestRegon], Yesterday(), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var entry = result.Value.Entries.ShouldHaveSingleItem();
+        entry.IsSuccess.ShouldBeTrue();
+        entry.Subjects.ShouldHaveSingleItem().Regon.ShouldBe(TestRegon);
+        ShouldBeAProof(result.Value.RequestId, result.Value.RequestDateTime);
+    }
+
+    [ManualFact]
+    public async Task SearchByBankAccountsAsync_NotOnTheTestList_ReturnsANotFoundEntryWithTheProof()
+    {
+        // Act
+        var result = await _client.SearchByBankAccountsAsync([AccountNotOnTheTestHost], Yesterday(), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var entry = result.Value.Entries.ShouldHaveSingleItem();
+        entry.Identifier.ShouldBe(AccountNotOnTheTestHost);
+        var error = entry.Error.ShouldBeOfType<WhiteListNotFoundError>();
+        ShouldBeAProof(error.RequestId, error.RequestDateTime);
+    }
+
     // The answer came minutes ago, in Warsaw time (+01:00 or +02:00).
     private static void ShouldBeAProof(string requestId, DateTimeOffset requestDateTime)
     {

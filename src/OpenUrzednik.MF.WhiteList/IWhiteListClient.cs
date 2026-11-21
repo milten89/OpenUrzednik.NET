@@ -5,7 +5,7 @@ namespace OpenUrzednik.MF.WhiteList;
 
 /// <summary>
 /// Searches the Ministry of Finance VAT White List (Wykaz podatników VAT, the API's <c>api/</c> path): the subject with a NIP or REGON, or
-/// the subjects with an account number, on a date.
+/// the subjects with an account number, on a date; one identifier at a time or up to 30 in one batch.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -84,4 +84,88 @@ public interface IWhiteListClient
     /// </returns>
     /// <exception cref="ArgumentNullException"><paramref name="bankAccount"/> is <see langword="null"/>.</exception>
     Task<OpenUrzednikResult<SubjectsSearchResult>> SearchByBankAccountAsync(string bankAccount, DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Searches the subjects with each of up to 30 NIPs on a date, in one request (<c>search/nips/{nips}</c>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The call succeeds when the API answers: the result has one <see cref="BatchSearchEntry"/> per NIP, in the order given, each with its
+    /// subject or its own error (<see cref="WhiteListNotFoundError"/> with the batch's proof when the NIP isn't on the list). The batch's
+    /// proof, <see cref="BatchSearchResult.RequestId"/>, covers every entry. Duplicates are sent, and each gets its entry.
+    /// </para>
+    /// <para>
+    /// Every NIP is validated first: an invalid one is a <see cref="OpenUrzednik.Core.Errors.ValidationError{T}"/> of <see cref="string"/>
+    /// named after its position (<c>nips[3]</c>, counted from 0), with the value masked; an empty list or more than 30 NIPs is a
+    /// <see cref="OpenUrzednik.Core.Errors.ValidationError{T}"/> of <see cref="int"/> (the count) named <c>nips</c>. The call returns all of
+    /// them, with the date's, and sends no request. The ministry doesn't say whether a batch counts as one or as up to 30 of an IP's 100
+    /// daily searches.
+    /// </para>
+    /// </remarks>
+    /// <param name="nips">1 to 30 NIPs: 10 digits each, with or without spaces, hyphens and the <c>PL</c> prefix.</param>
+    /// <param name="date">The date of the check: from 1 January of the fifth year back to today (Europe/Warsaw).</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>
+    /// The entries with the proof of the check; validation errors for invalid NIPs, their count or the date; or another error when the
+    /// request fails.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="nips"/> or one of its elements is <see langword="null"/>.</exception>
+    Task<OpenUrzednikResult<BatchSearchResult>> SearchByNipsAsync(IReadOnlyList<string> nips, DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Searches the subjects with each of up to 30 REGONs on a date, in one request (<c>search/regons/{regons}</c>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The call succeeds when the API answers: the result has one <see cref="BatchSearchEntry"/> per REGON, in the order given, each with
+    /// its subject or its own error (<see cref="WhiteListNotFoundError"/> with the batch's proof when the REGON isn't on the list). The
+    /// batch's proof, <see cref="BatchSearchResult.RequestId"/>, covers every entry. Duplicates are sent, and each gets its entry.
+    /// </para>
+    /// <para>
+    /// Every REGON is validated first: an invalid one is a <see cref="OpenUrzednik.Core.Errors.ValidationError{T}"/> of <see cref="string"/>
+    /// named after its position (<c>regons[3]</c>, counted from 0), with the value masked; an empty list or more than 30 REGONs is a
+    /// <see cref="OpenUrzednik.Core.Errors.ValidationError{T}"/> of <see cref="int"/> (the count) named <c>regons</c>. The call returns
+    /// all of them, with the date's, and sends no request. The ministry doesn't say whether a batch counts as one or as up to 30 of an
+    /// IP's 100 daily searches.
+    /// </para>
+    /// </remarks>
+    /// <param name="regons">1 to 30 REGONs: 9 or 14 digits each, with or without spaces and hyphens.</param>
+    /// <param name="date">The date of the check: from 1 January of the fifth year back to today (Europe/Warsaw).</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>
+    /// The entries with the proof of the check; validation errors for invalid REGONs, their count or the date; or another error when the
+    /// request fails.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="regons"/> or one of its elements is <see langword="null"/>.</exception>
+    Task<OpenUrzednikResult<BatchSearchResult>> SearchByRegonsAsync(IReadOnlyList<string> regons, DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Searches the subjects with each of up to 30 account numbers on a date, in one request (<c>search/bank-accounts/{accounts}</c>).
+    /// More than one subject can share an account.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The call succeeds when the API answers: the result has one <see cref="BatchSearchEntry"/> per account number, in the order given,
+    /// each with its subjects or its own error (<see cref="WhiteListNotFoundError"/> with the batch's proof when no subject on the list has
+    /// the account). The batch's proof, <see cref="BatchSearchResult.RequestId"/>, covers every entry. Duplicates are sent, and each gets
+    /// its entry. A subject with virtual accounts (<see cref="Subject.HasVirtualAccounts"/>) may be paid through an account the list
+    /// doesn't show, so this search doesn't find it by that account.
+    /// </para>
+    /// <para>
+    /// Every account number is validated first: an invalid one is a <see cref="OpenUrzednik.Core.Errors.ValidationError{T}"/> of
+    /// <see cref="string"/> named after its position (<c>bankAccounts[3]</c>, counted from 0), with the value masked; an empty list or more
+    /// than 30 account numbers is a <see cref="OpenUrzednik.Core.Errors.ValidationError{T}"/> of <see cref="int"/> (the count) named
+    /// <c>bankAccounts</c>. The call returns all of them, with the date's, and sends no request. The ministry doesn't say whether a batch
+    /// counts as one or as up to 30 of an IP's 100 daily searches.
+    /// </para>
+    /// </remarks>
+    /// <param name="bankAccounts">1 to 30 account numbers (NRB): 26 digits each, with or without spaces, hyphens and the <c>PL</c> prefix.</param>
+    /// <param name="date">The date of the check: from 1 January of the fifth year back to today (Europe/Warsaw).</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>
+    /// The entries with the proof of the check; validation errors for invalid account numbers, their count or the date; or another error
+    /// when the request fails.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="bankAccounts"/> or one of its elements is <see langword="null"/>.</exception>
+    Task<OpenUrzednikResult<BatchSearchResult>> SearchByBankAccountsAsync(IReadOnlyList<string> bankAccounts, DateTime date, CancellationToken cancellationToken = default);
 }

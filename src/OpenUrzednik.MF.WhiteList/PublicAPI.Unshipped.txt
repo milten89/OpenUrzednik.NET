@@ -1,10 +1,36 @@
 #nullable enable
 OpenUrzednik.MF.WhiteList.IWhiteListClient
 OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByBankAccountAsync(string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult!>>!
+OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByBankAccountsAsync(System.Collections.Generic.IReadOnlyList<string!>! bankAccounts, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByNipAsync(string! nip, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
+OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByNipsAsync(System.Collections.Generic.IReadOnlyList<string!>! nips, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByRegonAsync(string! regon, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
+OpenUrzednik.MF.WhiteList.IWhiteListClient.SearchByRegonsAsync(System.Collections.Generic.IReadOnlyList<string!>! regons, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.IWhiteListErrorCode
 OpenUrzednik.MF.WhiteList.IWhiteListErrorCode.WhiteListCode.get -> string?
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.<Clone>$() -> OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry!
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.BatchSearchEntry(string! Identifier, System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.Subject!>! Subjects, OpenUrzednik.Core.Errors.OpenUrzednikError? Error) -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Deconstruct(out string! Identifier, out System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.Subject!>! Subjects, out OpenUrzednik.Core.Errors.OpenUrzednikError? Error) -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Equals(OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? other) -> bool
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Error.get -> OpenUrzednik.Core.Errors.OpenUrzednikError?
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Error.init -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Identifier.get -> string!
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Identifier.init -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.IsSuccess.get -> bool
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Subjects.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.Subject!>!
+OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Subjects.init -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.<Clone>$() -> OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.BatchSearchResult(System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry!>! Entries, string! RequestId, System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.Deconstruct(out System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry!>! Entries, out string! RequestId, out System.DateTimeOffset RequestDateTime) -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.Entries.get -> System.Collections.Generic.IReadOnlyList<OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry!>!
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.Entries.init -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.Equals(OpenUrzednik.MF.WhiteList.Search.BatchSearchResult? other) -> bool
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.RequestDateTime.get -> System.DateTimeOffset
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.RequestDateTime.init -> void
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.RequestId.get -> string!
+OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.RequestId.init -> void
 OpenUrzednik.MF.WhiteList.Search.Subject
 OpenUrzednik.MF.WhiteList.Search.Subject.<Clone>$() -> OpenUrzednik.MF.WhiteList.Search.Subject!
 OpenUrzednik.MF.WhiteList.Search.Subject.AccountNumbers.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -94,8 +120,11 @@ OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListBadRequestError(stri
 OpenUrzednik.MF.WhiteList.WhiteListBadRequestError.WhiteListCode.get -> string?
 OpenUrzednik.MF.WhiteList.WhiteListClient
 OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByBankAccountAsync(string! bankAccount, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByBankAccountsAsync(System.Collections.Generic.IReadOnlyList<string!>! bankAccounts, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByNipAsync(string! nip, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByNipsAsync(System.Collections.Generic.IReadOnlyList<string!>! nips, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByRegonAsync(string! regon, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult!>>!
+OpenUrzednik.MF.WhiteList.WhiteListClient.SearchByRegonsAsync(System.Collections.Generic.IReadOnlyList<string!>! regons, System.DateTime date, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<OpenUrzednik.Core.OpenUrzednikResult<OpenUrzednik.MF.WhiteList.Search.BatchSearchResult!>>!
 OpenUrzednik.MF.WhiteList.WhiteListClient.WhiteListClient(System.Net.Http.HttpClient! httpClient) -> void
 OpenUrzednik.MF.WhiteList.WhiteListClient.WhiteListClient(System.Net.Http.HttpClient! httpClient, OpenUrzednik.MF.WhiteList.WhiteListOptions? options = null, System.TimeProvider? timeProvider = null, OpenUrzednik.Core.Telemetry.OpenUrzednikTelemetry? telemetry = null) -> void
 OpenUrzednik.MF.WhiteList.WhiteListErrorMetadata
@@ -151,6 +180,12 @@ const OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestIdMetadataKey = "r
 const OpenUrzednik.MF.WhiteList.WhiteListOptions.DefaultApiUrl = "https://wykazpodatnikowvat.mf.gov.pl/" -> string!
 const OpenUrzednik.MF.WhiteList.WhiteListOptions.TestApiUrl = "https://wykazpodatnikowvat-test.mf.gov.pl/" -> string!
 const OpenUrzednik.MF.WhiteList.WhiteListTelemetry.SourceName = "OpenUrzednik.MF.WhiteList" -> string!
+override OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.Equals(object? obj) -> bool
+override OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.GetHashCode() -> int
+override OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.ToString() -> string!
+override OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.Equals(object? obj) -> bool
+override OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.GetHashCode() -> int
+override OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.ToString() -> string!
 override OpenUrzednik.MF.WhiteList.Search.Subject.Equals(object? obj) -> bool
 override OpenUrzednik.MF.WhiteList.Search.Subject.GetHashCode() -> int
 override OpenUrzednik.MF.WhiteList.Search.Subject.ToString() -> string!
@@ -163,6 +198,10 @@ override OpenUrzednik.MF.WhiteList.Search.SubjectSearchResult.ToString() -> stri
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.Equals(object? obj) -> bool
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.GetHashCode() -> int
 override OpenUrzednik.MF.WhiteList.Search.SubjectsSearchResult.ToString() -> string!
+static OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.operator !=(OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? left, OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry.operator ==(OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? left, OpenUrzednik.MF.WhiteList.Search.BatchSearchEntry? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.operator !=(OpenUrzednik.MF.WhiteList.Search.BatchSearchResult? left, OpenUrzednik.MF.WhiteList.Search.BatchSearchResult? right) -> bool
+static OpenUrzednik.MF.WhiteList.Search.BatchSearchResult.operator ==(OpenUrzednik.MF.WhiteList.Search.BatchSearchResult? left, OpenUrzednik.MF.WhiteList.Search.BatchSearchResult? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.Subject.operator !=(OpenUrzednik.MF.WhiteList.Search.Subject? left, OpenUrzednik.MF.WhiteList.Search.Subject? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.Subject.operator ==(OpenUrzednik.MF.WhiteList.Search.Subject? left, OpenUrzednik.MF.WhiteList.Search.Subject? right) -> bool
 static OpenUrzednik.MF.WhiteList.Search.SubjectPerson.operator !=(OpenUrzednik.MF.WhiteList.Search.SubjectPerson? left, OpenUrzednik.MF.WhiteList.Search.SubjectPerson? right) -> bool

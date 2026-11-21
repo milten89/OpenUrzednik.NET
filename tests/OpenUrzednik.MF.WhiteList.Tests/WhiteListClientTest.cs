@@ -20,6 +20,14 @@ public sealed partial class WhiteListClientTest : IDisposable
     private const string Regon = "593728162";
     private const string BankAccount = "61109010140000071219812874";
 
+    // Second identifiers for the batches, fake too, with valid check digits.
+    private const string Nip2 = "3169973097";
+    private const string Regon2 = "489998560";
+    private const string BankAccount2 = "26059629673518324991153273";
+
+    // The proof of the captured batch answers: 08:48:50 on 2026-11-21 in Warsaw (CET).
+    private static readonly DateTimeOffset BatchAnswered = new(2026, 11, 21, 8, 48, 50, TimeSpan.FromHours(1));
+
     // 12:00 on 2026-11-20 in Warsaw (CET): "today" for the date checks, so the earliest date is 2021-01-01.
     private static readonly DateTimeOffset Now = new(2026, 11, 20, 11, 0, 0, TimeSpan.Zero);
     private static readonly DateTime Today = new(2026, 11, 20);
@@ -89,7 +97,52 @@ public sealed partial class WhiteListClientTest : IDisposable
         { 200, "{" },
     };
 
+    // Status and body of every kind of answer to a batch of one identifier; {id} is replaced with the identifier the test sends, as an
+    // API that echoes it would (also in an entry's error).
+    public static TheoryData<int, string> BatchLeakAnswers => new()
+    {
+        { 200, """{"result":{"entries":[{"identifier":"{id}","subjects":[]}],"requestDateTime":"21-11-2026 08:48:50","requestId":"r5wrK-99b0ck2"}}""" },
+        { 200, """{"result":{"entries":[{"identifier":"{id}","error":{"message":"Nieprawidłowy identyfikator {id}.","code":"WL-115"}}],"requestDateTime":"21-11-2026 08:48:50","requestId":"r5wrK-99b0ck2"}}""" },
+        { 200, """{"result":{"entries":[{"identifier":"{id}"}],"requestDateTime":"21-11-2026 08:48:50","requestId":"r5wrK-99b0ck2"}}""" },
+        { 400, """{"message":"Nieprawidłowy identyfikator {id}.","code":"WL-115"}""" },
+        { 429, """{"message":"Limit dla {id} wyczerpany.","code":"WL-191"}""" },
+        { 500, """{"message":"Błąd dla {id}.","code":"WL-197"}""" },
+        { 503, """{"message":"Błąd dla {id}.","code":"WL-100"}""" },
+        { 404, "Not found: {id}" },
+        { 200, "{" },
+    };
+
+    // Fixture, status, error.type of a batch: the captured answer (its failed entries set none, the call succeeded) and the API's error
+    // answers (ADR-0025).
+    public static TheoryData<string, int, string?> BatchMetricCases(string success) => new()
+    {
+        { success, 200, null },
+        { "error-429-wl-191.from-error-table.json", 429, RateLimitExceededError.ErrorCode },
+        { "error-400-wl-130.json", 400, BadRequestError.ErrorCode },
+        { "error-400-wl-195.from-error-table.json", 400, ServiceUnavailableError.ErrorCode },
+        { "error-500-wl-197.from-error-table.json", 500, UnknownError.ErrorCode },
+    };
+
     private readonly List<HttpClient> _httpClients = [];
+
+    // The entry of a captured batch answer with no subject on the list: the batch's proof.
+    private static BatchSearchEntry NotOnList(string identifier, string requestId)
+        => new(identifier, [], new WhiteListNotFoundError("MF White List API has no subject on the list for the identifier on the requested date.", requestId, BatchAnswered));
+
+    // The entry of a captured batch answer with the API's error.
+    private static BatchSearchEntry Rejected(string identifier, string message, string code)
+        => new(identifier, [], new WhiteListQueryRejectedError($"MF White List API rejected the identifier: {code} {message}", code));
+
+    // n identifiers, alternating the two given, so that a batch has duplicates.
+    private static string[] Batch(int count, string first, string second)
+        => Enumerable.Range(0, count).Select(i => i % 2 == 0 ? first : second).ToArray();
+
+    // The errors of the entries, as a result that the leak check searches (it doesn't search a success's value).
+    private static OpenUrzednik.Core.OpenUrzednikResult EntryErrors(OpenUrzednik.Core.OpenUrzednikResult<BatchSearchResult> result)
+    {
+        var errors = result.IsSuccess ? result.Value.Entries.Where(e => e.Error is not null).Select(e => e.Error!).ToArray() : [];
+        return errors.Length == 0 ? OpenUrzednik.Core.OpenUrzednikResult.Success() : OpenUrzednik.Core.OpenUrzednikResult.Failure(errors);
+    }
 
     public void Dispose()
     {

@@ -9,6 +9,11 @@ namespace OpenUrzednik.IntegrationTests.MF.WhiteList;
 /// doesn't have), <c>search-bank-account-not-found.json</c> (a test account number), and the 400 answers
 /// <c>error-400-wl-1xx.json</c> (WL-101 no date, WL-103 a future date, WL-107 an invalid REGON, WL-111 an invalid account number, WL-115 an
 /// invalid NIP, WL-118 a date before the list's range).</description></item>
+/// <item><description>The test host, captured on 2026-11-21, the batch searches with the same fictitious test data: <c>search-nips.json</c>
+/// (3245174504, 5260250274, the invalid 1234567890 with its entry error WL-115, and 3245174504 again: a subject, one not on the test list,
+/// a rejected one and a duplicate), <c>search-regons.json</c> (216973362 "Nazwa Firmy 13", 755016841 from the ministry's test data but not on the test list, the invalid
+/// 123456789 with WL-107), <c>search-bank-accounts.json</c> (a test account number not on the list, an invalid one with WL-111), and
+/// <c>error-400-wl-130.json</c> (31 NIPs, more than a batch takes).</description></item>
 /// <item><description>Production <c>wykazpodatnikowvat.mf.gov.pl</c>, for the Ministry of Finance, a legal person whose entry is public:
 /// <c>search-regon.json</c> (REGON 000002217) and <c>search-bank-account.json</c> (one of its accounts). The test host's subjects have no
 /// account numbers, and its 14-digit test REGONs fail the API's own check (WL-107).</description></item>

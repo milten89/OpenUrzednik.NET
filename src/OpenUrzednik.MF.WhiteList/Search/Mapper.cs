@@ -60,6 +60,70 @@ internal static class Mapper
         return OpenUrzednikResult.Success(new SubjectsSearchResult(Array.AsReadOnly(mapped), result.RequestId, requestDateTime));
     }
 
+    /// <summary>
+    /// The entries of a batch search, in the order of the answer, which keeps the order of the request; <paramref name="count"/> is the
+    /// number of identifiers sent, and an answer with another number of entries is an <see cref="InvalidPayloadException"/>, so no entry
+    /// is ever paired with another identifier.
+    /// </summary>
+    internal static BatchSearchResult MapToBatchSearchResult(EntryListResponseDto dto, int count)
+    {
+        WhiteListPayload.EnsurePresent(dto, "result");
+        var result = dto.Result;
+        WhiteListPayload.EnsurePresent(result, "result");
+        WhiteListPayload.EnsurePresent(result.RequestId, "requestId");
+        var requestDateTime = WhiteListPayload.ParseRequestDateTime(result.RequestDateTime);
+
+        var entries = result.Entries;
+        WhiteListPayload.EnsurePresent(entries, "entries");
+        if (entries.Length != count)
+            throw new InvalidPayloadException("MF White List API response has another number of 'entries' than the identifiers sent.");
+
+        var mapped = new BatchSearchEntry[entries.Length];
+        for (var i = 0; i < mapped.Length; i++)
+        {
+            var entry = entries[i];
+            WhiteListPayload.EnsurePresent(entry, "entries[]");
+            mapped[i] = MapToBatchSearchEntry(entry, result.RequestId, requestDateTime);
+        }
+
+        return new BatchSearchResult(Array.AsReadOnly(mapped), result.RequestId, requestDateTime);
+    }
+
+    /// <summary>
+    /// One entry of a batch search: its subjects; a <see cref="WhiteListNotFoundError"/> with the batch's proof when it has none
+    /// (<c>subjects: []</c>); or a <see cref="WhiteListQueryRejectedError"/> for its <c>error</c>, with the identifiers the message echoes
+    /// masked and only a code of the documented shape kept (ADR-0023). An entry with neither is an <see cref="InvalidPayloadException"/>.
+    /// </summary>
+    internal static BatchSearchEntry MapToBatchSearchEntry(EntryDto dto, string requestId, DateTimeOffset requestDateTime)
+    {
+        WhiteListPayload.EnsurePresent(dto.Identifier, "entries[].identifier");
+
+        if (dto.Error is not null)
+        {
+            var code = WhiteListErrorMapping.SanitizeCode(dto.Error.Code);
+            var error = new WhiteListQueryRejectedError(
+                $"MF White List API rejected the identifier{WhiteListErrorMapping.Detail(code, dto.Error.Message)}", code);
+            return new BatchSearchEntry(dto.Identifier, Array.Empty<Subject>(), error);
+        }
+
+        var subjects = dto.Subjects;
+        if (subjects is null)
+            throw new InvalidPayloadException("MF White List API response has an entry with neither 'subjects' nor 'error'.");
+
+        if (subjects.Length == 0)
+            return new BatchSearchEntry(dto.Identifier, Array.Empty<Subject>(), new WhiteListNotFoundError(SubjectNotOnListMessage, requestId, requestDateTime));
+
+        var mapped = new Subject[subjects.Length];
+        for (var i = 0; i < mapped.Length; i++)
+        {
+            var subject = subjects[i];
+            WhiteListPayload.EnsurePresent(subject, "entries[].subjects[]");
+            mapped[i] = MapToSubject(subject);
+        }
+
+        return new BatchSearchEntry(dto.Identifier, Array.AsReadOnly(mapped), null);
+    }
+
     internal static Subject MapToSubject(EntityDto dto)
     {
         WhiteListPayload.EnsurePresent(dto.Name, "subject.name");

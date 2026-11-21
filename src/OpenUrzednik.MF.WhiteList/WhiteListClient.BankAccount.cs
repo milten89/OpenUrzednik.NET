@@ -10,6 +10,9 @@ namespace OpenUrzednik.MF.WhiteList;
 
 public sealed partial class WhiteListClient
 {
+    // Stryker disable once String : false survivor, Stryker can't activate a static field initializer; an empty name makes the element names "[0]", "[1]", …, which fails the tests of invalid identifiers (checked by hand)
+    private static readonly string[] BankAccountsElementNames = WhiteListBatchValidator.ElementNames("bankAccounts");
+
     /// <inheritdoc/>
     public Task<OpenUrzednikResult<SubjectsSearchResult>> SearchByBankAccountAsync(string bankAccount, DateTime date, CancellationToken cancellationToken = default)
     {
@@ -34,5 +37,15 @@ public sealed partial class WhiteListClient
         return operation.Complete(await _pipeline.GetOrNotOnListAsync(traceSpan, nameof(SearchByBankAccountAsync), validation,
             () => $"search/bank-account/{validator.Normalized}?date={dayText}", "search/bank-account/{account}",
             WhiteListJsonContext.Default.EntityListResponseDto, Mapper.MapToSubjectsSearchResult, cancellationToken).ConfigureAwait(false));
+    }
+
+    /// <inheritdoc/>
+    public Task<OpenUrzednikResult<BatchSearchResult>> SearchByBankAccountsAsync(IReadOnlyList<string> bankAccounts, DateTime date, CancellationToken cancellationToken = default)
+    {
+        WhiteListBatchValidator.ThrowIfAnyNull(bankAccounts, nameof(bankAccounts));
+
+        return SearchBatchCoreAsync("mf_white_list.search.bank_accounts", nameof(SearchByBankAccountsAsync),
+            new WhiteListBatchValidator(nameof(bankAccounts), bankAccounts, BankAccountsElementNames, static (name, value) => new BankAccountNumberValidator(name, value)),
+            date, "search/bank-accounts/", "search/bank-accounts/{accounts}", cancellationToken);
     }
 }

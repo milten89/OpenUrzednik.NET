@@ -213,8 +213,12 @@ internal static class WhiteListErrorMapping
         return dto;
     }
 
-    // ": WL-115 Nieprawidłowy NIP." with the identifiers in the message masked, or "." without code and message.
-    private static string Detail(string? code, string? message)
+    /// <summary>
+    /// <c>": WL-115 Nieprawidłowy NIP."</c> with the identifiers in the message masked (<see cref="MaskIdentifiers"/>), or <c>"."</c>
+    /// without code and message; <paramref name="code"/> must be sanitized (<see cref="SanitizeCode"/>). Also the detail of a batch entry's
+    /// <c>error</c>.
+    /// </summary>
+    internal static string Detail(string? code, string? message)
     {
         if (message is not null)
             message = MaskIdentifiers(message);

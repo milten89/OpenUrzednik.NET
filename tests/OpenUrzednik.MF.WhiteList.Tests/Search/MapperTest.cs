@@ -16,4 +16,9 @@ public sealed partial class MapperTest
         => new() { Result = new EntityListDto { Subjects = subjects, RequestId = requestId, RequestDateTime = requestDateTime } };
 
     private static EntityDto Minimal(string name = "MINISTERSTWO FINANSÓW") => new() { Name = name };
+
+    private static EntryListResponseDto BatchResponse(EntryDto?[]? entries, string requestId = RequestId, string requestDateTime = RequestDateTime)
+        => new() { Result = new EntryListDto { Entries = entries, RequestId = requestId, RequestDateTime = requestDateTime } };
+
+    private static EntryDto Entry(string identifier, params EntityDto?[] subjects) => new() { Identifier = identifier, Subjects = subjects };
 }

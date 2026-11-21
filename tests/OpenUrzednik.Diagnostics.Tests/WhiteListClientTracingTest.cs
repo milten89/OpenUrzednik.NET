@@ -81,6 +81,29 @@ public sealed class WhiteListClientTracingTest : IDisposable
         AllTagsAndEvents().ShouldAllBe(text => !text.Contains("10901"));
     }
 
+    [Fact]
+    public async Task SearchByNipsAsync_FailedEntries_RecordsTheCountWithoutErrorOrNips()
+    {
+        // Arrange: one NIP not on the list and one the API rejected, echoing it; the call itself succeeds
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(Json(HttpStatusCode.OK,
+            """{"result":{"entries":[{"identifier":"{id}","subjects":[]},{"identifier":"{id}","error":{"message":"Nieprawidłowy NIP {id}.","code":"WL-115"}}],"requestDateTime":"21-11-2026 08:48:50","requestId":"r5wrK-99b0ck2"}}""".Replace("{id}", Nip))));
+
+        // Act
+        var result = await CreateSut(httpClient).SearchByNipsAsync([Nip, Nip], Date, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        var http = _recorder.Stopped[0];
+        var operation = _recorder.Stopped[1];
+        operation.OperationName.ShouldBe("mf_white_list.search.nips");
+        operation.GetTagItem("mf_white_list.count").ShouldBe(2);
+        operation.GetTagItem("mf_white_list.date").ShouldBe("2026-11-02");
+        operation.GetTagItem("error.type").ShouldBeNull();
+        operation.Status.ShouldBe(ActivityStatusCode.Unset);
+        http.GetTagItem("url.path").ShouldBe("/api/search/nips/{nips}");
+        AllTagsAndEvents().ShouldAllBe(text => !text.Contains("68125"));
+    }
+
     // Every tag value and event tag value of the recorded activities, as text.
     private IEnumerable<string> AllTagsAndEvents()
         => _recorder.Stopped.SelectMany(activity => activity.TagObjects.Select(tag => $"{tag.Value}")

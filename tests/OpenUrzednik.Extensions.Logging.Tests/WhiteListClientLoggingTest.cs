@@ -63,6 +63,48 @@ public sealed class WhiteListClientLoggingTest
     }
 
     [Fact]
+    public async Task SearchByNipsAsync_EmptyBatch_LogsDebugEntry()
+    {
+        // Arrange
+        var logger = new RecordingLogger();
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage()));
+
+        // Act
+        await CreateSut(httpClient, logger).SearchByNipsAsync([], new DateTime(2026, 11, 2), TestContext.Current.CancellationToken);
+
+        // Assert
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.Level.ShouldBe(LogLevel.Debug);
+        entry.EventId.ShouldBe(new EventId(WhiteListLogEvents.ValidationFailed, nameof(WhiteListLogEvents.ValidationFailed)));
+        entry.Message.ShouldBe("Validation failed for SearchByNipsAsync");
+    }
+
+    [Fact]
+    public async Task SearchByNipsAsync_EntryErrorEchoingTheNip_LogsNoNip()
+    {
+        // Arrange
+        var logger = new RecordingLogger();
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                """{"result":{"entries":[{"identifier":"{id}","error":{"message":"Nieprawidłowy NIP {id}.","code":"WL-115"}}],"requestDateTime":"21-11-2026 08:48:50","requestId":"r5wrK-99b0ck2"}}""".Replace("{id}", Nip),
+                Encoding.UTF8, "application/json"),
+        }));
+
+        // Act
+        var result = await CreateSut(httpClient, logger).SearchByNipsAsync([Nip], new DateTime(2026, 11, 2), TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        // One Debug entry with the counts of failed entries, nothing at Warning or above (the call succeeded), and no NIP anywhere.
+        var entry = logger.Entries.Where(e => e.EventId.Id == WhiteListLogEvents.NotOnList).ShouldHaveSingleItem();
+        entry.Level.ShouldBe(LogLevel.Debug);
+        entry.Message.ShouldBe("MF White List API answered SearchByNipsAsync with 0 entries not on the list and 1 rejected");
+        logger.Entries.ShouldNotContain(e => e.Level >= LogLevel.Warning);
+        logger.Entries.ShouldAllBe(e => !e.Message.Contains("68125") && e.State.All(item => !$"{item.Value}".Contains("68125")));
+    }
+
+    [Fact]
     public async Task SearchByNipAsync_BadRequestEchoingTheNip_LogsWarningWithTheNipMasked()
     {
         // Arrange
