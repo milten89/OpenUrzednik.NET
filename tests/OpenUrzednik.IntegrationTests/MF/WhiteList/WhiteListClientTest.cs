@@ -80,7 +80,7 @@ public class WhiteListClientTest : IClassFixture<NbpHttpClientFixture>
     public async Task SearchByNipAsync_FirstDayOfTheRange_IsAccepted()
     {
         // Arrange: 1 January five years back, the earliest date the client accepts and the API answers
-        var firstDay = new DateTime(WarsawToday().Year - 5, 1, 1);
+        var firstDay = new DateTime(WarsawToday().Year, 1, 1).AddYears(-5);
 
         // Act
         var result = await _client.SearchByNipAsync(TestNip, firstDay, TestContext.Current.CancellationToken);

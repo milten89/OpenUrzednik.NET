@@ -15,8 +15,12 @@ public sealed class SubjectsSearchResultTest
     [Fact]
     public void Equals_SameValuesInDifferentLists_ReturnsTrue()
     {
+        // Arrange
+        var sut = Create();
+        var other = Create();
+
         // Act
-        var result = Create().Equals(Create());
+        var result = sut.Equals(other);
 
         // Assert
         result.ShouldBeTrue();
