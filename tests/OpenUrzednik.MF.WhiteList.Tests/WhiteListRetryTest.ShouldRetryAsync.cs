@@ -314,11 +314,16 @@ public sealed partial class WhiteListRetryTest
         retry.ShouldBeTrue();
     }
 
-    [Fact]
-    public async Task ShouldRetryAsync_BodyInUtf16WithByteOrderMark_ReadsTheCode()
+    [Theory]
+    [InlineData("utf-16")]
+    [InlineData("utf-16BE")]
+    [InlineData("utf-32")]
+    [InlineData("utf-32BE")]
+    public async Task ShouldRetryAsync_BodyWithAByteOrderMark_ReadsTheCodeInThatEncoding(string encodingName)
     {
-        // Arrange: the byte order mark decides the encoding, as for the client's error mapping
-        var bytes = Encoding.Unicode.GetPreamble().Concat(Encoding.Unicode.GetBytes(Body("WL-195"))).ToArray();
+        // Arrange: the byte order mark decides the encoding, as for the client's error mapping (a StreamReader that detects them)
+        var encoding = encodingName == "utf-32BE" ? new UTF32Encoding(bigEndian: true, byteOrderMark: true) : Encoding.GetEncoding(encodingName);
+        var bytes = encoding.GetPreamble().Concat(encoding.GetBytes(Body("WL-195"))).ToArray();
         using var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new ByteArrayContent(bytes) };
 
         // Act
