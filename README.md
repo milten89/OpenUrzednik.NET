@@ -49,7 +49,7 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 | .NET Framework 4.7.2 or later | `netstandard2.0` (the same API, without the `DateOnly` overloads) |
 
 - We build for `netstandard2.0` and the .NET LTS releases that Microsoft supports (and a newer release only when we need its APIs). CI tests every build; the `netstandard2.0` build runs its tests on .NET Framework 4.8.
-- .NET 8 and .NET 9 reach the end of Microsoft's support on 10 November 2026. Your .NET 8 or 9 app keeps working with the `net8.0` build; we'll remove it only in a major version, because it is our lowest .NET target.
+- .NET 8 and .NET 9 reached the end of Microsoft's support on 10 November 2026. Your .NET 8 or 9 app keeps working with the `net8.0` build; we'll remove it only in a major version, because it is our lowest .NET target.
 - We may remove a .NET target that isn't the lowest one in a minor version, after Microsoft ends its support; apps on that version then get the next lower build, with the same API. `netstandard2.0` stays, so .NET Framework keeps working.
 - The assemblies are strong-named (public key token `e8d5ca0d09eb5ce1`), so strong-named .NET Framework apps and libraries can use them. The assembly version changes only with the major version (`1.0.0.0` for every 1.x release), so binding redirects stay valid across minor and patch updates.
 - The .NET builds are trimming- and Native AOT-compatible. Analyzers check both of them, and CI publishes a Native AOT app with every package's `net10.0` build and fails on any trimming or AOT warning. The `netstandard2.0` build isn't checked: .NET Framework has neither trimming nor Native AOT ([ADR-0014](docs/adr/0014-trimming-and-native-aot.md)).

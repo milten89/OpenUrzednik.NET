@@ -93,7 +93,9 @@ public partial class OpenUrzednikGenericResultTest
 
         // Assert
         exception.Error.ShouldBeSameAs(error);
+#pragma warning disable CS0618 // the obsolete 1.0 key is still written until 2.0 (ADR-0021)
         exception.Error!.Metadata[RateLimitExceededError.RetryAfterMetadataKey].ShouldBe(TimeSpan.FromSeconds(30));
+#pragma warning restore CS0618
         exception.Errors.ShouldHaveSingleItem().ShouldBeSameAs(error);
     }
 

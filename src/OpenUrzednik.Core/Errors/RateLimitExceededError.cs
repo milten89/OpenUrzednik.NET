@@ -13,9 +13,10 @@ public class RateLimitExceededError : OpenUrzednikError
 
     /// <summary>
     /// The <see cref="OpenUrzednikError.Metadata"/> key of <see cref="RetryAfter"/> as a <see cref="TimeSpan"/> (always present;
-    /// <see langword="null"/> when the service didn't say). Kept from 1.0; planned to be removed in 2.0: read
-    /// <see cref="RetryAfterDurationMetadataKey"/> instead (ADR-0021).
+    /// <see langword="null"/> when the service didn't say). Kept from 1.0 and still written in 1.x; removed in 2.0, with the key itself:
+    /// read <see cref="RetryAfterDurationMetadataKey"/> or <see cref="RetryAfter"/> instead (ADR-0021).
     /// </summary>
+    [Obsolete("The retryAfter metadata key holds a TimeSpan, the one value outside the JSON-shaped metadata rule: read RetryAfterDurationMetadataKey (an ISO 8601 duration) or the RetryAfter property instead (ADR-0021). Removed in 2.0.")]
     public const string RetryAfterMetadataKey = "retryAfter";
 
     /// <summary>
@@ -62,7 +63,9 @@ public class RateLimitExceededError : OpenUrzednikError
         // Stryker disable once Statement : equivalent, OpenUrzednikError.CollectMetadata adds nothing; the call keeps a later base key
         base.CollectMetadata(metadata);
         var retryAfter = RetryAfter;
+#pragma warning disable CS0618 // the 1.0 key is still written until 2.0 removes it (ADR-0021)
         metadata[RetryAfterMetadataKey] = retryAfter;
+#pragma warning restore CS0618
         metadata[RetryAfterDurationMetadataKey] = retryAfter.HasValue ? MetadataValue.FormatDuration(retryAfter.Value) : null;
     }
 

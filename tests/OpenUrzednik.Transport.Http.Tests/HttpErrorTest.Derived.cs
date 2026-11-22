@@ -97,7 +97,9 @@ public partial class HttpErrorTest
         var metadata = new ProviderRateLimitExceededError((HttpStatusCode)429).Metadata;
 
         // Assert
+#pragma warning disable CS0618 // the obsolete 1.0 key is still written until 2.0 (ADR-0021)
         metadata[RateLimitExceededError.RetryAfterMetadataKey].ShouldBe(TimeSpan.FromSeconds(30));
+#pragma warning restore CS0618
         metadata[RateLimitExceededError.RetryAfterDurationMetadataKey].ShouldBe("PT30S");
     }
 

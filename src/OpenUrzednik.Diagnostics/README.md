@@ -36,7 +36,7 @@ var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: nul
 });
 ```
 
-`GetShared` creates one `ActivitySource` per name, which lives until the process ends; on .NET it is the same source the clients use by default. To use your own source, pass `new ActivityTraceSource(source)`. `AddOpenUrzednikNbp()` from OpenUrzednik.Nbp.DependencyInjection passes the shared source for you.
+`GetShared` creates one `ActivitySource` per name, which lives until the process ends; on .NET it is the same source the clients use by default. To use your own source, pass `new ActivityTraceSource(source)`. The DI packages (`AddOpenUrzednikNbp()`, `AddOpenUrzednikMFWhiteList()`) pass the shared source for you.
 
 The sources have no version: the stability rules below apply instead.
 
@@ -54,7 +54,7 @@ The request itself is a `Client` span from `HttpClient`, nested under `<provider
 - A failure sets the `Error` status and OpenTelemetry's `error.type` tag to the error code, or to `_OTHER` when a client method threw (a cancelled call included) (e.g. `serviceUnavailable`, `validation`; see the error table in the [OpenUrzednik.Core README](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)). A span with several errors (validation) also gets an `error` event per error, and an exception adds an `exception` event.
 - All spans are of kind `Internal`.
 
-Each provider's README lists its span names and tags; for NBP see the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#telemetry-reference).
+Each provider's README lists its span names and tags: see the telemetry reference of [NBP](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#telemetry-reference) and of the [MF White List](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.MF.WhiteList/README.md#telemetry-reference).
 
 ### Stability
 
@@ -109,7 +109,7 @@ var client = new NbpGoldPriceClient(httpClient, options: null, timeProvider: nul
 
 ### With dependency injection
 
-`AddOpenUrzednikNbp()` from OpenUrzednik.Nbp.DependencyInjection passes metrics for you, on every target. When the container has an `IMeterFactory`, its clients record on a meter of that factory (`MeterMetrics.Create(meterFactory, name)`), which is disposed with the container. On .NET 8 and later `AddHttpClient()` registers a factory, and on .NET Framework the Generic Host or `services.AddMetrics()` does; without one, the clients record on the shared meter. This is what `HttpClient` does with its own metrics.
+The DI packages (`AddOpenUrzednikNbp()`, `AddOpenUrzednikMFWhiteList()`) pass metrics for you, on every target. When the container has an `IMeterFactory`, its clients record on a meter of that factory (`MeterMetrics.Create(meterFactory, name)`), which is disposed with the container. On .NET 8 and later `AddHttpClient()` registers a factory, and on .NET Framework the Generic Host or `services.AddMetrics()` does; without one, the clients record on the shared meter. This is what `HttpClient` does with its own metrics.
 
 The factory meter has the same name, so `AddMeter("OpenUrzednik.*")` collects it, and OpenTelemetry merges its series with the shared meter's when an app also creates clients without DI. Your tests can collect one container's measurements by the factory, even when tests run in parallel:
 
@@ -136,7 +136,7 @@ var measurement = collector.GetMeasurementSnapshot().Single();
 - The histogram suggests OpenTelemetry's bucket boundaries for RPC calls (0.1 ms to 60 s) on .NET 10 and .NET Framework. On .NET 8, whose built-in `System.Diagnostics.DiagnosticSource` has no `InstrumentAdvice`, the listener's defaults apply; an OpenTelemetry view can set the boundaries on any target.
 - Tags never carry personal identifiers or secrets.
 
-Each provider's README lists its instruments; for NBP see the [telemetry reference](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#metrics).
+Each provider's README lists its instruments: see the metrics of [NBP](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Nbp/README.md#metrics) and of the [MF White List](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.MF.WhiteList/README.md#metrics).
 
 Within a major version, meter names, instrument names, units and the documented tags with their meaning don't change. A minor version may add instruments and tags.
 

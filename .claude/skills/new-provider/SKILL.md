@@ -15,7 +15,7 @@ Notation, with MF White List as the example:
 | `<Package>` | package id = root namespace = `ActivitySource` name | `OpenUrzednik.MF.WhiteList` |
 | `<Name>` | the package id without `OpenUrzednik.` and dots: DI method names | `MFWhiteList` |
 | `<Prefix>` | the type prefix the provider ADR chose | `WhiteList` |
-| `<Provider>` | the folder name in shared test projects | `MFWhiteList` |
+| `<Provider>` | the folder name in shared test projects: one folder per authority, then one per provider (`MF/WhiteList`); a provider without an authority prefix uses one folder (`Nbp`) | `MF/WhiteList` |
 | `<provider>` | the short name in telemetry: snake_case of the id without `OpenUrzednik.` | `mf_white_list` |
 | `<icon>` | the icon file name | `icon-mf` |
 | `<label>` | the GitHub label | `provider:white-list` |

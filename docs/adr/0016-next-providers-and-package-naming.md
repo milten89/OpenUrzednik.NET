@@ -15,8 +15,8 @@ This ADR supersedes ADR-0010 and restates what stays in force from it.
 
 ## Decision Drivers
 
-* A package name is fixed at its first release: renaming it changes the `ActivitySource` name, which is part of the telemetry contract ([ADR-0003](0003-telemetry-abstractions.md)).
-* An app should get only the code and dependencies of the API it uses ([ADR-0004](0004-dependency-policy.md)).
+* A package name is fixed at its first release: renaming it changes the `ActivitySource` name, which is part of the telemetry contract ([ADR-0025](0025-telemetry-abstractions-with-metrics.md)).
+* An app should get only the code and dependencies of the API it uses ([ADR-0024](0024-dependency-policy-with-a-7z-reader.md)).
 * Polish institutions run several unrelated APIs (the Ministry of Finance runs the VAT White List next to systems with their own auth and protocols).
 * The documentation and the public API are in English ([ADR-0009](0009-documentation-language.md)).
 * Some public registers restrict automated access by law, which a client library must not ignore.
@@ -52,13 +52,13 @@ Not chosen now: the White List flat file, which needs a library to read 7z archi
 * protocol and HTTP methods;
 * authentication and sessions;
 * quota type (throttling, or a daily or per-IP quota) and retry advice;
-* personal data in requests and responses, and its masking ([ADR-0003](0003-telemetry-abstractions.md), [ADR-0006](0006-shared-http-layer.md));
+* personal data in requests and responses, and its masking ([ADR-0025](0025-telemetry-abstractions-with-metrics.md), [ADR-0019](0019-shared-http-layer-tested-through-test-host.md));
 * fixtures, and whether a test environment exists;
 * terms of use and attribution;
 * **the legal basis for automated access** (new: a register may require a permit or forbid unauthorised network access);
 * the legal meaning of outputs;
 * partial results of batch calls;
-* extra dependencies ([ADR-0004](0004-dependency-policy.md));
+* extra dependencies ([ADR-0024](0024-dependency-policy-with-a-7z-reader.md));
 * the package and namespace name, by the rules below.
 
 **Package and namespace names:**
@@ -70,7 +70,7 @@ Not chosen now: the White List flat file, which needs a library to read 7z archi
 * The root namespace equals the package id, and every public type of the package is in it, models included ([ADR-0026](0026-client-api-with-one-public-namespace-per-provider.md)).
 * The nuget.org ids of the deprecated skeleton previews: `OpenUrzednik.Gus` and `OpenUrzednik.Mf` are not reused. `OpenUrzednik.Krs` is reused: its first real version must sort above `1.0.13-preview.gde7b6f8597`, the highest deprecated preview, which every lockstep version from `1.1.0-preview` on does ([ADR-0008](0008-branching-versioning-and-release.md)). A new provider is a feature, so it ships in a minor release.
 
-**Telemetry names per package** (applying [ADR-0003](0003-telemetry-abstractions.md)):
+**Telemetry names per package** (applying [ADR-0025](0025-telemetry-abstractions-with-metrics.md)):
 
 * The `ActivitySource` name is the package id (e.g. `OpenUrzednik.MF.WhiteList`), so `AddSource("OpenUrzednik.*")` still enables every provider.
 * The provider short name, used as the span-name prefix, in tags and as the `{provider}` log property, is the package id without `OpenUrzednik.`, in snake_case, with `_` between its segments: `mf_white_list`, `gus_regon`, `krs` (spans such as `mf_white_list.search.nip`).
@@ -78,9 +78,9 @@ Not chosen now: the White List flat file, which needs a library to read 7z archi
 
 **Type names** (clients, options, `<Prefix>Telemetry`, `<Prefix>LogEvents`): each provider ADR chooses its type prefix (e.g. `WhiteList` or `MFWhiteList`), before the first release; the namespace already carries the package id.
 
-**Dependency injection:** at most one `<Package>.DependencyInjection` package per package with typed `HttpClient` clients. Its registration methods carry the package name (e.g. `AddOpenUrzednikMFWhiteList()`), so two DI packages never define the same method ([ADR-0004](0004-dependency-policy.md)).
+**Dependency injection:** at most one `<Package>.DependencyInjection` package per package with typed `HttpClient` clients. Its registration methods carry the package name (e.g. `AddOpenUrzednikMFWhiteList()`), so two DI packages never define the same method ([ADR-0024](0024-dependency-policy-with-a-7z-reader.md)).
 
-**Quotas:** a quota or throttle that tells the caller to try again later is a `RateLimitExceededError`, with the retry time in its metadata when the API gives one or it can be derived (e.g. a block until midnight). A different condition gets a new condition type ([ADR-0012](0012-error-types-describe-conditions.md)) only when a provider ADR shows one from the API's real responses.
+**Quotas:** a quota or throttle that tells the caller to try again later is a `RateLimitExceededError`, with the retry time in its metadata when the API gives one or it can be derived (e.g. a block until midnight). A different condition gets a new condition type ([ADR-0021](0021-transport-subclasses-of-condition-errors.md)) only when a provider ADR shows one from the API's real responses.
 
 **The skeletons:** the empty `src/OpenUrzednik.Gus`, `src/OpenUrzednik.Krs` and `src/OpenUrzednik.Mf` projects are removed; each provider adds its own project under its chosen name. Their empty previews on nuget.org stay deprecated and unlisted.
 
@@ -136,3 +136,4 @@ Not chosen now: the White List flat file, which needs a library to read 7z archi
 
 * 2026-11-20 · [#220](https://github.com/milten89/OpenUrzednik.NET/issues/220) · The flat file's 7z reader is decided: SharpCompress, in [ADR-0024](0024-dependency-policy-with-a-7z-reader.md), which supersedes ADR-0004; the last More Information line now states ADR-0022's lifecycle instead of ADR-0001's. Reason: #220 chose the reader.
 * 2026-11-21 · [#350](https://github.com/milten89/OpenUrzednik.NET/issues/350) · Every public type of a package goes in its root namespace instead of models in area namespaces below it: [ADR-0026](0026-client-api-with-one-public-namespace-per-provider.md) supersedes ADR-0007. Reason: the maintainer's decision after a survey of .NET SDKs.
+* 2026-11-22 · [#366](https://github.com/milten89/OpenUrzednik.NET/issues/366) · References to superseded records point to their successors (ADR-0003 → ADR-0025, ADR-0004 → ADR-0024, ADR-0006 → ADR-0019, ADR-0012 → ADR-0021). Reason: the pre-1.1.0 review; the record freezes at the release cut.

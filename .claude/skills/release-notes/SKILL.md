@@ -62,9 +62,14 @@ For 1.0.0 this step doesn't apply: the range is the whole preview history, and i
 
 ### 1.1.0 only
 
-Under **Upgrading**, this note, in substance ([ADR-0025](../../../docs/adr/0025-telemetry-abstractions-with-metrics.md), #329):
+Under **Upgrading**, these notes, in substance:
 
-- **The NBP clients take their telemetry as one `OpenUrzednikTelemetry`.** The constructor with `logger` and `traceSource` parameters is obsolete and is removed in 2.0; code using it still compiles, with a warning. Pass the logger, trace source and the new metrics in an `OpenUrzednikTelemetry`, as the last argument after `options` and `timeProvider` (either may be `null`): `new NbpGoldPriceClient(httpClient, options: null, timeProvider: null, telemetry: new OpenUrzednikTelemetry { Logger = logger, TraceSource = traceSource })`. `AddOpenUrzednikNbp()` needs no change. 2.0 merges the constructors into one whose parameters are all optional.
+- **The NBP clients take their telemetry as one `OpenUrzednikTelemetry`** ([ADR-0025](../../../docs/adr/0025-telemetry-abstractions-with-metrics.md), #329). The constructor with `logger` and `traceSource` parameters is obsolete and is removed in 2.0; code using it still compiles, with a warning, except a literal `null` as the fourth argument (`new NbpGoldPriceClient(http, options, timeProvider, null)` is ambiguous: drop the `null` or write `telemetry: null`). Pass the logger, trace source and the new metrics in an `OpenUrzednikTelemetry`, as the last argument after `options` and `timeProvider` (either may be `null`): `new NbpGoldPriceClient(httpClient, options: null, timeProvider: null, telemetry: new OpenUrzednikTelemetry { Logger = logger, TraceSource = traceSource })`. `AddOpenUrzednikNbp()` needs no change. 2.0 removes the obsolete constructor, leaving `(HttpClient)` and one whose other parameters are all optional ([ADR-0026](../../../docs/adr/0026-client-api-with-one-public-namespace-per-provider.md)).
+- **`new ServiceUnavailableError(message, null)` no longer compiles** (CS0121; binaries keep working): write `new ServiceUnavailableError(message)`, or `new ServiceUnavailableError(message, exception: null)` ([ADR-0021](../../../docs/adr/0021-transport-subclasses-of-condition-errors.md), #366).
+- **`RateLimitExceededError.RetryAfterMetadataKey` is obsolete** and is removed in 2.0 with the `retryAfter` key and its `TimeSpan`: read `RetryAfterDurationMetadataKey` (an ISO 8601 duration) or the `RetryAfter` property (#366).
+- **Spans of a failed call:** a client method that threw or was cancelled now marks its span and its `<provider>.http.get` span with `error.type` `_OTHER` and the `Error` status (1.0 left them unset), as its metric does (#364).
+- **NBP error messages** show the configured address, never a `DelegatingHandler`'s rewritten URI or query (#364).
+- The behaviour changes in ADR-0021's Consequences: exact-type checks no longer match (`GetType() == typeof(NotFoundError)` fails for NBP's `HttpNotFoundError`, `is NotFoundError` holds); NBP's validation metadata changes form (a date `value` is an ISO string, a range error has `startName`/`start`/`endName`/`end` instead of `name`/`value`); `ValidationError`'s `object` constructor converts an app's value (a `DateTime` becomes a string).
 
 ### 1.0.0 only
 
