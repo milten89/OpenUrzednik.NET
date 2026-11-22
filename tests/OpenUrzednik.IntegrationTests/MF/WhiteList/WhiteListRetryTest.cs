@@ -26,7 +26,8 @@ public class WhiteListRetryTest
         // Act
         var result = await client.SearchByNipAsync(TestNip, DateTime.Today.AddDays(-1), TestContext.Current.CancellationToken);
 
-        // Assert
+        // Assert: the body stayed readable for the error mapping after the filter read it on a real chunked stream; "no retry" holds for
+        // WL-118 whether or not the filter parsed the code (the unit tests in WhiteListRetryTest.NetworkBody.cs cover the parsing)
         filter.ShouldRetry.ShouldBe(false);
         filter.ContentLength.ShouldBeNull();
         var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<WhiteListBadRequestError>();

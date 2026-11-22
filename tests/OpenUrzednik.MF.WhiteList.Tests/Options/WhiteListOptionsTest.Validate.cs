@@ -14,8 +14,8 @@ public sealed partial class WhiteListOptionsTest
     }
 
     [Theory]
-    [InlineData(WhiteListOptions.DefaultApiUrl)]
-    [InlineData(WhiteListOptions.TestApiUrl)]
+    [InlineData("https://wykazpodatnikowvat.mf.gov.pl/")]
+    [InlineData("https://wykazpodatnikowvat-test.mf.gov.pl/")]
     [InlineData("https://proxy.example.com/white-list")]
     public void Validate_ValidValues_DoesNotThrow(string apiUrl)
     {

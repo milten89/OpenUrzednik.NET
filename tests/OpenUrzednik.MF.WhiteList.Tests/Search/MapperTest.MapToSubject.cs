@@ -93,6 +93,22 @@ public sealed partial class MapperTest
     }
 
     [Fact]
+    public void MapToSubject_EmptyLists_ShareTheEmptyArray()
+    {
+        // Arrange: the API sends "representatives":[] and the others for nearly every subject
+        var dto = new EntityDto { Name = "MINISTERSTWO FINANSÓW", Representatives = [], AuthorizedClerks = [], Partners = [], AccountNumbers = [] };
+
+        // Act
+        var subject = Mapper.MapToSubject(dto);
+
+        // Assert: no array and read-only wrapper allocated per empty list
+        subject.Representatives.ShouldBeSameAs(Array.Empty<SubjectPerson>());
+        subject.AuthorizedClerks.ShouldBeSameAs(Array.Empty<SubjectPerson>());
+        subject.Partners.ShouldBeSameAs(Array.Empty<SubjectPerson>());
+        subject.AccountNumbers.ShouldBeSameAs(Array.Empty<string>());
+    }
+
+    [Fact]
     public void MapToSubject_Lists_ReturnsReadOnlyLists()
     {
         // Arrange

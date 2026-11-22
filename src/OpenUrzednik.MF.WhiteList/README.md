@@ -66,7 +66,7 @@ The client takes the host from the first place that sets one: `WhiteListOptions.
 
 With a DI container, use [OpenUrzednik.MF.WhiteList.DependencyInjection](https://www.nuget.org/packages/OpenUrzednik.MF.WhiteList.DependencyInjection): `builder.Services.AddOpenUrzednikMFWhiteList()` registers both clients.
 
-Errors such as an exceeded daily limit, an entity that isn't on the list, a timeout or an invalid NIP come back in the result, not as exceptions. If you prefer exceptions, call `EnsureSuccess()` on the result. A `null` argument is a programming error: the method throws `ArgumentNullException` right away, before it returns a task. A resilience handler's rejections (timeout, open circuit breaker, rate limiter) become errors only when the clients are registered with `AddOpenUrzednikMFWhiteList()`; with your own `HttpClient` setup they come out as Polly exceptions.
+Errors such as an exceeded daily limit, an entity that isn't on the list, a timeout or an invalid NIP come back in the result, not as exceptions. If you prefer exceptions, call `EnsureSuccess()` on the result. A `null` argument is a programming error: the method throws `ArgumentNullException` right away, before it returns a task. A resilience handler's rejections (timeout, open circuit breaker, rate limiter) become errors when the clients come from the DI package (`AddOpenUrzednikMFWhiteList()` or `AddKeyedOpenUrzednikMFWhiteList()`), or when you call `AddOpenUrzednikMFWhiteListRejectionHandler()` on your own client's builder; otherwise they come out as Polly exceptions.
 
 ## Methods
 
@@ -144,7 +144,7 @@ The API's own errors come back as the provider's error types. They derive from t
 | WL2 `X`: the service is inactive | `WhiteListServiceInactiveError` (a `ServiceUnavailableError`) |
 | The entity isn't on the list (a search with no subject, an account with no subject, WL2 `B`) | `WhiteListNotFoundError` (a `NotFoundError`, with the proof) |
 | Any other status (401, 403, 404, 408, …) | The shared HTTP error for that status, e.g. `HttpNotFoundError`, with the code in the message |
-| A bad argument | `ValidationError<string>` for an identifier (the value is masked), `ValidationError<DateTime>` for a date |
+| A bad argument | `ValidationError<string>` for an identifier (the value is masked), `ValidationError<DateTime>` for a date, `ValidationError<int>` for a batch that is empty or has more than 30 identifiers |
 | Timeout, no connection, a body that isn't the expected JSON | `RequestTimeoutError`, `ConnectionFailedError`, `SerializationError` |
 
 An entity that isn't on the list is an error, not an empty success, so `EnsureSuccess()` stops on it and `is NotFoundError` handles it, but the proof isn't lost: it is on the error. A check never ends in `WhiteListNotFoundError`: an answer has `AccountAssigned` `true` or `false` (validation, HTTP and serialization failures still apply). Messages and metadata hold the API's code only in its documented shape, never an identifier: identifiers an API message echoes are masked, also with separators (`736-812-54-16`).
@@ -224,7 +224,7 @@ Each client method records one measurement on the `OpenUrzednik.MF.WhiteList` me
 |---|---|---|
 | `openurzednik.client.operation.duration` | histogram, seconds (`s`) | `openurzednik.operation` (the method's span name above, e.g. `mf_white_list.search.nip`), `openurzednik.provider` (`mf_white_list`), `error.type` (only on failure), `server.address`, `server.port` |
 
-The duration is exactly the span's when the operation is traced, and otherwise measured with the client's `TimeProvider`. `error.type` is the first error's code (as on the span), or `_OTHER` when the method threw, e.g. because the caller cancelled it. The suggested bucket boundaries (OpenTelemetry's for RPC calls, 0.1 ms to 60 s) apply on .NET 10 and .NET Framework; on .NET 8 the listener's defaults apply. No tag carries an identifier.
+The duration is exactly the span's when the operation is traced, and otherwise measured with the client's `TimeProvider`. `error.type` is the first error's code (as on the span), or `_OTHER` when the method threw, e.g. because the caller cancelled it. `notFound` is a normal answer, not an outage: a subject that isn't on the list comes back as a `WhiteListNotFoundError` with its proof, so leave it out of error-rate alerts (`error.type != notFound`). A 404 from the server (a wrong `ApiUrl`, a gateway, a moved host) is `notFound` too, as an `HttpNotFoundError`: watch for it through the `mf_white_list.http.get` span's `http.response.status_code` or log event 1101 (`NotFound`), which a register answer never produces. The suggested bucket boundaries (OpenTelemetry's for RPC calls, 0.1 ms to 60 s) apply on .NET 10 and .NET Framework; on .NET 8 the listener's defaults apply. No tag carries an identifier.
 
 ### Log events
 

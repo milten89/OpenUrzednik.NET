@@ -60,7 +60,10 @@
         "src/OpenUrzednik.MF.WhiteList/WhiteListOptionsValidator.cs",
         "src/OpenUrzednik.MF.WhiteList/WhiteList*Error.cs",
         "src/OpenUrzednik.MF.WhiteList/WhiteListDateOnlyExtensions.cs",
-        "src/OpenUrzednik.MF.WhiteList/WhiteListRetry.cs"
+        "src/OpenUrzednik.MF.WhiteList/WhiteListRetry.cs",
+        "src/OpenUrzednik.MF.WhiteList/WhiteListClient*.cs",
+        "src/OpenUrzednik.MF.WhiteList/WhiteListStatusClient.cs",
+        "src/OpenUrzednik.MF.WhiteList/WhiteListErrorMetadata.cs"
       ],
       "break": 100
     },

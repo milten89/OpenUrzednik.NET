@@ -27,7 +27,7 @@ public sealed partial class WhiteListConnectionTest
     }
 
     [Theory]
-    [InlineData(WhiteListOptions.TestApiUrl, "https://wykazpodatnikowvat-test.mf.gov.pl/api2/")]
+    [InlineData("https://wykazpodatnikowvat-test.mf.gov.pl/", "https://wykazpodatnikowvat-test.mf.gov.pl/api2/")]
     [InlineData("https://proxy.example.com/white-list", "https://proxy.example.com/white-list/api2/")]
     public void CreateStatus_ApiUrl_AddsApi2ToTheRoot(string apiUrl, string expected)
     {

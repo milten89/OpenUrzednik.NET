@@ -164,7 +164,8 @@ internal static class Mapper
 
     private static IReadOnlyList<SubjectPerson> MapToPersons(EntityPersonDto?[]? dtos, string name)
     {
-        if (dtos is null)
+        // Nearly every subject has empty representatives, clerks and partners: no array and wrapper for them.
+        if (dtos is null || dtos.Length == 0)
             return Array.Empty<SubjectPerson>();
 
         var persons = new SubjectPerson[dtos.Length];
@@ -180,7 +181,7 @@ internal static class Mapper
 
     private static IReadOnlyList<string> MapToAccountNumbers(string?[]? accountNumbers)
     {
-        if (accountNumbers is null)
+        if (accountNumbers is null || accountNumbers.Length == 0)
             return Array.Empty<string>();
 
         var copy = new string[accountNumbers.Length];

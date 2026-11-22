@@ -192,7 +192,7 @@ using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl
 
 using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl-status-nip-active.json")))
 {
-    var status = await new WhiteListStatusClient(httpClient).GetVatStatusByNipAsync("1476620167", new DateTime(2026, 11, 2));
+    var status = await new WhiteListStatusClient(httpClient).GetVatStatusByNipAsync("1476620167", whiteListDate);
     Check("mf white list: a WL2 status C maps to Active with the day and the proof",
         status.IsSuccess && status.Value == new VatStatusResult(VatStatus.Active, new DateTime(2026, 11, 2), "Oytfp-99b3aea", new DateTimeOffset(2026, 11, 21, 19, 58, 34, TimeSpan.FromHours(1))),
         Describe(status));
@@ -200,7 +200,7 @@ using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl
 
 using (var httpClient = new HttpClient(new FixtureHandler(HttpStatusCode.OK, "wl-status-nip-not-on-list.json")))
 {
-    var notInRegister = await new WhiteListStatusClient(httpClient).GetVatStatusByNipAsync("0074370710", new DateTime(2026, 11, 2));
+    var notInRegister = await new WhiteListStatusClient(httpClient).GetVatStatusByNipAsync("0074370710", whiteListDate);
     Check("mf white list: a WL2 status B is WhiteListNotFoundError with the proof",
         notInRegister.IsFailure && notInRegister.Errors[0] is WhiteListNotFoundError { RequestId: "MdAhc-99b3aea" },
         Describe(notInRegister));
@@ -230,7 +230,7 @@ using (var provider = whiteListServices.BuildServiceProvider())
 {
     var diSearch = await provider.GetRequiredService<IWhiteListClient>().SearchByNipAsync("3245174504", whiteListDate);
     Check("di: mf white list default search client", diSearch.IsSuccess, Describe(diSearch));
-    var diStatus = await provider.GetRequiredService<IWhiteListStatusClient>().GetVatStatusByNipAsync("1476620167", new DateTime(2026, 11, 2));
+    var diStatus = await provider.GetRequiredService<IWhiteListStatusClient>().GetVatStatusByNipAsync("1476620167", whiteListDate);
     Check("di: mf white list default status client", diStatus.IsSuccess, Describe(diStatus));
     var keyedSearch = await provider.GetRequiredKeyedService<IWhiteListClient>("gateway").SearchByNipAsync("3245174504", whiteListDate);
     Check("di: mf white list keyed client", keyedSearch.IsSuccess, Describe(keyedSearch));

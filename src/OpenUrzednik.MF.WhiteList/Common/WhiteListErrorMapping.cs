@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Globalization;
 using System.Net;
 using System.Text;
@@ -203,7 +204,8 @@ internal static class WhiteListErrorMapping
 
     /// <summary>
     /// The API's code in an error body, or <see langword="null"/> for no body, one that can not be read, one over
-    /// <see cref="MaxCodeBodyBytes"/>, or one without a documented code. Reads at most <see cref="MaxCodeBodyBytes"/> + 1 bytes of the
+    /// <see cref="MaxCodeBodyBytes"/>, or one without a documented code in the text <see cref="MapAsync"/> parses (its first
+    /// <see cref="RestRequestExecutor.MaxServerMessageLength"/> characters). Reads at most <see cref="MaxCodeBodyBytes"/> + 1 bytes of the
     /// body and replaces <see cref="HttpResponseMessage.Content"/>, so <see cref="MapAsync"/> reads the body from the start afterwards:
     /// by the bytes read, for a body within the limit, or by them followed by the rest of the stream, for a larger one (which has no
     /// code). The body has to be replaced, because network content can be read once: a failed attempt to buffer it would leave it
@@ -270,7 +272,55 @@ internal static class WhiteListErrorMapping
         WhiteListReplayContent.CopyHeaders(content, replacement);
         response.Content = replacement;
         content.Dispose();
-        return SanitizeCode(Parse(Encoding.UTF8.GetString(buffer, 0, length))?.Code);
+        return SanitizeCode(Parse(MessageText(buffer, length))?.Code);
+    }
+
+    // The byte order marks StreamReader detects, the 4-byte UTF-32 one before the UTF-16 one it starts with; without one, UTF-8.
+    // Stryker disable once Boolean,CollectionExpression : false survivors, Stryker can't activate a static field initializer; an empty table,
+    // a swapped endianness or byteOrderMark: false (an empty preamble that matches every body) fails WhiteListRetryTest's byte-order-mark
+    // tests (checked by hand)
+    private static readonly (byte[] Preamble, Encoding Encoding)[] ByteOrderMarks =
+    [
+        (Encoding.UTF32.GetPreamble(), Encoding.UTF32),
+        (Encoding.UTF8.GetPreamble(), Encoding.UTF8),
+        (Encoding.Unicode.GetPreamble(), Encoding.Unicode),
+        (Encoding.BigEndianUnicode.GetPreamble(), Encoding.BigEndianUnicode),
+        (new UTF32Encoding(bigEndian: true, byteOrderMark: true).GetPreamble(), new UTF32Encoding(bigEndian: true, byteOrderMark: true)),
+    ];
+
+    // The text MapAsync parses from the same body, so the filter and the mapping find the same code (ADR-0023): what the executor's
+    // ReadMessageAsync reads through a StreamReader, at most RestRequestExecutor.MaxServerMessageLength characters, decoded as UTF-8
+    // unless a byte order mark says otherwise, without a half surrogate pair at the cut, trimmed. (One exception: on .NET Framework the
+    // StreamReader drops an incomplete sequence at the end of a short body, which GetChars turns into U+FFFD; the API sends none.) The
+    // bytes are already in memory, so they are decoded directly into a rented buffer; the decoding is synchronous, so nothing can write
+    // into the buffer once it is returned, and the part written is cleared first, because the body may echo an identifier (ADR-0025). Internal for its tests.
+    internal static string MessageText(byte[] buffer, int length)
+    {
+        var encoding = Encoding.UTF8;
+        var start = 0;
+        foreach (var (preamble, candidate) in ByteOrderMarks)
+        {
+            if (buffer.AsSpan(0, length).StartsWith(preamble))
+            {
+                encoding = candidate;
+                start = preamble.Length;
+                break;
+            }
+        }
+
+        // No try/finally: with the encodings' replacement fallback nothing below throws, so the array always goes back to the pool.
+        var count = length - start;
+        var text = ArrayPool<char>.Shared.Rent(encoding.GetMaxCharCount(count));
+        var written = encoding.GetChars(buffer, start, count, text, 0);
+        var read = Math.Min(written, RestRequestExecutor.MaxServerMessageLength);
+        if (read == RestRequestExecutor.MaxServerMessageLength && char.IsHighSurrogate(text[read - 1]))
+            read--;
+        var message = new string(text, 0, read).Trim();
+        // Stryker disable once Statement : equivalent, clearing only wipes the pooled copy of the body; no result or test can observe it
+        text.AsSpan(0, written).Clear();
+        // Stryker disable once Statement : equivalent, returning only lets the pool reuse the array; no result or test can observe it
+        ArrayPool<char>.Shared.Return(text);
+        return message;
     }
 
     // The body is the API's JSON; anything else (no body, a proxy's HTML page, a body cut at the 500 characters the executor reads) has no code.
