@@ -397,6 +397,68 @@ public partial class RestRequestExecutorTest
     }
 
     [Fact]
+    public async Task GetAsync_BadRequestWithBodyAnAppHandlerConsumed_ReturnsBadRequestErrorAndLogsDebug()
+    {
+        // Arrange: .NET reports a consumed network stream as InvalidOperationException
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, logger, _) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest)
+        {
+            Content = new ThrowingContent((_, _) => throw new InvalidOperationException("The stream was already consumed. It cannot be read again."))
+        };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        var error = result.Errors[0].ShouldBeOfType<HttpBadRequestError>();
+        error.Message.ShouldEndWith(".");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, RestLogEvents.ErrorBodyUnreadable, Arg.Is<Exception>(exception => exception is InvalidOperationException),
+            "Could not read {provider} error response body.", "provider", "test");
+    }
+
+    [Fact]
+    public async Task GetAsync_BadRequestWithClosedBodyStream_ReturnsBadRequestErrorAndLogsDebug()
+    {
+        // Arrange: .NET Framework hands out the closed stream of a consumed body, and a reader over it would throw ArgumentException
+        var faker = new Faker().WithConstantSeed();
+        var (telemetryProvider, logger, _) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
+        var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new ClosedStreamContent() };
+        using var httpClient = CreateHttpClient(faker, response);
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetryProvider, _timeProvider).GetAsync(faker.Internet.UrlRootedPath(), TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+        result.Errors[0].ShouldBeOfType<HttpBadRequestError>().Message.ShouldEndWith(".");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, RestLogEvents.ErrorBodyUnreadable, null, "Could not read {provider} error response body.", "provider", "test");
+    }
+
+    // Content whose read stream is already closed.
+    private sealed class ClosedStreamContent : HttpContent
+    {
+        protected override Task<Stream> CreateContentReadStreamAsync()
+        {
+            var stream = new MemoryStream();
+            stream.Dispose();
+            return Task.FromResult<Stream>(stream);
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context) => Task.CompletedTask;
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = -1;
+            return false;
+        }
+    }
+
+    [Fact]
     public async Task GetAsync_SuccessfulResponseWithNullJsonContent_ReturnsFailureWithUnknownError()
     {
         // Arrange

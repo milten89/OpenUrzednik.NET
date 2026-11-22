@@ -257,3 +257,5 @@ static OpenUrzednik.MF.WhiteList.SubjectsSearchResult.operator !=(OpenUrzednik.M
 static OpenUrzednik.MF.WhiteList.SubjectsSearchResult.operator ==(OpenUrzednik.MF.WhiteList.SubjectsSearchResult? left, OpenUrzednik.MF.WhiteList.SubjectsSearchResult? right) -> bool
 static OpenUrzednik.MF.WhiteList.VatStatusResult.operator !=(OpenUrzednik.MF.WhiteList.VatStatusResult? left, OpenUrzednik.MF.WhiteList.VatStatusResult? right) -> bool
 static OpenUrzednik.MF.WhiteList.VatStatusResult.operator ==(OpenUrzednik.MF.WhiteList.VatStatusResult? left, OpenUrzednik.MF.WhiteList.VatStatusResult? right) -> bool
+OpenUrzednik.MF.WhiteList.WhiteListRetry
+static OpenUrzednik.MF.WhiteList.WhiteListRetry.ShouldRetryAsync(System.Net.Http.HttpResponseMessage! response, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<bool>

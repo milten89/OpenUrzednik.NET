@@ -22,6 +22,7 @@ internal static class SrcAssemblies
         typeof(Diagnostics.ActivityTraceSource).Assembly,
         typeof(Extensions.Logging.OpenUrzednikLogger).Assembly,
         typeof(MF.WhiteList.IWhiteListErrorCode).Assembly,
+        typeof(global::Microsoft.Extensions.DependencyInjection.WhiteListServiceCollectionExtensions).Assembly,
         typeof(Nbp.NbpGoldPriceClient).Assembly,
         typeof(global::Microsoft.Extensions.DependencyInjection.NbpServiceCollectionExtensions).Assembly,
         typeof(Transport.Http.HttpNotFoundError).Assembly,

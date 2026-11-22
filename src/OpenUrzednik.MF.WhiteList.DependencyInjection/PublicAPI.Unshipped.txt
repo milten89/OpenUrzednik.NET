@@ -1,0 +1,6 @@
+#nullable enable
+Microsoft.Extensions.DependencyInjection.WhiteListServiceCollectionExtensions
+const Microsoft.Extensions.DependencyInjection.WhiteListServiceCollectionExtensions.HttpClientName = "OpenUrzednik.MF.WhiteList" -> string!
+static Microsoft.Extensions.DependencyInjection.WhiteListServiceCollectionExtensions.AddKeyedOpenUrzednikMFWhiteList(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! serviceKey, System.Action<OpenUrzednik.MF.WhiteList.WhiteListOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.DependencyInjection.WhiteListServiceCollectionExtensions.AddOpenUrzednikMFWhiteList(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<OpenUrzednik.MF.WhiteList.WhiteListOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.DependencyInjection.WhiteListServiceCollectionExtensions.AddOpenUrzednikMFWhiteListRejectionHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!

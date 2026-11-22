@@ -462,7 +462,26 @@ internal sealed class RestRequestExecutor
         var length = 0;
         try
         {
-            using var stream = await response.Content.ReadAsStreamAsync(requestToken).ConfigureAwait(false);
+            Stream stream;
+            try
+            {
+                stream = await response.Content.ReadAsStreamAsync(requestToken).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // .NET: an app handler already consumed the network stream ("The stream was already consumed").
+                LogUnreadableBody(ex);
+                return null;
+            }
+
+            using var ownedStream = stream;
+            // .NET Framework: a consumed stream is closed, and a reader over it throws ArgumentException ("Stream was not readable").
+            if (!stream.CanRead)
+            {
+                LogUnreadableBody(null);
+                return null;
+            }
+
             using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
             // The same loop as `while (length < buffer.Length && (read = await …) > 0)`, written so that mutation testing can check it
             // (ADR-0020): with the assignment inside the condition, one mutant leaves `read` unassigned and Stryker skips the whole
@@ -518,7 +537,7 @@ internal sealed class RestRequestExecutor
         return start;
     }
 
-    private void LogUnreadableBody(Exception exception)
+    private void LogUnreadableBody(Exception? exception)
     {
         if (_telemetry.Logger.IsEnabled(OpenUrzednikLogLevel.Debug))
             _telemetry.Logger.Log(OpenUrzednikLogLevel.Debug, RestLogEvents.ErrorBodyUnreadable, exception, "Could not read {provider} error response body.", "provider", _profile.Name);

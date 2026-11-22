@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\src\OpenUrzednik.Diagnostics\OpenUrzednik.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Extensions.Logging\OpenUrzednik.Extensions.Logging.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.MF.WhiteList\OpenUrzednik.MF.WhiteList.csproj" />
+    <ProjectReference Include="..\..\src\OpenUrzednik.MF.WhiteList.DependencyInjection\OpenUrzednik.MF.WhiteList.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Nbp\OpenUrzednik.Nbp.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Nbp.DependencyInjection\OpenUrzednik.Nbp.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\OpenUrzednik.Transport.Http\OpenUrzednik.Transport.Http.csproj" />
@@ -32,6 +33,7 @@
     <TrimmerRootAssembly Include="OpenUrzednik.Diagnostics" />
     <TrimmerRootAssembly Include="OpenUrzednik.Extensions.Logging" />
     <TrimmerRootAssembly Include="OpenUrzednik.MF.WhiteList" />
+    <TrimmerRootAssembly Include="OpenUrzednik.MF.WhiteList.DependencyInjection" />
     <TrimmerRootAssembly Include="OpenUrzednik.Nbp" />
     <TrimmerRootAssembly Include="OpenUrzednik.Nbp.DependencyInjection" />
     <TrimmerRootAssembly Include="OpenUrzednik.Transport.Http" />

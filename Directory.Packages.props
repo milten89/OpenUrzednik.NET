@@ -10,7 +10,7 @@
       It is a minimum for every app, so a higher one would force upgrades on them.
     * Implementations (code that runs): the LATEST PATCH of the chosen minor, to get bug and security fixes. Dependabot
       proposes patches only; a minor or major raise is a deliberate change (ADR-0024, 2026-10-29 note).
-    * Microsoft.Extensions.* used by OpenUrzednik.Nbp.DependencyInjection: per target, the latest patch of the major that
+    * Microsoft.Extensions.* used by the DependencyInjection packages: per target, the latest patch of the major that
       matches the target, so a .NET 8 app isn't moved to Microsoft.Extensions 10.x (ADR-0024, 2026-10-17 note): a normal
       10.0.x row plus a net8.0-only Update override (2026-10-29 note).
     Raising an abstraction above its minimum (e.g. a Dependabot PR) needs the maintainer's explicit answer first (CLAUDE.md).

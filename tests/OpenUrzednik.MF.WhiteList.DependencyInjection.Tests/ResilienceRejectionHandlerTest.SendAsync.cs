@@ -1,0 +1,115 @@
+using OpenUrzednik.Http.Infrastructure;
+using OpenUrzednik.TestCommon;
+
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.RateLimiting;
+using Polly.Timeout;
+
+using Shouldly;
+
+namespace OpenUrzednik.MF.WhiteList.DependencyInjection.Tests;
+
+public sealed partial class ResilienceRejectionHandlerTest
+{
+    [Fact]
+    public async Task SendAsync_InnerSucceeds_ReturnsResponse()
+    {
+        // Arrange
+        using var response = new HttpResponseMessage();
+        using var sut = CreateSut((_, _) => Task.FromResult(response));
+        using var request = CreateRequest();
+
+        // Act
+        var result = await sut.SendAsync(request, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ShouldBeSameAs(response);
+    }
+
+    [Fact]
+    public async Task SendAsync_CallerHasSynchronizationContext_DoesNotResumeOnIt()
+    {
+        // Arrange
+        // A caller that blocks on the task in a single-threaded context (WinForms, classic ASP.NET) would deadlock if the handler
+        // resumed there.
+        var pending = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var response = new HttpResponseMessage();
+        using var sut = new HttpMessageInvoker(new ResilienceRejectionHandler { InnerHandler = new PendingHandler(pending.Task) });
+        using var request = CreateRequest();
+        var context = new CountingSynchronizationContext();
+        var previous = SynchronizationContext.Current;
+        Task<HttpResponseMessage> sending;
+        SynchronizationContext.SetSynchronizationContext(context);
+        try
+        {
+            sending = sut.SendAsync(request, TestContext.Current.CancellationToken);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        // Act
+        pending.SetResult(response);
+        var result = await sending;
+
+        // Assert
+        result.ShouldBeSameAs(response);
+        context.Posts.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task SendAsync_TimeoutRejected_ThrowsTaskCanceledExceptionWithoutInnerTimeoutException()
+    {
+        // Arrange
+        var rejected = new TimeoutRejectedException("The operation didn't complete within the allowed timeout of '00:00:30'.");
+        using var sut = CreateSut((_, _) => throw rejected);
+        using var request = CreateRequest();
+
+        // Act
+        // Record.ExceptionAsync awaits the task; Shouldly would replace the exception of a cancelled task with a new one.
+        var exception = await Record.ExceptionAsync(() => sut.SendAsync(request, TestContext.Current.CancellationToken));
+
+        // Assert
+        exception.ShouldBeOfType<TaskCanceledException>().InnerException.ShouldBeSameAs(rejected);
+        exception.Message.ShouldBe(rejected.Message);
+    }
+
+    public static TheoryData<ExecutionRejectedException> OtherRejections => new()
+    {
+        new BrokenCircuitException("The circuit is now open."),
+        new RateLimiterRejectedException("The operation could not be executed because it was rejected by the rate limiter."),
+    };
+
+    [Theory]
+    [MemberData(nameof(OtherRejections))]
+    public async Task SendAsync_OtherRejection_ThrowsMarkedHttpRequestException(ExecutionRejectedException rejected)
+    {
+        // Arrange
+        using var sut = CreateSut((_, _) => throw rejected);
+        using var request = CreateRequest();
+
+        // Act
+        var exception = await Should.ThrowAsync<HttpRequestException>(() => sut.SendAsync(request, TestContext.Current.CancellationToken));
+
+        // Assert
+        exception.InnerException.ShouldBeSameAs(rejected);
+        ResilienceRejection.IsRejection(exception).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task SendAsync_CallerCancels_LetsOperationCanceledExceptionThrough()
+    {
+        // Arrange
+        var cancelled = new OperationCanceledException();
+        using var sut = CreateSut((_, _) => throw cancelled);
+        using var request = CreateRequest();
+
+        // Act
+        var exception = await Record.ExceptionAsync(() => sut.SendAsync(request, TestContext.Current.CancellationToken));
+
+        // Assert
+        exception.ShouldBeSameAs(cancelled);
+    }
+}

@@ -220,6 +220,22 @@ using (var provider = services.BuildServiceProvider())
     Check("di: keyed client", keyedRates.IsSuccess, Describe(keyedRates));
 }
 
+// The same for the MF White List clients: the default registration (both clients) and a keyed one.
+var whiteListServices = new ServiceCollection();
+whiteListServices.AddLogging(logging => logging.SetMinimumLevel(LogLevel.Debug));
+whiteListServices.AddOpenUrzednikMFWhiteList().ConfigurePrimaryHttpMessageHandler(() => new FixtureHandler());
+whiteListServices.AddKeyedOpenUrzednikMFWhiteList("gateway", options => options.ApiUrl = "https://gateway.example.com/")
+    .ConfigurePrimaryHttpMessageHandler(() => new FixtureHandler());
+using (var provider = whiteListServices.BuildServiceProvider())
+{
+    var diSearch = await provider.GetRequiredService<IWhiteListClient>().SearchByNipAsync("3245174504", whiteListDate);
+    Check("di: mf white list default search client", diSearch.IsSuccess, Describe(diSearch));
+    var diStatus = await provider.GetRequiredService<IWhiteListStatusClient>().GetVatStatusByNipAsync("1476620167", new DateTime(2026, 11, 2));
+    Check("di: mf white list default status client", diStatus.IsSuccess, Describe(diStatus));
+    var keyedSearch = await provider.GetRequiredKeyedService<IWhiteListClient>("gateway").SearchByNipAsync("3245174504", whiteListDate);
+    Check("di: mf white list keyed client", keyedSearch.IsSuccess, Describe(keyedSearch));
+}
+
 // 4. Metrics: MeterMetrics creates an instrument from a measurement and records its value and tags.
 var measurements = new List<(string Instrument, double Value, int Tags)>();
 using (var meterListener = new System.Diagnostics.Metrics.MeterListener())

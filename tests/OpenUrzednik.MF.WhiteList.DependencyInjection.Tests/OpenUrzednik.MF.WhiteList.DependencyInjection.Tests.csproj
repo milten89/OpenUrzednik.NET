@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OpenUrzednik.MF.WhiteList.DependencyInjection\OpenUrzednik.MF.WhiteList.DependencyInjection.csproj" />
+    <ProjectReference Include="..\OpenUrzednik.TestCommon\OpenUrzednik.TestCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Polly.RateLimiting, for its rejection type, and AddStandardResilienceHandler for the WhiteListRetry test; the package itself only references Polly.Core. -->
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+  </ItemGroup>
+
+  <!-- The bodies captured from the API for the WireMock tests (their provenance is in WhiteListFixtures there). -->
+  <ItemGroup>
+    <None Include="..\OpenUrzednik.IntegrationTests\MF\WhiteList\Fixtures\*.json" Link="Fixtures\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
