@@ -42,7 +42,7 @@ jobs:
           - name: nbp
             shards: nbp
           - name: mf-white-list
-            shards: mf-white-list
+            shards: mf-white-list mf-white-list-di
           - name: http
             shards: http http-netstandard
           - name: http-di

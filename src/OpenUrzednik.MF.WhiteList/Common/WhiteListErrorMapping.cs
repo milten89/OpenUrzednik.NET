@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 
 using OpenUrzednik.Core.Errors;
@@ -28,6 +29,13 @@ internal static class WhiteListErrorMapping
 
     // The prefix of the API's own codes (WL-100 to WL-197).
     private const string CodePrefix = "WL-";
+
+    /// <summary>
+    /// The most of an error body <see cref="ReadCodeAsync"/> buffers: the API's <c>{"message", "code"}</c> answers are far smaller, so a
+    /// larger body (a proxy's HTML page) has no code worth waiting for, and the request is sent with <c>ResponseHeadersRead</c>, so it
+    /// isn't read in full.
+    /// </summary>
+    internal const int MaxCodeBodyBytes = 4096;
 
     // No separator: not one that joins an identifier's digits, or none seen yet in the run.
     private const char NoSeparator = '\0';
@@ -193,8 +201,75 @@ internal static class WhiteListErrorMapping
 
     private static bool IsUpperCaseLetter(char value) => (uint)(value - 'A') <= 'Z' - 'A';
 
+    /// <summary>
+    /// The API's code in an error body, or <see langword="null"/> for no body, one that can not be read, one over
+    /// <see cref="MaxCodeBodyBytes"/>, or one without a documented code. Reads at most <see cref="MaxCodeBodyBytes"/> + 1 bytes of the
+    /// body and replaces <see cref="HttpResponseMessage.Content"/>, so <see cref="MapAsync"/> reads the body from the start afterwards:
+    /// by the bytes read, for a body within the limit, or by them followed by the rest of the stream, for a larger one (which has no
+    /// code). The body has to be replaced, because network content can be read once: a failed attempt to buffer it would leave it
+    /// consumed. A body that fails while it is read is left as it is.
+    /// </summary>
+    /// <remarks>
+    /// A body that an app handler already consumed (or disposed) has no code either: it is left as it is, for the caller to fail on.
+    /// </remarks>
+    /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was cancelled.</exception>
+    internal static async Task<string?> ReadCodeAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        // .NET Framework leaves Content null when there is no body.
+        var content = response.Content;
+        if (content is null)
+            return null;
+
+        var buffer = new byte[MaxCodeBodyBytes + 1];
+        var length = 0;
+        var stream = Stream.Null;
+        try
+        {
+            // .NET honours the token in the stream only when the content does; WaitAsync bounds the wait either way.
+            stream = await content.ReadAsStreamAsync(cancellationToken).WaitAsync(cancellationToken).ConfigureAwait(false);
+            // A loop without an assignment in its condition, as in RestRequestExecutor, so that mutation testing can check it.
+            while (length != buffer.Length)
+            {
+                var read = await stream.ReadAsync(buffer.AsMemory(length), cancellationToken).ConfigureAwait(false);
+                if (read == 0)
+                    break;
+                length += read;
+            }
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            // The body was consumed before (.NET), or its content disposed (.NET Framework: ObjectDisposedException).
+            return null;
+        }
+        catch (NotSupportedException)
+        {
+            // .NET Framework: the body was consumed before.
+            return null;
+        }
+
+        if (length > MaxCodeBodyBytes)
+        {
+            response.Content = new WhiteListReplayContent(buffer, length, stream, content);
+            return null;
+        }
+
+        var replacement = new ByteArrayContent(buffer, 0, length);
+        WhiteListReplayContent.CopyHeaders(content, replacement);
+        response.Content = replacement;
+        content.Dispose();
+        return SanitizeCode(Parse(Encoding.UTF8.GetString(buffer, 0, length))?.Code);
+    }
+
     // The body is the API's JSON; anything else (no body, a proxy's HTML page, a body cut at the 500 characters the executor reads) has no code.
-    private static ErrorDto? Parse(string? body)
+    internal static ErrorDto? Parse(string? body)
     {
         if (body is null)
             return null;

@@ -1,0 +1,30 @@
+{
+  "stryker-config": {
+    "project": "OpenUrzednik.MF.WhiteList.DependencyInjection.csproj",
+    "test-projects": [
+      "../../tests/OpenUrzednik.MF.WhiteList.DependencyInjection.Tests/OpenUrzednik.MF.WhiteList.DependencyInjection.Tests.csproj"
+    ],
+    "test-runner": "mtp",
+    "target-framework": "net10.0",
+    "concurrency": 1,
+    "coverage-analysis": "perTest",
+    "mutation-level": "Standard",
+    "mutate": [
+      "**/*.cs",
+      "!**/Polyfills/**",
+      "!**/Dto/**",
+      "!**/Http/**"
+    ],
+    "ignore-methods": [
+      "*Log",
+      "LogUnreadableBody",
+      "*Exception.ctor"
+    ],
+    "reporters": [
+      "html",
+      "json",
+      "markdown",
+      "progress"
+    ]
+  }
+}

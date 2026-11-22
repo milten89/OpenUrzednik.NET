@@ -59,7 +59,16 @@
         "src/OpenUrzednik.MF.WhiteList/WhiteListOptions.cs",
         "src/OpenUrzednik.MF.WhiteList/WhiteListOptionsValidator.cs",
         "src/OpenUrzednik.MF.WhiteList/WhiteList*Error.cs",
-        "src/OpenUrzednik.MF.WhiteList/WhiteListDateOnlyExtensions.cs"
+        "src/OpenUrzednik.MF.WhiteList/WhiteListDateOnlyExtensions.cs",
+        "src/OpenUrzednik.MF.WhiteList/WhiteListRetry.cs"
+      ],
+      "break": 100
+    },
+    "mf-white-list-di": {
+      "workdir": "src/OpenUrzednik.MF.WhiteList.DependencyInjection",
+      "config": "tests/Mutation/stryker-mf-white-list-di.json",
+      "strict": [
+        "src/OpenUrzednik.MF.WhiteList.DependencyInjection/**"
       ],
       "break": 100
     },

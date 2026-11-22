@@ -7,7 +7,8 @@ namespace OpenUrzednik.Http.Infrastructure;
 
 /// <summary>
 /// netstandard2.0 has no cancellation token on these reads. The token stops the wait, so the request deadline still
-/// applies, but the read itself goes on in the background until the response is disposed. It also lacks the span overload of
+/// applies, but the read itself goes on in the background until the response is disposed. .NET Framework's network streams also ignore
+/// the token once a read has started, so the stream reads wait through the same bound. It also lacks the span overload of
 /// <c>string.Concat</c>.
 /// </summary>
 internal static class HttpPolyfills
@@ -22,6 +23,14 @@ internal static class HttpPolyfills
             throw new ArgumentException("The buffer must be backed by an array.", nameof(buffer));
 
         return reader.ReadAsync(segment.Array!, segment.Offset, segment.Count).WaitAsync(cancellationToken);
+    }
+
+    internal static Task<int> ReadAsync(this Stream stream, Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        if (!MemoryMarshal.TryGetArray<byte>(buffer, out var segment))
+            throw new ArgumentException("The buffer must be backed by an array.", nameof(buffer));
+
+        return stream.ReadAsync(segment.Array!, segment.Offset, segment.Count, cancellationToken).WaitAsync(cancellationToken);
     }
 
     internal static async Task<T> WaitAsync<T>(this Task<T> task, CancellationToken cancellationToken)
