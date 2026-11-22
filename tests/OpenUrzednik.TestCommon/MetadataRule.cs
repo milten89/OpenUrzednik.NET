@@ -11,7 +11,9 @@ namespace OpenUrzednik.TestCommon;
 public static class MetadataRule
 {
     /// <summary>The 1.0 key kept with a <see cref="TimeSpan"/> value until 2.0 (ADR-0021).</summary>
+#pragma warning disable CS0618 // the obsolete 1.0 key is still written until 2.0 (ADR-0021)
     private static readonly string[] OneZeroExceptions = [RateLimitExceededError.RetryAfterMetadataKey];
+#pragma warning restore CS0618
 
     public static void ShouldFollowTheMetadataRule(this OpenUrzednikError error)
     {

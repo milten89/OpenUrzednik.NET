@@ -27,7 +27,7 @@ var result = await client.GetAsync(date);
 if (result.IsFailure && result.Errors[0] is IOpenUrzednikHttpStatusCode http)
     Console.WriteLine($"HTTP {(int)http.StatusCode}");
 
-// Albo bez sprawdzania typu: null, gdy błędu nie spowodowała odpowiedź HTTP.
+// Or, without a type check: null when no HTTP response caused the error.
 HttpStatusCode? status = result.Errors[0].GetHttpStatus();
 ```
 

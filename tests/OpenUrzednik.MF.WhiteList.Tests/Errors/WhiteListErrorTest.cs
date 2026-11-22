@@ -118,7 +118,9 @@ public partial class WhiteListErrorTest
         var metadata = new WhiteListRateLimitExceededError("message", TimeSpan.FromMinutes(90), (HttpStatusCode)429, "WL-191").Metadata;
 
         // Assert
+#pragma warning disable CS0618 // the obsolete 1.0 key is still written until 2.0 (ADR-0021)
         metadata[RateLimitExceededError.RetryAfterMetadataKey].ShouldBe(TimeSpan.FromMinutes(90));
+#pragma warning restore CS0618
         metadata[RateLimitExceededError.RetryAfterDurationMetadataKey].ShouldBe("PT1H30M");
         metadata[HttpStatusExtensions.StatusCodeMetadataKey].ShouldBe(429);
         metadata[WhiteListErrorMetadata.WhiteListCodeMetadataKey].ShouldBe("WL-191");
@@ -131,7 +133,9 @@ public partial class WhiteListErrorTest
         string[] reserved =
         [
             HttpStatusExtensions.StatusCodeMetadataKey,
+#pragma warning disable CS0618 // the obsolete 1.0 key is still written until 2.0 (ADR-0021)
             RateLimitExceededError.RetryAfterMetadataKey,
+#pragma warning restore CS0618
             RateLimitExceededError.RetryAfterDurationMetadataKey,
             RequestTimeoutError.TimeoutMetadataKey,
             ValidationError.RuleNameMetadataKey,

@@ -30,7 +30,7 @@ Targets `refs/heads/main`, `refs/heads/develop` and the support branches `refs/h
 | Restrict deletions | on |
 | Block force pushes | on |
 | Require a pull request | 0 approvals, CODEOWNERS review, dismiss stale approvals, resolve all conversations, allowed merge method: merge |
-| Required status checks (strict, up to date; not enforced when a branch is created, `do_not_enforce_on_create`, so a support branch can be made from a release tag) | `build (net8.0)`, `build (net10.0)`, `test (net472)`, `aot (net10.0)`, `format`, `dependency-review`, `release-label` (once [#96](https://github.com/milten89/OpenUrzednik.NET/issues/96) is done) |
+| Required status checks (strict, up to date; not enforced when a branch is created, `do_not_enforce_on_create`, so a support branch can be made from a release tag) | `build (net8.0)`, `build (net10.0)`, `test (net472)`, `aot (net10.0)`, `format`, `dependency-review`, `release-label` |
 | Code scanning | CodeQL: alerts threshold `errors`, security alerts `high_or_higher` |
 | Bypass | Repository role **Admin**, mode **pull requests only** (the maintainer can merge their own PRs, but cannot push directly) |
 

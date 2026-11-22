@@ -43,11 +43,11 @@ Chosen option: "No dependencies in Core/providers; DI and integrations in separa
 | Package kind | Examples | Allowed dependencies |
 |---|---|---|
 | Core | `OpenUrzednik.Core` | None on .NET targets. On netstandard2.0 only official Microsoft out-of-band BCL packages (e.g. `System.Text.Json`, `Microsoft.Bcl.TimeProvider`, `Microsoft.Bcl.HashCode`). |
-| Shared source (not a package) | `src/Http` ([ADR-0006](0006-shared-http-layer.md)) | None of its own: it is compiled into each REST provider, which references what it needs on netstandard2.0 (`System.Net.Http.Json`, `System.Text.Json`, `Microsoft.Bcl.TimeProvider`). |
+| Shared source (not a package) | `src/Http` ([ADR-0019](0019-shared-http-layer-tested-through-test-host.md)) | None of its own: it is compiled into each REST provider, which references what it needs on netstandard2.0 (`System.Net.Http.Json`, `System.Text.Json`, `Microsoft.Bcl.TimeProvider`). |
 | Provider | `OpenUrzednik.Nbp` | Same as Core + other OpenUrzednik packages. |
 | Provider variant with an approved third-party dependency | `OpenUrzednik.MF.WhiteList.FlatFile` | Same as Provider + the package this record approves for it: `SharpCompress` (below, **7z reader**). Any other third-party package needs its own ADR. |
 | Integration | `OpenUrzednik.Nbp.DependencyInjection`, `OpenUrzednik.Extensions.Logging` | `Microsoft.Extensions.*` (DI, Options, Http, Http.Resilience, Logging) and the package they integrate. DI packages may also use `Polly.Core`, which `Microsoft.Extensions.Http.Resilience` brings in, to recognise rejections (below). |
-| Tracing adapter | `OpenUrzednik.Diagnostics` | `System.Diagnostics.DiagnosticSource` on netstandard2.0 only (`ActivitySource` is built into .NET). Core, the shared HTTP layer and the providers don't reference it ([ADR-0003](0003-telemetry-abstractions.md)). |
+| Tracing adapter | `OpenUrzednik.Diagnostics` | `System.Diagnostics.DiagnosticSource` on netstandard2.0 only (`ActivitySource` is built into .NET). Core, the shared HTTP layer and the providers don't reference it ([ADR-0025](0025-telemetry-abstractions-with-metrics.md)). |
 | Tests | `tests/*` | Anything appropriate. |
 
 * Build-only tooling (`Nerdbank.GitVersioning`, analyzers) uses `PrivateAssets="all"` and never becomes a package dependency.
@@ -85,7 +85,7 @@ Storing the unpacked data and looking hashes up in it (memory, files on disk, a 
 * An app with several setups of one provider (e.g. one direct and one through a gateway) registers each under a `string` service key, through `AddKeyedOpenUrzednik<Provider>(serviceKey, ...)` (e.g. `AddKeyedOpenUrzednikNbp(serviceKey, configure)`): the clients are keyed transient services, as Microsoft recommends for `HttpClient`s, with the key's own named `HttpClient` (`OpenUrzednik.Nbp:<key>`) and options named after the key, read once like the default ones. Keyed services need Microsoft's dependency injection 8.0 or later (or a container that supports them).
 * Resilience follows the .NET standard ([Microsoft.Extensions.Http.Resilience](https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience)): the app opts in by chaining `AddStandardResilienceHandler(...)` (or `AddResilienceHandler(...)`) on the returned builder. DI packages don't add a resilience handler themselves, because the guidance is one handler per client, not stacked.
 * A DI package references `Polly.Core` only to recognise the rejection types, not `Microsoft.Extensions.Http.Resilience` itself: apps that don't add a resilience handler don't get it.
-* DI packages translate the exceptions a resilience handler throws when it rejects a request, so they don't escape the result ([ADR-0002](0002-result-pattern-and-error-handling.md)). The translating `DelegatingHandler` is internal and goes outermost (before any resilience handler), and only once. Each DI package exposes it as a public extension of `IHttpClientBuilder` named after the provider (e.g. `AddOpenUrzednikNbpRejectionHandler()`), which its own registration uses, so a client the app registers itself gets it too. The handler catches Polly's `ExecutionRejectedException` types and rethrows them as exceptions the request executor ([ADR-0006](0006-shared-http-layer.md)) already handles:
+* DI packages translate the exceptions a resilience handler throws when it rejects a request, so they don't escape the result ([ADR-0002](0002-result-pattern-and-error-handling.md)). The translating `DelegatingHandler` is internal and goes outermost (before any resilience handler), and only once. Each DI package exposes it as a public extension of `IHttpClientBuilder` named after the provider (e.g. `AddOpenUrzednikNbpRejectionHandler()`), which its own registration uses, so a client the app registers itself gets it too. The handler catches Polly's `ExecutionRejectedException` types and rethrows them as exceptions the request executor ([ADR-0019](0019-shared-http-layer-tested-through-test-host.md)) already handles:
   * `TimeoutRejectedException` → `TaskCanceledException` whose inner exception is the rejection (not a `TimeoutException`), returned as a `RequestTimeoutError`. The executor reports a limit in `RequestTimeoutError.Timeout` only when it knows that limit elapsed: its own deadline cancelled the request, or at least `HttpClient.Timeout` went by. A resilience handler's timeout is reported without a limit, not as `HttpClient.Timeout`.
   * other rejections (open circuit breaker, rate limiter) → an `HttpRequestException` marked as a rejection with an `Exception.Data` entry (`ResilienceRejection` in the shared HTTP layer, which the DI package compiles in too), returned as a `ServiceUnavailableError`; the executor also recognises an exception that wraps a marked one, as .NET Framework's `HttpClient` may. An unmarked `HttpRequestException` is a network failure, returned as a `ConnectionFailedError`.
   * Caller cancellation still throws. The shared HTTP layer itself doesn't reference Polly.
@@ -156,7 +156,7 @@ A 7z container and LZMA2 reader in `src/`, built on the LZMA SDK's public-domain
 The package reads the unpacked JSON from a stream.
 
 * Good, because the package has no dependency.
-* Bad, because every app writes the download and unpacking itself, which breaks the one-line default ([ADR-0007](0007-client-api-and-extensibility.md)), and the checksum and entry checks move to the app.
+* Bad, because every app writes the download and unpacking itself, which breaks the one-line default ([ADR-0026](0026-client-api-with-one-public-namespace-per-provider.md)), and the checksum and entry checks move to the app.
 
 ### A wrapper of the native 7-Zip library, the `7z` executable, or Aspose.Zip
 
@@ -185,3 +185,7 @@ Until 1.0 this record was changed in place; the full notes are in [the version b
 * 2026-10-30 · [#110](https://github.com/milten89/OpenUrzednik.NET/issues/110) · The build checks `PackageReference`s against an allow-list.
 * 2026-11-05 · [#122](https://github.com/milten89/OpenUrzednik.NET/issues/122) · The rejection handler is a public extension named after the provider, for clients the app registers itself.
 * 2026-11-05 · [#124](https://github.com/milten89/OpenUrzednik.NET/issues/124) · Keyed registration for several setups of one provider.
+
+### Corrections before release
+
+* 2026-11-22 · [#366](https://github.com/milten89/OpenUrzednik.NET/issues/366) · References to superseded records point to their successors (ADR-0003 → ADR-0025, ADR-0006 → ADR-0019, ADR-0007 → ADR-0026). Reason: the pre-1.1.0 review; the record freezes at the release cut.

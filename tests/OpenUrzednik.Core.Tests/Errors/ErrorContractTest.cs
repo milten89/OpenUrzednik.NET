@@ -31,8 +31,10 @@ public class ErrorContractTest
         var error = new RateLimitExceededError("message", TimeSpan.FromSeconds(30));
 
         // Assert
+#pragma warning disable CS0618 // the obsolete 1.0 key is still written until 2.0 (ADR-0021)
         RateLimitExceededError.RetryAfterMetadataKey.ShouldBe("retryAfter");
         error.Metadata[RateLimitExceededError.RetryAfterMetadataKey].ShouldBe(TimeSpan.FromSeconds(30));
+#pragma warning restore CS0618
     }
 
     [Fact]
