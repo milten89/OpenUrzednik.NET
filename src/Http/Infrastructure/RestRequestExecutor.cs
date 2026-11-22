@@ -179,7 +179,8 @@ internal sealed class RestRequestExecutor
             traceSpan.SetTag("url.path", displayPath is null ? requestUri.AbsolutePath : DisplayUrlPath(displayPath));
 
         // Expected failures are returned as errors; this only marks the span when something unexpected escapes,
-        // without catching it (ADR-0002 forbids catch (Exception)).
+        // without catching it (ADR-0002 forbids catch (Exception)). A cancelled call counts too, as for the operation's span and metric
+        // (ADR-0025) and HttpClient's own metric.
         var completed = false;
         try
         {
@@ -189,7 +190,7 @@ internal sealed class RestRequestExecutor
         }
         finally
         {
-            if (!completed && !cancellationToken.IsCancellationRequested)
+            if (!completed)
             {
                 traceSpan.SetTag("error.type", OperationScope.OtherErrorType);
                 traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
@@ -269,21 +270,23 @@ internal sealed class RestRequestExecutor
         catch (InvalidOperationException ex)
         {
             // ReadFromJsonAsync throws this when the response declares a charset it can't decode.
-            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, ex, "Failed to decode {provider} response from {path}", "provider", _profile.Name, "path", messagePath);
-            traceSpan.RecordException(ex);
-            traceSpan.SetTag("error.type", SerializationError.ErrorCode);
-            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
-            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when decoding response from {messagePath}", ex));
+            return DecodingFailure<TDto>(messagePath, traceSpan, ex);
         }
         catch (InvalidDataException ex)
         {
             // A compressed body that can't be decompressed (AutomaticDecompression): GZipStream and DeflateStream throw this, not an IOException.
-            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, ex, "Failed to decode {provider} response from {path}", "provider", _profile.Name, "path", messagePath);
-            traceSpan.RecordException(ex);
-            traceSpan.SetTag("error.type", SerializationError.ErrorCode);
-            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
-            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when decoding response from {messagePath}", ex));
+            return DecodingFailure<TDto>(messagePath, traceSpan, ex);
         }
+    }
+
+    // A success body that can't be decoded: an unknown charset, or a compressed body that can't be decompressed.
+    private OpenUrzednikResult<TDto> DecodingFailure<TDto>(string messagePath, IOpenUrzednikSpan traceSpan, Exception exception)
+    {
+        _telemetry.Logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, exception, "Failed to decode {provider} response from {path}", "provider", _profile.Name, "path", messagePath);
+        traceSpan.RecordException(exception);
+        traceSpan.SetTag("error.type", SerializationError.ErrorCode);
+        traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
+        return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when decoding response from {messagePath}", exception));
     }
 
     private async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpRequestMessage request, string messagePath, TimeSpan? deadline, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)

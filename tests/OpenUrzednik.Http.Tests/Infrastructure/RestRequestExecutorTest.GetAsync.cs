@@ -1585,7 +1585,7 @@ public partial class RestRequestExecutorTest
     }
 
     [Fact]
-    public async Task GetAsync_CallerCancels_DoesNotMarkSpanAsUnexpected()
+    public async Task GetAsync_CallerCancels_MarksSpanFailedWithOther()
     {
         // Arrange
         var faker = new Faker().WithConstantSeed();
@@ -1601,8 +1601,8 @@ public partial class RestRequestExecutorTest
 
         // Act && Assert
         await Should.ThrowAsync<OperationCanceledException>(() => CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("path", TypeInfo, cts.Token));
-        span.DidNotReceive().SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
-        span.DidNotReceive().SetTag("error.type", "_OTHER");
+        span.Received(1).SetTag("error.type", "_OTHER");
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
     }
 
     [Fact]

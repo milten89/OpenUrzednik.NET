@@ -215,7 +215,7 @@ Each client method starts one span on the `OpenUrzednik.Nbp` source, with the HT
 | `nbp.gold.last_published_before` | `GetLastPublishedBeforeAsync(date)` | `nbp.date` |
 | `nbp.http.get` | the request of any method | `http.request.method`, `server.address` (e.g. `api.nbp.pl`, or the `ApiUrl` host), `server.port` (always set, e.g. `443`), `url.path` (e.g. `/api/cenyzlota`), `http.response.status_code` |
 
-Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. In the `last_published_before` spans, `nbp.date` is the date passed to the method, not the end of the requested range. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)). A method that throws, a cancelled call included, gets `error.type` `_OTHER`; its `nbp.http.get` span isn't marked when the caller cancelled.
+Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. In the `last_published_before` spans, `nbp.date` is the date passed to the method, not the end of the requested range. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)). A method that throws, a cancelled call included, gets `error.type` `_OTHER`, and so does its `nbp.http.get` span.
 
 ### Metrics
 
