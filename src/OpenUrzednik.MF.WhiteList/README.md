@@ -214,7 +214,7 @@ Each client method starts one span on the `OpenUrzednik.MF.WhiteList` source, wi
 | `mf_white_list.status.nip` | `WhiteListStatusClient.GetVatStatusByNipAsync` | `mf_white_list.nip`, `mf_white_list.date` (only the overload with a date) |
 | `mf_white_list.http.get` | the request of any method | `http.request.method`, `server.address` (e.g. `wykazpodatnikowvat.mf.gov.pl`, or the `ApiUrl` host), `server.port` (always set, e.g. `443`), `url.path` (the display path, e.g. `/api/search/nip/{nip}`), `http.response.status_code` |
 
-Tag values: `mf_white_list.nip`, `mf_white_list.regon` and `mf_white_list.bank_account` are always masked (only the last four characters stay visible), `mf_white_list.date` is the date as `yyyy-MM-dd`, and `mf_white_list.count` is the number of identifiers of a batch, which carries none of them. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)). A batch call whose entries failed is a success, so its span has no `error.type`.
+Tag values: `mf_white_list.nip`, `mf_white_list.regon` and `mf_white_list.bank_account` are always masked (only the last four characters stay visible), `mf_white_list.date` is the date as `yyyy-MM-dd`, and `mf_white_list.count` is the number of identifiers of a batch, which carries none of them. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)). A method that throws, a cancelled call included, gets `error.type` `_OTHER`, and so does its `mf_white_list.http.get` span. A batch call whose entries failed is a success, so its span has no `error.type`.
 
 ### Metrics
 
@@ -246,7 +246,7 @@ Every entry has an event id; `WhiteListLogEvents` lists them as constants, and t
 | 1109 | `ErrorBodyUnreadable` | Debug | The body of an error response couldn't be read. |
 | 1201 | `EmptyResponse` | Error | A success response had no payload. |
 | 1202 | `DeserializationFailed` | Error | A success response wasn't the expected JSON. |
-| 1203 | `DecodingFailed` | Error | A success response declared a charset that can't be decoded. |
+| 1203 | `DecodingFailed` | Error | A success response declared a charset that can't be decoded, or its compressed body couldn't be decompressed. |
 | 2001 | `ValidationFailed` | Debug | The arguments failed validation; no request was sent. |
 | 2002 | `NotOnList` | Debug | The register has no entity for the identifier: a search with no subject, an account with no subjects, or WL2 `B`; the answer is a `WhiteListNotFoundError` with the proof. A batch with failed entries also writes one entry, with the counts of entries not on the list and of rejected entries. |
 | 2003 | `MappingFailed` | Error | A response lacked data the model needs. |

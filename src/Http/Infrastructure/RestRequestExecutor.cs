@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -100,9 +101,10 @@ internal sealed class RestRequestExecutor
     {
         var span = _telemetry.TraceSource.StartSpan(operationName);
         var metrics = _telemetry.Metrics;
-        return metrics.IsEnabled(OperationMeasurement.InstrumentName)
-            ? new OperationScope(span, new OperationMeasurement(operationName, _profile.Name, _serverAddress, _serverPort, metrics, _timeProvider))
-            : new OperationScope(span);
+        if (metrics.IsEnabled(OperationMeasurement.InstrumentName))
+            return new OperationScope(span, new OperationMeasurement(operationName, _profile.Name, _serverAddress, _serverPort, metrics, _timeProvider));
+        // Only a recording span needs to know whether the operation completed (to mark it failed); a span nobody records costs nothing.
+        return span.IsRecording ? new OperationScope(span, new OperationCompletion()) : new OperationScope(span);
     }
 
     /// <summary>
@@ -177,7 +179,8 @@ internal sealed class RestRequestExecutor
             traceSpan.SetTag("url.path", displayPath is null ? requestUri.AbsolutePath : DisplayUrlPath(displayPath));
 
         // Expected failures are returned as errors; this only marks the span when something unexpected escapes,
-        // without catching it (ADR-0002 forbids catch (Exception)).
+        // without catching it (ADR-0002 forbids catch (Exception)). A cancelled call counts too, as for the operation's span and metric
+        // (ADR-0025) and HttpClient's own metric.
         var completed = false;
         try
         {
@@ -187,8 +190,11 @@ internal sealed class RestRequestExecutor
         }
         finally
         {
-            if (!completed && !cancellationToken.IsCancellationRequested)
+            if (!completed)
+            {
+                traceSpan.SetTag("error.type", OperationScope.OtherErrorType);
                 traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
+            }
         }
     }
 
@@ -225,7 +231,7 @@ internal sealed class RestRequestExecutor
             traceSpan.SetTag("http.response.status_code", (int)response.StatusCode);
 
         if (!response.IsSuccessStatusCode)
-            return await MapErrorResponseAsync(response, messagePath, displayUri, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
+            return await MapErrorResponseAsync(response, requestUri, messagePath, displayUri, traceSpan, requestToken, cancellationToken).ConfigureAwait(false);
 
         var logger = _telemetry.Logger;
         try
@@ -242,7 +248,8 @@ internal sealed class RestRequestExecutor
         }
         catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
-            return TimeoutFailure(timeout, messagePath, traceSpan, ex);
+            // The limit is known only when the deadline cancelled the read: an app's content or stream may cancel it itself.
+            return TimeoutFailure(requestToken.IsCancellationRequested ? timeout : null, messagePath, traceSpan, ex);
         }
         catch (JsonException ex)
         {
@@ -263,12 +270,23 @@ internal sealed class RestRequestExecutor
         catch (InvalidOperationException ex)
         {
             // ReadFromJsonAsync throws this when the response declares a charset it can't decode.
-            logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, ex, "Failed to decode {provider} response from {path}", "provider", _profile.Name, "path", messagePath);
-            traceSpan.RecordException(ex);
-            traceSpan.SetTag("error.type", SerializationError.ErrorCode);
-            traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
-            return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when decoding response from {messagePath}", ex));
+            return DecodingFailure<TDto>(messagePath, traceSpan, ex);
         }
+        catch (InvalidDataException ex)
+        {
+            // A compressed body that can't be decompressed (AutomaticDecompression): GZipStream and DeflateStream throw this, not an IOException.
+            return DecodingFailure<TDto>(messagePath, traceSpan, ex);
+        }
+    }
+
+    // A success body that can't be decoded: an unknown charset, or a compressed body that can't be decompressed.
+    private OpenUrzednikResult<TDto> DecodingFailure<TDto>(string messagePath, IOpenUrzednikSpan traceSpan, Exception exception)
+    {
+        _telemetry.Logger.Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, exception, "Failed to decode {provider} response from {path}", "provider", _profile.Name, "path", messagePath);
+        traceSpan.RecordException(exception);
+        traceSpan.SetTag("error.type", SerializationError.ErrorCode);
+        traceSpan.SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
+        return OpenUrzednikResult.Failure<TDto>(new SerializationError($"Error when decoding response from {messagePath}", exception));
     }
 
     private async Task<OpenUrzednikResult<HttpResponseMessage>> SendAsync(HttpRequestMessage request, string messagePath, TimeSpan? deadline, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
@@ -349,9 +367,10 @@ internal sealed class RestRequestExecutor
         return error;
     }
 
-    private async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, string messagePath, string? displayUri, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
+    private async Task<OpenUrzednikResult> MapErrorResponseAsync(HttpResponseMessage response, Uri requestUri, string messagePath, string? displayUri, IOpenUrzednikSpan traceSpan, CancellationToken requestToken, CancellationToken cancellationToken)
     {
-        var path = displayUri ?? response.RequestMessage?.RequestUri?.ToString() ?? messagePath;
+        // The URI the executor sent, not the response's RequestUri: a DelegatingHandler may add a secret to it (an API key in the query).
+        var path = displayUri ?? RedactUri(requestUri);
         var delay = response.StatusCode == TooManyRequests ? GetDelay(response, _timeProvider) : null;
 
         // The body can be read only once, so the override and the default mapping share one read.
@@ -462,19 +481,7 @@ internal sealed class RestRequestExecutor
         var length = 0;
         try
         {
-            Stream stream;
-            try
-            {
-                stream = await response.Content.ReadAsStreamAsync(requestToken).ConfigureAwait(false);
-            }
-            catch (InvalidOperationException ex)
-            {
-                // .NET: an app handler already consumed the network stream ("The stream was already consumed").
-                LogUnreadableBody(ex);
-                return null;
-            }
-
-            using var ownedStream = stream;
+            using var stream = await response.Content.ReadAsStreamAsync(requestToken).ConfigureAwait(false);
             // .NET Framework: a consumed stream is closed, and a reader over it throws ArgumentException ("Stream was not readable").
             if (!stream.CanRead)
             {
@@ -509,6 +516,23 @@ internal sealed class RestRequestExecutor
             LogUnreadableBody(ex);
             return null;
         }
+        catch (InvalidOperationException ex)
+        {
+            // .NET: an app handler already consumed the network stream ("The stream was already consumed"), or the content was
+            // disposed underneath (ObjectDisposedException).
+            LogUnreadableBody(ex);
+            return null;
+        }
+        catch (InvalidDataException ex)
+        {
+            // A compressed body that can't be decompressed (AutomaticDecompression).
+            LogUnreadableBody(ex);
+            return null;
+        }
+
+        // A cut between the two halves of a surrogate pair would leave invalid UTF-16, which a JSON parser rejects.
+        if (length == buffer.Length && char.IsHighSurrogate(buffer[length - 1]))
+            length--;
 
         var message = new string(buffer, 0, length).Trim();
         return message.Length == 0 ? null : message;
@@ -524,10 +548,21 @@ internal sealed class RestRequestExecutor
         return string.Concat((_basePath ??= BaseAddress.AbsolutePath).AsSpan(), displayPath.AsSpan(start, end - start));
     }
 
-    // The status-error path of a display path: the base address, then the display path without leading '/', as GetAsync resolves it.
+    // The status-error path of a display path: the base address without user info, then the display path without leading '/', as
+    // GetAsync resolves it.
     // Stryker disable once Assignment : equivalent, ??= only caches the base address text; assigning it on every call gives the same text
     private string DisplayUri(string displayPath)
-        => string.Concat((_baseUri ??= BaseAddress.ToString()).AsSpan(), displayPath.AsSpan(SkipLeadingSlashes(displayPath)));
+        => string.Concat((_baseUri ??= RedactUri(BaseAddress)).AsSpan(), displayPath.AsSpan(SkipLeadingSlashes(displayPath)));
+
+    // An absolute URI for messages and logs: scheme, host, port and path, without user info, and its query as "?*" (ADR-0025: no secrets),
+    // as the DI package's HttpClient logging writes it (ADR-0017).
+    internal static string RedactUri(Uri uri)
+    {
+        var authority = uri.IsDefaultPort ? uri.Host : string.Concat(uri.Host, ":", uri.Port.ToString(CultureInfo.InvariantCulture));
+        return uri.Query.Length > 1
+            ? string.Concat(uri.Scheme, "://", authority, uri.AbsolutePath, "?*")
+            : string.Concat(uri.Scheme, "://", authority, uri.AbsolutePath);
+    }
 
     private static int SkipLeadingSlashes(string path)
     {

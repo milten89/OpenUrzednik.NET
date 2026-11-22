@@ -146,7 +146,7 @@ var client = new NbpCurrencyExchangeRateClient(httpClient, new NbpOptions { ApiU
 // GetLatestAsync("USD") requests https://gateway.example.com/nbp/fx/rates/a/USD?api-version=1
 ```
 
-With `AddOpenUrzednikNbp()`, add the handler with `.AddHttpMessageHandler(() => new NbpGatewayHandler())`. Spans still show the NBP path (`url.path`) and the configured host and port (`server.address`, `server.port`), because the client tags them before the handler runs; error messages show the rewritten address.
+With `AddOpenUrzednikNbp()`, add the handler with `.AddHttpMessageHandler(() => new NbpGatewayHandler())`. Spans still show the NBP path (`url.path`) and the configured host and port (`server.address`, `server.port`), because the client tags them before the handler runs; error messages show the configured address too (a query as `?*`), and only a transport exception's message may name the rewritten host.
 
 ## Dates and .NET Framework
 
@@ -215,7 +215,7 @@ Each client method starts one span on the `OpenUrzednik.Nbp` source, with the HT
 | `nbp.gold.last_published_before` | `GetLastPublishedBeforeAsync(date)` | `nbp.date` |
 | `nbp.http.get` | the request of any method | `http.request.method`, `server.address` (e.g. `api.nbp.pl`, or the `ApiUrl` host), `server.port` (always set, e.g. `443`), `url.path` (e.g. `/api/cenyzlota`), `http.response.status_code` |
 
-Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. In the `last_published_before` spans, `nbp.date` is the date passed to the method, not the end of the requested range. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)).
+Tag values: `nbp.currency` is the code as passed (e.g. `USD`), `nbp.table` the table (`A` or `B`), `nbp.top_count` a number, and `nbp.date`, `nbp.from` and `nbp.to` dates as `yyyy-MM-dd`. In the `last_published_before` spans, `nbp.date` is the date passed to the method, not the end of the requested range. A failed span has the `Error` status and an `error.type` tag with the error code (see [Errors](https://github.com/milten89/OpenUrzednik.NET/blob/main/src/OpenUrzednik.Core/README.md#errors)). A method that throws, a cancelled call included, gets `error.type` `_OTHER`, and so does its `nbp.http.get` span.
 
 ### Metrics
 
@@ -247,7 +247,7 @@ Every entry has an event id; `NbpLogEvents` lists them as constants, and the eve
 | 1109 | `ErrorBodyUnreadable` | Debug | The body of an error response couldn't be read. |
 | 1201 | `EmptyResponse` | Error | A success response had no payload. |
 | 1202 | `DeserializationFailed` | Error | A success response wasn't the expected JSON. |
-| 1203 | `DecodingFailed` | Error | A success response declared a charset that can't be decoded. |
+| 1203 | `DecodingFailed` | Error | A success response declared a charset that can't be decoded, or its compressed body couldn't be decompressed. |
 | 2001 | `ValidationFailed` | Debug | The arguments failed validation; no request was sent. |
 | 2002 | `NoData` | Debug | The API returned an empty array: no data for the date or range. |
 | 2003 | `MappingFailed` | Error | A response lacked data the model needs. |

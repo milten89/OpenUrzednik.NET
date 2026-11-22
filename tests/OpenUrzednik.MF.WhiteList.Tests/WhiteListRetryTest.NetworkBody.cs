@@ -231,9 +231,11 @@ public sealed partial class WhiteListRetryTest
     [InlineData(500, typeof(IOException))]
     [InlineData(400, typeof(HttpRequestException))]
     [InlineData(500, typeof(HttpRequestException))]
+    [InlineData(400, typeof(InvalidDataException))]
+    [InlineData(500, typeof(InvalidDataException))]
     public async Task ShouldRetryAsync_BodyThatFailsWhileRead_IsLeftForTheErrorMapping(int statusCode, Type exceptionType)
     {
-        // Arrange
+        // Arrange: a broken connection, or a compressed body that can't be decompressed (InvalidDataException)
         using var original = new NetworkContent(new FailingStream((Exception)Activator.CreateInstance(exceptionType, "Connection reset.")!));
         using var response = new HttpResponseMessage((HttpStatusCode)statusCode) { Content = original };
 

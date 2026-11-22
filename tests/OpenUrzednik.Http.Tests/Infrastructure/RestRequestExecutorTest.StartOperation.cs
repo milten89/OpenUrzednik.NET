@@ -63,6 +63,28 @@ public partial class RestRequestExecutorTest
         metrics.Recorded.ShouldBeEmpty();
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void StartOperation_MetricDisabledAndOperationThrows_MarksOnlyARecordingSpanFailed(bool recording)
+    {
+        // Arrange
+        var span = Substitute.For<IOpenUrzednikSpan>();
+        span.IsRecording.Returns(recording);
+        var tracer = Substitute.For<IOpenUrzednikTraceSource>();
+        tracer.StartSpan("test.operation").Returns(span);
+        var executor = new RestRequestExecutor(new HttpClient(), new Uri("https://api.example.com/"), Profile,
+            telemetry: new ClientTelemetry(traceSource: tracer, metrics: new RecordingMetrics(enabled: false)), timeProvider: _timeProvider);
+
+        // Act: disposed without Complete, as when the operation throws
+        executor.StartOperation("test.operation").Dispose();
+
+        // Assert
+        span.Received(recording ? 1 : 0).SetTag("error.type", "_OTHER");
+        span.Received(recording ? 1 : 0).SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
+        span.Received(1).Dispose();
+    }
+
 #if NET
     [Fact]
     public void StartOperation_TracedOperation_RecordsTheActivitysDurationWhileItIsCurrent()
