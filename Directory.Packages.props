@@ -18,6 +18,7 @@
 
   <!-- Abstractions: lowest supported version. -->
   <ItemGroup>
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="2.3.14" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
