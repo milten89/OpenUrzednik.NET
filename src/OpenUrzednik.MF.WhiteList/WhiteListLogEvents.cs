@@ -66,7 +66,7 @@ public static class WhiteListLogEvents
     /// <summary>A success response was not valid JSON for the expected payload. Error.</summary>
     public const int DeserializationFailed = 1202;
 
-    /// <summary>A success response declared a charset that can't be decoded. Error.</summary>
+    /// <summary>A success response declared a charset that can't be decoded, or its compressed body couldn't be decompressed. Error.</summary>
     public const int DecodingFailed = 1203;
 
     /// <summary>The arguments failed validation, so no request was sent. Debug.</summary>

@@ -15,7 +15,7 @@ namespace OpenUrzednik.Http.Infrastructure;
 /// which boxes it once per client. Tags never carry identifiers: the operation is a span name and the error type an
 /// error code.
 /// </remarks>
-internal sealed class OperationMeasurement : IOpenUrzednikHistogramMeasurement, IReadOnlyList<KeyValuePair<string, object?>>
+internal sealed class OperationMeasurement : OperationCompletion, IOpenUrzednikHistogramMeasurement, IReadOnlyList<KeyValuePair<string, object?>>
 {
     /// <summary>The instrument's name.</summary>
     internal const string InstrumentName = "openurzednik.client.operation.duration";
@@ -52,16 +52,13 @@ internal sealed class OperationMeasurement : IOpenUrzednikHistogramMeasurement, 
         _startTimestamp = timeProvider.GetTimestamp();
     }
 
-    /// <summary>Whether the measurement is complete (<see cref="Record"/> or <see cref="Complete"/> has run).</summary>
-    internal bool IsCompleted { get; private set; }
-
     /// <summary>
     /// Completes the measurement, once, and records it: the span's own duration when it can report one
     /// (<see cref="IOpenUrzednikSpanTiming"/>), else the time elapsed since the start. Later calls do nothing.
     /// </summary>
     /// <param name="span">The operation's span, still open.</param>
     /// <param name="errorType">The error code when it failed (OpenTelemetry's <c>error.type</c>); <see langword="null"/> on success.</param>
-    internal void Record(IOpenUrzednikSpan span, string? errorType)
+    internal override void Record(IOpenUrzednikSpan span, string? errorType)
     {
         if (IsCompleted)
         {

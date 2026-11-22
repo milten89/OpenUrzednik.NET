@@ -32,8 +32,9 @@ internal sealed class ErrorResponseContext
     public HttpResponseMessage Response { get; }
 
     /// <summary>
-    /// Gets the requested URI, for messages. For a request sent with a display path, it is the base address plus the display path, so it
-    /// carries no identifier (ADR-0019). The server's message from <see cref="ReadMessageAsync"/> may still echo one: mask it before use.
+    /// Gets the requested URI, for messages: the URI the executor sent, before any <see cref="DelegatingHandler"/>, without user info and with
+    /// its query as <c>?*</c>. For a request sent with a display path, it is the base address plus the display path, so it carries no
+    /// identifier (ADR-0019). The server's message from <see cref="ReadMessageAsync"/> may still echo one: mask it before use.
     /// </summary>
     public string RequestPath { get; }
 

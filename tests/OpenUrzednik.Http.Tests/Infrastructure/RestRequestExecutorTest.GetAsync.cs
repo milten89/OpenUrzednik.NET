@@ -1409,8 +1409,179 @@ public partial class RestRequestExecutorTest
 
         // Act && Assert
         await Should.ThrowAsync<NotSupportedException>(() => CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken));
+        span.Received(1).SetTag("error.type", "_OTHER");
         span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
         span.Received(1).Dispose();
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    public async Task GetAsync_HandlerAddsASecretToTheQuery_KeepsItOutOfTheMessageAndLogs(HttpStatusCode statusCode)
+    {
+        // Arrange: an app's DelegatingHandler adds an API key, the pattern RestOptions recommends for query parameters
+        const string secret = "S3CR3T-K3Y-7731";
+        var (telemetry, logger, _) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(Arg.Any<OpenUrzednikLogLevel>()).Returns(true);
+        using var response = new HttpResponseMessage(statusCode);
+        var handler = new DelegatingStubHttpMessageHandler((request, _) =>
+        {
+            request.RequestUri = new Uri(request.RequestUri + "?apikey=" + secret);
+            response.RequestMessage = request;
+            return Task.FromResult(response);
+        });
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/api/") };
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("rates", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        var message = result.Errors.ShouldHaveSingleItem().Message;
+        message.ShouldContain("https://api.example.com/api/rates");
+        message.ShouldNotContain(secret);
+        logger.DidNotReceive().Log(Arg.Any<OpenUrzednikLogLevel>(), Arg.Any<OpenUrzednikEventId>(), Arg.Any<Exception?>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Is<string>(path => path.Contains(secret)));
+        logger.Received(1).Log(Arg.Any<OpenUrzednikLogLevel>(), Arg.Any<OpenUrzednikEventId>(), Arg.Any<Exception?>(), Arg.Any<string>(),
+            Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), "https://api.example.com/api/rates");
+    }
+
+    [Fact]
+    public async Task GetAsync_HandlerAddsASecretToTheQuery_LeaksItNowhere()
+    {
+        // Arrange
+        const string secret = "S3CR3T-K3Y-9902";
+        var recording = new RecordingTelemetry();
+        using var response = new HttpResponseMessage(HttpStatusCode.NotFound);
+        var handler = new DelegatingStubHttpMessageHandler((request, _) =>
+        {
+            request.RequestUri = new Uri(request.RequestUri + "?apikey=" + secret);
+            response.RequestMessage = request;
+            return Task.FromResult(response);
+        });
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/api/") };
+
+        // Act
+        var result = await CreateConnection(httpClient, new ClientTelemetry(recording, recording), _timeProvider).GetAsync("rates", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.ShouldNotLeak(recording, secret);
+    }
+
+    [Theory]
+    [InlineData("rates?token=abc", "rates?*")]
+    [InlineData("rates?", "rates")]
+    public async Task GetAsync_RequestPathWithQuery_RedactsTheQueryInTheMessage(string relativePath, string expectedPath)
+    {
+        // Arrange
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound)))
+        {
+            BaseAddress = new Uri("https://api.example.com:8443/api/")
+        };
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider).GetAsync(relativePath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().Message.ShouldBe($"Resource at https://api.example.com:8443/api/{expectedPath} was not found.");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("rates/{id}")]
+    public async Task GetAsync_BaseAddressWithUserInfo_KeepsItOutOfTheMessage(string? displayPath)
+    {
+        // Arrange
+        using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound)))
+        {
+            BaseAddress = new Uri("https://user:p4ssw0rd@api.example.com/api/")
+        };
+        var connection = CreateConnection(httpClient, _telemetryProvider, _timeProvider);
+
+        // Act
+        var result = displayPath is null
+            ? await connection.GetAsync("rates/1", TypeInfo, TestContext.Current.CancellationToken)
+            : await connection.GetAsync("rates/1", displayPath, TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().Message.ShouldBe($"Resource at https://api.example.com/api/{displayPath ?? "rates/1"} was not found.");
+    }
+
+    [Fact]
+    public async Task GetAsync_CompressedBodyThatCannotBeDecompressed_ReturnsSerializationErrorAndLogsDecodingFailed()
+    {
+        // Arrange: GZipStream and DeflateStream throw InvalidDataException for corrupt data
+        var faker = new Faker().WithConstantSeed();
+        var (telemetry, logger, span) = CreateTelemetrySubstitutes();
+        var thrown = new InvalidDataException("The archive entry was compressed using an unsupported compression method.");
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new FailingStream(thrown)) });
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        var error = result.Errors.ShouldHaveSingleItem().ShouldBeOfType<SerializationError>();
+        error.Message.ShouldBe("Error when decoding response from path");
+        error.Exception.ShouldBeSameAs(thrown);
+        logger.Received(1).Log(OpenUrzednikLogLevel.Error, RestLogEvents.DecodingFailed, thrown, "Failed to decode {provider} response from {path}", "provider", "test", "path", "path");
+        span.Received(1).RecordException(thrown);
+        span.Received(1).SetTag("error.type", SerializationError.ErrorCode);
+        span.Received(1).SetStatus(OpenUrzednikSpanStatus.Error, "Deserialization failed");
+    }
+
+    [Theory]
+    [InlineData("data")]
+    [InlineData("disposed")]
+    public async Task GetAsync_BadRequestBodyFailsWhileItIsRead_ReturnsBadRequestErrorAndLogsDebug(string failure)
+    {
+        // Arrange: a corrupt compressed body, or content disposed underneath the read
+        var faker = new Faker().WithConstantSeed();
+        var (telemetry, logger, _) = CreateTelemetrySubstitutes();
+        logger.IsEnabled(OpenUrzednikLogLevel.Debug).Returns(true);
+        Exception thrown = failure == "data" ? new InvalidDataException("Corrupt data.") : new ObjectDisposedException("content");
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StreamContent(new FailingStream(thrown)) });
+
+        // Act
+        var result = await CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<HttpBadRequestError>().Message.ShouldEndWith(".");
+        logger.Received(1).Log(OpenUrzednikLogLevel.Debug, RestLogEvents.ErrorBodyUnreadable, thrown, "Could not read {provider} error response body.", "provider", "test");
+    }
+
+    [Fact]
+    public async Task GetAsync_ErrorBodyCutInsideASurrogatePair_LeavesOutTheLoneHalf()
+    {
+        // Arrange: the 500th character is the first half of an emoji
+        var faker = new Faker().WithConstantSeed();
+        var body = new string('a', RestRequestExecutor.MaxServerMessageLength - 1) + "\U0001F600 tail";
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StringContent(body) });
+        string? serverMessage = null;
+        var connection = CreateConnectionWithOverride(httpClient, async context =>
+        {
+            serverMessage = await context.ReadMessageAsync();
+            return null;
+        });
+
+        // Act
+        await connection.GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        serverMessage.ShouldBe(new string('a', RestRequestExecutor.MaxServerMessageLength - 1));
+    }
+
+    [Fact]
+    public async Task GetAsync_BodyReadCancelledByTheContentItself_ReturnsRequestTimeoutErrorWithoutLimit()
+    {
+        // Arrange: the content cancels its own read; the deadline hasn't elapsed, so no limit is known
+        var faker = new Faker().WithConstantSeed();
+        var stream = new FailingStream(new OperationCanceledException("The content's own token."));
+        using var httpClient = CreateHttpClient(faker, new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(stream) });
+
+        // Act
+        var result = await CreateConnection(httpClient, _telemetryProvider, _timeProvider, TimeSpan.FromMinutes(5)).GetAsync("path", TypeInfo, TestContext.Current.CancellationToken);
+
+        // Assert
+        result.Errors.ShouldHaveSingleItem().ShouldBeOfType<RequestTimeoutError>().Timeout.ShouldBeNull();
     }
 
     [Fact]
@@ -1431,6 +1602,7 @@ public partial class RestRequestExecutorTest
         // Act && Assert
         await Should.ThrowAsync<OperationCanceledException>(() => CreateConnection(httpClient, telemetry, _timeProvider).GetAsync("path", TypeInfo, cts.Token));
         span.DidNotReceive().SetStatus(OpenUrzednikSpanStatus.Error, "Unexpected exception");
+        span.DidNotReceive().SetTag("error.type", "_OTHER");
     }
 
     [Fact]

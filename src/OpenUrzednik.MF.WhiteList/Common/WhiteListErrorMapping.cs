@@ -254,6 +254,11 @@ internal static class WhiteListErrorMapping
             // .NET Framework: the body was consumed before.
             return null;
         }
+        catch (InvalidDataException)
+        {
+            // A compressed body that can't be decompressed (AutomaticDecompression).
+            return null;
+        }
 
         if (length > MaxCodeBodyBytes)
         {
