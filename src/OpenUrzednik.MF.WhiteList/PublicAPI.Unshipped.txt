@@ -214,8 +214,8 @@ const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.UnexpectedStatus = 1107 -> in
 const OpenUrzednik.MF.WhiteList.WhiteListLogEvents.ValidationFailed = 2001 -> int
 const OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestDateTimeMetadataKey = "requestDateTime" -> string!
 const OpenUrzednik.MF.WhiteList.WhiteListNotFoundError.RequestIdMetadataKey = "requestId" -> string!
-const OpenUrzednik.MF.WhiteList.WhiteListOptions.DefaultApiUrl = "https://wykazpodatnikowvat.mf.gov.pl/" -> string!
-const OpenUrzednik.MF.WhiteList.WhiteListOptions.TestApiUrl = "https://wykazpodatnikowvat-test.mf.gov.pl/" -> string!
+static readonly OpenUrzednik.MF.WhiteList.WhiteListOptions.DefaultApiUrl -> string!
+static readonly OpenUrzednik.MF.WhiteList.WhiteListOptions.TestApiUrl -> string!
 const OpenUrzednik.MF.WhiteList.WhiteListTelemetry.SourceName = "OpenUrzednik.MF.WhiteList" -> string!
 override OpenUrzednik.MF.WhiteList.AccountCheckResult.Equals(object? obj) -> bool
 override OpenUrzednik.MF.WhiteList.AccountCheckResult.GetHashCode() -> int

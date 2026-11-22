@@ -203,7 +203,8 @@ internal static class WhiteListErrorMapping
 
     /// <summary>
     /// The API's code in an error body, or <see langword="null"/> for no body, one that can not be read, one over
-    /// <see cref="MaxCodeBodyBytes"/>, or one without a documented code. Reads at most <see cref="MaxCodeBodyBytes"/> + 1 bytes of the
+    /// <see cref="MaxCodeBodyBytes"/>, or one without a documented code in the text <see cref="MapAsync"/> parses (its first
+    /// <see cref="RestRequestExecutor.MaxServerMessageLength"/> characters). Reads at most <see cref="MaxCodeBodyBytes"/> + 1 bytes of the
     /// body and replaces <see cref="HttpResponseMessage.Content"/>, so <see cref="MapAsync"/> reads the body from the start afterwards:
     /// by the bytes read, for a body within the limit, or by them followed by the rest of the stream, for a larger one (which has no
     /// code). The body has to be replaced, because network content can be read once: a failed attempt to buffer it would leave it
@@ -270,7 +271,20 @@ internal static class WhiteListErrorMapping
         WhiteListReplayContent.CopyHeaders(content, replacement);
         response.Content = replacement;
         content.Dispose();
-        return SanitizeCode(Parse(Encoding.UTF8.GetString(buffer, 0, length))?.Code);
+        return SanitizeCode(Parse(MessageText(buffer, length))?.Code);
+    }
+
+    // The text MapAsync parses from the same body, so the filter and the mapping find the same code (ADR-0023): what the executor's
+    // ReadMessageAsync reads, at most RestRequestExecutor.MaxServerMessageLength characters, decoded as UTF-8 unless a byte order mark
+    // says otherwise, without a half surrogate pair at the cut, trimmed.
+    private static string MessageText(byte[] buffer, int length)
+    {
+        using var reader = new StreamReader(new MemoryStream(buffer, 0, length), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        var text = new char[RestRequestExecutor.MaxServerMessageLength];
+        var read = reader.ReadBlock(text, 0, text.Length);
+        if (read == text.Length && char.IsHighSurrogate(text[read - 1]))
+            read--;
+        return new string(text, 0, read).Trim();
     }
 
     // The body is the API's JSON; anything else (no body, a proxy's HTML page, a body cut at the 500 characters the executor reads) has no code.

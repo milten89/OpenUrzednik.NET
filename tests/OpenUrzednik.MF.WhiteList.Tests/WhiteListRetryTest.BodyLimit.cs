@@ -45,14 +45,12 @@ public sealed partial class WhiteListRetryTest
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 
-    // A JSON answer with the code WL-195 and a padding field, of exactly the given length in bytes.
+    // A JSON answer with the code WL-195, padded with trailing whitespace to exactly the given length in bytes: the error mapping parses the first 500 characters trimmed, so the code stays
+    // readable to it (and to the filter) at any length, and only the size limit decides.
     private static string BodyOfLength(int length)
     {
-        const string prefixText = """{"code":"WL-195","pad":" """;
-        const string suffixText = """ "}""";
-        var prefix = prefixText.TrimEnd();
-        var suffix = suffixText.TrimStart();
-        return prefix + new string('x', length - prefix.Length - suffix.Length) + suffix;
+        const string json = """{"code":"WL-195"}""";
+        return json + new string(' ', length - json.Length);
     }
 
     [Theory]

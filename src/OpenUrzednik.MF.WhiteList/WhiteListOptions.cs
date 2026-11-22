@@ -15,13 +15,19 @@ public sealed class WhiteListOptions
     /// The production host of the MF White List API, used when neither <see cref="ApiUrl"/> nor <see cref="HttpClient.BaseAddress"/> is set.
     /// The search and check clients send requests under its <c>api/</c> path, the status (WL2) client under <c>api2/</c>.
     /// </summary>
-    public const string DefaultApiUrl = "https://wykazpodatnikowvat.mf.gov.pl/";
+    /// <remarks>
+    /// A read-only field, not a constant, so a patch that follows a move of the ministry's host reaches apps that name it without a rebuild.
+    /// </remarks>
+    // Stryker disable once String : false survivor, Stryker can't activate a static field initializer; an empty URL fails WhiteListOptionsTest.DefaultApiUrl_IsTheProductionHostRoot and the connection tests (checked by hand)
+    public static readonly string DefaultApiUrl = "https://wykazpodatnikowvat.mf.gov.pl/";
 
     /// <summary>
     /// The ministry's test host, with its own test data (the lists of NIPs, REGONs and account numbers that return fictitious subjects).
     /// Set <see cref="ApiUrl"/> to it to test an integration without querying the real register.
     /// </summary>
-    public const string TestApiUrl = "https://wykazpodatnikowvat-test.mf.gov.pl/";
+    /// <remarks>A read-only field, not a constant, for the same reason as <see cref="DefaultApiUrl"/>.</remarks>
+    // Stryker disable once String : false survivor, Stryker can't activate a static field initializer; an empty URL fails WhiteListOptionsTest.TestApiUrl_IsTheTestHostRoot and the connection tests (checked by hand)
+    public static readonly string TestApiUrl = "https://wykazpodatnikowvat-test.mf.gov.pl/";
 
     /// <summary>
     /// The root URL of the MF White List API host, e.g. <see cref="TestApiUrl"/> or a proxy or gateway in front of the API, without the

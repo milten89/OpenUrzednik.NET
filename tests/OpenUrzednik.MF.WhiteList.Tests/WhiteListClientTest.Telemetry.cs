@@ -209,7 +209,7 @@ public sealed partial class WhiteListClientTest
 
     [Theory]
     [MemberData(nameof(BatchMethods))]
-    public async Task SearchBatchAsync_FailedEntries_SetNoErrorTypeAndLogNoNotOnList(string method, string spanName, string displayPath)
+    public async Task SearchBatchAsync_FailedEntries_SetNoErrorTypeAndLogNoPerEntryNotOnList(string method, string spanName, string displayPath)
     {
         // Arrange: every captured batch answer has an entry not on the list and one the API rejected; the call itself succeeded
         var (logger, span, tracer) = CreateTelemetrySubstitutes();

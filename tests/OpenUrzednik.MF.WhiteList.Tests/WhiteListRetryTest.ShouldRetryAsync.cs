@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 
 using OpenUrzednik.TestCommon;
 
@@ -250,5 +251,80 @@ public sealed partial class WhiteListRetryTest
         // Assert
         posts.ShouldBe(0);
         retry.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task ShouldRetryAsync_CodeBeyondTheClientsWindow_HasNoCode()
+    {
+        // Arrange: the client's mapping parses only the first 500 characters, so a long message pushes the code out of it; the filter
+        // must decide from the same text (ADR-0023), or it would retry a WL-195 that the client then reports without its code
+        var message = new string('a', 600);
+        using var response = Response(400, $$"""{"message":"{{message}}","code":"WL-195"}""");
+
+        // Act
+        var retry = await WhiteListRetry.ShouldRetryAsync(response, TestContext.Current.CancellationToken);
+
+        // Assert
+        retry.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ShouldRetryAsync_BodyOfExactlyTheClientsWindow_ReadsTheCodeAtItsEnd()
+    {
+        // Arrange: a body of exactly 500 characters, its code at the very end
+        const string prefix = "{\"message\":\"";
+        const string suffix = "\",\"code\":\"WL-195\"}";
+        var body = prefix + new string('a', 500 - prefix.Length - suffix.Length) + suffix;
+        body.Length.ShouldBe(500);
+        using var response = Response(400, body);
+
+        // Act
+        var retry = await WhiteListRetry.ShouldRetryAsync(response, TestContext.Current.CancellationToken);
+
+        // Assert
+        retry.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ShouldRetryAsync_ClientsWindowEndsInsideASurrogatePair_HasNoCodeAndDoesNotThrow()
+    {
+        // Arrange: the 500th character is the first half of an emoji; the cut text isn't valid UTF-16 unless the half is dropped
+        const string prefix = "{\"message\":\"";
+        var body = prefix + new string('a', 499 - prefix.Length) + "\U0001F600" + "\",\"code\":\"WL-195\"}";
+        using var response = Response(400, body);
+
+        // Act
+        var retry = await WhiteListRetry.ShouldRetryAsync(response, TestContext.Current.CancellationToken);
+
+        // Assert
+        retry.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task ShouldRetryAsync_BodyWithAUtf8ByteOrderMark_ReadsTheCode()
+    {
+        // Arrange: the client's mapping reads the body through a reader that strips a byte order mark; the filter must too
+        var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(Body("WL-195"))).ToArray();
+        using var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new ByteArrayContent(bytes) };
+
+        // Act
+        var retry = await WhiteListRetry.ShouldRetryAsync(response, TestContext.Current.CancellationToken);
+
+        // Assert
+        retry.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task ShouldRetryAsync_BodyInUtf16WithByteOrderMark_ReadsTheCode()
+    {
+        // Arrange: the byte order mark decides the encoding, as for the client's error mapping
+        var bytes = Encoding.Unicode.GetPreamble().Concat(Encoding.Unicode.GetBytes(Body("WL-195"))).ToArray();
+        using var response = new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new ByteArrayContent(bytes) };
+
+        // Act
+        var retry = await WhiteListRetry.ShouldRetryAsync(response, TestContext.Current.CancellationToken);
+
+        // Assert
+        retry.ShouldBeTrue();
     }
 }
