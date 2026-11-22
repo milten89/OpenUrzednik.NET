@@ -3,7 +3,8 @@ version: 2
 updates:
   - package-ecosystem: "nuget"
     directory: "/"
-    target-branch: "develop"
+    # No target-branch: develop is the default branch, and with target-branch set GitHub ignores this entry's labels and
+    # commit-message for security PRs (#356 got the default ".NET" label).
     schedule:
       interval: "weekly"
       day: "monday"
@@ -49,7 +50,8 @@ updates:
 
   - package-ecosystem: "github-actions"
     directory: "/"
-    target-branch: "develop"
+    # No target-branch: develop is the default branch, and with target-branch set GitHub ignores this entry's labels and
+    # commit-message for security PRs (#356 got the default ".NET" label).
     schedule:
       interval: "weekly"
       day: "monday"

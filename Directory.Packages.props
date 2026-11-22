@@ -18,7 +18,6 @@
 
   <!-- Abstractions: lowest supported version. -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="2.3.14" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
   </ItemGroup>
 
@@ -55,6 +54,8 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.11.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="WireMock.Net" Version="2.21.0" />
+    <!-- Transitive through WireMock.Net; pinned for GHSA-6527-9fp8-r4x6 (vulnerable up to 2.3.13). Remove once WireMock.Net brings a fixed version. -->
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="2.3.14" />
     <PackageVersion Include="xunit.v3" Version="4.0.2" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
