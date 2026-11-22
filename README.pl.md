@@ -10,7 +10,7 @@
 [![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Nbp?style=flat-square)](https://www.nuget.org/packages/OpenUrzednik.Nbp)
 [![License](https://img.shields.io/github/license/milten89/OpenUrzednik.NET?style=flat-square)](LICENSE)
 
-**OpenUrzednik.NET** to nowoczesny, otwartoźródłowy zestaw bibliotek dla platformy .NET, służący do integracji z polskimi API oraz danymi publicznymi. W aktualnej fazie rozwoju projekt skupia się na wspólnych fundamentach (`OpenUrzednik.Core`) oraz na referencyjnym kliencie API NBP (`OpenUrzednik.Nbp`), na którego wzór powstaną kolejne pakiety.
+**OpenUrzednik.NET** to nowoczesny, otwartoźródłowy zestaw bibliotek dla platformy .NET, służący do integracji z polskimi API oraz danymi publicznymi. W aktualnej fazie rozwoju projekt skupia się na wspólnych fundamentach (`OpenUrzednik.Core`), referencyjnym kliencie API NBP (`OpenUrzednik.Nbp`), na którego wzór powstają kolejne pakiety, oraz kliencie Białej Listy VAT Ministerstwa Finansów (`OpenUrzednik.MF.WhiteList`).
 
 > ⚠️ **Projekt nieoficjalny:** to oddolna inicjatywa społecznościowa. Nie jest powiązana z Narodowym Bankiem Polskim (NBP), ministerstwami, urzędami ani żadną inną polską instytucją publiczną i nie działa z ich upoważnienia.
 
@@ -36,6 +36,8 @@ Większość istniejących pakietów dla polskich API została porzucona lub nie
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.pl.md) | ✅ Stabilny | Zamienia spany klientów na `Activity` i zapisuje ich metryki w `Meter`, dla OpenTelemetry (`AddSource("OpenUrzednik.*")`, `AddMeter("OpenUrzednik.*")`) |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.pl.md) | ✅ Stabilny | Kursy walut (tabele A, B, C), tabele kursów i ceny złota z API NBP |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md) | ✅ Stabilny | `AddOpenUrzednikNbp()`: klienty NBP w DI z `IHttpClientFactory`, gotowe na `AddStandardResilienceHandler()` |
+| [**OpenUrzednik.MF.WhiteList**](src/OpenUrzednik.MF.WhiteList/README.pl.md) | 🆕 1.1 | Biała Lista VAT Ministerstwa Finansów (Wykaz podatników VAT): wyszukiwanie po NIP, REGON lub numerze rachunku, sprawdzenie rachunku względem NIP lub REGON oraz status VAT z WL2, każda odpowiedź z dowodem `requestId` |
+| [**OpenUrzednik.MF.WhiteList.DependencyInjection**](src/OpenUrzednik.MF.WhiteList.DependencyInjection/README.pl.md) | 🆕 1.1 | `AddOpenUrzednikMFWhiteList()`: klienty Białej Listy w DI z `IHttpClientFactory`, logi bez identyfikatorów, gotowe na `AddStandardResilienceHandler()` |
 | [**OpenUrzednik.Transport.Http**](src/OpenUrzednik.Transport.Http/README.pl.md) | 🆕 1.1 | Błędy spowodowane odpowiedziami HTTP (`HttpNotFoundError` i pozostałe) oraz `IOpenUrzednikHttpStatusCode`; instaluje się razem z każdym dostawcą REST |
 
 ---
@@ -87,7 +89,7 @@ Każde wywołanie zwraca `OpenUrzednikResult<T>`. Pracę z wynikiem (`Map`, `Bin
 
 ### Klienty i DI
 
-Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient`. W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md). Przygotowujemy kolejnych providerów: Białą Listę VAT (`OpenUrzednik.MF.WhiteList`), KRS (`OpenUrzednik.Krs`) i GUS BIR (`OpenUrzednik.Gus.Regon`) ([ADR-0016](docs/adr/0016-next-providers-and-package-naming.md)). Wczesne, puste wersje preview pakietów `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` na nuget.org są oznaczone jako przestarzałe i ukryte.
+Pakiet `OpenUrzednik.Nbp` zawiera klienty `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` i `NbpGoldPriceClient`. W kontenerze DI zarejestrujesz je pakietem [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.pl.md). Biała Lista VAT ma własny pakiet, [OpenUrzednik.MF.WhiteList](src/OpenUrzednik.MF.WhiteList/README.pl.md), a do DI służy [OpenUrzednik.MF.WhiteList.DependencyInjection](src/OpenUrzednik.MF.WhiteList.DependencyInjection/README.pl.md). Przygotowujemy kolejnych providerów: KRS (`OpenUrzednik.Krs`) i GUS BIR (`OpenUrzednik.Gus.Regon`) ([ADR-0016](docs/adr/0016-next-providers-and-package-naming.md)). Wczesne, puste wersje preview pakietów `OpenUrzednik.Gus`, `OpenUrzednik.Krs` i `OpenUrzednik.Mf` na nuget.org są oznaczone jako przestarzałe i ukryte.
 
 ### Przykłady
 

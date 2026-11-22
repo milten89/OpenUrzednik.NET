@@ -18,6 +18,8 @@ PACKAGES = [
     "OpenUrzednik.Diagnostics",
     "OpenUrzednik.Nbp",
     "OpenUrzednik.Nbp.DependencyInjection",
+    "OpenUrzednik.MF.WhiteList",
+    "OpenUrzednik.MF.WhiteList.DependencyInjection",
     "OpenUrzednik.Transport.Http",
 ]
 REGISTRATION = "https://api.nuget.org/v3/registration5-gz-semver2/{}/index.json"

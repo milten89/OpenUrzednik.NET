@@ -2,7 +2,10 @@ using System.Diagnostics.Metrics;
 using System.Net;
 using System.Text.RegularExpressions;
 
+using Microsoft.Extensions.Time.Testing;
+
 using OpenUrzednik.Core.Telemetry;
+using OpenUrzednik.MF.WhiteList;
 using OpenUrzednik.Nbp;
 using OpenUrzednik.TestCommon;
 
@@ -15,7 +18,7 @@ public sealed class MetricsReferenceTest
 {
     private const string InstrumentName = "openurzednik.client.operation.duration";
 
-    public static TheoryData<string> References => ["src/OpenUrzednik.Nbp/README.md", "src/OpenUrzednik.Diagnostics/README.md"];
+    public static TheoryData<string> References => ["src/OpenUrzednik.Nbp/README.md", "src/OpenUrzednik.Diagnostics/README.md", "src/OpenUrzednik.MF.WhiteList/README.md"];
 
     [Theory]
     [MemberData(nameof(References))]
@@ -26,10 +29,19 @@ public sealed class MetricsReferenceTest
         var meterName = $"OpenUrzednik.Tests.{Guid.NewGuid():N}";
         using var recorder = new MeterRecorder(meterName);
         using var httpClient = new HttpClient(new StubHttpMessageHandler(new HttpResponseMessage(HttpStatusCode.NotFound)));
-        var sut = new NbpGoldPriceClient(httpClient, null, null, new OpenUrzednikTelemetry { Metrics = MeterMetrics.GetShared(meterName) });
+        var telemetry = new OpenUrzednikTelemetry { Metrics = MeterMetrics.GetShared(meterName) };
 
         // Act
-        await sut.GetLatestAsync(TestContext.Current.CancellationToken);
+        if (readme.Contains("MF.WhiteList", StringComparison.Ordinal))
+        {
+            var whiteList = new WhiteListClient(httpClient, null, new FakeTimeProvider(new DateTimeOffset(2026, 11, 20, 11, 0, 0, TimeSpan.Zero)), telemetry);
+            await whiteList.SearchByNipAsync("7368125416", new DateTime(2026, 11, 2), TestContext.Current.CancellationToken);
+        }
+        else
+        {
+            var nbp = new NbpGoldPriceClient(httpClient, null, null, telemetry);
+            await nbp.GetLatestAsync(TestContext.Current.CancellationToken);
+        }
 
         // Assert
         var measurement = recorder.Measurements.ShouldHaveSingleItem();

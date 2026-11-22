@@ -7,7 +7,7 @@ body:
       value: |
         Możesz pisać po polsku lub po angielsku. / Polish or English is fine.
 
-        Brakuje danych albo się nie zgadzają? Najpierw sprawdź je w [API NBP](https://api.nbp.pl/): biblioteka zwraca to, co publikuje NBP. / Data missing or different from what you expected? Check [NBP's API](https://api.nbp.pl/en.html) first: the library returns what NBP publishes.
+        Brakuje danych albo się nie zgadzają? Najpierw sprawdź je w [API NBP](https://api.nbp.pl/) albo w [Wykazie podatników VAT](https://www.gov.pl/web/kas/wykaz-podatnikow-vat) Ministerstwa Finansów (KAS): biblioteka zwraca to, co publikuje źródło. / Data missing or different from what you expected? Check [NBP's API](https://api.nbp.pl/en.html) or the Ministry of Finance (KAS) [VAT taxpayers list](https://www.gov.pl/web/kas/wykaz-podatnikow-vat) first: the library returns what the source publishes.
   - type: dropdown
     id: package
     attributes:
@@ -18,6 +18,8 @@ body:
         - OpenUrzednik.Diagnostics
         - OpenUrzednik.Nbp
         - OpenUrzednik.Nbp.DependencyInjection
+        - OpenUrzednik.MF.WhiteList
+        - OpenUrzednik.MF.WhiteList.DependencyInjection
         - OpenUrzednik.Transport.Http
         - Inny / Other
     validations:

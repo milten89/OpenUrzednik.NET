@@ -64,7 +64,7 @@ if (result.TryGetValue(out var current))
 
 Read `Value` only after `IsSuccess` or `TryGetValue`. On a failed result it throws an `InvalidOperationException` that names the errors; use `EnsureSuccess()` if you want the typed exception.
 
-Every provider package (today `OpenUrzednik.Nbp`) depends on this package. You usually don't install it on its own, unless you are building your own client in the same style.
+Every provider package (today `OpenUrzednik.Nbp` and `OpenUrzednik.MF.WhiteList`) depends on this package. You usually don't install it on its own, unless you are building your own client in the same style.
 
 ## Errors
 
