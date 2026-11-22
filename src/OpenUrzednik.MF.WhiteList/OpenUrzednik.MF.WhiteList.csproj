@@ -1,11 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Unofficial .NET client for the Polish Ministry of Finance VAT White List API (Wykaz podatników VAT). Not affiliated with the Ministry of Finance.</Description>
+    <Description>Unofficial .NET client for the Polish Ministry of Finance VAT White List API (Wykaz podatników VAT): search by NIP, REGON or account number, check an account against a NIP or REGON, and the WL2 VAT status, each answer with its requestId proof. Not affiliated with the Ministry of Finance.</Description>
     <PackageTags>MF;WhiteList;BialaLista;VAT;NIP;REGON;API;Poland;Gov</PackageTags>
-    <!-- Not packable until the package has a usable client (ADR-0016, ADR-0023): every merge into develop publishes previews of all
-         packable projects. No release yet, so there is no baseline to validate against. -->
-    <IsPackable>false</IsPackable>
+    <OpenUrzednikPackageIcon>icon-mf.png</OpenUrzednikPackageIcon>
+    <!-- No release yet, so there is no baseline to validate against; the back-merge after the first release removes this line. -->
     <PackageValidationBaselineVersion></PackageValidationBaselineVersion>
   </PropertyGroup>
 
@@ -27,6 +26,10 @@
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
     <PackageReference Include="System.Net.Http.Json" />
     <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

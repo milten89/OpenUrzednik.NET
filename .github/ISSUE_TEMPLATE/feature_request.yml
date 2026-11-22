@@ -16,6 +16,8 @@ body:
         - OpenUrzednik.Diagnostics
         - OpenUrzednik.Nbp
         - OpenUrzednik.Nbp.DependencyInjection
+        - OpenUrzednik.MF.WhiteList
+        - OpenUrzednik.MF.WhiteList.DependencyInjection
         - OpenUrzednik.Transport.Http
         - Nowy pakiet integracyjny (DI, logowanie, telemetria) / New integration package
         - Inny / Other

@@ -72,7 +72,10 @@ public static class WhiteListLogEvents
     /// <summary>The arguments failed validation, so no request was sent. Debug.</summary>
     public const int ValidationFailed = 2001;
 
-    /// <summary>The register has no entity for the identifier: the answer is a <see cref="WhiteListNotFoundError"/> with the proof. Debug.</summary>
+    /// <summary>
+    /// The register has no entity for the identifier: the answer is a <see cref="WhiteListNotFoundError"/> with the proof. For a batch
+    /// search with failed entries, one entry with the counts of entries not on the list and rejected, never the identifiers. Debug.
+    /// </summary>
     public const int NotOnList = 2002;
 
     /// <summary>A payload was missing data the model needs. Error.</summary>

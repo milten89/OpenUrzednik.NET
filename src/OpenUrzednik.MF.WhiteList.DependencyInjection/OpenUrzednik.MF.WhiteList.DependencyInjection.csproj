@@ -3,8 +3,8 @@
   <PropertyGroup>
     <Description>Unofficial Microsoft.Extensions.DependencyInjection registration for the OpenUrzednik.NET MF White List clients: typed HttpClients, validated options, logging, tracing and metrics, and logs without identifiers; ready for AddStandardResilienceHandler() on .NET 8 and later.</Description>
     <PackageTags>MF;WhiteList;BialaLista;VAT;DependencyInjection;HttpClientFactory;API;Poland;Gov</PackageTags>
-    <!-- Not packable until the provider ships (ADR-0016, ADR-0023), like the base package; no release yet, so no baseline. -->
-    <IsPackable>false</IsPackable>
+    <OpenUrzednikPackageIcon>icon-mf.png</OpenUrzednikPackageIcon>
+    <!-- No release yet, so there is no baseline to validate against; the back-merge after the first release removes this line. -->
     <PackageValidationBaselineVersion></PackageValidationBaselineVersion>
     <!-- The packages ADR-0024 allows an integration package; src/Directory.Build.targets checks the list. -->
     <OpenUrzednikAllowedPackageReferences>Microsoft.Extensions.Http;Microsoft.Extensions.Options;Polly.Core</OpenUrzednikAllowedPackageReferences>
@@ -29,6 +29,10 @@
 
   <!-- The HttpClient logging that writes the display path, not the identifier in the URI (ADR-0017). -->
   <Import Project="..\Http\DependencyInjection\DependencyInjection.props" />
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="OpenUrzednik.MF.WhiteList.DependencyInjection.Tests" />

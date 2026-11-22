@@ -10,7 +10,7 @@
 [![Nuget](https://img.shields.io/nuget/v/OpenUrzednik.Nbp?style=flat-square)](https://www.nuget.org/packages/OpenUrzednik.Nbp)
 [![License](https://img.shields.io/github/license/milten89/OpenUrzednik.NET?style=flat-square)](LICENSE)
 
-**OpenUrzednik.NET** is a set of open-source .NET libraries for Polish public APIs and public data. At this stage the project focuses on the shared foundations (`OpenUrzednik.Core`) and on the reference client for the NBP API (`OpenUrzednik.Nbp`), which the next packages will follow.
+**OpenUrzednik.NET** is a set of open-source .NET libraries for Polish public APIs and public data. At this stage the project focuses on the shared foundations (`OpenUrzednik.Core`), the reference client for the NBP API (`OpenUrzednik.Nbp`), which the next packages follow, and the client for the Ministry of Finance VAT White List (`OpenUrzednik.MF.WhiteList`).
 
 > ⚠️ **Unofficial project:** this is a community initiative. It is not affiliated with, authorized or endorsed by Narodowy Bank Polski (NBP), any ministry, government office or any other Polish public institution.
 
@@ -36,6 +36,8 @@ Most existing packages for Polish APIs are abandoned or don't follow modern .NET
 | [**OpenUrzednik.Diagnostics**](src/OpenUrzednik.Diagnostics/README.md) | ✅ Stable | Turns the clients' spans into `Activity` objects and records their metrics on a `Meter`, for OpenTelemetry (`AddSource("OpenUrzednik.*")`, `AddMeter("OpenUrzednik.*")`) | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Nbp**](src/OpenUrzednik.Nbp/README.md) | ✅ Stable | Exchange rates (tables A, B, C), rate tables and gold prices from the NBP API | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Nbp.DependencyInjection**](src/OpenUrzednik.Nbp.DependencyInjection/README.md) | ✅ Stable | `AddOpenUrzednikNbp()`: the NBP clients in DI with `IHttpClientFactory`, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.MF.WhiteList**](src/OpenUrzednik.MF.WhiteList/README.md) | 🆕 1.1 | Ministry of Finance VAT White List (Wykaz podatników VAT): search by NIP, REGON or account number, check an account against a NIP or REGON, and the WL2 VAT status, each answer with its `requestId` proof | `netstandard2.0`, `net8.0`, `net10.0` |
+| [**OpenUrzednik.MF.WhiteList.DependencyInjection**](src/OpenUrzednik.MF.WhiteList.DependencyInjection/README.md) | 🆕 1.1 | `AddOpenUrzednikMFWhiteList()`: the White List clients in DI with `IHttpClientFactory`, logs without identifiers, ready for `AddStandardResilienceHandler()` | `netstandard2.0`, `net8.0`, `net10.0` |
 | [**OpenUrzednik.Transport.Http**](src/OpenUrzednik.Transport.Http/README.md) | 🆕 1.1 | The errors caused by HTTP responses (`HttpNotFoundError` and the others) and `IOpenUrzednikHttpStatusCode`; installed with every REST provider | `netstandard2.0`, `net8.0`, `net10.0` |
 
 ## Supported platforms
@@ -110,7 +112,7 @@ Every call returns an `OpenUrzednikResult<T>`. [Working with a result](src/OpenU
 
 ### Clients and DI
 
-The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient`. With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). We are preparing the next providers: the VAT White List (`OpenUrzednik.MF.WhiteList`), KRS (`OpenUrzednik.Krs`) and GUS BIR (`OpenUrzednik.Gus.Regon`) ([ADR-0016](docs/adr/0016-next-providers-and-package-naming.md)). The early empty previews of `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` on nuget.org are deprecated and unlisted.
+The `OpenUrzednik.Nbp` package contains `NbpCurrencyExchangeRateClient`, `NbpExchangeRateTableClient` and `NbpGoldPriceClient`. With a DI container, register them with [OpenUrzednik.Nbp.DependencyInjection](src/OpenUrzednik.Nbp.DependencyInjection/README.md). The VAT White List has its own package, [OpenUrzednik.MF.WhiteList](src/OpenUrzednik.MF.WhiteList/README.md), with [OpenUrzednik.MF.WhiteList.DependencyInjection](src/OpenUrzednik.MF.WhiteList.DependencyInjection/README.md) for DI. We are preparing the next providers: KRS (`OpenUrzednik.Krs`) and GUS BIR (`OpenUrzednik.Gus.Regon`) ([ADR-0016](docs/adr/0016-next-providers-and-package-naming.md)). The early empty previews of `OpenUrzednik.Gus`, `OpenUrzednik.Krs` and `OpenUrzednik.Mf` on nuget.org are deprecated and unlisted.
 
 ### Samples
 
