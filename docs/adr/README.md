@@ -30,3 +30,4 @@ Decisions are recorded in [MADR](https://adr.github.io/madr/) format, see [ADR-0
 | [0024](0024-dependency-policy-with-a-7z-reader.md) | Dependency policy, with a 7z reader for the White List flat-file package | accepted |
 | [0025](0025-telemetry-abstractions-with-metrics.md) | Telemetry abstractions and adapter packages, with per-operation metrics | accepted |
 | [0026](0026-client-api-with-one-public-namespace-per-provider.md) | Client API: simple defaults, internal request shaping, one public namespace per provider | accepted |
+| [0027](0027-white-list-flat-file-storage-and-lookup.md) | MF White List flat file: packages, caches, store contracts and lookup | proposed |
