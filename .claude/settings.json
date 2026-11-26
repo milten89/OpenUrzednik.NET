@@ -63,8 +63,6 @@
       "Bash(git ls-remote --tags origin:*)",
       "Bash(python .claude/skills/prepare-release/scripts/check_nuget.py:*)",
       "Bash(python .claude/skills/prepare-release/scripts/check_packages.py:*)",
-      "Bash(curl -s https://api.nbp.pl/:*)",
-      "Bash(curl -s https://wykazpodatnikowvat-test.mf.gov.pl/:*)",
       "WebFetch(domain:api.nbp.pl)",
       "WebFetch(domain:nbp.pl)",
       "WebFetch(domain:wykazpodatnikowvat-test.mf.gov.pl)",
